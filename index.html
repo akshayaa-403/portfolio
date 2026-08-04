@@ -1,73 +1,315 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Akshayaa Kashyap — Portfolio</title>
-  <link rel="icon" type="image/webp" href="public/assets/favicon.webp">
-  <link rel="shortcut icon" href="public/assets/favicon.png">
-  <link rel="stylesheet" href="css/style.css">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Akshayaa Kashyap — Software Engineer &amp; AI</title>
+
+<meta name="description" content="Akshayaa Kashyap is a software engineer with AI specialist experience, building data pipelines, LLM workflows and dashboards that turn messy data into clear decisions.">
+<meta name="author" content="Akshayaa Kashyap">
+<meta name="keywords" content="Akshayaa Kashyap, software engineer, AI, machine learning, data analysis, Python, LLM, portfolio">
+<link rel="canonical" href="https://akshayaa-403.github.io/portfolio/">
+<meta name="theme-color" content="#f4f7fa">
+
+<meta property="og:type" content="website">
+<meta property="og:title" content="Akshayaa Kashyap — Software Engineer &amp; AI">
+<meta property="og:description" content="Software engineer with AI specialist experience. Data pipelines, LLM workflows and dashboards that turn messy data into clear decisions.">
+<meta property="og:url" content="https://akshayaa-403.github.io/portfolio/">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Akshayaa Kashyap — Software Engineer &amp; AI">
+<meta name="twitter:description" content="Software engineer with AI specialist experience, based in India.">
+
+<link rel="icon" href="public/assets/favicon.webp" type="image/webp">
+<link rel="icon" href="public/assets/favicon.png" type="image/png">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Caveat:wght@500;600&display=swap">
+<link rel="stylesheet" href="css/style.css">
+
+<!-- No-FOUC: mark JS available and apply the saved view mode before first paint -->
+<script>
+(function () {
+  var r = document.documentElement;
+  r.classList.add('js');
+  var m = 'chaos';
+  try {
+    var s = localStorage.getItem('viewMode');
+    if (s === 'notebook' || s === 'clean' || s === 'chaos') m = s;
+  } catch (e) {}
+  r.setAttribute('data-mode', m);
+})();
+</script>
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Person",
+  "name": "Akshayaa Kashyap",
+  "jobTitle": "Software Engineer",
+  "url": "https://akshayaa-403.github.io/portfolio/",
+  "email": "mailto:akshayaakashyap5@gmail.com",
+  "address": { "@type": "PostalAddress", "addressCountry": "IN" },
+  "alumniOf": "Symbiosis Institute of Technology",
+  "sameAs": [
+    "https://github.com/akshayaa-403",
+    "https://linkedin.com/in/akshayaa-kashyap",
+    "https://akshayaakashyap.substack.com"
+  ],
+  "knowsAbout": ["Python", "SQL", "Machine Learning", "Large Language Models", "Data Analysis"]
+}
+</script>
 </head>
 <body>
-  <a class="skip-link" href="#main">Skip to content</a>
 
-  <nav>
-    <div class="nav-spacer"></div>
-    <div class="nav-links">
-      <a href="#home">Home</a>
+<a class="skip-link" href="#main">Skip to main content</a>
+
+<header class="site-header" id="site-header">
+  <div class="site-header__inner">
+    <a class="brand" href="#top"><span class="brand__dot" aria-hidden="true"></span>Akshayaa Kashyap</a>
+    <button class="nav-toggle" type="button" data-nav-toggle aria-expanded="false" aria-controls="primary-nav">Menu</button>
+    <nav class="nav" id="primary-nav" aria-label="Primary">
       <a href="#work">Work</a>
-      <a href="#resume">Resume</a>
-      <a href="#off-the-keyboard">Off the Keyboard</a>
-    </div>
-    <button id="theme-toggle" aria-label="Toggle dark/light mode" title="Switch theme">🌙</button>
-  </nav>
+      <a href="#about">About</a>
+      <a href="#contact">Contact</a>
+      <a href="public/assets/resume.pdf" target="_blank" rel="noopener">Resume ↗</a>
+    </nav>
+  </div>
+</header>
 
-  <main id="main">
-    <!-- Hero -->
-    <section id="home">
-      <div class="hero container">
-        <h1>Hi, I'm <span>Akshayaa</span></h1>
-        <p class="tagline">Designer & Developer building thoughtful digital experiences.</p>
-        <div class="hero-buttons">
-          <a href="#work" class="btn btn-primary">View Projects</a>
-          <a href="public/assets/resume.pdf" download="Akshayaa_Kashyap_Resume.pdf" class="btn">Download CV</a>
-          <a href="#off-the-keyboard" class="btn">View Blogs</a>
+<!-- Organic displacement filter, matching the reference's feTurbulence +
+     feDisplacementMap setup (fractalNoise, baseFrequency 0.02, 1 octave,
+     scale 2). Gives edges a faint hand-drawn wobble. -->
+<svg width="0" height="0" aria-hidden="true" focusable="false" style="position:absolute">
+  <filter id="wobble" color-interpolation-filters="sRGB">
+    <feTurbulence type="fractalNoise" baseFrequency="0.02" numOctaves="1" seed="525" stitchTiles="stitch" result="noise"/>
+    <feDisplacementMap in="SourceGraphic" in2="noise" scale="2" xChannelSelector="R" yChannelSelector="G"/>
+  </filter>
+</svg>
+
+<main id="main">
+  <span id="top" aria-hidden="true"></span>
+
+  <!-- ===================== Hero =====================
+       Layout mirrors jackiehu.design: a full-viewport cream stage with props
+       clustered at the left and right edges, the name lockup centred between
+       them, and a scroll chevron at the bottom. Coordinates below were taken
+       from a live render of the reference at 1440x900 and expressed as
+       percentages of the stage so they scale.
+  -->
+  <section class="hero" aria-labelledby="hero-name">
+
+    <div class="stage" data-collage>
+
+      <!-- Decorative blue lilies: bottom-left and top-right. They fade up and
+           expand gently on load, standing in for the earlier animated SVG.
+           Behind everything (z-index 0) and never announced to assistive tech. -->
+      <img class="lily lily--bl" src="public/assets/props/lily-pair.webp"
+           alt="" aria-hidden="true" width="511" height="830">
+      <img class="lily lily--tr" src="public/assets/props/lily-single.webp"
+           alt="" aria-hidden="true" width="465" height="420">
+
+
+      <!-- ---------- LEFT CLUSTER ---------- -->
+      <!-- Objects deliberately bleed off the left edge, as on the reference. -->
+      <img class="prop" src="public/assets/props/notebook-page.webp" alt="" aria-hidden="true" width="760" height="555"
+           style="--x:-6.000%; --y:24.000%; --w:54.514%; --h:80.889%; --z:1; --cl:1; --clx:-8.000%; --cly:33.000%; --clw:41.000%; --clh:56.000%; --nb:1; --nbx:23.403%; --nby:0.778%; --nbw:53.194%; --nbh:77.222%; --r:-7deg;">
+      <img class="prop" src="public/assets/props/clipping.webp" alt="" aria-hidden="true" width="543" height="760"
+           style="--x:9.500%; --y:9.000%; --w:17.083%; --h:38.222%; --z:2; --cl:1; --clx:3.472%; --cly:46.111%; --clw:7.292%; --clh:16.333%; --nb:1; --nbx:25.347%; --nby:41.222%; --nbw:7.292%; --nbh:16.333%; --r:-4deg;">
+      <img class="prop" src="public/assets/props/lamp.webp" alt="" aria-hidden="true" width="354" height="743"
+           style="--x:1.200%; --y:3.000%; --w:23.819%; --h:50.778%; --z:4; --cl:1; --clx:-1.458%; --cly:-1.111%; --clw:16.597%; --clh:35.444%; --nb:1; --nbx:37.431%; --nby:19.556%; --nbw:16.667%; --nbh:35.556%; --r:2deg;">
+      <img class="prop" src="public/assets/props/film.webp" alt="" aria-hidden="true" width="299" height="308"
+           style="--x:2.000%; --y:57.000%; --w:14.931%; --h:23.556%; --z:5; --cl:1; --clx:12.153%; --cly:21.111%; --clw:9.583%; --clh:15.000%; --nb:0; --r:11deg;">
+      <img class="prop" src="public/assets/props/dreams.webp" alt="" aria-hidden="true" width="687" height="536"
+           style="--x:22.500%; --y:13.000%; --w:12.569%; --h:17.222%; --z:3; --cl:1; --clx:22.014%; --cly:6.111%; --clw:7.153%; --clh:8.889%; --nb:1; --nbx:21.458%; --nby:14.556%; --nbw:11.597%; --nbh:16.000%; --r:-9deg;">
+      <img class="prop" src="public/assets/props/pen.webp" alt="" aria-hidden="true" width="56" height="560"
+           style="--x:26.000%; --y:36.000%; --w:4.792%; --h:22.667%; --z:6; --cl:1; --clx:76.111%; --cly:7.778%; --clw:4.722%; --clh:25.556%; --nb:1; --nbx:68.681%; --nby:6.333%; --nbw:7.014%; --nbh:29.000%; --r:16deg;">
+
+      <!-- ---------- CENTRE LOCKUP ---------- -->
+      <div class="hero__lockup">
+        <h1 class="hero__name" id="hero-name">Akshayaa Kashyap</h1>
+        <p class="hero__role">Software Engineer</p>
+        <p class="hero__sub">AI &amp; Data</p>
+        <p class="hero__headline">
+          a thoughtful process of turning messy data into decisions that
+          sharpen clarity, and spark momentum.
+        </p>
+
+      </div>
+
+      <!-- ---------- RIGHT CLUSTER ---------- -->
+
+      <!-- Music player: a real card, with the vinyl spinning inside it -->
+      <article class="obj obj--player" tabindex="0"
+               style="--x:80.0%; --y:6.5%; --w:15.6%; --r:2deg; --z:6;">
+        <div class="player__disc" aria-hidden="true">
+          <img src="public/assets/props/vinyl.webp" alt="" width="760" height="760">
         </div>
-      </div>
-    </section>
+        <p class="player__eq" aria-hidden="true">|·|</p>
+        <p class="obj__meta player__artist">Deep Focus</p>
+        <p class="obj__title player__track">while the model trains</p>
+        <div class="player__bar" aria-hidden="true"><span></span></div>
+        <div class="player__times" aria-hidden="true"><span>1:16</span><span>/ 3:32</span></div>
+      </article>
 
-    <!-- Projects -->
-    <section id="work">
-      <div class="container">
-        <h2 style="text-align: center;">Projects</h2>
-        <div id="projects-container">Loading repositories...</div>
-      </div>
-    </section>
+      <img class="prop" src="public/assets/props/folder.webp" alt="" aria-hidden="true" width="760" height="644"
+           style="--x:58.500%; --y:60.000%; --w:12.153%; --h:19.444%; --z:6; --cl:1; --clx:85.417%; --cly:63.667%; --clw:10.347%; --clh:16.556%; --nb:0; --r:-5deg;">
+      <p class="prop-label" aria-hidden="true" style="--x:59.500%; --y:79.000%; --z:7;">resume_final_final</p>
 
-    <!-- Resume -->
-    <section id="resume">
-      <div class="container">
-        <h2>Resume</h2>
-        <p>Curious about my journey? Here's the one‑pager.</p>
-        <a href="public/assets/resume.pdf" download="Akshayaa_Kashyap_Resume.pdf" class="btn">Download Resume</a>
-      </div>
-    </section>
+      <!-- AirDrop-style share card: real markup, as on the reference -->
+      <article class="obj obj--share" tabindex="0"
+               style="--x:73.5%; --y:56.0%; --w:13.1%; --r:-3deg; --z:7;">
+        <p class="share__title">AirDrop</p>
+        <p class="share__sub">Akshayaa would like to share a file</p>
+        <div class="share__thumb" aria-hidden="true"></div>
+        <div class="share__actions">
+          <a class="share__btn" href="#about">Decline</a>
+          <a class="share__btn share__btn--go" href="public/assets/resume.pdf" target="_blank" rel="noopener">Accept</a>
+        </div>
+      </article>
 
-    <!-- Off the Keyboard (formerly Hobbies) -->
-    <section id="off-the-keyboard">
-      <div class="container">
-        <h2 style="text-align: center;">Off the Keyboard</h2>
-        <div id="writing-cards" class="writing-cards"></div>
+      <!-- MacPaint-style tool palette -->
+      <div class="palette" aria-hidden="true" style="--x:88.5%; --y:46.0%; --z:5;">
+        <span>✧</span><span>▢</span><span>▨</span><span>◧</span><span>✎</span><span>◔</span>
+        <span>✐</span><span>⌇</span><span>◣</span><span>A</span><span>╲</span><span>⌒</span>
+        <span>▭</span><span>◺</span><span>⬭</span><span>▤</span>
       </div>
-    </section>
-  </main>
 
-  <footer>
-    <div class="container">
-      <p>© 2025 Akshayaa — built with curiosity.</p>
+      <!-- Mode switcher: bottom-centre of the stage, where the reference puts
+           its coffee/broom/pencil icon row -->
+      <div class="hero__actions">
+        <span class="modes" role="group" aria-label="View mode">
+          <button type="button" data-mode-btn="chaos"    aria-pressed="true">chaos</button>
+          <button type="button" data-mode-btn="notebook" aria-pressed="false">notebook</button>
+          <button type="button" data-mode-btn="clean"    aria-pressed="false">clean</button>
+        </span>
+      </div>
+
+      <p class="scroll-cue" aria-hidden="true">⌄</p>
     </div>
-  </footer>
+  </section>
 
-  <script src="js/script.js"></script>
+  <!-- ===================== Marquee ===================== -->
+  <div class="strip" aria-hidden="true">
+    <div class="strip__track">
+      <span>Python</span><span>SQL</span><span>PyTorch</span><span>LangChain</span>
+      <span>Streamlit</span><span>Pandas</span><span>OpenCV</span><span>Docker</span>
+      <span>TypeScript</span><span>Next.js</span><span>Azure</span><span>Power BI</span>
+      <span>Python</span><span>SQL</span><span>PyTorch</span><span>LangChain</span>
+      <span>Streamlit</span><span>Pandas</span><span>OpenCV</span><span>Docker</span>
+      <span>TypeScript</span><span>Next.js</span><span>Azure</span><span>Power BI</span>
+    </div>
+  </div>
+
+  <!-- ===================== Work =====================
+       Two sections, as on the reference: a narrow "Recently Made" column and a
+       two-column "Other Work" grid.
+  -->
+  <section class="section" id="work" aria-labelledby="work-h">
+    <div class="wrap">
+      <div class="section-head reveal">
+        <h2 id="work-h">Recently Made</h2>
+        <span class="glyph" aria-hidden="true">&#9654;</span>
+      </div>
+
+      <div class="rm-list" id="recent-cards">
+        <noscript>
+          <p>Project cards need JavaScript. All source lives at
+            <a href="https://github.com/akshayaa-403" rel="noopener">github.com/akshayaa-403</a>.</p>
+        </noscript>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" id="other-work" aria-labelledby="other-h">
+    <div class="wrap">
+      <div class="section-head reveal">
+        <h2 id="other-h">Other Work</h2>
+        <span class="glyph" aria-hidden="true">&#10037;</span>
+      </div>
+
+      <div class="ow-grid" id="other-cards"></div>
+    </div>
+  </section>
+
+  <!-- ===================== About ===================== -->
+  <section class="section" id="about" aria-labelledby="about-h">
+    <div class="wrap">
+      <div class="section-head reveal">
+        <h2 id="about-h">About</h2>
+        <span class="glyph" aria-hidden="true">☺︎</span>
+        <span class="rule" aria-hidden="true"></span>
+      </div>
+
+      <div class="about">
+        <div class="about__body reveal" data-word-reveal>
+          <p data-squiggle>I'm a software engineer with AI specialist experience, working mostly where data
+            analysis meets model development. The through-line in my work is turning something
+            messy — a CRM export, a scraped lead list, a noisy microscopy image — into something
+            a person can read and act on.</p>
+          <p data-squiggle>Most recently that meant CRM dashboards that cut decision time by a quarter, LLM
+            benchmarking that lifted response accuracy by 15%, and a lead-scoring change that
+            raised conversion by 15% after the data showed follow-up speed mattered more than
+            anyone expected.</p>
+          <p data-squiggle>Outside client work I build things to understand them properly — a residual U-Net
+            for microscopy halo removal, a CycleGAN trained on unpaired landscapes, a task
+            scheduler that solves your to-do list as a travelling salesman problem. I also
+            <a href="https://akshayaakashyap.substack.com" target="_blank" rel="noopener">write on Substack</a>.</p>
+        </div>
+
+        <aside class="about__aside reveal">
+          <dl>
+            <dt>Based in</dt><dd>India</dd>
+            <dt>Focus</dt><dd>Data analysis, model development, LLM pipelines</dd>
+            <dt>Education</dt><dd>B.Tech Robotics &amp; Automation, Symbiosis Institute of Technology</dd>
+            <dt>Certifications</dt><dd>IBM SkillsBuild AI Literacy · HarvardX STAT110x Probability · UiPath RPA</dd>
+          </dl>
+        </aside>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== Contact ===================== -->
+  <section class="section contact" id="contact" aria-labelledby="contact-h">
+    <div class="wrap">
+      <h2 id="contact-h" class="reveal">Get in touch</h2>
+      <p class="reveal">My inbox is open — whether it's a role, a collaboration on something
+        AI-shaped, or a question about any of the projects above.</p>
+      <div class="contact__links reveal">
+        <a class="btn btn--primary" href="mailto:akshayaakashyap5@gmail.com">akshayaakashyap5@gmail.com</a>
+        <a class="btn" href="https://github.com/akshayaa-403" target="_blank" rel="noopener">GitHub ↗</a>
+        <a class="btn" href="https://linkedin.com/in/akshayaa-kashyap" target="_blank" rel="noopener">LinkedIn ↗</a>
+        <a class="btn" href="https://akshayaakashyap.substack.com" target="_blank" rel="noopener">Substack ↗</a>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer class="site-footer">
+  <div class="site-footer__inner">
+    <p style="margin:0;">© <span data-year>2026</span> Akshayaa Kashyap · built by hand, no framework</p>
+    <nav aria-label="Footer">
+      <a href="https://github.com/akshayaa-403" target="_blank" rel="noopener">GitHub</a>
+      <a href="https://linkedin.com/in/akshayaa-kashyap" target="_blank" rel="noopener">LinkedIn</a>
+      <a href="https://akshayaakashyap.substack.com" target="_blank" rel="noopener">Substack</a>
+      <a href="mailto:akshayaakashyap5@gmail.com">Email</a>
+    </nav>
+  </div>
+</footer>
+
+<script src="js/project-data.js"></script>
+<script src="js/theme.js"></script>
+<script src="js/modes.js"></script>
+<script src="js/squiggle.js"></script>
+<!-- Dev-only layout editor: loaded solely when ?edit=1 is in the URL, so it
+     never ships behaviour to real visitors. -->
+<script>
+if (/[?&]edit=1/.test(location.search)) {
+  var _le = document.createElement('script');
+  _le.src = 'js/layout-editor.js';
+  document.head.appendChild(_le);
+}
+</script>
+<script src="js/script.js"></script>
 </body>
 </html>
