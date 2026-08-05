@@ -1216,14 +1216,15 @@ button { font: inherit; }
   height: var(--clh, var(--h)) !important;
 }
 
-/* notebook: open notebook centred, name sits on its pages, most clutter gone */
-[data-mode='notebook'] .prop { display: none; }
-[data-mode='notebook'] .prop[style*='--nb:1'] {
+/* notebook: every prop is visible. The old rule hid anything without an
+   --nb:1 flag, which silently dropped film and folder — a leftover from the
+   reference-derived layout, before the modes were hand-placed. */
+[data-mode='notebook'] .prop {
   display: block;
-  left: var(--nbx) !important;
-  top: var(--nby) !important;
-  width: var(--nbw) !important;
-  height: var(--nbh) !important;
+  left: var(--nbx, var(--x)) !important;
+  top: var(--nby, var(--y)) !important;
+  width: var(--nbw, var(--w)) !important;
+  height: var(--nbh, var(--h)) !important;
 }
 
 /* --- Lockup position per mode ---
@@ -1244,13 +1245,18 @@ button { font: inherit; }
   top: 34.667%;              /* 312/900 */
   text-align: right;
 }
-[data-mode='clean'] .hero__headline { margin-left: auto; margin-right: 0; }
 /* Shrink-wrap the name to its glyphs so its box (not just its text) sits flush
    right, matching the reference's 302px-wide name element. */
 [data-mode='clean'] .hero__name {
-  width: fit-content;
-  margin-left: auto;
-  margin-right: 0;
+  position: absolute !important;
+  /* Anchored right (the clean lockup is right-aligned) and sized to its own
+     text, so a long name extends leftwards instead of wrapping into the
+     role line beneath it. */
+  left: auto !important; right: 2.248% !important;
+  top: 11.986% !important; bottom: auto !important; margin: 0 !important;
+  width: max-content !important; max-width: 92vw !important;
+  white-space: nowrap !important; text-align: right !important;
+  transform: none !important;
 }
 
 /* --- Cards, palette and label per mode ---
@@ -1308,6 +1314,517 @@ button { font: inherit; }
    run under the vinyl card on the notebook's right page. Scale it to fit the
    spread instead of overlapping. */
 [data-mode='notebook'] .hero__name { font-size: clamp(2.4rem, 4.6vw, 62px); }
+
+/* ---------- clean mode: hand-placed layout ----------
+   Positioned by hand in the browser (js/layout-editor.js, ?edit=1) and pasted
+   back verbatim. Deliberate design decisions - do not "correct" them against
+   the other modes or any reference site.
+
+   --player-w is the single source of truth for the music card's width; the pen
+   reads it too, so the two always span the same distance. Change it once. */
+:root { --player-w: 15.599%; }
+[data-mode='clean'] .prop[src*='notebook-page'] {
+  left: 2.239% !important; top: 10.525% !important;
+  width: 39.323% !important; height: 55.827% !important;
+  transform: rotate(2deg) !important;
+  transform-origin: center center !important;
+  z-index: 1 !important;
+}
+[data-mode='clean'] .prop[src*='lamp'] {
+  left: 30.722% !important; top: 65.375% !important;
+  width: 14.101% !important; height: 30.145% !important;
+  transform: none !important; z-index: 4 !important;
+}
+[data-mode='clean'] .prop[src*='film'] {
+  left: 6.812% !important; top: 73.245% !important;
+  width: 9.605% !important; height: 15.012% !important;
+  transform: none !important; z-index: 5 !important;
+}
+[data-mode='clean'] .prop[src*='dreams'] {
+  left: 18.392% !important; top: 73.123% !important;
+  width: 11.649% !important; height: 14.528% !important;
+  transform: none !important; z-index: 3 !important;
+}
+[data-mode='clean'] .prop[src*='folder'] {
+  left: 83.515% !important; top: 45.521% !important;
+  width: 10.354% !important; height: 16.586% !important;
+  transform: none !important; z-index: 6 !important;
+}
+[data-mode='clean'] .prop[src*='pen'] {
+  /* Rotated -90deg: the element's own width becomes the on-screen HEIGHT and
+     its height becomes the on-screen WIDTH. Because rotation pivots about the
+     centre, left/top are set so the ROTATED box lands where it was placed.
+     On-screen span is 225 px, the same as the music card. */
+  left: 25.653% !important;
+  top: 49.243% !important;
+  width: 53.420% !important;    /* becomes on-screen height */
+  height: 25.000% !important;   /* becomes on-screen width  */
+  transform: rotate(-90deg) !important;
+  transform-origin: center center !important;
+  z-index: 6 !important;
+}
+[data-mode='clean'] .prop[src*='clipping'] { display: none !important; }
+[data-mode='clean'] .lily--bl {
+  left: -2.997% !important; top: 27.482% !important;
+  right: auto !important; bottom: auto !important;
+  width: 27.248% !important; height: 78.814% !important;
+  transform: none !important; z-index: 1 !important;
+}
+[data-mode='clean'] .lily--tr {
+  left: 79.768% !important; top: -7.022% !important;
+  right: auto !important; bottom: auto !important;
+  width: 24.251% !important; height: 38.862% !important;
+  transform: none !important; z-index: 1 !important;
+}
+[data-mode='clean'] .obj--player {
+  --x: 44.482% !important; --y: 13.801% !important;
+  --w: var(--player-w) !important;
+  height: 40.194% !important; transform: none !important; z-index: 6 !important;
+}
+[data-mode='clean'] .obj--share {
+  --x: 80.654% !important; --y: 66.707% !important; --w: 15.054% !important;
+  height: 26.877% !important; transform: none !important; z-index: 7 !important;
+}
+[data-mode='clean'] .palette {
+  --x: 67.030% !important; --y: 49.031% !important;
+  width: 7.902% !important; z-index: 5 !important;
+}
+[data-mode='clean'] .palette span { height: 47.9px; font-size: 12px; }
+[data-mode='clean'] .prop-label {
+  --x: 84.060% !important; --y: 62.349% !important;
+  z-index: 7 !important;
+}
+[data-mode='clean'] .hero__lockup {
+  left: 0 !important; right: auto !important; top: 0 !important;
+  width: 100% !important; max-width: none !important;
+  height: 100% !important; text-align: left !important;
+}
+[data-mode='clean'] .hero__name {
+  position: absolute !important;
+  left: 62.193% !important; top: 11.985% !important;
+  right: auto !important; bottom: auto !important; margin: 0 !important;
+  width: 35.559% !important;
+  max-width: none !important;
+  text-align: left !important;
+  transform: none !important;
+}
+[data-mode='clean'] .hero__role {
+  position: absolute !important;
+  left: 84.877% !important; top: 24.818% !important;
+  right: auto !important; bottom: auto !important; margin: 0 !important;
+  width: max-content !important;
+  max-width: none !important;
+  text-align: left !important;
+  transform: none !important;
+}
+[data-mode='clean'] .hero__sub {
+  position: absolute !important;
+  left: 92.507% !important; top: 28.208% !important;
+  right: auto !important; bottom: auto !important; margin: 0 !important;
+  width: max-content !important;
+  max-width: none !important;
+  text-align: left !important;
+  transform: none !important;
+}
+[data-mode='clean'] .hero__headline {
+  position: absolute !important;
+  left: 60.831% !important; top: 32.809% !important;
+  right: auto !important; bottom: auto !important; margin: 0 !important;
+  width: 36.785% !important;
+  max-width: none !important;
+  text-align: right !important;
+  transform: none !important;
+}
+[data-mode='clean'] .hero__actions {
+  position: absolute !important;
+  left: 45.300% !important; top: 69.734% !important;
+  right: auto !important; bottom: auto !important; margin: 0 !important;
+  width: 13.624% !important;
+  max-width: none !important;
+  text-align: left !important;
+  transform: none !important;
+  display: flex !important;
+  justify-content: flex-start !important;
+}
+[data-mode='clean'] .scroll-cue {
+  position: absolute !important;
+  left: 49.591% !important; top: 92.615% !important;
+  right: auto !important; bottom: auto !important; margin: 0 !important;
+  width: max-content !important;
+  max-width: none !important;
+  text-align: left !important;
+  transform: none !important;
+}
+
+/* ---------- chaos mode: hand-placed layout ----------
+   Positioned by hand in the browser (js/layout-editor.js, ?edit=1).
+   For rotated items the CSS box is solved back from the desired ON-SCREEN
+   box, because a rotated element's bounding box is larger than the element.
+   The lockup text is centred on the mode toggle's axis (x=734 of 1468).
+   Values are % of the stage. */
+[data-mode='chaos'] .prop[src*='notebook-page'] {
+  left: -13.329% !important; top: 3.051% !important;
+  width: 43.075% !important; height: 63.996% !important;
+  transform: rotate(20deg) !important;
+  transform-origin: center center !important;
+  z-index: 1 !important;
+}
+[data-mode='chaos'] .prop[src*='lamp'] {
+  left: 13.777% !important; top: 49.024% !important;
+  width: 21.697% !important; height: 46.262% !important;
+  transform: rotate(-12deg) !important;
+  transform-origin: center center !important;
+  z-index: 4 !important;
+}
+[data-mode='chaos'] .prop[src*='film'] {
+  left: 4.752% !important; top: 71.011% !important;
+  width: 13.180% !important; height: 20.690% !important;
+  transform: rotate(17deg) !important;
+  transform-origin: center center !important;
+  z-index: 5 !important;
+}
+[data-mode='chaos'] .prop[src*='dreams'] {
+  left: 12.178% !important; top: 20.201% !important;
+  width: 12.565% !important; height: 17.226% !important;
+  transform: rotate(17deg) !important;
+  transform-origin: center center !important;
+  z-index: 3 !important;
+}
+[data-mode='chaos'] .prop[src*='pen'] {
+  left: 5.154% !important; top: 36.426% !important;
+  width: 6.382% !important; height: 30.175% !important;
+  transform: rotate(15deg) !important;
+  transform-origin: center center !important;
+  z-index: 6 !important;
+}
+[data-mode='chaos'] .prop[src*='folder'] {
+  left: 71.095% !important; top: 62.043% !important;
+  width: 12.169% !important; height: 19.497% !important;
+  transform: rotate(-5deg) !important;
+  transform-origin: center center !important;
+  z-index: 6 !important;
+}
+[data-mode='chaos'] .prop[src*='clipping'] { display: none !important; }
+[data-mode='chaos'] .lily--bl {
+  left: -2.997% !important; top: 27.482% !important;
+  right: auto !important; bottom: auto !important;
+  width: 27.248% !important; height: 78.692% !important;
+  transform: none !important; z-index: 1 !important;
+}
+[data-mode='chaos'] .lily--tr {
+  left: 79.768% !important; top: -7.022% !important;
+  right: auto !important; bottom: auto !important;
+  width: 24.251% !important; height: 38.862% !important;
+  transform: none !important; z-index: 1 !important;
+}
+[data-mode='chaos'] .obj--player {
+  --x: 72.792% !important; --y: 12.089% !important;
+  --w: 15.588% !important; height: 40.229% !important;
+  transform: rotate(-9deg) !important;
+  transform-origin: center center !important;
+  z-index: 6 !important;
+}
+[data-mode='chaos'] .obj--share {
+  --x: 85.465% !important; --y: 59.639% !important;
+  --w: 13.131% !important; height: 23.337% !important;
+  transform: rotate(11deg) !important;
+  transform-origin: center center !important;
+  z-index: 7 !important;
+}
+[data-mode='chaos'] .palette {
+  --x: 92.181% !important; --y: 19.056% !important;
+  width: 5.829% !important;
+  transform: rotate(2deg) !important;
+  transform-origin: center center !important;
+  z-index: 6 !important;
+}
+[data-mode='chaos'] .palette span { height: 40.9px; font-size: 11px; }
+[data-mode='chaos'] .prop-label {
+  --x: 73.501% !important; --y: 81.114% !important;
+  transform: rotate(-5deg) !important;
+  z-index: 7 !important;
+}
+[data-mode='chaos'] .hero__lockup {
+  left: 0 !important; right: auto !important; top: 0 !important;
+  width: 100% !important; max-width: none !important;
+  height: 100% !important;
+}
+[data-mode='chaos'] .hero__name {
+  position: absolute !important;
+  /* Centred on the toggle axis. width:max-content + translateX(-50%)
+     keeps it one line whatever the string length. */
+  left: 50.000% !important; top: 38.135% !important;
+  right: auto !important; bottom: auto !important; margin: 0 !important;
+  width: max-content !important; max-width: 92vw !important;
+  white-space: nowrap !important;
+  text-align: center !important;
+  transform: translateX(-50%) !important;
+}
+[data-mode='chaos'] .hero__role {
+  position: absolute !important;
+  left: 50.000% !important; top: 49.879% !important;
+  right: auto !important; bottom: auto !important; margin: 0 !important;
+  width: max-content !important; max-width: 92vw !important;
+  white-space: nowrap !important; text-align: center !important;
+  transform: translateX(-50%) !important;
+}
+[data-mode='chaos'] .hero__sub {
+  position: absolute !important;
+  left: 50.000% !important; top: 54.480% !important;
+  right: auto !important; bottom: auto !important; margin: 0 !important;
+  width: max-content !important; max-width: 92vw !important;
+  white-space: nowrap !important; text-align: center !important;
+  transform: translateX(-50%) !important;
+}
+[data-mode='chaos'] .hero__headline {
+  position: absolute !important;
+  left: 50.000% !important; top: 60.412% !important;
+  right: auto !important; bottom: auto !important; margin: 0 !important;
+  width: 36.780% !important; max-width: 92vw !important;
+  text-align: center !important;
+  transform: translateX(-50%) !important;
+}
+[data-mode='chaos'] .hero__actions {
+  position: absolute !important;
+  left: 50.000% !important; top: 71.307% !important;
+  right: auto !important; bottom: auto !important; margin: 0 !important;
+  width: max-content !important; text-align: center !important;
+  display: flex !important;
+  justify-content: center !important;
+  transform: translateX(-50%) !important;
+}
+[data-mode='chaos'] .scroll-cue {
+  position: absolute !important;
+  left: 50.000% !important; top: 92.494% !important;
+  right: auto !important; bottom: auto !important; margin: 0 !important;
+  width: max-content !important; text-align: center !important;
+  transform: translateX(-50%) !important;
+}
+
+/* ---------- notebook mode: hand-placed layout ----------
+   Positioned by hand in the browser (js/layout-editor.js, ?edit=1).
+   Rotated items have their CSS box solved back from the desired ON-SCREEN
+   box. The lockup text is centred on the mode toggle's axis.
+   palette and prop-label are absent from this arrangement, so hidden. */
+[data-mode='notebook'] .prop[src*='notebook-page'] {
+  display: block !important;
+  left: 25.253% !important; top: 15.972% !important;
+  width: 53.172% !important; height: 77.379% !important;
+  transform: rotate(-14deg) !important;
+  transform-origin: center center !important;
+  z-index: 4 !important;
+}
+[data-mode='notebook'] .prop[src*='lamp'] {
+  display: block !important;
+  left: 70.487% !important; top: 53.975% !important;
+  width: 14.134% !important; height: 30.306% !important;
+  transform: rotate(12deg) !important;
+  transform-origin: center center !important;
+  z-index: 27 !important;
+}
+[data-mode='notebook'] .prop[src*='film'] {
+  display: block !important;
+  left: 20.088% !important; top: 52.072% !important;
+  width: 7.303% !important; height: 11.594% !important;
+  transform: rotate(27deg) !important;
+  transform-origin: center center !important;
+  z-index: 5 !important;
+}
+[data-mode='notebook'] .prop[src*='dreams'] {
+  display: block !important;
+  left: 16.430% !important; top: 27.701% !important;
+  width: 11.621% !important; height: 16.027% !important;
+  transform: rotate(10deg) !important;
+  transform-origin: center center !important;
+  z-index: 6 !important;
+}
+[data-mode='notebook'] .prop[src*='pen'] {
+  display: block !important;
+  left: 25.660% !important; top: 23.422% !important;
+  width: 6.991% !important; height: 29.064% !important;
+  transform: rotate(13deg) !important;
+  transform-origin: center center !important;
+  z-index: 8 !important;
+}
+[data-mode='notebook'] .prop[src*='folder'] {
+  display: block !important;
+  left: 63.537% !important; top: 7.653% !important;
+  width: 9.574% !important; height: 15.444% !important;
+  transform: rotate(12deg) !important;
+  transform-origin: center center !important;
+  z-index: 6 !important;
+}
+[data-mode='notebook'] .prop[src*='clipping'] { display: none !important; }
+[data-mode='notebook'] .palette,
+[data-mode='notebook'] .prop-label { display: none !important; }
+[data-mode='notebook'] .lily--bl {
+  left: -2.997% !important; top: 27.482% !important;
+  right: auto !important; bottom: auto !important;
+  width: 27.248% !important; height: 78.692% !important;
+  transform: none !important; z-index: 1 !important;
+}
+[data-mode='notebook'] .lily--tr {
+  left: 79.768% !important; top: -7.022% !important;
+  right: auto !important; bottom: auto !important;
+  width: 24.251% !important; height: 38.862% !important;
+  transform: none !important; z-index: 1 !important;
+}
+[data-mode='notebook'] .obj--player {
+  --x: 75.000% !important; --y: 11.985% !important;
+  --w: 15.599% !important; height: 40.194% !important;
+  transform: rotate(0deg) !important;
+  transform-origin: center center !important;
+  z-index: 2 !important;
+}
+[data-mode='notebook'] .obj--share {
+  --x: 19.994% !important; --y: 70.269% !important;
+  --w: 13.078% !important; height: 23.385% !important;
+  transform: rotate(-8deg) !important;
+  transform-origin: center center !important;
+  z-index: 7 !important;
+}
+[data-mode='notebook'] .hero__lockup {
+  left: 0 !important; right: auto !important; top: 0 !important;
+  width: 100% !important; max-width: none !important;
+  height: 100% !important;
+}
+[data-mode='notebook'] .hero__name {
+  position: absolute !important;
+  left: 50.000% !important; top: 39.831% !important;
+  right: auto !important; bottom: auto !important; margin: 0 !important;
+  width: max-content !important; max-width: 92vw !important;
+  white-space: nowrap !important; text-align: center !important;
+  transform: translateX(-50%) !important;
+}
+[data-mode='notebook'] .hero__role {
+  position: absolute !important;
+  left: 50.000% !important; top: 49.395% !important;
+  right: auto !important; bottom: auto !important; margin: 0 !important;
+  width: max-content !important; max-width: 92vw !important;
+  white-space: nowrap !important; text-align: center !important;
+  transform: translateX(-50%) !important;
+}
+[data-mode='notebook'] .hero__sub {
+  position: absolute !important;
+  left: 50.000% !important; top: 52.785% !important;
+  right: auto !important; bottom: auto !important; margin: 0 !important;
+  width: max-content !important; max-width: 92vw !important;
+  white-space: nowrap !important; text-align: center !important;
+  transform: translateX(-50%) !important;
+}
+[data-mode='notebook'] .hero__headline {
+  position: absolute !important;
+  left: 50.000% !important; top: 58.475% !important;
+  right: auto !important; bottom: auto !important; margin: 0 !important;
+  width: 36.785% !important; max-width: 92vw !important;
+  text-align: center !important; transform: translateX(-50%) !important;
+}
+[data-mode='notebook'] .hero__actions {
+  position: absolute !important;
+  left: 50.000% !important; top: 71.308% !important;
+  right: auto !important; bottom: auto !important; margin: 0 !important;
+  width: max-content !important;
+  display: flex !important; justify-content: center !important;
+  transform: translateX(-50%) !important;
+}
+[data-mode='notebook'] .scroll-cue {
+  position: absolute !important;
+  left: 50.000% !important; top: 92.494% !important;
+  right: auto !important; bottom: auto !important; margin: 0 !important;
+  width: max-content !important; text-align: center !important;
+  transform: translateX(-50%) !important;
+}
+
+
+/* --------------------------------------------------------------------------
+   Hover lift on hero objects
+   Every prop, card and the palette scales up slightly on hover and settles
+   back. The scale is layered on top of each item's own rotation via a
+   --hover-scale custom property, so a hovered object keeps its tilt.
+
+   Props are pointer-events:none by default (they must not block drags), so
+   they opt in here. Gated on prefers-reduced-motion.
+   -------------------------------------------------------------------------- */
+@media (prefers-reduced-motion: no-preference) {
+  .js .stage .prop,
+  .js .stage .obj,
+  .js .stage .palette {
+    transition: transform 0.32s cubic-bezier(0.2, 0.7, 0.3, 1),
+                filter 0.32s cubic-bezier(0.2, 0.7, 0.3, 1);
+  }
+  .js .stage .prop { pointer-events: auto; }
+
+  /* .is-hovered is set by js/script.js, which recomposes the transform so the
+     item's authored rotation is preserved while it scales. */
+  .js .stage .prop.is-hovered,
+  .js .stage .palette.is-hovered {
+    filter: drop-shadow(0 10px 20px rgba(28, 55, 90, 0.22));
+  }
+  .js .stage .obj.is-hovered {
+    box-shadow: var(--shadow-card-hover);
+  }
+}
+
+/* A hovered card must never be trapped under a neighbour */
+.stage .obj.is-hovered,
+.stage .prop.is-hovered { z-index: 40 !important; }
+
+
+/* --------------------------------------------------------------------------
+   Hover-interaction exclusions
+
+   A rotated prop still has an axis-aligned bounding box, so a long thin object
+   like the pen claims a large invisible rectangle. That rectangle was sitting
+   over the mode toggle and swallowing clicks. The notebook page is worse: it
+   covers most of the stage.
+
+   Both are decorative, so they opt out of pointer events entirely. Everything
+   else keeps its hover lift.
+   -------------------------------------------------------------------------- */
+.js .stage .prop[src*='notebook-page'],
+.js .stage .prop[src*='pen'] {
+  pointer-events: none !important;
+}
+
+/* The mode toggle must always win the hit test, whatever is drawn over it. */
+.hero__actions { z-index: 60 !important; }
+.hero__actions .modes,
+.hero__actions button { pointer-events: auto !important; }
+
+/* --------------------------------------------------------------------------
+   Player: play / pause control
+   -------------------------------------------------------------------------- */
+.player__play {
+  display: block;
+  width: 30px;
+  height: 30px;
+  margin: 0 auto 6px;
+  padding: 0;
+  border: 1px solid var(--line-strong);
+  border-radius: 50%;
+  background: var(--bg-raised);
+  color: var(--ink);
+  cursor: pointer;
+  transition: background var(--dur) var(--ease), border-color var(--dur) var(--ease);
+}
+.player__play:hover {
+  background: var(--accent-deep);
+  border-color: var(--accent-deep);
+}
+
+/* The glyph itself is swapped by js/hero-hover.js: U+25B6 play, U+23F8 pause. */
+.player__icon {
+  display: grid;
+  place-items: center;
+  width: 100%;
+  height: 100%;
+  font-size: 12px;
+  line-height: 1;
+  /* Keep the two glyphs optically centred: the play triangle reads left-heavy */
+  padding-left: 1px;
+}
+.player__play[aria-pressed='true'] .player__icon { padding-left: 0; }
+.player__play:hover .player__icon { color: #fff; }
 
 @media print {
   .site-header, .stage, .strip, .nav-toggle, .prop, .modes { display: none !important; }

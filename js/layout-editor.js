@@ -1,34 +1,34 @@
 /* ==========================================================================
-   Layout editor — a dev-only tool for positioning hero props by hand.
+   Layout editor — dev-only. Enable with ?edit=1; never loaded otherwise.
 
-   Enable with ?edit=1 in the URL. It is never loaded otherwise, so it cannot
-   affect the real site.
+     drag          move
+     wheel         resize (prop) / font size (text)
+     R / E         rotate
+     [ / ]         layer back / forward
+     H             hide
+     arrows        nudge 1px (Shift = 10)
+     D             dump layout (panel + clipboard + console)
+     X             reload, discarding changes
 
-   Controls (hover a prop, then):
-     drag             move it
-     scroll wheel     resize (hold Shift for fine steps)
-     R / E            rotate  (R = clockwise, E = anticlockwise)
-     [ / ]            send backward / bring forward
-     H                hide / show it
-     arrow keys       nudge 1px (hold Shift for 10px)
-
-   Global:
-     D                dump CSS for the current mode to the panel + clipboard
-     X                reset everything to the stylesheet values
-
-   The dump is expressed in the same percentage units the stylesheet uses
-   (% of a 1440x900 stage), so it pastes straight back in.
+   Design note: nothing is re-parented and no element's CSS position is
+   rewritten. Everything moves by a translate() delta layered on top of its
+   existing transform. That keeps the production layout — which differs per
+   view mode and relies on percentage offsets inside auto-height parents —
+   exactly as authored, and makes the editor safe to run in any mode.
    ========================================================================== */
 (function () {
   'use strict';
 
   if (!/[?&]edit=1/.test(location.search)) return;
 
-  var W = 1440, H = 900;              // reference stage box for percentages
-  var stage, panel, current = null;
-  var state = {};                     // key -> {x,y,w,h,r,z,hidden}
+  var SEL = '.prop, .obj, .palette, .prop-label, .lily,' +
+            '.hero__name, .hero__role, .hero__sub, .hero__headline,' +
+            '.hero__actions, .scroll-cue';
 
-  /* ---------- helpers ---------- */
+  var stage, panel, current = null;
+  var state = {};   // key -> {dx, dy, rot, z, scale, fs, hidden, el, isText}
+
+  /* ---------- identity ---------- */
   function keyOf(el) {
     if (el.classList.contains('prop')) {
       return (el.getAttribute('src') || '').split('/').pop().replace('.webp', '');
@@ -36,38 +36,35 @@
     if (el.classList.contains('obj')) {
       return (el.className.match(/obj--(\w+)/) || [])[1] || 'obj';
     }
-    if (el.classList.contains('palette')) return 'palette';
-    if (el.classList.contains('prop-label')) return 'prop-label';
     if (el.classList.contains('lily')) {
       return el.classList.contains('lily--bl') ? 'lily-bl' : 'lily-tr';
     }
+    if (el.classList.contains('palette')) return 'palette';
+    if (el.classList.contains('prop-label')) return 'prop-label';
+    if (el.classList.contains('hero__name')) return 'text-name';
+    if (el.classList.contains('hero__role')) return 'text-role';
+    if (el.classList.contains('hero__sub')) return 'text-sub';
+    if (el.classList.contains('hero__headline')) return 'text-headline';
+    if (el.classList.contains('hero__actions')) return 'text-modes';
+    if (el.classList.contains('scroll-cue')) return 'scroll-cue';
     return el.tagName.toLowerCase();
   }
 
-  function targets() {
-    return stage.querySelectorAll('.prop, .obj, .palette, .prop-label, .lily');
+  function isTextEl(el) {
+    return /hero__(name|role|sub|headline|actions)|scroll-cue/.test(el.className || '');
   }
 
   function read(el) {
     var k = keyOf(el);
     if (state[k]) return state[k];
-    var s = stage.getBoundingClientRect();
-    var r = el.getBoundingClientRect();
     var cs = getComputedStyle(el);
-    var rot = 0;
-    var m = cs.transform && cs.transform.match(/matrix\(([^)]+)\)/);
-    if (m) {
-      var p = m[1].split(',').map(Number);
-      rot = Math.round(Math.atan2(p[1], p[0]) * 180 / Math.PI);
-    }
     state[k] = {
-      x: (r.left - s.left) / s.width * W,
-      y: (r.top - s.top) / s.height * H,
-      w: r.width / s.width * W,
-      h: r.height / s.height * H,
-      r: rot,
-      z: parseInt(cs.zIndex, 10) || 1,
+      dx: 0, dy: 0, rot: 0, scale: 1,
+      z: parseInt(cs.zIndex, 10) || 0,
+      fs: parseFloat(cs.fontSize) || 16,
+      baseFs: parseFloat(cs.fontSize) || 16,
       hidden: false,
+      isText: isTextEl(el),
       el: el
     };
     return state[k];
@@ -75,153 +72,199 @@
 
   function apply(el) {
     var st = read(el);
-    el.style.setProperty('left', (st.x / W * 100).toFixed(3) + '%', 'important');
-    el.style.setProperty('top', (st.y / H * 100).toFixed(3) + '%', 'important');
-    el.style.setProperty('width', (st.w / W * 100).toFixed(3) + '%', 'important');
-    if (!el.classList.contains('prop-label') && !el.classList.contains('palette')) {
-      el.style.setProperty('height', (st.h / H * 100).toFixed(3) + '%', 'important');
+    var t = 'translate(' + Math.round(st.dx) + 'px,' + Math.round(st.dy) + 'px)';
+    if (st.rot) t += ' rotate(' + st.rot + 'deg)';
+    if (st.scale !== 1) t += ' scale(' + st.scale.toFixed(3) + ')';
+    el.style.setProperty('transform', t, 'important');
+    el.style.setProperty('transform-origin', 'center center', 'important');
+    if (st.z) el.style.setProperty('z-index', st.z, 'important');
+    if (st.isText && st.fs !== st.baseFs) {
+      el.style.setProperty('font-size', st.fs.toFixed(1) + 'px', 'important');
     }
-    el.style.setProperty('transform', 'rotate(' + st.r + 'deg)', 'important');
-    el.style.setProperty('z-index', st.z, 'important');
-    el.style.setProperty('display', st.hidden ? 'none' : '', 'important');
     if (st.hidden) el.style.setProperty('display', 'none', 'important');
+    else el.style.removeProperty('display');
     info();
   }
 
   /* ---------- panel ---------- */
-  function mkPanel() {
-    panel = document.createElement('div');
-    panel.style.cssText = [
-      'position:fixed', 'right:12px', 'bottom:12px', 'z-index:99999',
-      'width:400px', 'max-height:62vh', 'overflow:auto',
-      'background:rgba(12,22,38,0.94)', 'color:#dbe8f5',
-      'font:11px/1.5 ui-monospace,Menlo,monospace',
-      'padding:12px 14px', 'border-radius:10px',
-      'box-shadow:0 8px 30px rgba(0,0,0,.35)', 'white-space:pre-wrap'
-    ].join(';');
-    document.body.appendChild(panel);
-  }
-
   function info(msg) {
-    var mode = document.documentElement.getAttribute('data-mode');
-    var sel = current ? keyOf(current) : '(hover a prop)';
+    if (!panel) return;
     var st = current ? read(current) : null;
+    var r = current ? current.getBoundingClientRect() : null;
+    var s = stage.getBoundingClientRect();
     panel.textContent =
-      'LAYOUT EDITOR  mode=' + mode + '\n' +
-      'selected: ' + sel + '\n' +
-      (st ? ('  x=' + st.x.toFixed(0) + ' y=' + st.y.toFixed(0) +
-             '  w=' + st.w.toFixed(0) + ' h=' + st.h.toFixed(0) +
-             '  rot=' + st.r + ' z=' + st.z + (st.hidden ? ' HIDDEN' : '') + '\n') : '') +
-      '\ndrag=move  wheel=size  R/E=rotate  [ ]=z  H=hide\n' +
-      'arrows=nudge (shift=10)   D=dump CSS   X=reset\n' +
+      'LAYOUT EDITOR   mode=' + document.documentElement.getAttribute('data-mode') + '\n' +
+      'selected: ' + (current ? keyOf(current) : '(hover something)') + '\n' +
+      (st ? ('  move ' + Math.round(st.dx) + ',' + Math.round(st.dy) +
+             '   rot ' + st.rot + '   z ' + st.z +
+             (st.isText ? '   fs ' + st.fs.toFixed(0) : '   scale ' + st.scale.toFixed(2)) +
+             (st.hidden ? '   HIDDEN' : '') + '\n' +
+             '  on screen  x=' + Math.round(r.left - s.left) + ' y=' + Math.round(r.top - s.top) +
+             ' w=' + Math.round(r.width) + ' h=' + Math.round(r.height) + '\n') : '') +
+      '\ndrag=move  wheel=size  R/E=rotate  [ ]=layer  H=hide\n' +
+      'arrows=nudge (shift 10)   D=dump   X=reset\n' +
       (msg ? '\n' + msg : '');
   }
 
   /* ---------- dump ---------- */
   function dump() {
+    var s = stage.getBoundingClientRect();
     var mode = document.documentElement.getAttribute('data-mode');
-    var lines = ['/* ---- ' + mode + ' mode: hand-placed layout ---- */'];
-    Object.keys(state).forEach(function (k) {
+    var lines = ['/* ---- ' + mode + ' mode ---- */'];
+    stage.querySelectorAll(SEL).forEach(function (el) {
+      var k = keyOf(el);
       var st = state[k];
-      if (st.hidden) {
-        lines.push('HIDE ' + k);
-        return;
+      if (st && st.hidden) { lines.push('HIDE ' + k); return; }
+      var r = el.getBoundingClientRect();
+      if (r.width < 2) return;
+      var row = k + ':  x=' + Math.round(r.left - s.left) +
+                ' y=' + Math.round(r.top - s.top) +
+                ' w=' + Math.round(r.width) + ' h=' + Math.round(r.height);
+      if (st) {
+        if (st.rot) row += ' rot=' + st.rot;
+        if (st.z) row += ' z=' + st.z;
+        if (st.isText && st.fs !== st.baseFs) row += ' fs=' + st.fs.toFixed(0);
       }
-      lines.push(
-        k + ':  x=' + st.x.toFixed(0) + ' y=' + st.y.toFixed(0) +
-        ' w=' + st.w.toFixed(0) + ' h=' + st.h.toFixed(0) +
-        ' rot=' + st.r + ' z=' + st.z +
-        '   /* ' + (st.x / W * 100).toFixed(2) + '% ' + (st.y / H * 100).toFixed(2) + '% ' +
-        (st.w / W * 100).toFixed(2) + '% ' + (st.h / H * 100).toFixed(2) + '% */'
-      );
+      row += '   /* ' + ((r.left - s.left) / s.width * 100).toFixed(2) + '% ' +
+             ((r.top - s.top) / s.height * 100).toFixed(2) + '% ' +
+             (r.width / s.width * 100).toFixed(2) + '% ' +
+             (r.height / s.height * 100).toFixed(2) + '% */';
+      lines.push(row);
     });
     var out = lines.join('\n');
-    panel.textContent = out + '\n\n(copied to clipboard — paste this back to Claude)';
-    try { navigator.clipboard.writeText(out); } catch (e) {}
+    panel.textContent = out + '\n\n(copied — paste back to Claude)';
     console.log(out);
+    try { navigator.clipboard.writeText(out); } catch (e) {}
   }
 
-  /* ---------- interaction ---------- */
+  /* ---------- hit testing ---------- */
+  /* Prefer the topmost editable element the pointer is genuinely over. Text
+     boxes can be wider than their glyphs (centred/right-aligned inside a
+     column), so only claim one when the pointer is on an actual text line. */
+  function overGlyphs(el, x, y) {
+    var range = document.createRange();
+    for (var i = 0; i < el.childNodes.length; i++) {
+      var n = el.childNodes[i];
+      try {
+        if (n.nodeType === 3) range.selectNodeContents(n);
+        else if (n.nodeType === 1) range.selectNode(n);
+        else continue;
+      } catch (e) { continue; }
+      var rects = range.getClientRects();
+      for (var j = 0; j < rects.length; j++) {
+        var r = rects[j];
+        if (x >= r.left - 6 && x <= r.right + 6 && y >= r.top - 6 && y <= r.bottom + 6) return true;
+      }
+    }
+    return false;
+  }
+
+  function pick(e) {
+    var stack = document.elementsFromPoint(e.clientX, e.clientY);
+    var fallback = null;
+    for (var i = 0; i < stack.length; i++) {
+      var c = stack[i].closest && stack[i].closest(SEL);
+      if (!c || !stage.contains(c)) continue;
+      if (isTextEl(c)) {
+        if (c.classList.contains('hero__actions') || overGlyphs(c, e.clientX, e.clientY)) return c;
+        continue;
+      }
+      if (!fallback) fallback = c;
+    }
+    return fallback;
+  }
+
+  /* ---------- init ---------- */
   function init() {
     stage = document.querySelector('.stage');
     if (!stage) return;
-    mkPanel();
-    info();
 
-    var els = targets();
-    for (var i = 0; i < els.length; i++) {
-      els[i].style.pointerEvents = 'auto';
-      els[i].style.cursor = 'grab';
-    }
+    panel = document.createElement('div');
+    panel.style.cssText = 'position:fixed;right:12px;bottom:12px;z-index:99999;' +
+      'width:400px;max-height:60vh;overflow:auto;background:rgba(12,22,38,.94);' +
+      'color:#dbe8f5;font:11px/1.55 ui-monospace,Menlo,monospace;padding:12px 14px;' +
+      'border-radius:10px;box-shadow:0 8px 30px rgba(0,0,0,.35);white-space:pre-wrap';
+    document.body.appendChild(panel);
 
-    var dragging = null, sx = 0, sy = 0, ox = 0, oy = 0;
+    // Production sets pointer-events:none on the lockup so drags reach props
+    // underneath. In edit mode its children must be grabbable; pick() still
+    // lets the pointer fall through the empty gutters to the props below.
+    var lockup = stage.querySelector('.hero__lockup');
+    if (lockup) lockup.style.setProperty('pointer-events', 'auto', 'important');
+    stage.querySelectorAll(SEL).forEach(function (el) {
+      el.style.setProperty('pointer-events', 'auto', 'important');
+      el.style.cursor = 'grab';
+    });
 
-    stage.addEventListener('pointerover', function (e) {
-      var t = e.target.closest('.prop, .obj, .palette, .prop-label, .lily');
-      if (t) { current = t; info(); }
+    var drag = null, sx = 0, sy = 0, ox = 0, oy = 0;
+
+    stage.addEventListener('pointermove', function (e) {
+      if (drag) {
+        var st = read(drag);
+        st.dx = ox + (e.clientX - sx);
+        st.dy = oy + (e.clientY - sy);
+        apply(drag);
+        return;
+      }
+      var t = pick(e);
+      if (t && t !== current) { current = t; info(); }
     });
 
     stage.addEventListener('pointerdown', function (e) {
-      var t = e.target.closest('.prop, .obj, .palette, .prop-label, .lily');
+      if (e.target.closest('button, a')) return;   // keep real controls usable
+      var t = pick(e);
       if (!t) return;
       e.preventDefault();
-      current = t; dragging = t;
+      current = t;
+      drag = t;
       var st = read(t);
-      sx = e.clientX; sy = e.clientY; ox = st.x; oy = st.y;
-      t.setPointerCapture(e.pointerId);
+      sx = e.clientX; sy = e.clientY; ox = st.dx; oy = st.dy;
       t.style.cursor = 'grabbing';
+      try { t.setPointerCapture(e.pointerId); } catch (err) {}
+      info();
     });
 
-    stage.addEventListener('pointermove', function (e) {
-      if (!dragging) return;
-      var s = stage.getBoundingClientRect();
-      var st = read(dragging);
-      st.x = ox + (e.clientX - sx) / s.width * W;
-      st.y = oy + (e.clientY - sy) / s.height * H;
-      apply(dragging);
-    });
-
-    function endDrag(e) {
-      if (!dragging) return;
-      dragging.style.cursor = 'grab';
-      dragging = null;
+    function stop() {
+      if (!drag) return;
+      drag.style.cursor = 'grab';
+      drag = null;
     }
-    stage.addEventListener('pointerup', endDrag);
-    stage.addEventListener('pointercancel', endDrag);
+    stage.addEventListener('pointerup', stop);
+    stage.addEventListener('pointercancel', stop);
 
     stage.addEventListener('wheel', function (e) {
       if (!current) return;
       e.preventDefault();
       var st = read(current);
-      var step = e.shiftKey ? 0.4 : 2.0;
-      var d = e.deltaY < 0 ? step : -step;
-      var ratio = st.h / st.w;
-      st.w = Math.max(8, st.w + d);
-      st.h = Math.max(8, st.w * ratio);
+      var d = (e.deltaY < 0 ? 1 : -1) * (e.shiftKey ? 0.25 : 1);
+      if (st.isText) st.fs = Math.max(8, st.fs + d);
+      else st.scale = Math.max(0.1, st.scale + d * 0.03);
       apply(current);
     }, { passive: false });
 
     document.addEventListener('keydown', function (e) {
       if (e.key === 'd' || e.key === 'D') { dump(); return; }
-      if (e.key === 'x' || e.key === 'X') { state = {}; location.reload(); return; }
+      if (e.key === 'x' || e.key === 'X') { location.reload(); return; }
       if (!current) return;
       var st = read(current);
       var big = e.shiftKey ? 10 : 1;
       switch (e.key) {
-        case 'r': case 'R': st.r += e.shiftKey ? 5 : 1; break;
-        case 'e': case 'E': st.r -= e.shiftKey ? 5 : 1; break;
-        case '[': st.z = Math.max(0, st.z - 1); break;
+        case 'r': case 'R': st.rot += e.shiftKey ? 5 : 1; break;
+        case 'e': case 'E': st.rot -= e.shiftKey ? 5 : 1; break;
+        case '[': st.z -= 1; break;
         case ']': st.z += 1; break;
         case 'h': case 'H': st.hidden = !st.hidden; break;
-        case 'ArrowLeft':  st.x -= big; break;
-        case 'ArrowRight': st.x += big; break;
-        case 'ArrowUp':    st.y -= big; break;
-        case 'ArrowDown':  st.y += big; break;
+        case 'ArrowLeft':  st.dx -= big; break;
+        case 'ArrowRight': st.dx += big; break;
+        case 'ArrowUp':    st.dy -= big; break;
+        case 'ArrowDown':  st.dy += big; break;
         default: return;
       }
       e.preventDefault();
       apply(current);
     });
+
+    info();
   }
 
   if (document.readyState === 'loading') {

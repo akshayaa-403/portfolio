@@ -139,17 +139,26 @@
 
       <!-- ---------- RIGHT CLUSTER ---------- -->
 
+
+      <!-- Hover-to-play track for the music card. Drop an mp3 at
+           public/assets/audio/track.mp3; until then the card simply stays
+           silent (play() rejects harmlessly). -->
+      <audio id="hero-audio" preload="metadata" loop
+             src="public/assets/audio/track.mp3"></audio>
       <!-- Music player: a real card, with the vinyl spinning inside it -->
       <article class="obj obj--player" tabindex="0"
                style="--x:80.0%; --y:6.5%; --w:15.6%; --r:2deg; --z:6;">
         <div class="player__disc" aria-hidden="true">
           <img src="public/assets/props/vinyl.webp" alt="" width="760" height="760">
         </div>
-        <p class="player__eq" aria-hidden="true">|·|</p>
-        <p class="obj__meta player__artist">Deep Focus</p>
-        <p class="obj__title player__track">while the model trains</p>
+        <button class="player__play" type="button" id="player-play"
+                aria-label="Play track" aria-pressed="false">
+          <span class="player__icon" aria-hidden="true">▶</span>
+        </button>
+        <p class="obj__meta player__artist">Miles Davis Quartet</p>
+        <p class="obj__title player__track">Old Devil Moon</p>
         <div class="player__bar" aria-hidden="true"><span></span></div>
-        <div class="player__times" aria-hidden="true"><span>1:16</span><span>/ 3:32</span></div>
+        <div class="player__times" aria-hidden="true"><span id="player-time">0:00</span><span>/ 3:31</span></div>
       </article>
 
       <img class="prop" src="public/assets/props/folder.webp" alt="" aria-hidden="true" width="760" height="644"
@@ -185,7 +194,7 @@
         </span>
       </div>
 
-      <p class="scroll-cue" aria-hidden="true">⌄</p>
+      <p class="scroll-cue" aria-hidden="true">SKILLS</p>
     </div>
   </section>
 
@@ -301,6 +310,7 @@
 <script src="js/theme.js"></script>
 <script src="js/modes.js"></script>
 <script src="js/squiggle.js"></script>
+<script src="js/hero-hover.js"></script>
 <!-- Dev-only layout editor: loaded solely when ?edit=1 is in the URL, so it
      never ships behaviour to real visitors. -->
 <script>
