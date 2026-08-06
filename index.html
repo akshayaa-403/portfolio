@@ -27,7 +27,8 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Caveat:wght@500;600&display=swap">
 <link rel="stylesheet" href="css/style.css">
 
-<!-- No-FOUC: mark JS available and apply the saved view mode before first paint -->
+<!-- No-FOUC: mark JS available and apply the saved view mode + theme before
+     first paint. Must stay in sync with js/theme.js. -->
 <script>
 (function () {
   var r = document.documentElement;
@@ -38,6 +39,14 @@
     if (s === 'notebook' || s === 'clean' || s === 'chaos') m = s;
   } catch (e) {}
   r.setAttribute('data-mode', m);
+
+  var t = null;
+  try { t = localStorage.getItem('theme'); } catch (e) {}
+  if (t !== 'dark' && t !== 'light') {
+    t = (window.matchMedia &&
+         window.matchMedia('(prefers-color-scheme: dark)').matches) ? 'dark' : 'light';
+  }
+  if (t === 'dark') r.setAttribute('data-theme', 'dark');
 })();
 </script>
 
@@ -116,8 +125,22 @@
            style="--x:-6.000%; --y:24.000%; --w:54.514%; --h:80.889%; --z:1; --cl:1; --clx:-8.000%; --cly:33.000%; --clw:41.000%; --clh:56.000%; --nb:1; --nbx:23.403%; --nby:0.778%; --nbw:53.194%; --nbh:77.222%; --r:-7deg;">
       <img class="prop" src="public/assets/props/clipping.webp" alt="" aria-hidden="true" width="543" height="760"
            style="--x:9.500%; --y:9.000%; --w:17.083%; --h:38.222%; --z:2; --cl:1; --clx:3.472%; --cly:46.111%; --clw:7.292%; --clh:16.333%; --nb:1; --nbx:25.347%; --nby:41.222%; --nbw:7.292%; --nbh:16.333%; --r:-4deg;">
-      <img class="prop" src="public/assets/props/lamp.webp" alt="" aria-hidden="true" width="354" height="743"
-           style="--x:1.200%; --y:3.000%; --w:23.819%; --h:50.778%; --z:4; --cl:1; --clx:-1.458%; --cly:-1.111%; --clw:16.597%; --clh:35.444%; --nb:1; --nbx:37.431%; --nby:19.556%; --nbw:16.667%; --nbh:35.556%; --r:2deg;">
+      <!-- The glow is a prop in its own right, positioned independently of the
+           lamp. It is lit whenever the dark theme is on (and previewed on
+           hover), and sits just below the lamp in the stacking order so the
+           shade covers its top edge. Coordinates are per-mode like every
+           other prop. -->
+      <img class="prop prop--glow" data-prop="lamp-glow" src="public/assets/props/lamp-light.webp"
+           alt="" aria-hidden="true" width="600" height="599"
+           style="--x:15.483%; --y:49.687%; --w:15.637%; --h:25.018%; --z:3; --cl:1; --clx:33.476%; --cly:66.942%; --clw:8.590%; --clh:13.745%; --nb:1; --nbx:73.297%; --nby:54.409%; --nbw:10.244%; --nbh:16.390%; --r:0deg;">
+      <!-- The lamp switches the colour theme: lit lamp = dark room. It is a
+           real <button> so it is reachable by keyboard and announces its
+           state; the artwork inside stays decorative. -->
+      <button class="prop prop--lamp-btn" data-prop="lamp" type="button"
+              aria-pressed="false" aria-label="Turn on the lamp (dark theme)"
+              style="--x:1.200%; --y:3.000%; --w:23.819%; --h:50.778%; --z:4; --cl:1; --clx:-1.458%; --cly:-1.111%; --clw:16.597%; --clh:35.444%; --nb:1; --nbx:37.431%; --nby:19.556%; --nbw:16.667%; --nbh:35.556%; --r:2deg;">
+        <img src="public/assets/props/lamp.webp" alt="" aria-hidden="true" width="354" height="743">
+      </button>
       <img class="prop" src="public/assets/props/film.webp" alt="" aria-hidden="true" width="299" height="308"
            style="--x:2.000%; --y:57.000%; --w:14.931%; --h:23.556%; --z:5; --cl:1; --clx:12.153%; --cly:21.111%; --clw:9.583%; --clh:15.000%; --nb:0; --r:11deg;">
       <img class="prop" src="public/assets/props/dreams.webp" alt="" aria-hidden="true" width="687" height="536"
@@ -194,21 +217,27 @@
         </span>
       </div>
 
-      <p class="scroll-cue" aria-hidden="true">SKILLS</p>
     </div>
   </section>
 
-  <!-- ===================== Marquee ===================== -->
-  <div class="strip" aria-hidden="true">
-    <div class="strip__track">
-      <span>Python</span><span>SQL</span><span>PyTorch</span><span>LangChain</span>
-      <span>Streamlit</span><span>Pandas</span><span>OpenCV</span><span>Docker</span>
-      <span>TypeScript</span><span>Next.js</span><span>Azure</span><span>Power BI</span>
-      <span>Python</span><span>SQL</span><span>PyTorch</span><span>LangChain</span>
-      <span>Streamlit</span><span>Pandas</span><span>OpenCV</span><span>Docker</span>
-      <span>TypeScript</span><span>Next.js</span><span>Azure</span><span>Power BI</span>
+  <!-- ===================== Skills marquee =====================
+       Drag horizontally to scrub through the list; it resumes drifting on
+       release. The heading sits outside the hero so it reads as a section
+       label rather than a floating scroll cue.
+  -->
+  <section class="strip-section" aria-labelledby="skills-h">
+    <h2 class="strip__heading" id="skills-h">Skills</h2>
+    <div class="strip" data-marquee>
+      <div class="strip__track" aria-hidden="true">
+        <span>Python</span><span>SQL</span><span>PyTorch</span><span>LangChain</span>
+        <span>Streamlit</span><span>Pandas</span><span>OpenCV</span><span>Docker</span>
+        <span>TypeScript</span><span>Next.js</span><span>Azure</span><span>Power BI</span>
+        <span>Python</span><span>SQL</span><span>PyTorch</span><span>LangChain</span>
+        <span>Streamlit</span><span>Pandas</span><span>OpenCV</span><span>Docker</span>
+        <span>TypeScript</span><span>Next.js</span><span>Azure</span><span>Power BI</span>
+      </div>
     </div>
-  </div>
+  </section>
 
   <!-- ===================== Work =====================
        Two sections, as on the reference: a narrow "Recently Made" column and a
@@ -296,7 +325,7 @@
 
 <footer class="site-footer">
   <div class="site-footer__inner">
-    <p style="margin:0;">© <span data-year>2026</span> Akshayaa Kashyap · built by hand, no framework</p>
+    <p style="margin:0;">© <span data-year>2026</span> Akshayaa Kashyap</p>
     <nav aria-label="Footer">
       <a href="https://github.com/akshayaa-403" target="_blank" rel="noopener">GitHub</a>
       <a href="https://linkedin.com/in/akshayaa-kashyap" target="_blank" rel="noopener">LinkedIn</a>
@@ -311,6 +340,7 @@
 <script src="js/modes.js"></script>
 <script src="js/squiggle.js"></script>
 <script src="js/hero-hover.js"></script>
+<script src="js/marquee.js"></script>
 <!-- Dev-only layout editor: loaded solely when ?edit=1 is in the URL, so it
      never ships behaviour to real visitors. -->
 <script>

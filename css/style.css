@@ -80,6 +80,115 @@
 }
 
 /* --------------------------------------------------------------------------
+   1a. Dark theme
+
+   Switched by the hero lamp: lamp lit = dark room. Set as data-theme="dark" on
+   <html> by js/theme.js, which also persists the choice and honours the OS
+   preference on a first visit.
+
+   Same navy family as the light theme, inverted: the deep navy that was ink
+   becomes the ground, and the pale blues that were decorative become text.
+   Every value here is checked against its background for WCAG AA — the ratios
+   in the comments are measured, not estimated.
+   -------------------------------------------------------------------------- */
+:root[data-theme='dark'] {
+  /* Ground — deep navy, never pure black */
+  --bg: #0c1620;
+  --bg-raised: #16232f;
+  --bg-sunken: #091220;
+  --surface: #16232f;
+  --surface-muted: #22323f;
+
+  /* Ink — pale blues on navy */
+  --ink: #eaf1f8;         /* 15.8:1 on --bg */
+  --ink-body: #d5e2ee;    /* 12.8:1 */
+  --ink-soft: #b3c6d8;    /*  8.9:1 */
+  --ink-muted: #93a9bd;   /*  6.3:1 */
+  --ink-faint: #7a8fa4;   /*  4.6:1 — decorative meta only */
+
+  /* Accent — the light theme's blues are far too dark to read on navy, so the
+     pale end of the same ramp carries the accent role here. */
+  --accent: #7db8e8;
+  --accent-ink: #9ccbf2;      /* 8.4:1 on --bg — safe for text */
+  --accent-deep: #b2d5e7;
+  --accent-hover: #cfe6f5;
+  --accent-pale: #1d3a52;     /* decorative fills flip dark */
+  --accent-mid: #2d5878;
+  --accent-tint: rgba(125, 184, 232, 0.12);
+  --accent-tint-strong: rgba(125, 184, 232, 0.24);
+  --link: #9ccbf2;
+  --highlight: #4a4320;       /* muted gold, legible under --ink */
+
+  /* Lines — light on dark, slightly stronger to survive the darker ground */
+  --line: rgba(210, 228, 245, 0.16);
+  --line-strong: rgba(210, 228, 245, 0.32);
+
+  /* Shadows read as depth only if they are darker than the ground */
+  --shadow-card: 0 2px 10px 1px rgba(0, 0, 0, 0.44);
+  --shadow-card-hover: 0 10px 28px 2px rgba(0, 0, 0, 0.55);
+  --shadow-sticker: 5.32px 5.32px 10px rgba(0, 0, 0, 0.42);
+  --shadow-lamp: 0 1px 30px 15px rgba(125, 184, 232, 0.30);
+
+  --header-bg: rgba(12, 22, 32, 0.85);
+  /* Text drawn ON --accent-deep, which is a pale blue here — so it must be
+     dark, not the white the light theme uses. 11.4:1 on #b2d5e7. */
+  --on-accent-deep: #0c1620;
+
+  color-scheme: dark;
+}
+
+/* Notebook mode warms the paper in the light theme. In the dark theme that
+   would put a cream page back on screen, so the warm override is itself
+   overridden — a dim, slightly warm navy stands in for lamplit paper. */
+:root[data-theme='dark'][data-mode='notebook'] {
+  --bg: #12191c;
+  --bg-raised: #1c2529;
+  --bg-sunken: #0d1315;
+  --surface: #1c2529;
+}
+
+/* The hero props are photographs lit for a bright room; at full brightness on
+   a dark ground they glare. Dim and cool them so they read as objects sitting
+   in the same low light as everything else. Set as a variable so the hover
+   rule can compose its drop-shadow on top rather than overwrite it. The glow
+   is exempt — it is the light source — as are the lilies, already faint. */
+:root[data-theme='dark'] {
+  --prop-filter: brightness(0.78) saturate(0.9) contrast(1.02);
+  --prop-shadow: rgba(0, 0, 0, 0.5);
+}
+/* Applied via the same --prop-filter variable the hover rule composes with,
+   so the two never fight over the `filter` property. The selector is kept at
+   the same specificity as the hover rule and appears earlier, so hover wins. */
+:root[data-theme='dark'] .stage .prop,
+:root[data-theme='dark'] .stage .palette {
+  filter: var(--prop-filter);
+}
+/* The glow is the light source and must not be dimmed. */
+:root[data-theme='dark'] .stage .prop--glow {
+  --prop-filter: none;
+}
+/* The lamp itself stays brighter — it is switched on. */
+:root[data-theme='dark'] .prop--lamp-btn {
+  --prop-filter: brightness(0.94) saturate(0.95);
+}
+
+/* In notebook mode the hero lockup sits ON the paper prop, which stays a light
+   photograph whatever the theme. Pale-on-navy text would be pale-on-paper
+   there and unreadable, so the lockup keeps dark ink over that page. The
+   notebook page is dimmed further than the other props to soften the contrast
+   between a bright sheet and the dark room around it. */
+:root[data-theme='dark'][data-mode='notebook'] .prop[src*='notebook-page'] {
+  --prop-filter: brightness(0.62) saturate(0.85) contrast(1.05);
+}
+:root[data-theme='dark'][data-mode='notebook'] .hero__name,
+:root[data-theme='dark'][data-mode='notebook'] .hero__role,
+:root[data-theme='dark'][data-mode='notebook'] .hero__sub,
+:root[data-theme='dark'][data-mode='notebook'] .hero__headline {
+  color: #f2f6fa;
+  text-shadow: 0 1px 10px rgba(0, 0, 0, 0.75), 0 0 3px rgba(0, 0, 0, 0.6);
+}
+
+/* --------------------------------------------------------------------------
    2. Reset & base
    -------------------------------------------------------------------------- */
 *,
@@ -218,7 +327,8 @@ button { font: inherit; }
   position: sticky;
   top: 0;
   z-index: 100;
-  background: rgba(244, 247, 250, 0.85);
+  /* Translucent copy of the page ground, so it tracks the theme. */
+  background: var(--header-bg, rgba(244, 247, 250, 0.85));
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
   border-bottom: 1px solid transparent;
@@ -462,20 +572,6 @@ button { font: inherit; }
   pointer-events: auto;
 }
 
-/* --- Scroll cue --------------------------------------------------------- */
-.scroll-cue {
-  position: absolute;
-  left: 50%;
-  bottom: 5%;
-  z-index: 8;
-  margin: 0;
-  transform: translateX(-50%);
-  color: var(--ink-muted);
-  font-size: 22px;
-  line-height: 1;
-  pointer-events: none;
-}
-
 /* --- Cards on the stage ------------------------------------------------- */
 .obj {
   position: absolute;
@@ -631,7 +727,7 @@ button { font: inherit; }
    readable rather than becoming a pile of overlaps. */
 @media (max-width: 899.98px) {
   .stage { min-height: 0; padding-bottom: var(--gap-lg); }
-  .prop, .prop-label, .palette, .scroll-cue { display: none; }
+  .prop, .prop-label, .palette { display: none; }
 
   .hero__lockup {
     position: relative;
@@ -654,13 +750,45 @@ button { font: inherit; }
 }
 
 /* --------------------------------------------------------------------------
-   6. Marquee strip
+   6. Skills marquee
+
+   Sits directly below the hero. Drifts on its own and can be dragged
+   horizontally to scrub; see js/marquee.js.
    -------------------------------------------------------------------------- */
+.strip-section {
+  padding: 34px 0 0;
+}
+/* Sits directly under the hero's mode toggle, vertically in line with it.
+   --skills-cx is the toggle's measured centre, written by js/marquee.js on load,
+   mode change and resize; the 50% fallback is correct for chaos and notebook,
+   where the toggle is centred, and is what no-JS visitors get. The word is
+   centred on that point rather than on its own box. */
+.strip-section {
+  --skills-cx: 50%;
+}
+/* Type matches .hero__role so the label reads as part of the hero's voice. */
+.strip__heading {
+  width: max-content;
+  margin: 0 0 12px var(--skills-cx);
+  transform: translateX(-50%);
+  color: var(--ink-body);
+  font-size: 18px;
+  font-weight: 400;
+  line-height: 1.5;
+}
 .strip {
   border-top: 1px solid var(--line);
   border-bottom: 1px solid var(--line);
   background: var(--bg-sunken);
   overflow: hidden;
+}
+/* Only advertise dragging once the JS that implements it is running. */
+.js .strip[data-marquee] {
+  cursor: grab;
+  touch-action: pan-y;      /* let vertical page scroll through; we take x */
+}
+.js .strip[data-marquee].is-dragging {
+  cursor: grabbing;
 }
 .strip__track {
   display: flex;
@@ -670,6 +798,7 @@ button { font: inherit; }
   color: var(--ink-muted);
   font-size: 12px;
   white-space: nowrap;
+  user-select: none;
 }
 .strip__track span { display: inline-flex; align-items: center; gap: 40px; }
 .strip__track span::after {
@@ -1085,8 +1214,7 @@ button { font: inherit; }
   .js .stage .prop,
   .js .stage .prop-label,
   .js .stage .obj,
-  .js .stage .palette,
-  .js .scroll-cue {
+  .js .stage .palette {
     animation: appear 0.62s var(--ease) backwards;
   }
   .js .hero__name     { animation-delay: 0.05s; }
@@ -1102,7 +1230,6 @@ button { font: inherit; }
   .js .stage .obj             { animation-delay: 0.62s; }
   .js .stage .palette         { animation-delay: 0.70s; }
   .js .stage .prop-label      { animation-delay: 0.70s; }
-  .js .scroll-cue             { animation-delay: 1.20s; }
 }
 
 @keyframes appear {
@@ -1196,7 +1323,9 @@ button { font: inherit; }
 .modes button:hover { color: var(--accent); }
 .modes button[aria-pressed='true'] {
   background: var(--accent-deep);
-  color: #fff;
+  /* --on-accent-deep is whatever reads on --accent-deep in the current theme:
+     white on the light theme's navy, dark navy on the dark theme's pale blue. */
+  color: var(--on-accent-deep, #fff);
 }
 
 /* ---------- Per-mode prop arrangements ----------
@@ -1273,7 +1402,7 @@ button { font: inherit; }
 
 /* In notebook mode the notebook page is the top surface and the lamp tucks
    behind it — on the reference the lamp's stem disappears under the page. */
-[data-mode='notebook'] .prop[src*='lamp'] {
+[data-mode='notebook'] .prop[data-prop='lamp'] {
   z-index: 1 !important;
   --nbx: 13.500% !important;   /* clear of the page's left edge */
   --nby: 12.000% !important;
@@ -1324,41 +1453,48 @@ button { font: inherit; }
    reads it too, so the two always span the same distance. Change it once. */
 :root { --player-w: 15.599%; }
 [data-mode='clean'] .prop[src*='notebook-page'] {
-  left: 2.239% !important; top: 10.525% !important;
-  width: 39.323% !important; height: 55.827% !important;
+  /* Rotated 2deg. The dump reports the rotated bounding box (593x482), so the
+     element's own box is solved back from it: 577.2x462.1. */
+  left: 2.242% !important; top: 10.512% !important;
+  width: 39.347% !important; height: 55.881% !important;
   transform: rotate(2deg) !important;
   transform-origin: center center !important;
   z-index: 1 !important;
 }
-[data-mode='clean'] .prop[src*='lamp'] {
-  left: 30.722% !important; top: 65.375% !important;
-  width: 14.101% !important; height: 30.145% !important;
+[data-mode='clean'] .prop--glow {
+  left: 33.610% !important; top: 69.360% !important;
+  width: 8.590% !important; height: 13.740% !important;
+  transform: none !important; z-index: 3 !important;
+}
+[data-mode='clean'] .prop[data-prop='lamp'] {
+  left: 30.860% !important; top: 68.520% !important;
+  width: 14.100% !important; height: 30.140% !important;
   transform: none !important; z-index: 4 !important;
 }
 [data-mode='clean'] .prop[src*='film'] {
-  left: 6.812% !important; top: 73.245% !important;
-  width: 9.605% !important; height: 15.012% !important;
+  left: 6.810% !important; top: 73.240% !important;
+  width: 9.600% !important; height: 15.010% !important;
   transform: none !important; z-index: 5 !important;
 }
 [data-mode='clean'] .prop[src*='dreams'] {
-  left: 18.392% !important; top: 73.123% !important;
-  width: 11.649% !important; height: 14.528% !important;
+  left: 18.390% !important; top: 73.120% !important;
+  width: 11.650% !important; height: 14.530% !important;
   transform: none !important; z-index: 3 !important;
 }
 [data-mode='clean'] .prop[src*='folder'] {
-  left: 83.515% !important; top: 45.521% !important;
-  width: 10.354% !important; height: 16.586% !important;
+  left: 83.510% !important; top: 45.520% !important;
+  width: 10.350% !important; height: 16.580% !important;
   transform: none !important; z-index: 6 !important;
 }
 [data-mode='clean'] .prop[src*='pen'] {
   /* Rotated -90deg: the element's own width becomes the on-screen HEIGHT and
      its height becomes the on-screen WIDTH. Because rotation pivots about the
      centre, left/top are set so the ROTATED box lands where it was placed.
-     On-screen span is 225 px, the same as the music card. */
-  left: 25.653% !important;
-  top: 49.243% !important;
-  width: 53.420% !important;    /* becomes on-screen height */
-  height: 25.000% !important;   /* becomes on-screen width  */
+     On-screen span is 207 px. */
+  left: 25.665% !important;
+  top: 49.274% !important;
+  width: 53.442% !important;    /* becomes on-screen height */
+  height: 25.030% !important;   /* becomes on-screen width  */
   transform: rotate(-90deg) !important;
   transform-origin: center center !important;
   z-index: 6 !important;
@@ -1377,21 +1513,21 @@ button { font: inherit; }
   transform: none !important; z-index: 1 !important;
 }
 [data-mode='clean'] .obj--player {
-  --x: 44.482% !important; --y: 13.801% !important;
+  --x: 44.480% !important; --y: 13.800% !important;
   --w: var(--player-w) !important;
-  height: 40.194% !important; transform: none !important; z-index: 6 !important;
+  height: 40.190% !important; transform: none !important; z-index: 6 !important;
 }
 [data-mode='clean'] .obj--share {
-  --x: 80.654% !important; --y: 66.707% !important; --w: 15.054% !important;
-  height: 26.877% !important; transform: none !important; z-index: 7 !important;
+  --x: 80.650% !important; --y: 66.710% !important; --w: 15.050% !important;
+  height: 26.880% !important; transform: none !important; z-index: 7 !important;
 }
 [data-mode='clean'] .palette {
-  --x: 67.030% !important; --y: 49.031% !important;
-  width: 7.902% !important; z-index: 5 !important;
+  --x: 67.030% !important; --y: 49.030% !important;
+  width: 7.900% !important; z-index: 5 !important;
 }
 [data-mode='clean'] .palette span { height: 47.9px; font-size: 12px; }
 [data-mode='clean'] .prop-label {
-  --x: 84.060% !important; --y: 62.349% !important;
+  --x: 84.060% !important; --y: 62.350% !important;
   z-index: 7 !important;
 }
 [data-mode='clean'] .hero__lockup {
@@ -1435,25 +1571,21 @@ button { font: inherit; }
   text-align: right !important;
   transform: none !important;
 }
+/* The dump gave this box a percentage width (13.624% = 196px at 1440), but the
+   button group inside it is a fixed ~201px. Below 1440 the box shrank while the
+   buttons did not, so they overflowed and their visual centre crept rightwards.
+   Sizing to content keeps the buttons' centre fixed at the authored point, so
+   the skills heading below can track it with one figure at every width. */
 [data-mode='clean'] .hero__actions {
   position: absolute !important;
   left: 45.300% !important; top: 69.734% !important;
-  right: auto !important; bottom: auto !important; margin: 0 !important;
-  width: 13.624% !important;
-  max-width: none !important;
-  text-align: left !important;
-  transform: none !important;
-  display: flex !important;
-  justify-content: flex-start !important;
-}
-[data-mode='clean'] .scroll-cue {
-  position: absolute !important;
-  left: 49.591% !important; top: 92.615% !important;
   right: auto !important; bottom: auto !important; margin: 0 !important;
   width: max-content !important;
   max-width: none !important;
   text-align: left !important;
   transform: none !important;
+  display: flex !important;
+  justify-content: flex-start !important;
 }
 
 /* ---------- chaos mode: hand-placed layout ----------
@@ -1469,9 +1601,15 @@ button { font: inherit; }
   transform-origin: center center !important;
   z-index: 1 !important;
 }
-[data-mode='chaos'] .prop[src*='lamp'] {
-  left: 13.777% !important; top: 49.024% !important;
-  width: 21.697% !important; height: 46.262% !important;
+[data-mode='chaos'] .prop--glow {
+  left: 15.480% !important; top: 49.690% !important;
+  width: 15.640% !important; height: 25.020% !important;
+  transform: none !important; z-index: 3 !important;
+}
+[data-mode='chaos'] .prop[data-prop='lamp'] {
+  /* Rotated -12deg; box solved back from the dumped 391x441 bounding box. */
+  left: 13.648% !important; top: 50.048% !important;
+  width: 21.681% !important; height: 46.336% !important;
   transform: rotate(-12deg) !important;
   transform-origin: center center !important;
   z-index: 4 !important;
@@ -1539,8 +1677,10 @@ button { font: inherit; }
   z-index: 6 !important;
 }
 [data-mode='chaos'] .palette span { height: 40.9px; font-size: 11px; }
+/* --y is the element's own top, but the dump reports the rotated bounding
+   box, which sits 5px higher for this -5deg label. Offset to compensate. */
 [data-mode='chaos'] .prop-label {
-  --x: 73.501% !important; --y: 81.114% !important;
+  --x: 73.460% !important; --y: 81.055% !important;
   transform: rotate(-5deg) !important;
   z-index: 7 !important;
 }
@@ -1593,13 +1733,6 @@ button { font: inherit; }
   justify-content: center !important;
   transform: translateX(-50%) !important;
 }
-[data-mode='chaos'] .scroll-cue {
-  position: absolute !important;
-  left: 50.000% !important; top: 92.494% !important;
-  right: auto !important; bottom: auto !important; margin: 0 !important;
-  width: max-content !important; text-align: center !important;
-  transform: translateX(-50%) !important;
-}
 
 /* ---------- notebook mode: hand-placed layout ----------
    Positioned by hand in the browser (js/layout-editor.js, ?edit=1).
@@ -1614,10 +1747,17 @@ button { font: inherit; }
   transform-origin: center center !important;
   z-index: 4 !important;
 }
-[data-mode='notebook'] .prop[src*='lamp'] {
+[data-mode='notebook'] .prop--glow {
   display: block !important;
-  left: 70.487% !important; top: 53.975% !important;
-  width: 14.134% !important; height: 30.306% !important;
+  left: 74.864% !important; top: 56.590% !important;
+  width: 10.218% !important; height: 16.445% !important;
+  transform: none !important; z-index: 3 !important;
+}
+[data-mode='notebook'] .prop[data-prop='lamp'] {
+  /* Rotated 12deg; box solved back from the dumped 255x288 bounding box. */
+  display: block !important;
+  left: 71.986% !important; top: 57.054% !important;
+  width: 14.134% !important; height: 30.270% !important;
   transform: rotate(12deg) !important;
   transform-origin: center center !important;
   z-index: 27 !important;
@@ -1727,13 +1867,6 @@ button { font: inherit; }
   display: flex !important; justify-content: center !important;
   transform: translateX(-50%) !important;
 }
-[data-mode='notebook'] .scroll-cue {
-  position: absolute !important;
-  left: 50.000% !important; top: 92.494% !important;
-  right: auto !important; bottom: auto !important; margin: 0 !important;
-  width: max-content !important; text-align: center !important;
-  transform: translateX(-50%) !important;
-}
 
 
 /* --------------------------------------------------------------------------
@@ -1755,10 +1888,22 @@ button { font: inherit; }
   .js .stage .prop { pointer-events: auto; }
 
   /* .is-hovered is set by js/script.js, which recomposes the transform so the
-     item's authored rotation is preserved while it scales. */
+     item's authored rotation is preserved while it scales.
+
+     --prop-filter carries the theme's base treatment (the dark theme dims the
+     props), so the hover shadow composes with it instead of replacing it and
+     making the prop flash to full brightness. Its fallback is an empty value,
+     NOT `none`: `filter: none drop-shadow(...)` is invalid and would drop the
+     whole declaration, leaving hovered props with no shadow in either theme.
+
+     The [data-theme] variants match the dimming rule's specificity and come
+     later in the file, so a hovered prop keeps its dim treatment AND gains the
+     shadow rather than losing one to the other. */
+  :root[data-theme] .js .stage .prop.is-hovered,
+  :root[data-theme] .js .stage .palette.is-hovered,
   .js .stage .prop.is-hovered,
   .js .stage .palette.is-hovered {
-    filter: drop-shadow(0 10px 20px rgba(28, 55, 90, 0.22));
+    filter: var(--prop-filter, ) drop-shadow(0 10px 20px var(--prop-shadow, rgba(28, 55, 90, 0.22)));
   }
   .js .stage .obj.is-hovered {
     box-shadow: var(--shadow-card-hover);
@@ -1771,18 +1916,80 @@ button { font: inherit; }
 
 
 /* --------------------------------------------------------------------------
+   Lamp glow
+
+   A standalone prop, positioned independently of the lamp: it carries its own
+   --x/--y/--w/--h per mode and can be moved in the layout editor like anything
+   else on the stage. It is placed just below the lamp in the stacking order so
+   the shade covers its upper edge.
+
+   It stays dark until the lamp is hovered — js/hero-hover.js mirrors the lamp's
+   hover onto this element, since the two are no longer nested and a CSS :hover
+   on one cannot reach the other.
+   -------------------------------------------------------------------------- */
+/* !important on opacity: the base .prop rule sets opacity:var(--o,1) and the
+   per-mode layout blocks are themselves !important, so a plain declaration
+   here would be overridden and the glow would show unlit. */
+/* --------------------------------------------------------------------------
+   Lamp as the theme switch
+
+   It is a <button> so it works from the keyboard and reports its state, but it
+   must look and lay out exactly like the surrounding .prop images: no chrome,
+   no padding, and the artwork filling the same box object-fit:contain would
+   give an <img class="prop">.
+   -------------------------------------------------------------------------- */
+.prop--lamp-btn {
+  padding: 0;
+  border: 0;
+  background: none;
+  appearance: none;
+  -webkit-appearance: none;
+  cursor: pointer;
+  /* The base .prop rule turns pointer events off; a control needs them on. */
+  pointer-events: auto;
+}
+.prop--lamp-btn > img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  object-position: center;
+  pointer-events: none;   /* the button owns the hit test */
+}
+.prop--lamp-btn:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 4px;
+  border-radius: 6px;
+}
+
+.prop--glow {
+  opacity: 0 !important;
+  pointer-events: none !important;  /* never steals hover from the lamp */
+  transition: opacity 0.45s var(--ease), transform 0.45s var(--ease);
+  will-change: opacity;
+}
+/* Lit whenever the lamp is on (dark theme), or previewed on hover. */
+.prop--glow.is-lit,
+:root[data-theme='dark'] .prop--glow {
+  opacity: 1 !important;
+}
+@media (prefers-reduced-motion: reduce) {
+  .prop--glow { transition: opacity 0.45s var(--ease); }
+}
+
+/* --------------------------------------------------------------------------
    Hover-interaction exclusions
 
    A rotated prop still has an axis-aligned bounding box, so a long thin object
-   like the pen claims a large invisible rectangle. That rectangle was sitting
-   over the mode toggle and swallowing clicks. The notebook page is worse: it
-   covers most of the stage.
+   like the pen claims a large invisible rectangle. The notebook page is the
+   worst offender: it covers most of the stage, so it opts out entirely.
 
-   Both are decorative, so they opt out of pointer events entirely. Everything
-   else keeps its hover lift.
+   The pen keeps its hover lift in every mode. In clean mode it is rotated -90
+   deg, which turns its 225x769 bounding box into a sheet lying right across the
+   mode toggle — so there the hit area is trimmed to the pen's upper half, well
+   clear of the controls. clip-path would also clip the artwork, so the trim is
+   done with a hit-test shim (see .prop-hit below) rather than on the image.
    -------------------------------------------------------------------------- */
-.js .stage .prop[src*='notebook-page'],
-.js .stage .prop[src*='pen'] {
+.js .stage .prop[src*='notebook-page'] {
   pointer-events: none !important;
 }
 
@@ -1824,7 +2031,8 @@ button { font: inherit; }
   padding-left: 1px;
 }
 .player__play[aria-pressed='true'] .player__icon { padding-left: 0; }
-.player__play:hover .player__icon { color: #fff; }
+/* The hover fill is --accent-deep, so the glyph follows the same pairing. */
+.player__play:hover .player__icon { color: var(--on-accent-deep, #fff); }
 
 @media print {
   .site-header, .stage, .strip, .nav-toggle, .prop, .modes { display: none !important; }

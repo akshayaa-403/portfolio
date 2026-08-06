@@ -5,6 +5,7 @@
      wheel         resize (prop) / font size (text)
      R / E         rotate
      [ / ]         layer back / forward
+     A             select the prop behind the current one
      H             hide
      arrows        nudge 1px (Shift = 10)
      D             dump layout (panel + clipboard + console)
@@ -23,15 +24,19 @@
 
   var SEL = '.prop, .obj, .palette, .prop-label, .lily,' +
             '.hero__name, .hero__role, .hero__sub, .hero__headline,' +
-            '.hero__actions, .scroll-cue';
+            '.hero__actions';
 
   var stage, panel, current = null;
+  var cycle = 0;          // depth offset for picking through stacked props
+  var lastEvent = null;   // most recent pointer position, for re-picking
   var state = {};   // key -> {dx, dy, rot, z, scale, fs, hidden, el, isText}
 
   /* ---------- identity ---------- */
   function keyOf(el) {
     if (el.classList.contains('prop')) {
-      return (el.getAttribute('src') || '').split('/').pop().replace('.webp', '');
+      // Most props are bare <img>; the lamp is a wrapper carrying data-prop.
+      return el.getAttribute('data-prop') ||
+             (el.getAttribute('src') || '').split('/').pop().replace('.webp', '');
     }
     if (el.classList.contains('obj')) {
       return (el.className.match(/obj--(\w+)/) || [])[1] || 'obj';
@@ -46,12 +51,24 @@
     if (el.classList.contains('hero__sub')) return 'text-sub';
     if (el.classList.contains('hero__headline')) return 'text-headline';
     if (el.classList.contains('hero__actions')) return 'text-modes';
-    if (el.classList.contains('scroll-cue')) return 'scroll-cue';
     return el.tagName.toLowerCase();
   }
 
   function isTextEl(el) {
-    return /hero__(name|role|sub|headline|actions)|scroll-cue/.test(el.className || '');
+    return /hero__(name|role|sub|headline|actions)/.test(el.className || '');
+  }
+
+  /* Authored rotation, in degrees, read back from the computed matrix. Props
+     carry rotate() from their per-mode layout; apply() rebuilds the transform
+     from scratch, so without seeding this the angle would be dropped the
+     moment an element is first touched and the prop would snap upright. */
+  function rotationOf(el) {
+    var t = getComputedStyle(el).transform;
+    if (!t || t === 'none') return 0;
+    var m = t.match(/matrix\(([^)]+)\)/);
+    if (!m) return 0;
+    var p = m[1].split(',').map(parseFloat);
+    return Math.round(Math.atan2(p[1], p[0]) * 180 / Math.PI);
   }
 
   function read(el) {
@@ -59,7 +76,7 @@
     if (state[k]) return state[k];
     var cs = getComputedStyle(el);
     state[k] = {
-      dx: 0, dy: 0, rot: 0, scale: 1,
+      dx: 0, dy: 0, rot: rotationOf(el), scale: 1,
       z: parseInt(cs.zIndex, 10) || 0,
       fs: parseFloat(cs.fontSize) || 16,
       baseFs: parseFloat(cs.fontSize) || 16,
@@ -102,7 +119,7 @@
              '  on screen  x=' + Math.round(r.left - s.left) + ' y=' + Math.round(r.top - s.top) +
              ' w=' + Math.round(r.width) + ' h=' + Math.round(r.height) + '\n') : '') +
       '\ndrag=move  wheel=size  R/E=rotate  [ ]=layer  H=hide\n' +
-      'arrows=nudge (shift 10)   D=dump   X=reset\n' +
+      'A=select behind   arrows=nudge (shift 10)   D=dump   X=reset\n' +
       (msg ? '\n' + msg : '');
   }
 
@@ -117,6 +134,7 @@
       if (st && st.hidden) { lines.push('HIDE ' + k); return; }
       var r = el.getBoundingClientRect();
       if (r.width < 2) return;
+
       var row = k + ':  x=' + Math.round(r.left - s.left) +
                 ' y=' + Math.round(r.top - s.top) +
                 ' w=' + Math.round(r.width) + ' h=' + Math.round(r.height);
@@ -159,19 +177,37 @@
     return false;
   }
 
-  function pick(e) {
+  /* Everything editable under the pointer, topmost first. */
+  function candidates(e) {
     var stack = document.elementsFromPoint(e.clientX, e.clientY);
-    var fallback = null;
+    var out = [];
     for (var i = 0; i < stack.length; i++) {
       var c = stack[i].closest && stack[i].closest(SEL);
-      if (!c || !stage.contains(c)) continue;
-      if (isTextEl(c)) {
-        if (c.classList.contains('hero__actions') || overGlyphs(c, e.clientX, e.clientY)) return c;
-        continue;
-      }
-      if (!fallback) fallback = c;
+      if (!c || !stage.contains(c) || out.indexOf(c) !== -1) continue;
+      if (isTextEl(c) &&
+          !c.classList.contains('hero__actions') &&
+          !overGlyphs(c, e.clientX, e.clientY)) continue;
+      out.push(c);
     }
-    return fallback;
+    return out;
+  }
+
+  function pick(e) {
+    var list = candidates(e);
+    if (!list.length) return null;
+
+    // Text that the pointer is genuinely over goes to the front of the queue —
+    // its glyphs are the thing you meant to grab. Everything else keeps its
+    // paint order behind it.
+    var text = [], rest = [];
+    for (var i = 0; i < list.length; i++) {
+      (isTextEl(list[i]) ? text : rest).push(list[i]);
+    }
+    var ordered = text.concat(rest);
+
+    // A steps down the queue, so anything overlapped — a prop under a text
+    // line, the glow under the lamp — is still reachable.
+    return ordered[cycle % ordered.length];
   }
 
   /* ---------- init ---------- */
@@ -191,6 +227,17 @@
     // lets the pointer fall through the empty gutters to the props below.
     var lockup = stage.querySelector('.hero__lockup');
     if (lockup) lockup.style.setProperty('pointer-events', 'auto', 'important');
+
+    // The lamp glow is invisible and click-through in production: it only
+    // shows on hover, and it must never intercept the lamp's own hover. Both
+    // have to be undone here or it cannot be seen or grabbed. The generic
+    // pointer-events pass below does not cover it, because that rule is set
+    // with !important.
+    var glow = stage.querySelector('.prop--glow');
+    if (glow) {
+      glow.style.setProperty('opacity', '1', 'important');
+      glow.style.setProperty('transition', 'none', 'important');
+    }
     stage.querySelectorAll(SEL).forEach(function (el) {
       el.style.setProperty('pointer-events', 'auto', 'important');
       el.style.cursor = 'grab';
@@ -206,6 +253,14 @@
         apply(drag);
         return;
       }
+      // A real move to a different spot starts a fresh stack, so drop any
+      // depth offset from a previous A-cycle.
+      if (lastEvent &&
+          (Math.abs(e.clientX - lastEvent.clientX) > 3 ||
+           Math.abs(e.clientY - lastEvent.clientY) > 3)) {
+        cycle = 0;
+      }
+      lastEvent = { clientX: e.clientX, clientY: e.clientY };
       var t = pick(e);
       if (t && t !== current) { current = t; info(); }
     });
@@ -245,6 +300,18 @@
     document.addEventListener('keydown', function (e) {
       if (e.key === 'd' || e.key === 'D') { dump(); return; }
       if (e.key === 'x' || e.key === 'X') { location.reload(); return; }
+      // Cycle down through overlapping props, so one that sits entirely
+      // beneath another can still be selected.
+      if (e.key === 'a' || e.key === 'A') {
+        cycle++;
+        if (lastEvent) {
+          var next = pick(lastEvent);
+          if (next) { current = next; }
+        }
+        info('depth ' + cycle);
+        e.preventDefault();
+        return;
+      }
       if (!current) return;
       var st = read(current);
       var big = e.shiftKey ? 10 : 1;

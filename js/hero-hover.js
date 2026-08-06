@@ -15,6 +15,12 @@
   var SCALE = 1.06;
   var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
+  /* The layout editor positions props by writing style.transform. This script
+     writes the same property on hover and clears it on leave, which would wipe
+     a drag the instant the pointer left the prop. The two cannot share the
+     property, so hover scaling stands down entirely while editing. */
+  var editing = /[?&]edit=1/.test(location.search);
+
   /* ---------- hover scale ---------- */
   function rotationOf(el) {
     var t = getComputedStyle(el).transform;
@@ -25,12 +31,42 @@
     return Math.atan2(p[1], p[0]) * 180 / Math.PI;
   }
 
+  /* The lamp's glow is a separate prop, so hovering the lamp has to light it
+     explicitly — the two are siblings and CSS :hover on one cannot reach the
+     other. Returns the glow element for a given prop, or null. */
+  function glowFor(el) {
+    if (el.getAttribute('data-prop') !== 'lamp') return null;
+    return document.querySelector('.prop--glow');
+  }
+
+  /* ---------- lamp = theme switch ----------
+     Lit lamp means dark room. Hovering previews the glow; clicking commits. */
+  function initLampSwitch() {
+    var lamp = document.querySelector('.prop--lamp-btn');
+    if (!lamp || !window.portfolioTheme) return;
+
+    function sync() {
+      var dark = window.portfolioTheme.get() === 'dark';
+      lamp.setAttribute('aria-pressed', dark ? 'true' : 'false');
+      lamp.setAttribute('aria-label', dark
+        ? 'Turn off the lamp (light theme)'
+        : 'Turn on the lamp (dark theme)');
+    }
+
+    lamp.addEventListener('click', function () {
+      window.portfolioTheme.toggle();
+    });
+    window.addEventListener('themechange', sync);
+    sync();
+  }
+
   function initHover() {
-    if (reduce) return;
+    if (reduce || editing) return;
     var stage = document.querySelector('.stage');
     if (!stage) return;
 
-    var items = stage.querySelectorAll('.prop, .obj, .palette');
+    // The glow is decorative and never hovered in its own right.
+    var items = stage.querySelectorAll('.prop:not(.prop--glow), .obj, .palette');
 
     Array.prototype.forEach.call(items, function (el) {
       var baseTransform = null;
@@ -45,6 +81,9 @@
         el.classList.add('is-hovered');
         el.style.setProperty('transform',
           baseTransform + ' scale(' + SCALE + ')', 'important');
+
+        var glow = glowFor(el);
+        if (glow) glow.classList.add('is-lit');
       });
 
       function reset() {
@@ -52,6 +91,12 @@
         // Drop the override rather than re-writing it: the stylesheet rule is
         // the source of truth and may include more than a rotation.
         el.style.removeProperty('transform');
+
+        // Safe to drop unconditionally: in the dark theme a CSS rule keeps the
+        // glow lit regardless of this class, so leaving the lamp does not
+        // switch the light off.
+        var glow = glowFor(el);
+        if (glow) glow.classList.remove('is-lit');
       }
       el.addEventListener('pointerleave', reset);
       el.addEventListener('pointercancel', reset);
@@ -63,6 +108,8 @@
         baseTransform = null;
         el.classList.remove('is-hovered');
         el.style.removeProperty('transform');
+        var glow = glowFor(el);
+        if (glow) glow.classList.remove('is-lit');
       });
     });
   }
@@ -143,8 +190,9 @@
       });
     }
 
+    // Hover-to-play would fire every time the card is grabbed in the editor.
     card.addEventListener('pointerenter', function () {
-      if (!userControlled) play();
+      if (!userControlled && !editing) play();
     });
     function leave() {
       if (!userControlled) pause();
@@ -155,6 +203,7 @@
 
   function init() {
     initHover();
+    initLampSwitch();
     initAudio();
   }
 
