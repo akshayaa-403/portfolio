@@ -162,3 +162,177 @@
 @media (max-width: 809.98px) {
   .detail__aside { position: static; max-width: none; }
 }
+
+/* ==========================================================================
+   Deep-dive case study sections
+
+   Rendered by js/project-detail.js from each project's `deepDive` array.
+   Every colour is a token, so these follow the light/dark theme with the
+   rest of the site.
+   ========================================================================== */
+.detail__deep { margin-top: 8px; }
+
+.dd { margin: 0 0 32px; }
+
+.dd--prose h3,
+.dd--steps h3 {
+  margin: 28px 0 8px;
+  color: var(--ink);
+  font-size: 17px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+.dd--prose p { margin: 0; color: var(--ink-body); }
+
+/* --- figures --------------------------------------------------------------
+   Screenshots are dark-UI captures, so they get a border rather than a
+   shadow: on the dark theme a shadow would vanish into the page. */
+.dd--figure { margin: 0 0 32px; }
+.dd--figure img {
+  display: block;
+  width: 100%;
+  height: auto;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  background: var(--bg-sunken);
+}
+
+.dd figcaption {
+  margin-top: 10px;
+  color: var(--ink-muted);
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+/* --- formulas -------------------------------------------------------------
+   TeX source, presented as a display block. Not typeset: MathJax/KaTeX would
+   mean a CDN request and this site is deliberately buildless and offline-safe.
+   Kept short enough to read as notation. */
+.dd--formula { margin: 0 0 32px; }
+.formula {
+  overflow-x: auto;
+  padding: 18px 20px;
+  border: 1px solid var(--line);
+  border-left: 3px solid var(--accent);
+  border-radius: var(--radius-sm);
+  background: var(--bg-sunken);
+  color: var(--ink);
+  font-family: var(--font-mono);
+  font-size: 14px;
+  line-height: 1.7;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+/* --- code ----------------------------------------------------------------- */
+.dd--code { margin: 0 0 32px; }
+.dd--code pre {
+  margin: 0;
+  overflow-x: auto;
+  padding: 16px 18px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  background: var(--bg-sunken);
+}
+.dd--code code {
+  color: var(--ink-body);
+  font-family: var(--font-mono);
+  font-size: 13px;
+  line-height: 1.65;
+  white-space: pre;
+}
+
+/* --- tables ---------------------------------------------------------------
+   Wide tables scroll inside their own container so the page body never
+   scrolls sideways. */
+.dd--table { margin: 0 0 32px; }
+.table-scroll {
+  overflow-x: auto;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+}
+.dd--table table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+.dd--table th,
+.dd--table td {
+  padding: 10px 14px;
+  text-align: left;
+  vertical-align: top;
+  border-bottom: 1px solid var(--line);
+}
+.dd--table thead th {
+  background: var(--bg-sunken);
+  color: var(--ink);
+  font-weight: 600;
+  white-space: nowrap;
+}
+.dd--table tbody th {
+  color: var(--ink);
+  font-weight: 600;
+}
+.dd--table td { color: var(--ink-body); }
+.dd--table tbody tr:last-child th,
+.dd--table tbody tr:last-child td { border-bottom: 0; }
+
+/* --- numbered steps ------------------------------------------------------- */
+.steps {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  counter-reset: step;
+}
+.steps li {
+  position: relative;
+  margin: 0 0 14px;
+  padding-left: 40px;
+  counter-increment: step;
+}
+.steps li::before {
+  content: counter(step);
+  position: absolute;
+  left: 0;
+  top: 1px;
+  display: grid;
+  place-items: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: var(--accent-tint);
+  color: var(--accent-ink);
+  font-size: 12px;
+  font-weight: 600;
+}
+.steps strong {
+  display: block;
+  color: var(--ink);
+  font-size: 15px;
+}
+.steps span { color: var(--ink-body); font-size: 14px; }
+
+/* --------------------------------------------------------------------------
+   Narrow viewports
+
+   Long code lines and formulas are the only things wide enough to push the
+   page sideways. They scroll inside their own container; `min-width: 0` is
+   what actually allows that — without it a grid/flex child refuses to shrink
+   below its content and the overflow escapes to the document instead.
+   -------------------------------------------------------------------------- */
+.detail__body,
+.detail__cols { min-width: 0; }
+
+.dd--code,
+.dd--formula,
+.dd--table,
+.dd--code pre,
+.formula,
+.table-scroll { max-width: 100%; min-width: 0; }
+
+@media (max-width: 599.98px) {
+  .dd--code code { font-size: 12px; }
+  .formula { font-size: 12.5px; padding: 14px 15px; }
+  .steps li { padding-left: 34px; }
+  .steps li::before { width: 22px; height: 22px; font-size: 11px; }
+}

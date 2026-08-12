@@ -1150,6 +1150,39 @@ button { font: inherit; }
   gap: var(--gap);
 }
 
+/* --- Buttons --------------------------------------------------------------
+   Used by the contact row here and by the project detail pages. */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 16px;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius-pill);
+  background: var(--bg-raised);
+  color: var(--ink);
+  font-size: 13px;
+  line-height: 1.2;
+  transition: background var(--dur) var(--ease),
+              border-color var(--dur) var(--ease),
+              color var(--dur) var(--ease);
+}
+.btn:hover {
+  border-color: var(--accent);
+  color: var(--accent-ink);
+  background: var(--accent-tint);
+}
+.btn--primary {
+  background: var(--accent-deep);
+  border-color: var(--accent-deep);
+  color: var(--on-accent-deep, #fff);
+}
+.btn--primary:hover {
+  background: var(--accent-hover);
+  border-color: var(--accent-hover);
+  color: var(--on-accent-deep, #fff);
+}
+
 /* --------------------------------------------------------------------------
    11. Footer
    -------------------------------------------------------------------------- */
@@ -1170,6 +1203,28 @@ button { font: inherit; }
   color: var(--ink-muted);
   font-size: 12px;
 }
+/* --- Social icons ---------------------------------------------------------
+   Brand marks from the inline sprite in each page's <head>. They inherit
+   currentColor, so they track link colour and both themes for free. */
+.icon {
+  display: inline-block;
+  width: 1em;
+  height: 1em;
+  vertical-align: -0.15em;
+  flex: none;
+  fill: currentColor;
+}
+.btn--icon {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+.site-footer__social a {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
 .site-footer nav {
   display: flex;
   flex-wrap: wrap;
@@ -1293,7 +1348,7 @@ button { font: inherit; }
      chaos    — the default. Scattered draggable desk objects, rotations,
                 marquee, spinning vinyl. Closest to the reference.
      notebook — same layout on warm paper; cards below the hero become dashed
-                taped-in clippings. Reading mode.
+                taped-in notes. Reading mode.
      clean    — no props, no rotation, no marquee. Just type and cards.
    -------------------------------------------------------------------------- */
 
@@ -1408,9 +1463,7 @@ button { font: inherit; }
   --nby: 12.000% !important;
 }
 [data-mode='notebook'] .prop[src*='notebook-page'] { z-index: 4 !important; }
-[data-mode='notebook'] .prop[src*='clipping'],
 [data-mode='notebook'] .prop[src*='dreams']        { z-index: 6 !important; }
-[data-mode='notebook'] .prop[src*='coffee-ring']   { z-index: 5 !important; }
 [data-mode='notebook'] .prop[src*='pen'] {
   z-index: 8 !important;      /* lies ON the page, as a pen would */
   --nbx: 60.000% !important;
@@ -1471,7 +1524,7 @@ button { font: inherit; }
   width: 14.100% !important; height: 30.140% !important;
   transform: none !important; z-index: 4 !important;
 }
-[data-mode='clean'] .prop[src*='film'] {
+[data-mode='clean'] .prop[data-prop='camera'] {
   left: 6.810% !important; top: 73.240% !important;
   width: 9.600% !important; height: 15.010% !important;
   transform: none !important; z-index: 5 !important;
@@ -1499,7 +1552,6 @@ button { font: inherit; }
   transform-origin: center center !important;
   z-index: 6 !important;
 }
-[data-mode='clean'] .prop[src*='clipping'] { display: none !important; }
 [data-mode='clean'] .lily--bl {
   left: -2.997% !important; top: 27.482% !important;
   right: auto !important; bottom: auto !important;
@@ -1614,7 +1666,7 @@ button { font: inherit; }
   transform-origin: center center !important;
   z-index: 4 !important;
 }
-[data-mode='chaos'] .prop[src*='film'] {
+[data-mode='chaos'] .prop[data-prop='camera'] {
   left: 4.752% !important; top: 71.011% !important;
   width: 13.180% !important; height: 20.690% !important;
   transform: rotate(17deg) !important;
@@ -1642,7 +1694,6 @@ button { font: inherit; }
   transform-origin: center center !important;
   z-index: 6 !important;
 }
-[data-mode='chaos'] .prop[src*='clipping'] { display: none !important; }
 [data-mode='chaos'] .lily--bl {
   left: -2.997% !important; top: 27.482% !important;
   right: auto !important; bottom: auto !important;
@@ -1762,7 +1813,7 @@ button { font: inherit; }
   transform-origin: center center !important;
   z-index: 27 !important;
 }
-[data-mode='notebook'] .prop[src*='film'] {
+[data-mode='notebook'] .prop[data-prop='camera'] {
   display: block !important;
   left: 20.088% !important; top: 52.072% !important;
   width: 7.303% !important; height: 11.594% !important;
@@ -1794,7 +1845,6 @@ button { font: inherit; }
   transform-origin: center center !important;
   z-index: 6 !important;
 }
-[data-mode='notebook'] .prop[src*='clipping'] { display: none !important; }
 [data-mode='notebook'] .palette,
 [data-mode='notebook'] .prop-label { display: none !important; }
 [data-mode='notebook'] .lily--bl {

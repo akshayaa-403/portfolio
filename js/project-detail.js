@@ -30,10 +30,94 @@
     root.innerHTML =
       '<div class="detail__missing">' +
         '<h1>That project isn&rsquo;t here</h1>' +
-        '<p>The link may be out of date. All six case studies are listed on the home page.</p>' +
+        '<p>The link may be out of date. Every case study is listed on the home page.</p>' +
         '<a class="btn btn--primary" href="index.html#work">Back to work</a>' +
       '</div>';
     document.title = 'Project not found — Akshayaa Kashyap';
+  }
+
+  /* ---------- deep-dive section renderers ----------
+     Each section in a project's deepDive array is one of a small set of kinds.
+     Everything interpolated goes through esc() — the data file is trusted, but
+     escaping keeps a stray apostrophe or angle bracket from breaking markup. */
+  var SECTION = {
+    prose: function (s) {
+      return '<section class="dd dd--prose">' +
+        (s.heading ? '<h3>' + esc(s.heading) + '</h3>' : '') +
+        '<p>' + esc(s.body) + '</p>' +
+      '</section>';
+    },
+
+    figure: function (s) {
+      return '<figure class="dd dd--figure">' +
+        '<img src="' + esc(s.src) + '" alt="' + esc(s.alt || '') + '" loading="lazy" decoding="async">' +
+        (s.caption ? '<figcaption>' + esc(s.caption) + '</figcaption>' : '') +
+      '</figure>';
+    },
+
+    /* Formulas are rendered as styled TeX source rather than typeset maths.
+       Pulling in MathJax or KaTeX would mean a network request and a build
+       step, both of which this site deliberately avoids; the notation is
+       short enough to stay readable as-is. */
+    formula: function (s) {
+      return '<figure class="dd dd--formula">' +
+        '<div class="formula" role="math" aria-label="' + esc(s.caption || 'Formula') + '">' +
+          esc(s.tex) +
+        '</div>' +
+        (s.caption ? '<figcaption>' + esc(s.caption) + '</figcaption>' : '') +
+      '</figure>';
+    },
+
+    code: function (s) {
+      return '<figure class="dd dd--code">' +
+        '<pre><code class="lang-' + esc(s.lang || 'text') + '">' + esc(s.code) + '</code></pre>' +
+        (s.caption ? '<figcaption>' + esc(s.caption) + '</figcaption>' : '') +
+      '</figure>';
+    },
+
+    table: function (s) {
+      var head = (s.head || []).map(function (h) {
+        return '<th scope="col">' + esc(h) + '</th>';
+      }).join('');
+      var rows = (s.rows || []).map(function (r) {
+        return '<tr>' + r.map(function (c, i) {
+          return i === 0
+            ? '<th scope="row">' + esc(c) + '</th>'
+            : '<td>' + esc(c) + '</td>';
+        }).join('') + '</tr>';
+      }).join('');
+      return '<figure class="dd dd--table">' +
+        '<div class="table-scroll">' +
+          '<table>' +
+            (head ? '<thead><tr>' + head + '</tr></thead>' : '') +
+            '<tbody>' + rows + '</tbody>' +
+          '</table>' +
+        '</div>' +
+        (s.caption ? '<figcaption>' + esc(s.caption) + '</figcaption>' : '') +
+      '</figure>';
+    },
+
+    steps: function (s) {
+      var items = (s.items || []).map(function (it) {
+        return '<li><strong>' + esc(it.t) + '</strong><span>' + esc(it.d) + '</span></li>';
+      }).join('');
+      return '<section class="dd dd--steps">' +
+        (s.heading ? '<h3>' + esc(s.heading) + '</h3>' : '') +
+        '<ol class="steps">' + items + '</ol>' +
+      '</section>';
+    }
+  };
+
+  function renderDeepDive(sections) {
+    if (!sections || !sections.length) return '';
+    var body = sections.map(function (s) {
+      var fn = SECTION[s.kind];
+      return fn ? fn(s) : '';
+    }).join('');
+    return '<div class="detail__deep">' +
+      '<h2>How it works <span class="glyph" aria-hidden="true">◆</span></h2>' +
+      body +
+    '</div>';
   }
 
   function render() {
@@ -104,6 +188,8 @@
 
           '<h2>The tricky part <span class="glyph" aria-hidden="true">⌘</span></h2>' +
           '<p>' + esc(p.challenge) + '</p>' +
+
+          renderDeepDive(p.deepDive) +
         '</div>' +
       '</div>' +
 
