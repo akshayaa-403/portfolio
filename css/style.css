@@ -690,25 +690,21 @@ button { font: inherit; }
 .share__btn--go { font-weight: 600; }
 
 /* MacPaint-style tool palette */
+/* The MS Paint toolbar prop. The artwork is 380x1480 (191:744), so height is
+   derived from width via aspect-ratio and every per-mode rule only needs to
+   set --x/--y/width, exactly as before. image-rendering keeps the pixel-art
+   buttons crisp instead of letting the browser smooth them. */
 .palette {
   position: absolute;
   left: var(--x);
   top: var(--y);
   z-index: var(--z, 5);
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
   width: 64px;
-  background: var(--surface);
-  border: 1px solid var(--ink-soft);
+  height: auto;
+  aspect-ratio: 191 / 744;
+  object-fit: contain;
+  image-rendering: pixelated;
   pointer-events: none;
-}
-.palette span {
-  display: grid;
-  place-items: center;
-  height: 28px;
-  border: 0.5px solid var(--line-strong);
-  color: var(--ink-body);
-  font-size: 13px;
 }
 
 /* Drag affordances (JS adds .is-draggable in chaos mode on wide screens) */
@@ -884,12 +880,19 @@ button { font: inherit; }
   pointer-events: none;
   transition: opacity var(--dur) var(--ease), transform var(--dur) var(--ease);
 }
+/* Multiple frames stack in the same slot; only .is-shown is visible, and
+   js/script.js advances it while the card is hovered. */
 @media (prefers-reduced-motion: no-preference) {
-  .rm:hover .rm__hover,
-  .rm:focus-visible .rm__hover {
+  .rm:hover .rm__hover.is-shown,
+  .rm:focus-visible .rm__hover.is-shown {
     opacity: 1;
     transform: translateY(-50%) scale(1);
   }
+}
+/* Without motion the first frame still shows on hover — just no cycling. */
+@media (prefers-reduced-motion: reduce) {
+  .rm:hover .rm__hover.is-shown,
+  .rm:focus-visible .rm__hover.is-shown { opacity: 1; }
 }
 @media (max-width: 1099.98px) {
   .rm__hover { display: none; }
@@ -1449,7 +1452,6 @@ button { font: inherit; }
 [data-mode='clean'] .obj--player { --x: 40.000% !important; --y: 5.778%  !important; }
 [data-mode='clean'] .obj--share  { --x: 70.972% !important; --y: 68.444% !important; }
 [data-mode='clean'] .palette     { --x: 92.500% !important; --y: 6.500%  !important; }
-[data-mode='clean'] .palette span { height: 24px; font-size: 10px; }
 [data-mode='clean'] .prop-label  { --x: 85.417% !important; --y: 80.222% !important; }
 
 [data-mode='notebook'] .obj--player { --x: 74.500% !important; --y: 6.500%  !important; }
@@ -1573,11 +1575,12 @@ button { font: inherit; }
   --x: 80.650% !important; --y: 66.710% !important; --w: 15.050% !important;
   height: 26.880% !important; transform: none !important; z-index: 7 !important;
 }
+/* The real toolbar is proportionally taller than the CSS grid it replaced, so
+   width comes down from 7.900% to keep the authored 385px height. */
 [data-mode='clean'] .palette {
   --x: 67.030% !important; --y: 49.030% !important;
-  width: 7.900% !important; z-index: 5 !important;
+  width: 6.733% !important; z-index: 5 !important;
 }
-[data-mode='clean'] .palette span { height: 47.9px; font-size: 12px; }
 [data-mode='clean'] .prop-label {
   --x: 84.060% !important; --y: 62.350% !important;
   z-index: 7 !important;
@@ -1727,7 +1730,6 @@ button { font: inherit; }
   transform-origin: center center !important;
   z-index: 6 !important;
 }
-[data-mode='chaos'] .palette span { height: 40.9px; font-size: 11px; }
 /* --y is the element's own top, but the dump reports the rotated bounding
    box, which sits 5px higher for this -5deg label. Offset to compensate. */
 [data-mode='chaos'] .prop-label {
@@ -2034,10 +2036,9 @@ button { font: inherit; }
    worst offender: it covers most of the stage, so it opts out entirely.
 
    The pen keeps its hover lift in every mode. In clean mode it is rotated -90
-   deg, which turns its 225x769 bounding box into a sheet lying right across the
-   mode toggle — so there the hit area is trimmed to the pen's upper half, well
-   clear of the controls. clip-path would also clip the artwork, so the trim is
-   done with a hit-test shim (see .prop-hit below) rather than on the image.
+   deg, so its bounding box lies right across the mode toggle — the toggle wins
+   anyway because .hero__actions is pinned to z-index 60 below, which turned out
+   to be enough and cheaper than trimming the pen's hit area.
    -------------------------------------------------------------------------- */
 .js .stage .prop[src*='notebook-page'] {
   pointer-events: none !important;
@@ -2088,3 +2089,158 @@ button { font: inherit; }
   .site-header, .stage, .strip, .nav-toggle, .prop, .modes { display: none !important; }
   body { background: #fff; color: #000; background-image: none; }
 }
+
+/* --------------------------------------------------------------------------
+   15. Hobbies — three cards, triangular arrangement
+
+   Two cards on the top row and one centred beneath, matching the tri sketch.
+   Each links to its own page; on hover js/hobbies.js paints a neural-net mesh
+   over the card. Grid areas rather than absolute positioning, so the layout
+   reflows to a single column on phones with no extra rules.
+   -------------------------------------------------------------------------- */
+.hobbies__intro {
+  max-width: var(--measure-narrow);
+  margin: 0 0 26px;
+  color: var(--ink-soft);
+  font-size: 15px;
+  line-height: 1.6;
+}
+
+.hob-tri {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 18px;
+  max-width: 860px;
+  margin: 0 auto;
+}
+/* The third card centres under the pair: it spans both columns and is width-
+   capped, which keeps the triangle without absolute positioning. */
+.hob-tri > :nth-child(3) {
+  grid-column: 1 / -1;
+  width: min(100%, calc(50% - 9px));
+  margin: 0 auto;
+}
+
+.hob-card {
+  position: relative;
+  display: block;
+  aspect-ratio: 4 / 3;
+  overflow: hidden;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius);
+  background: var(--bg-sunken);
+  color: #fff;
+  isolation: isolate;
+}
+.hob-card > img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  z-index: 0;
+}
+/* Scrim: the labels sit on a photograph, so they need a guaranteed ground
+   rather than relying on whatever the image happens to be. */
+.hob-card::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  background: linear-gradient(to top, rgba(6, 12, 20, 0.82) 0%,
+                                      rgba(6, 12, 20, 0.34) 45%,
+                                      rgba(6, 12, 20, 0.12) 100%);
+}
+.hob-mesh {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
+}
+.hob-card__body {
+  position: absolute;
+  left: 0; right: 0; bottom: 0;
+  z-index: 3;
+  display: grid;
+  gap: 3px;
+  padding: 16px 18px;
+}
+.hob-card__label {
+  font-family: var(--font-script);
+  font-size: clamp(24px, 3.4vw, 33px);
+  line-height: 1.05;
+}
+.hob-card__note {
+  color: rgba(255, 255, 255, 0.82);
+  font-size: 12.5px;
+}
+.hob-card__count {
+  margin-top: 4px;
+  color: rgba(255, 255, 255, 0.7);
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .js .hob-card {
+    transition: transform 0.3s var(--ease), box-shadow 0.3s var(--ease),
+                border-color 0.3s var(--ease);
+  }
+  .js .hob-card > img { transition: transform 0.5s var(--ease); }
+  .js .hob-card:hover {
+    transform: translateY(-3px);
+    border-color: var(--accent);
+    box-shadow: 0 16px 34px -14px rgba(6, 12, 20, 0.6);
+  }
+  .js .hob-card:hover > img { transform: scale(1.04); }
+}
+.hob-card:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+}
+
+@media (max-width: 599.98px) {
+  .hob-tri { grid-template-columns: 1fr; gap: 14px; }
+  .hob-tri > :nth-child(3) { width: 100%; }
+}
+
+/* --- About portrait -------------------------------------------------------
+   Circular frame at the top of the aside. face.png is not committed yet, so
+   the monogram sits beneath and shows through if the image fails to load. */
+.about__portrait {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 108px;
+  aspect-ratio: 1;
+  margin: 0 0 18px;
+  overflow: hidden;
+  border: 1px solid var(--line-strong);
+  border-radius: 50%;
+  background: var(--bg-sunken);
+}
+.about__portrait img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.about__mono {
+  color: var(--ink-muted);
+  font-family: var(--font-script);
+  font-size: 30px;
+  line-height: 1;
+}
+
+/* --- Recently Made: theme-aware project icon ------------------------------
+   Some marks ship a second artwork drawn for a dark ground. Both <img> are in
+   the DOM and CSS picks one, because the theme lives on [data-theme] rather
+   than the OS preference a <picture> element would follow. */
+.rm__icon--dark { display: none; }
+/* :has() scopes the hide to cards that actually ship a dark variant, so a card
+   with only one icon keeps showing it in either theme. */
+:root[data-theme='dark'] .rm:has(.rm__icon--dark) .rm__icon:not(.rm__icon--dark) { display: none; }
+:root[data-theme='dark'] .rm .rm__icon--dark { display: block; }

@@ -79,6 +79,7 @@
     <button class="nav-toggle" type="button" data-nav-toggle aria-expanded="false" aria-controls="primary-nav">Menu</button>
     <nav class="nav" id="primary-nav" aria-label="Primary">
       <a href="#work">Work</a>
+      <a href="#hobbies">Hobbies</a>
       <a href="#about">About</a>
       <a href="#contact">Contact</a>
       <a href="public/assets/resume.pdf" target="_blank" rel="noopener">Resume ↗</a>
@@ -215,12 +216,12 @@
         </div>
       </article>
 
-      <!-- MacPaint-style tool palette -->
-      <div class="palette" aria-hidden="true" style="--x:88.5%; --y:46.0%; --z:5;">
-        <span>✧</span><span>▢</span><span>▨</span><span>◧</span><span>✎</span><span>◔</span>
-        <span>✐</span><span>⌇</span><span>◣</span><span>A</span><span>╲</span><span>⌒</span>
-        <span>▭</span><span>◺</span><span>⬭</span><span>▤</span>
-      </div>
+      <!-- The MS Paint (2003) tool palette. Was a CSS-drawn grid of glyphs;
+           now the real toolbar, background keyed out. Kept on .palette so
+           every per-mode coordinate and the hover lift still apply. -->
+      <img class="palette" src="public/assets/props/paint-toolbar.webp"
+           alt="" aria-hidden="true" width="380" height="1480"
+           style="--x:88.5%; --y:46.0%; --z:5;">
 
       <!-- Mode switcher: bottom-centre of the stage, where the reference puts
            its coffee/broom/pencil icon row -->
@@ -285,6 +286,28 @@
     </div>
   </section>
 
+  <!-- ===================== Hobbies =====================
+       A justified photo gallery grouped by pursuit. Row heights are solved in
+       js/hobbies.js so every row fills the container edge to edge while each
+       photo keeps its own proportions.
+  -->
+  <section class="section" id="hobbies" aria-labelledby="hobbies-h">
+    <div class="wrap">
+      <div class="section-head reveal">
+        <h2 id="hobbies-h">Hobbies</h2>
+        <span class="glyph" aria-hidden="true">&#10059;</span>
+      </div>
+      <p class="hobbies__intro reveal">Things I make and go looking for when I'm not at a terminal.</p>
+
+      <div id="hobby-groups">
+        <noscript>
+          <p>The gallery needs JavaScript to lay out. Photographs of cooking,
+            drawing, trekking and places I've walked through.</p>
+        </noscript>
+      </div>
+    </div>
+  </section>
+
   <!-- ===================== About ===================== -->
   <section class="section" id="about" aria-labelledby="about-h">
     <div class="wrap">
@@ -311,6 +334,15 @@
         </div>
 
         <aside class="about__aside reveal">
+          <!-- Portrait. public/assets/face.png is not committed yet; the <img>
+               removes itself on error and the monogram beneath shows through,
+               so a missing file reads as deliberate. -->
+          <figure class="about__portrait">
+            <img src="public/assets/face.png" alt="Akshayaa Kashyap"
+                 width="400" height="400" loading="lazy" decoding="async"
+                 onerror="this.remove()">
+            <span class="about__mono" aria-hidden="true">AK</span>
+          </figure>
           <dl>
             <dt>Based in</dt><dd>India</dd>
             <dt>Focus</dt><dd>Data analysis, model development, LLM pipelines</dd>
@@ -363,6 +395,9 @@
 <script src="js/squiggle.js"></script>
 <script src="js/hero-hover.js"></script>
 <script src="js/marquee.js"></script>
+<!-- Must load before script.js: it injects .reveal elements, and script.js
+     registers the reveal observer over whatever is in the DOM at that point. -->
+<script src="js/hobbies.js"></script>
 <!-- Dev-only layout editor: loaded solely when ?edit=1 is in the URL, so it
      never ships behaviour to real visitors. -->
 <script>

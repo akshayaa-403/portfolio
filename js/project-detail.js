@@ -55,21 +55,30 @@
       '</figure>';
     },
 
-    /* Formulas are rendered as styled TeX source rather than typeset maths.
-       Pulling in MathJax or KaTeX would mean a network request and a build
-       step, both of which this site deliberately avoids; the notation is
-       short enough to stay readable as-is. */
+    /* Typeset by js/tex.js — a small renderer covering the TeX subset these
+       case studies use. MathJax/KaTeX would mean a CDN request and ~300KB for
+       eight short formulas, on a site that is deliberately buildless. */
     formula: function (s) {
+      var body = (typeof window.renderTex === 'function')
+        ? window.renderTex(s.tex)
+        : esc(s.tex);
       return '<figure class="dd dd--formula">' +
         '<div class="formula" role="math" aria-label="' + esc(s.caption || 'Formula') + '">' +
-          esc(s.tex) +
+          body +
         '</div>' +
         (s.caption ? '<figcaption>' + esc(s.caption) + '</figcaption>' : '') +
       '</figure>';
     },
 
     code: function (s) {
+      // Language chip and copy button sit in a header bar so the block reads
+      // as a code block rather than an indented paragraph. The button is wired
+      // up after render (see initCopy) so no inline handler is needed.
       return '<figure class="dd dd--code">' +
+        '<div class="code-head">' +
+          '<span class="code-lang">' + esc(s.lang || 'text') + '</span>' +
+          '<button class="code-copy" type="button" aria-label="Copy code">Copy</button>' +
+        '</div>' +
         '<pre><code class="lang-' + esc(s.lang || 'text') + '">' + esc(s.code) + '</code></pre>' +
         (s.caption ? '<figcaption>' + esc(s.caption) + '</figcaption>' : '') +
       '</figure>';
@@ -118,6 +127,45 @@
       '<h2>How it works <span class="glyph" aria-hidden="true">◆</span></h2>' +
       body +
     '</div>';
+  }
+
+  /* One delegated listener rather than one per button. Uses the async
+     Clipboard API where available and falls back to a hidden textarea, since
+     clipboard access is blocked on insecure origins. */
+  function initCopy(root) {
+    root.addEventListener('click', function (e) {
+      var btn = e.target.closest && e.target.closest('.code-copy');
+      if (!btn) return;
+      var fig = btn.closest('.dd--code');
+      var code = fig && fig.querySelector('code');
+      if (!code) return;
+      var text = code.textContent;
+
+      function done(ok) {
+        btn.textContent = ok ? 'Copied' : 'Press Ctrl+C';
+        btn.classList.add('is-done');
+        setTimeout(function () {
+          btn.textContent = 'Copy';
+          btn.classList.remove('is-done');
+        }, 1600);
+      }
+
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(text).then(function () { done(true); },
+                                                 function () { done(false); });
+      } else {
+        var ta = document.createElement('textarea');
+        ta.value = text;
+        ta.setAttribute('readonly', '');
+        ta.style.cssText = 'position:absolute;left:-9999px';
+        document.body.appendChild(ta);
+        ta.select();
+        var ok = false;
+        try { ok = document.execCommand('copy'); } catch (err) {}
+        document.body.removeChild(ta);
+        done(ok);
+      }
+    });
   }
 
   function render() {
@@ -194,6 +242,8 @@
       '</div>' +
 
       '<nav class="detail__nav" aria-label="Project navigation">' + navPrev + navNext + '</nav>';
+
+    initCopy(root);
   }
 
   if (document.readyState === 'loading') {

@@ -37,15 +37,34 @@
     if (recentHost) {
       var recent = projects.filter(function (p) { return p.recent; });
       recentHost.insertAdjacentHTML('afterbegin', recent.map(function (p) {
-        return '<a class="rm reveal" href="' + detailHref(p) + '">' +
+        // A project may ship a second icon drawn for a dark ground. The swap is
+        // done in CSS off [data-theme] (see .rm__icon--dark), because the theme
+        // is an attribute on <html>, not the OS preference a <picture> would
+        // react to.
+        var icon =
             '<img class="rm__icon" src="public/assets/work/' + esc(p.id) + '-icon.webp" alt="" ' +
               'width="320" height="320" loading="lazy">' +
+            (p.iconDark
+              ? '<img class="rm__icon rm__icon--dark" src="public/assets/work/' +
+                esc(p.id) + '-icon-dark.webp" alt="" width="320" height="320" loading="lazy">'
+              : '');
+
+        return '<a class="rm reveal" href="' + detailHref(p) + '">' + icon +
             '<span class="rm__text">' +
               '<span class="rm__title">' + esc(p.title) + '</span>' +
               '<span class="rm__desc">' + esc(p.tagline) + '</span>' +
             '</span>' +
-            '<img class="rm__hover" src="public/assets/work/' + esc(p.id) + '-hover.webp" alt="" ' +
-              'width="720" height="480" loading="lazy" aria-hidden="true">' +
+            // hoverShots > 1 stacks extra frames; js cycles them while hovered.
+            (function () {
+              var n = p.hoverShots || 1, out = '';
+              for (var s = 1; s <= n; s++) {
+                out += '<img class="rm__hover' + (s === 1 ? ' is-shown' : '') + '"' +
+                  ' src="public/assets/work/' + esc(p.id) +
+                  (s === 1 ? '-hover.webp' : '-hover-' + s + '.webp') + '"' +
+                  ' alt="" width="720" height="480" loading="lazy" aria-hidden="true">';
+              }
+              return out;
+            })() +
           '</a>';
       }).join(''));
     }
@@ -389,9 +408,51 @@
     }, 5000);
   }
 
+  /* ---------- cycle the hover previews ----------
+     Cards with more than one screenshot advance through them while hovered.
+     The interval only runs during a hover, so idle cards cost nothing, and it
+     is skipped entirely under prefers-reduced-motion. */
+  function initHoverCycle() {
+    if (window.matchMedia &&
+        window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+
+    var cards = document.querySelectorAll('a.rm');
+    for (var i = 0; i < cards.length; i++) {
+      (function (card) {
+        var shots = card.querySelectorAll('.rm__hover');
+        if (shots.length < 2) return;
+        var at = 0, timer = null;
+
+        function show(n) {
+          for (var k = 0; k < shots.length; k++) {
+            shots[k].classList.toggle('is-shown', k === n);
+          }
+        }
+        function start() {
+          if (timer) return;
+          timer = setInterval(function () {
+            at = (at + 1) % shots.length;
+            show(at);
+          }, 1400);
+        }
+        function stop() {
+          clearInterval(timer);
+          timer = null;
+          at = 0;
+          show(0);
+        }
+        card.addEventListener('pointerenter', start);
+        card.addEventListener('pointerleave', stop);
+        card.addEventListener('focus', start);
+        card.addEventListener('blur', stop);
+      })(cards[i]);
+    }
+  }
+
   /* ---------- boot ---------- */
   function init() {
     renderCards();
+    initHoverCycle();
     initReveal();
     initActiveNav();
     initHeader();

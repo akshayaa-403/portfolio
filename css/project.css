@@ -336,3 +336,173 @@
   .steps li { padding-left: 34px; }
   .steps li::before { width: 22px; height: 22px; font-size: 11px; }
 }
+
+/* ==========================================================================
+   Typeset formulas (js/tex.js)
+   ========================================================================== */
+.formula {
+  overflow-x: auto;
+  padding: 20px 22px;
+  border: 1px solid var(--line);
+  border-left: 3px solid var(--accent);
+  border-radius: var(--radius-sm);
+  background: var(--bg-sunken);
+  color: var(--ink);
+  /* Serif italic is the maths convention for variables; the mono stack the
+     rest of the site uses reads as code, not notation. */
+  font-family: 'Cormorant Garamond', Georgia, 'Times New Roman', serif;
+  font-size: 21px;
+  font-style: italic;
+  line-height: 2;
+  text-align: center;
+  white-space: nowrap;
+}
+.formula sub, .formula sup {
+  font-size: 0.68em;
+  font-style: italic;
+  line-height: 0;
+}
+
+/* Fractions: stacked numerator over denominator with a real rule between. */
+.tex-frac {
+  display: inline-flex;
+  flex-direction: column;
+  vertical-align: -0.52em;
+  margin: 0 0.22em;
+  text-align: center;
+}
+.tex-num { padding: 0 0.35em 2px; border-bottom: 1px solid currentColor; }
+.tex-den { padding: 3px 0.35em 0; }
+
+/* Sums/products with a lower limit set beneath the operator. */
+.tex-bigop { font-size: 1.35em; font-style: normal; }
+.tex-limits {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  vertical-align: -0.4em;
+  margin: 0 0.15em;
+}
+.tex-under { font-size: 0.62em; line-height: 1.1; }
+
+/* \text{} and operator names are upright — they are words, not variables. */
+.tex-text, .tex-op { font-style: normal; }
+.tex-op { margin: 0 0.12em; }
+.tex-mathcal { font-family: 'Brush Script MT', cursive; font-style: normal; }
+.tex-mathbb { font-weight: 600; font-style: normal; }
+.tex-mathbf { font-weight: 700; font-style: normal; }
+.tex-sp { display: inline-block; width: 0.32em; }
+.tex-acc { position: relative; }
+.tex-sqrt .tex-rad { border-top: 1px solid currentColor; padding: 0 0.2em; }
+
+@media (max-width: 599.98px) {
+  .formula { font-size: 17px; padding: 15px 16px; }
+}
+
+/* ==========================================================================
+   Code blocks
+   ========================================================================== */
+.dd--code {
+  margin: 0 0 32px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  background: var(--bg-sunken);
+}
+.code-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--gap);
+  padding: 7px 10px 7px 14px;
+  border-bottom: 1px solid var(--line);
+  background: var(--surface-muted);
+}
+.code-lang {
+  color: var(--ink-muted);
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+.code-copy {
+  padding: 4px 10px;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius-pill);
+  background: var(--bg-raised);
+  color: var(--ink-body);
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  letter-spacing: 0.04em;
+  cursor: pointer;
+  transition: background var(--dur) var(--ease), color var(--dur) var(--ease),
+              border-color var(--dur) var(--ease);
+}
+.code-copy:hover {
+  border-color: var(--accent);
+  color: var(--accent-ink);
+  background: var(--accent-tint);
+}
+.code-copy.is-done {
+  border-color: var(--accent-deep);
+  background: var(--accent-deep);
+  color: var(--on-accent-deep, #fff);
+}
+.dd--code pre {
+  margin: 0;
+  padding: 16px 18px;
+  overflow-x: auto;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+}
+.dd--code figcaption { padding: 0 14px 12px; margin-top: 10px; }
+
+/* ==========================================================================
+   Hobby gallery page (hobby.html)
+   ========================================================================== */
+.hobby__blurb {
+  max-width: var(--measure-narrow);
+  margin: 0 0 26px;
+  color: var(--ink-soft);
+  font-size: 16px;
+  line-height: 1.65;
+}
+
+/* auto-fill: column count falls out of the width, no breakpoints needed */
+.hob-shots {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+  gap: 12px;
+  margin-bottom: 40px;
+}
+.hob-shot {
+  position: relative;
+  margin: 0;
+  aspect-ratio: 4 / 3;
+  overflow: hidden;
+  border-radius: 3px;
+  background: var(--bg-sunken);
+}
+.hob-shot img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.hob-shot figcaption {
+  position: absolute;
+  left: 10px; right: 10px; bottom: 8px;
+  color: #fff;
+  font-size: 12px;
+  font-style: italic;
+  text-shadow: 0 1px 6px rgba(0, 0, 0, 0.9);
+  pointer-events: none;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+@media (prefers-reduced-motion: no-preference) {
+  .js .hob-shot img { transition: transform 0.4s var(--ease); }
+  .js .hob-shot figcaption { opacity: 0; transition: opacity 0.26s var(--ease); }
+  .js .hob-shot:hover img { transform: scale(1.05); }
+  .js .hob-shot:hover figcaption { opacity: 1; }
+}
