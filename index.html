@@ -75,7 +75,7 @@
 
 <header class="site-header" id="site-header">
   <div class="site-header__inner">
-    <a class="brand" href="#top"><span class="brand__dot" aria-hidden="true"></span>Akshayaa Kashyap</a>
+    <a class="brand" href="#top"><img class="brand__mark" src="public/assets/brand-mark.webp" alt="" aria-hidden="true" width="96" height="96">Akshayaa Kashyap</a>
     <button class="nav-toggle" type="button" data-nav-toggle aria-expanded="false" aria-controls="primary-nav">Menu</button>
     <nav class="nav" id="primary-nav" aria-label="Primary">
       <a href="#work">Work</a>
@@ -338,9 +338,12 @@
                removes itself on error and the monogram beneath shows through,
                so a missing file reads as deliberate. -->
           <figure class="about__portrait">
-            <img src="public/assets/face.png" alt="Akshayaa Kashyap"
-                 width="400" height="400" loading="lazy" decoding="async"
-                 onerror="this.remove()">
+            <picture>
+              <source srcset="public/assets/face.webp" type="image/webp">
+              <img src="public/assets/face.png" alt="Akshayaa Kashyap"
+                   width="560" height="700" loading="lazy" decoding="async"
+                   onerror="this.closest('picture').remove()">
+            </picture>
             <span class="about__mono" aria-hidden="true">AK</span>
           </figure>
           <dl>

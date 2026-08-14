@@ -469,21 +469,30 @@
   line-height: 1.65;
 }
 
-/* auto-fill: column count falls out of the width, no breakpoints needed */
+/* Mosaic: a dense-packed grid on fixed 10px rows. Each figure spans a number
+   of rows proportional to its own aspect ratio (set inline by js/hobby-page.js
+   once the image decodes), and landscape shots also span two columns — so
+   portraits and landscapes interlock instead of being cropped to a common
+   shape. grid-auto-flow:dense backfills the gaps a mixed-span grid leaves. */
 .hob-shots {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
-  gap: 12px;
+  grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
+  grid-auto-rows: 10px;
+  grid-auto-flow: row dense;
+  gap: 10px;
   margin-bottom: 40px;
 }
 .hob-shot {
   position: relative;
   margin: 0;
-  aspect-ratio: 4 / 3;
   overflow: hidden;
   border-radius: 3px;
   background: var(--bg-sunken);
+  /* Fallback span before JS measures; replaced by the inline --rows. */
+  grid-row: span var(--rows, 22);
 }
+.hob-shot--wide { grid-column: span 2; }
+
 .hob-shot img {
   display: block;
   width: 100%;
@@ -500,9 +509,52 @@
   pointer-events: none;
   white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }
+/* One column cannot hold a two-column span. */
+@media (max-width: 519.98px) {
+  .hob-shots { grid-template-columns: 1fr; }
+  .hob-shot--wide { grid-column: span 1; }
+}
 @media (prefers-reduced-motion: no-preference) {
   .js .hob-shot img { transition: transform 0.4s var(--ease); }
   .js .hob-shot figcaption { opacity: 0; transition: opacity 0.26s var(--ease); }
   .js .hob-shot:hover img { transform: scale(1.05); }
   .js .hob-shot:hover figcaption { opacity: 1; }
+}
+
+/* ==========================================================================
+   Phone (<=599px)
+   Detail pages carry the densest content on the site — tables, code, formulas
+   — so they need the most narrow-width attention.
+   ========================================================================== */
+@media (max-width: 599.98px) {
+  .detail__title { font-size: clamp(26px, 8vw, 34px); }
+  .detail__tagline { font-size: 15px; }
+  .detail__aside { max-width: none; }
+  .detail__actions { gap: 8px; }
+  .detail__actions .btn { padding: 11px 15px; font-size: 13px; min-height: 44px; }
+
+  .detail__deep h2 { font-size: 19px; }
+  .dd--prose h3,
+  .dd--steps h3 { font-size: 16px; }
+  .dd { margin-bottom: 24px; }
+
+  /* Captions are the smallest text on the page; keep them readable. */
+  .dd figcaption { font-size: 13px; }
+
+  /* Tables: a phone cannot show four columns, so let them scroll and hint it. */
+  .table-scroll {
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: thin;
+  }
+  .dd--table th,
+  .dd--table td { padding: 9px 11px; }
+
+  .code-head { padding: 6px 8px 6px 12px; }
+  .code-copy { padding: 12px 15px; min-height: 44px; }
+
+  .detail__nav { flex-direction: column; gap: 10px; }
+  .detail__nav a { min-height: 44px; display: inline-flex; align-items: center; }
+
+  .hob-shots { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 8px; }
+  .hobby__blurb { font-size: 15px; }
 }

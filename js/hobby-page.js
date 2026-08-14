@@ -1,11 +1,11 @@
 /* Renders one hobby gallery from ?id= on hobby.html.
 
-   Photo counts and captions live here rather than in a shared data file: this
-   is the only page that reads them, and a second data module for three arrays
-   would be a file to keep in sync for no gain.
+   Photo counts live here rather than in a shared data file: this is the only
+   page that reads them, and a second module for three numbers would be a file
+   to keep in sync for no gain. Images are numbered <id>-1.webp upward, so
+   adding photos means bumping n.
 
-   Layout is a CSS auto-fill grid, so column count falls out of the available
-   width with no breakpoints and no layout pass. */
+   Layout is a mosaic — see sizeMosaic below. */
 (function () {
   'use strict';
 
@@ -13,27 +13,23 @@
     photography: {
       label: 'Photography',
       note: 'light, and whatever it lands on',
+      n: 34,
       blurb: 'Mostly what the light was doing. Lantern markets, empty platforms, ' +
-             'ridgelines at the wrong hour — the shot is usually the reason I stopped walking.',
-      captions: ['Lantern market', 'Glass and colour', 'Empty platform', 'Dusk over the ridge',
-                 'Shrine, lit', 'Someone else’s cat', 'Ridgeline', 'The valley opens up',
-                 'Above the treeline', 'Long way down']
+             'ridgelines at the wrong hour — the shot is usually the reason I stopped walking.'
     },
     artwork: {
       label: 'Artwork',
       note: 'graphite, ink and gouache',
+      n: 6,
       blurb: 'Drawing is the one thing I do that has no undo. Graphite studies, ' +
-             'ink portraits, and the occasional experiment in gouache.',
-      captions: ['Eye study, graphite', 'Dazai, ink', 'Lotus', 'Botanical, ballpoint']
+             'ink portraits, and the occasional experiment in gouache.'
     },
     cooking: {
       label: 'Cooking',
       note: 'mostly dinner, occasionally dessert',
+      n: 21,
       blurb: 'Cooking is the fastest feedback loop I have outside a terminal: ' +
-             'you find out whether it worked in about twenty minutes.',
-      captions: ['Strawberry and grape tart', 'Crème caramel', 'Bruschetta, two ways',
-                 'Ramen, soft egg, fried bread', 'Noodles with spring onion',
-                 'Thali, all at once']
+             'you find out whether it worked in about twenty minutes.'
     }
   };
 
@@ -77,13 +73,17 @@
     var d = document.querySelector('meta[name="description"]');
     if (d) d.setAttribute('content', g.blurb);
 
-    var shots = g.captions.map(function (cap, i) {
-      return '<figure class="hob-shot">' +
-        '<img src="public/assets/hobbies/' + esc(id) + '-' + (i + 1) + '.webp"' +
-             ' alt="' + esc(cap) + '" loading="lazy" decoding="async">' +
-        '<figcaption>' + esc(cap) + '</figcaption>' +
+    var shots = '';
+    for (var i = 1; i <= g.n; i++) {
+      shots += '<figure class="hob-shot">' +
+        '<img src="public/assets/hobbies/' + esc(id) + '-' + i + '.webp"' +
+             ' alt="' + esc(g.label) + ' — photograph ' + i + '"' +
+             ' loading="lazy" decoding="async">' +
       '</figure>';
-    }).join('');
+    }
+
+    // Deferred: the mosaic spans are set from each image's real aspect ratio
+    // once it decodes (see sizeMosaic below).
 
     // prev / next around the three galleries, wrapping at both ends
     var at = ORDER.indexOf(id);
@@ -106,6 +106,52 @@
         '<a href="hobby.html?id=' + esc(prev) + '">&larr; ' + esc(GROUPS[prev].label) + '</a>' +
         '<a href="hobby.html?id=' + esc(next) + '">' + esc(GROUPS[next].label) + ' &rarr;</a>' +
       '</nav>';
+
+    sizeMosaic(root);
+  }
+
+  /* ---------- mosaic sizing ----------
+     Each tile spans however many 10px grid rows its own aspect ratio needs, so
+     photos keep their proportions instead of being cropped to one shape.
+     Landscape shots also claim two columns. Recomputed on resize because the
+     column width — and therefore the row count for a given ratio — changes. */
+  function sizeMosaic(root) {
+    var ROW = 10, GAP = 10;
+
+    function size(fig) {
+      var img = fig.querySelector('img');
+      if (!img || !img.naturalWidth) return;
+      var ar = img.naturalWidth / img.naturalHeight;
+      fig.classList.toggle('hob-shot--wide', ar > 1.2);
+      // Height the tile would take at its current rendered width, converted
+      // to a whole number of grid rows (gaps count toward the span).
+      var h = fig.clientWidth / ar;
+      fig.style.setProperty('--rows', Math.max(6, Math.round((h + GAP) / (ROW + GAP))));
+    }
+
+    var figs = root.querySelectorAll('.hob-shot');
+
+    function all() {
+      for (var i = 0; i < figs.length; i++) size(figs[i]);
+    }
+
+    for (var i = 0; i < figs.length; i++) {
+      (function (fig) {
+        var img = fig.querySelector('img');
+        if (img.complete && img.naturalWidth) {
+          size(fig);
+        } else {
+          img.addEventListener('load', function () { size(fig); });
+          img.addEventListener('error', function () { size(fig); });
+        }
+      })(figs[i]);
+    }
+
+    var t;
+    window.addEventListener('resize', function () {
+      clearTimeout(t);
+      t = setTimeout(all, 120);
+    });
   }
 
   if (document.readyState === 'loading') {

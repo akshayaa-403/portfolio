@@ -12,9 +12,9 @@
   'use strict';
 
   var GROUPS = [
-    { id: 'photography', label: 'Photography', note: 'light, and whatever it lands on', n: 10 },
-    { id: 'artwork',     label: 'Artwork',     note: 'graphite, ink and gouache',       n: 4  },
-    { id: 'cooking',     label: 'Cooking',     note: 'mostly dinner, occasionally dessert', n: 6 }
+    { id: 'photography', label: 'Photography', note: 'light, and whatever it lands on', n: 34 },
+    { id: 'artwork',     label: 'Artwork',     note: 'graphite, ink and gouache',       n: 6  },
+    { id: 'cooking',     label: 'Cooking',     note: 'mostly dinner, occasionally dessert', n: 21 }
   ];
 
   var reduce = window.matchMedia &&

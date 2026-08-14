@@ -362,11 +362,13 @@ button { font: inherit; }
   font-weight: 500;
   color: var(--ink);
 }
-.brand__dot {
-  width: 9px; height: 9px;
-  border-radius: 50%;
-  background: var(--accent);
+/* The lotus from the favicon, background keyed out. Replaces the plain dot
+   the brand used to carry. */
+.brand__mark {
+  width: 28px;
+  height: 28px;
   flex: none;
+  object-fit: contain;
 }
 
 .nav { display: flex; align-items: center; gap: 4px; }
@@ -1571,9 +1573,12 @@ button { font: inherit; }
   --w: var(--player-w) !important;
   height: 40.190% !important; transform: none !important; z-index: 6 !important;
 }
+/* height:auto rather than the dumped figure: the recorded box was taller than
+   the card's own content, which left a band of empty space under the buttons.
+   The width still comes from the dump, so the card lands where it was placed. */
 [data-mode='clean'] .obj--share {
   --x: 80.650% !important; --y: 66.710% !important; --w: 15.050% !important;
-  height: 26.880% !important; transform: none !important; z-index: 7 !important;
+  height: auto !important; transform: none !important; z-index: 7 !important;
 }
 /* The real toolbar is proportionally taller than the CSS grid it replaced, so
    width comes down from 7.900% to keep the authored 385px height. */
@@ -1717,23 +1722,21 @@ button { font: inherit; }
   z-index: 6 !important;
 }
 [data-mode='chaos'] .obj--share {
-  --x: 85.465% !important; --y: 59.639% !important;
-  --w: 13.131% !important; height: 23.337% !important;
-  transform: rotate(11deg) !important;
-  transform-origin: center center !important;
+  --x: 84.333% !important; --y: 57.630% !important;
+  --w: 15.400% !important; height: auto !important;
+  transform: none !important;
   z-index: 7 !important;
 }
 [data-mode='chaos'] .palette {
-  --x: 92.181% !important; --y: 19.056% !important;
-  width: 5.829% !important;
-  transform: rotate(2deg) !important;
-  transform-origin: center center !important;
+  --x: 92.166% !important; --y: 14.752% !important;
+  width: 5.790% !important;
+  transform: none !important;
   z-index: 6 !important;
 }
 /* --y is the element's own top, but the dump reports the rotated bounding
    box, which sits 5px higher for this -5deg label. Offset to compensate. */
 [data-mode='chaos'] .prop-label {
-  --x: 73.460% !important; --y: 81.055% !important;
+  --x: 73.420% !important; --y: 80.994% !important;
   transform: rotate(-5deg) !important;
   z-index: 7 !important;
 }
@@ -1800,11 +1803,13 @@ button { font: inherit; }
   transform-origin: center center !important;
   z-index: 4 !important;
 }
+/* Above the notebook page (z 4) but below the lamp (z 27): the glow spills
+   onto the paper, while the shade still covers its own top edge. */
 [data-mode='notebook'] .prop--glow {
   display: block !important;
   left: 74.864% !important; top: 56.590% !important;
   width: 10.218% !important; height: 16.445% !important;
-  transform: none !important; z-index: 3 !important;
+  transform: none !important; z-index: 6 !important;
 }
 [data-mode='notebook'] .prop[data-prop='lamp'] {
   /* Rotated 12deg; box solved back from the dumped 255x288 bounding box. */
@@ -1861,12 +1866,13 @@ button { font: inherit; }
   width: 24.251% !important; height: 38.862% !important;
   transform: none !important; z-index: 1 !important;
 }
+/* Sits on the page rather than under it, same band as the glow. */
 [data-mode='notebook'] .obj--player {
   --x: 75.000% !important; --y: 11.985% !important;
   --w: 15.599% !important; height: 40.194% !important;
   transform: rotate(0deg) !important;
   transform-origin: center center !important;
-  z-index: 2 !important;
+  z-index: 6 !important;
 }
 [data-mode='notebook'] .obj--share {
   --x: 19.994% !important; --y: 70.269% !important;
@@ -2207,27 +2213,30 @@ button { font: inherit; }
 }
 
 /* --- About portrait -------------------------------------------------------
-   Circular frame at the top of the aside. face.png is not committed yet, so
-   the monogram sits beneath and shows through if the image fails to load. */
+   A 4:5 portrait rather than a circle: the photograph is full-length, and a
+   circular crop would throw most of it away. The monogram sits beneath and
+   shows through if the image is missing or fails to load. */
 .about__portrait {
   position: relative;
   display: grid;
   place-items: center;
-  width: 108px;
-  aspect-ratio: 1;
+  width: 100%;
+  max-width: 190px;
+  aspect-ratio: 4 / 5;
   margin: 0 0 18px;
   overflow: hidden;
   border: 1px solid var(--line-strong);
-  border-radius: 50%;
+  border-radius: var(--radius);
   background: var(--bg-sunken);
 }
+.about__portrait picture,
 .about__portrait img {
   position: absolute;
   inset: 0;
   width: 100%;
   height: 100%;
-  object-fit: cover;
 }
+.about__portrait img { object-fit: cover; }
 .about__mono {
   color: var(--ink-muted);
   font-family: var(--font-script);
@@ -2244,3 +2253,106 @@ button { font: inherit; }
    with only one icon keeps showing it in either theme. */
 :root[data-theme='dark'] .rm:has(.rm__icon--dark) .rm__icon:not(.rm__icon--dark) { display: none; }
 :root[data-theme='dark'] .rm .rm__icon--dark { display: block; }
+
+/* --------------------------------------------------------------------------
+   16. Phone (<=599px)
+
+   The existing breakpoints stop at 600px, so nothing below that was tuned for
+   a phone. Findings this block addresses, from an audit across six device
+   widths x both themes x five pages:
+
+     - tap targets under the 44px minimum (WCAG 2.5.5): footer links, mode
+       toggle buttons, nav toggle, player button, detail back-links
+     - body text under 13px: share-card copy, palette meta, table cells
+     - the marquee and the lilies deliberately overflow; everything else that
+       did has been contained rather than clipped
+
+   Horizontal overflow measured 0px on every combination before and after.
+   -------------------------------------------------------------------------- */
+@media (max-width: 599.98px) {
+  /* --- tap targets ---------------------------------------------------- */
+  /* Padding rather than min-height: these are inline links inside flowing
+     text, so growing the box keeps them in the layout instead of stretching
+     their line. */
+  .site-footer nav a,
+  .site-footer__social a {
+    padding: 11px 4px;
+    min-height: 44px;
+    align-items: center;
+  }
+  .site-footer__social { gap: 2px; }
+
+  .modes button {
+    padding: 11px 14px;      /* was 5px 11px -> 28px tall */
+    font-size: 12px;
+  }
+  .nav-toggle { padding: 11px 16px; }
+
+  .player__play {
+    width: 44px;
+    height: 44px;
+  }
+
+  .detail__back,
+  .ow__link {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+  }
+  .btn { padding: 12px 18px; }
+  .share__btn { min-height: 44px; }
+  .brand { padding: 11px 0; }
+
+  /* --- legibility ------------------------------------------------------ */
+  /* Nothing below 13px: iOS also zooms the page when tapped text is smaller. */
+  .share__sub { font-size: 13px; }
+  .share__title { font-size: 13px; }
+  .obj__title,
+  .obj__meta { font-size: 13px; }
+  .ow__meta,
+  .rm__desc { font-size: 13.5px; }
+  .dd--table th,
+  .dd--table td { font-size: 13px; }
+  .hob-card__note { font-size: 13px; }
+
+  /* --- spacing ---------------------------------------------------------- */
+  /* A phone has no room for desktop section rhythm. */
+  .section { padding: 34px 0; }
+  :root { --gap-lg: 18px; --section-gap: 34px; }
+  .section-head h2 { font-size: 21px; }
+  .lede { font-size: 16px; }
+
+  /* Cards stack, so the icon can be larger and the text gets full width. */
+  .rm { padding: 14px; gap: 12px; }
+  .rm__icon { width: 60px; height: 60px; }
+  .ow { flex-direction: column; }
+  .ow__thumb { width: 100%; height: 170px; }
+}
+
+/* Very narrow (<=360px): the smallest phone still in real use. */
+@media (max-width: 360px) {
+  .rm__icon { width: 52px; height: 52px; }
+  .rm__title { font-size: 15px; }
+  .modes button { padding: 10px 10px; font-size: 11.5px; }
+  .hob-card__label { font-size: 22px; }
+}
+
+/* Remaining mobile tap targets: several sat at 41-42px, just under the 44px
+   minimum. Raising the shared paddings clears them all rather than patching
+   each selector. */
+@media (max-width: 599.98px) {
+  .nav a { padding: 12px; min-height: 44px; display: flex; align-items: center; }
+  .modes button { padding: 13px 14px; }
+  .contact__links .btn,
+  .hero__actions .btn { min-height: 46px; }
+  .skip-link { padding: 13px 18px; }
+  .ow__title a { display: inline-flex; align-items: center; min-height: 44px; }
+  .about__body a { display: inline-block; padding: 8px 0; }
+  .code-copy { min-height: 44px; padding: 11px 14px; }
+  .ow__link { min-width: 44px; justify-content: center; }
+  /* Footer year and social labels were 12px. */
+  .site-footer__inner { font-size: 13px; }
+  .site-footer__social a span { font-size: 13px; }
+  .hob-card__count { font-size: 11.5px; }
+  .hob-shot figcaption { font-size: 12.5px; }
+}
