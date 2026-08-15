@@ -26,3 +26,7 @@ js/config.js
 *.njsproj
 *.sln
 *.sw?
+
+# Original artwork and photographs. The web-sized copies under
+# public/assets/ are what ship; these are the masters and stay local.
+sources/

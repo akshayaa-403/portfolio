@@ -13,23 +13,79 @@
     photography: {
       label: 'Photography',
       note: 'light, and whatever it lands on',
-      n: 34,
+      n: 29,
       blurb: 'Mostly what the light was doing. Lantern markets, empty platforms, ' +
-             'ridgelines at the wrong hour — the shot is usually the reason I stopped walking.'
+             'ridgelines at the wrong hour — the shot is usually the reason I stopped walking.',
+      captions: [
+        'Balcony view, monsoon sky',
+        'Hampi, carved colonnade',
+        'Ridgeline in the dry season',
+        'Lone tree above the valley',
+        'The escarpment opens up',
+        'Sun through the treeline',
+        'Fort wall at dusk',
+        'Last light over the plain',
+        'City skyline going pink',
+        'Atrium, hanging garden',
+        'Gallery corridor',
+        'Neon and glass cabinets',
+        'Metro platform in the rain',
+        'Branches against a violet sky',
+        'Storm building over the mast',
+        'Diya, flowers and the Buddha',
+        'Lakeside through the leaves',
+        'Moon over the lawn',
+        'Pines at the edge of the grass',
+        'Bungalows at golden hour',
+        'Overcast, sun breaking through',
+        'Lantern market, blue and gold',
+        'Lamps stacked to the ceiling',
+        'Every colour at once',
+        'Holding one up to the light',
+        'Campus block after dark',
+        'Terrace at nightfall',
+        'Stage lights and paper flowers',
+        'Alleyway, midday'
+      ]
     },
     artwork: {
       label: 'Artwork',
       note: 'graphite, ink and gouache',
       n: 6,
       blurb: 'Drawing is the one thing I do that has no undo. Graphite studies, ' +
-             'ink portraits, and the occasional experiment in gouache.'
+             'ink portraits, and the occasional experiment in gouache.',
+      captions: [
+        'Ink botanical, ruled paper',
+        'Yin-yang in a peacock frame',
+        'Figure study, pencil',
+        'Lotus on a yellow field, gouache',
+        'Dazai — ink portrait',
+        'Eye study, graphite'
+      ]
     },
     cooking: {
       label: 'Cooking',
       note: 'mostly dinner, occasionally dessert',
-      n: 21,
+      n: 15,
       blurb: 'Cooking is the fastest feedback loop I have outside a terminal: ' +
-             'you find out whether it worked in about twenty minutes.'
+             'you find out whether it worked in about twenty minutes.',
+      captions: [
+        'Grilled sandwich, egg and cucumber',
+        'Plated, with the good sauce',
+        'Noodles under a fried egg',
+        'Strawberry toast and coffee',
+        'Rice tower, egg and pickle',
+        'Same stew, more bread',
+        'Noodles with spring onion',
+        'Egg on top, always',
+        'Cutlets and slaw',
+        'Open toasties on the good plate',
+        'Poached eggs, two ways',
+        'Thali, everything at once',
+        'Party toasts, assembly line',
+        'Mushrooms, slow-cooked',
+        'Noodles with avocado'
+      ]
     }
   };
 
@@ -75,10 +131,12 @@
 
     var shots = '';
     for (var i = 1; i <= g.n; i++) {
+      var cap = (g.captions && g.captions[i - 1]) || '';
       shots += '<figure class="hob-shot">' +
         '<img src="public/assets/hobbies/' + esc(id) + '-' + i + '.webp"' +
-             ' alt="' + esc(g.label) + ' — photograph ' + i + '"' +
+             ' alt="' + esc(cap || (g.label + ' photograph ' + i)) + '"' +
              ' loading="lazy" decoding="async">' +
+        (cap ? '<figcaption>' + esc(cap) + '</figcaption>' : '') +
       '</figure>';
     }
 
