@@ -18,7 +18,7 @@
              'ridgelines at the wrong hour, the shot is usually the reason I stopped walking.',
       captions: [
         'Lone tree above the valley, Mahabaleshwar',
-        'Hampi, carved colonnade',
+        'Hanging Pillar, Lepakshi',
         'Balcony view',
         'Elephant\'s head point, Mahabaleshwar',
         'Landscape, Mahabaleshwar',
