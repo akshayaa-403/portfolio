@@ -501,13 +501,16 @@
 }
 .hob-shot figcaption {
   position: absolute;
-  left: 10px; right: 10px; bottom: 8px;
+  left: 0; right: 0; bottom: 0;
+  padding: 20px 10px 8px;
+  background: linear-gradient(to top, rgba(0, 0, 0, 0.75), rgba(0, 0, 0, 0));
   color: #fff;
   font-size: 12px;
   font-style: italic;
+  line-height: 1.35;
   text-shadow: 0 1px 6px rgba(0, 0, 0, 0.9);
   pointer-events: none;
-  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  white-space: normal;
 }
 /* One column cannot hold a two-column span. */
 @media (max-width: 519.98px) {

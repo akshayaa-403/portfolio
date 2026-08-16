@@ -18,8 +18,8 @@
              'ridgelines at the wrong hour, the shot is usually the reason I stopped walking.',
       captions: [
         'Lone tree above the valley, Mahabaleshwar',
-        'Balcony view',
         'Hampi, carved colonnade',
+        'Balcony view',
         'Elephant\'s head point, Mahabaleshwar',
         'Landscape, Mahabaleshwar',
         'Sunset-1, Pune',
@@ -40,7 +40,6 @@
         'Turkish lamp at Trade Expo, New Delhi',
         'Turkish lamps-2, New Delhi',
         'Turkish lamps-3, New Delhi',
-        'College Campus, Pune',
         'Campus block after dark, Pune',
         'Terrace at nightfall',
         'Dream Vision Art Exhibition, New Delhi',
@@ -182,7 +181,7 @@
       // Height the tile would take at its current rendered width, converted
       // to a whole number of grid rows (gaps count toward the span).
       var h = fig.clientWidth / ar;
-      fig.style.setProperty('--rows', Math.max(6, Math.round((h + GAP) / (ROW + GAP))));
+      fig.style.setProperty('--rows', Math.max(9, Math.round((h + GAP) / (ROW + GAP))));
     }
 
     var figs = root.querySelectorAll('.hob-shot');
