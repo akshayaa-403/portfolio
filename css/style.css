@@ -2299,6 +2299,68 @@ button { font: inherit; }
   .ow__thumb { width: 100%; height: 170px; }
 }
 
+/* --------------------------------------------------------------------------
+   Hero: force natural flow on mobile, in EVERY view mode.
+
+   The [data-mode='chaos'|'notebook'|'clean'] blocks pin the lockup text, the
+   two cards and the toggle with `position: absolute !important` and no media
+   guard, so below 900px they overlapped the base mobile reset (which had no
+   !important). This block wins by coming later with matching specificity plus
+   !important, so the hero stacks: name -> role -> headline -> cards -> toggle.
+   -------------------------------------------------------------------------- */
+@media (max-width: 899.98px) {
+  /* notebook mode re-shows every prop with `display:block !important` on
+     high-specificity selectors ([src*=], [data-prop=]). To out-specify those
+     and still beat the base, match the same attribute shapes with !important. */
+  [data-mode] .prop,
+  [data-mode] .prop-label,
+  [data-mode] .palette,
+  :root[data-mode] .prop[src],
+  :root[data-mode] .prop[data-prop],
+  :root[data-mode] .prop[src*='notebook-page'] { display: none !important; }
+
+  [data-mode] .hero__lockup {
+    position: relative !important;
+    left: auto !important; top: auto !important; right: auto !important;
+    width: auto !important; max-width: none !important; height: auto !important;
+    transform: none !important;
+  }
+  [data-mode] .hero__name,
+  [data-mode] .hero__role,
+  [data-mode] .hero__sub,
+  [data-mode] .hero__headline {
+    position: static !important;
+    left: auto !important; top: auto !important; right: auto !important;
+    width: auto !important; max-width: 100% !important;
+    white-space: normal !important;
+    transform: none !important;
+  }
+  [data-mode] .hero__name   { margin: 0 auto 14px !important; }
+  [data-mode] .hero__role   { margin: 0 auto !important; }
+  [data-mode] .hero__sub    { margin: 0 auto 20px !important; }
+  [data-mode] .hero__headline { margin: 0 auto 28px !important; }
+
+  [data-mode] .stage .obj {
+    position: relative !important;
+    left: auto !important; top: auto !important;
+    --w: auto !important;
+    width: min(320px, calc(100% - 40px)) !important;
+    height: auto !important;
+    margin: 0 auto var(--gap-lg) !important;
+    transform: none !important;
+  }
+  /* The player card sizes its disc off width, so drop the fixed --h too. */
+  [data-mode] .obj--player .player__disc { aspect-ratio: 1; height: auto; }
+
+  [data-mode] .hero__actions {
+    position: static !important;
+    left: auto !important; top: auto !important;
+    width: auto !important;
+    margin: 4px auto 0 !important;
+    transform: none !important;
+  }
+}
+
 /* Very narrow (<=360px): the smallest phone still in real use. */
 @media (max-width: 360px) {
   .rm__icon { width: 52px; height: 52px; }
