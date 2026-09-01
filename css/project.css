@@ -124,7 +124,10 @@
 }
 .detail__nav a { color: var(--ink-soft); }
 .detail__nav a:hover { color: var(--accent-ink); }
-.detail__nav span { color: var(--ink-faint); }
+/* --ink-faint is 4.01:1 and the palette doc marks it decorative-only. This
+   is real text ("start of list" / "end of list"), so it needs a token
+   that clears AA. */
+.detail__nav span { color: var(--ink-soft); }
 
 /* Missing / unknown project id */
 .detail__missing {
@@ -139,25 +142,6 @@
   color: var(--ink-soft);
   margin-bottom: var(--gap-lg);
 }
-
-/* 404 */
-.notfound {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: var(--gap);
-  min-height: 68vh;
-  text-align: center;
-}
-.notfound__code {
-  font-family: var(--font-script);
-  font-size: clamp(4rem, 16vw, 8rem);
-  line-height: 1;
-  color: var(--accent); /* decorative at this size; aria-hidden in the markup */
-}
-.notfound h1 { font-size: clamp(1.4rem, 4vw, 2rem); }
-.notfound p { color: var(--ink-soft); max-width: 420px; }
 
 @media (max-width: 809.98px) {
   .detail__aside { position: static; max-width: none; }
@@ -209,31 +193,8 @@
    mean a CDN request and this site is deliberately buildless and offline-safe.
    Kept short enough to read as notation. */
 .dd--formula { margin: 0 0 32px; }
-.formula {
-  overflow-x: auto;
-  padding: 18px 20px;
-  border: 1px solid var(--line);
-  border-left: 3px solid var(--accent);
-  border-radius: var(--radius-sm);
-  background: var(--bg-sunken);
-  color: var(--ink);
-  font-family: var(--font-mono);
-  font-size: 14px;
-  line-height: 1.7;
-  white-space: pre-wrap;
-  word-break: break-word;
-}
-
 /* --- code ----------------------------------------------------------------- */
 .dd--code { margin: 0 0 32px; }
-.dd--code pre {
-  margin: 0;
-  overflow-x: auto;
-  padding: 16px 18px;
-  border: 1px solid var(--line);
-  border-radius: var(--radius-sm);
-  background: var(--bg-sunken);
-}
 .dd--code code {
   color: var(--ink-body);
   font-family: var(--font-mono);
@@ -332,9 +293,10 @@
 
 @media (max-width: 599.98px) {
   .dd--code code { font-size: 12px; }
-  .formula { font-size: 12.5px; padding: 14px 15px; }
   .steps li { padding-left: 34px; }
   .steps li::before { width: 22px; height: 22px; font-size: 11px; }
+  /* .formula's small-screen size is set after the main .formula block below;
+     declaring it here lost to that block every time. */
 }
 
 /* ==========================================================================
@@ -350,7 +312,9 @@
   color: var(--ink);
   /* Serif italic is the maths convention for variables; the mono stack the
      rest of the site uses reads as code, not notation. */
-  font-family: 'Cormorant Garamond', Georgia, 'Times New Roman', serif;
+  /* Georgia first: 'Cormorant Garamond' was never loaded by any page, so the
+     stack always silently fell through to it anyway. */
+  font-family: Georgia, 'Times New Roman', serif;
   font-size: 21px;
   font-style: italic;
   line-height: 2;
@@ -560,4 +524,156 @@
 
   .hob-shots { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 8px; }
   .hobby__blurb { font-size: 15px; }
+}
+
+/* ==========================================================================
+   Live demo embed (js/project-detail.js)
+
+   Click-to-activate: the iframe's src is only set once the visitor asks for
+   it, so a case study never pulls a whole third-party app on load. The frame
+   keeps a fixed aspect ratio so activating it causes no layout shift.
+   ========================================================================== */
+.live { margin: 0 0 32px; }
+
+.live__frame {
+  overflow: hidden;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius);
+  background: var(--bg-sunken);
+  box-shadow: var(--shadow-card);
+}
+
+/* Browser-chrome bar, so the embed reads as "a site" rather than a panel. */
+.live__chrome {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 9px 12px;
+  border-bottom: 1px solid var(--line);
+  background: var(--bg-raised);
+}
+.live__dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: var(--line-strong);
+  flex: none;
+}
+.live__url {
+  margin-left: 8px;
+  overflow: hidden;
+  color: var(--ink-muted);
+  font-family: var(--font-mono);
+  font-size: 11.5px;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+/* The stage holds the placeholder, then the iframe. A fixed ratio here is what
+   keeps activation from shifting the page. */
+.live__stage {
+  position: relative;
+  aspect-ratio: 16 / 10;
+  background: var(--bg-sunken);
+}
+
+.live__start {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  background: transparent;
+  border: 0;
+  color: var(--ink-body);
+  cursor: pointer;
+  transition: background var(--dur) var(--ease);
+}
+.live__start:hover { background: var(--accent-tint); }
+
+.live__play {
+  display: grid;
+  place-items: center;
+  width: 46px;
+  height: 46px;
+  padding-left: 3px;               /* optical centring of the triangle */
+  border-radius: 50%;
+  background: var(--accent-deep);
+  color: var(--on-accent-deep, #fff);
+  font-size: 15px;
+}
+.live__label { font-size: 14px; font-weight: 500; }
+.live__note { color: var(--ink-muted); font-size: 12px; }
+
+.live__iframe {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border: 0;
+  background: #fff;                /* a transparent app should not show through */
+  opacity: 0;
+  transition: opacity 0.4s var(--ease);
+}
+.live.is-live .live__iframe { opacity: 1; }
+
+/* Spinner while the remote app wakes up. */
+.live.is-loading .live__stage::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 26px;
+  height: 26px;
+  margin: -13px 0 0 -13px;
+  border: 2px solid var(--line-strong);
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  animation: live-spin 0.8s linear infinite;
+}
+.live.is-live .live__stage::after { content: none; }
+@keyframes live-spin { to { transform: rotate(360deg); } }
+
+/* [hidden] must win over the display below, or the invisible overlay keeps
+   swallowing clicks meant for the activation button underneath it. */
+.live__fallback[hidden] { display: none; }
+.live__fallback {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--gap);
+  padding: var(--gap-lg);
+  text-align: center;
+}
+.live__fallback p { color: var(--ink-soft); font-size: 14px; margin: 0; }
+
+.live__caption {
+  margin: 10px 0 0;
+  color: var(--ink-muted);
+  font-size: 12.5px;
+}
+/* Underlined, not just recoloured: a link inside a block of text must be
+   distinguishable without relying on colour (WCAG 1.4.1). */
+.live__caption a {
+  color: var(--accent-ink);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+/* Phones: a 16/10 frame of a desktop app is unreadable, so go taller and
+   trade width for legibility. */
+@media (max-width: 599.98px) {
+  .live__stage { aspect-ratio: 3 / 4; }
+  .live__url { font-size: 10.5px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .live__iframe { transition: none; }
+  .live.is-loading .live__stage::after { animation: none; }
 }

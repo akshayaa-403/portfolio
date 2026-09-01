@@ -31,9 +31,26 @@
     section.style.setProperty('--skills-cx', (cx / document.documentElement.clientWidth * 100) + '%');
   }
 
+  /* Coalesce resize work into one frame. alignHeading() and measure() both
+     read layout and then write it; running them straight off the resize event
+     forced a sync reflow on every one of the dozens the browser fires during
+     a drag. The modechange path already went through rAF — this makes the
+     resize path match. */
+  function onResize(fn) {
+    var queued = false;
+    window.addEventListener('resize', function () {
+      if (queued) return;
+      queued = true;
+      window.requestAnimationFrame(function () {
+        queued = false;
+        fn();
+      });
+    });
+  }
+
   function init() {
     alignHeading();
-    window.addEventListener('resize', alignHeading);
+    onResize(alignHeading);
     window.addEventListener('modechange', function () {
       // let the mode's layout settle before measuring
       window.requestAnimationFrame(alignHeading);
@@ -57,7 +74,7 @@
         half = track.scrollWidth / 2;
       }
       measure();
-      window.addEventListener('resize', measure);
+      onResize(measure);
 
       /* Current x translation, whether it came from the animation or from us. */
       function currentX() {
@@ -130,9 +147,5 @@
     });
   }
 
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', init);
-  } else {
-    init();
-  }
+  window.onReady(init);
 })();

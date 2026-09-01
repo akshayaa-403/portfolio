@@ -15,6 +15,22 @@
 /* --------------------------------------------------------------------------
    1. Tokens
    -------------------------------------------------------------------------- */
+/* --------------------------------------------------------------------------
+   Stacking order (z-index)
+
+   Values are grouped rather than sequential; new layers should slot into a
+   band rather than inventing a number between two existing ones.
+
+     0        hero stage background (lilies)
+     1-8      hero props, ordered back-to-front (--z on each element)
+     20       hero name lockup, above every prop
+     27       notebook-mode lamp, which sits over the page
+     40       dragged / hovered element lifted out of its band
+     60       hero mode switcher, above the pen's rotated bounding box
+     100      sticky site header
+     200      skip link, above everything
+   -------------------------------------------------------------------------- */
+
 :root {
   /* Ground — cool paper, never pure white */
   --bg: #f4f7fa;
@@ -43,7 +59,10 @@
   --accent-tint: rgba(9, 78, 148, 0.09);
   --accent-tint-strong: rgba(9, 78, 148, 0.18);
   --link: #094e94;
-  --highlight: #fff9c4;
+  /* Text over a photograph or a light photographic prop, never over a page
+     ground — so it stays light in both themes and is NOT flipped in the dark
+     block below. Used by the notebook hero copy and the hobby card labels. */
+  --on-photo: #f2f6fa;
 
   /* Lines */
   --line: rgba(22, 40, 61, 0.14);
@@ -53,7 +72,6 @@
   --shadow-card: 0 2px 10px 1px rgba(28, 55, 90, 0.14);
   --shadow-card-hover: 0 10px 28px 2px rgba(28, 55, 90, 0.22);
   --shadow-sticker: 5.32px 5.32px 10px rgba(28, 55, 90, 0.16);
-  --shadow-lamp: 0 1px 30px 15px rgba(128, 177, 215, 0.42);
 
   /* Type */
   --font-mono: 'IBM Plex Mono', ui-monospace, 'SFMono-Regular', Menlo, monospace;
@@ -117,7 +135,6 @@
   --accent-tint: rgba(125, 184, 232, 0.12);
   --accent-tint-strong: rgba(125, 184, 232, 0.24);
   --link: #9ccbf2;
-  --highlight: #4a4320;       /* muted gold, legible under --ink */
 
   /* Lines — light on dark, slightly stronger to survive the darker ground */
   --line: rgba(210, 228, 245, 0.16);
@@ -127,7 +144,6 @@
   --shadow-card: 0 2px 10px 1px rgba(0, 0, 0, 0.44);
   --shadow-card-hover: 0 10px 28px 2px rgba(0, 0, 0, 0.55);
   --shadow-sticker: 5.32px 5.32px 10px rgba(0, 0, 0, 0.42);
-  --shadow-lamp: 0 1px 30px 15px rgba(125, 184, 232, 0.30);
 
   --header-bg: rgba(12, 22, 32, 0.85);
   /* Text drawn ON --accent-deep, which is a pale blue here — so it must be
@@ -184,7 +200,7 @@
 :root[data-theme='dark'][data-mode='notebook'] .hero__role,
 :root[data-theme='dark'][data-mode='notebook'] .hero__sub,
 :root[data-theme='dark'][data-mode='notebook'] .hero__headline {
-  color: #f2f6fa;
+  color: var(--on-photo);
   text-shadow: 0 1px 10px rgba(0, 0, 0, 0.75), 0 0 3px rgba(0, 0, 0, 0.6);
 }
 
@@ -197,7 +213,19 @@
 
 html {
   -webkit-text-size-adjust: 100%;
-  scroll-behavior: smooth;
+  /* The horizontal clip lives here, not on <body>. overflow-x on body makes
+     body a scroll container, which silently breaks `position: sticky` on its
+     descendants — and there are two (the site header and the case-study
+     aside). On <html> the guard works and sticky keeps working. */
+  overflow-x: hidden;
+}
+
+/* Smooth scrolling is opt-in. Applied globally and ungated it also animates
+   the skip link's jump, which is the single most-cited reduced-motion
+   failure: a motion-sensitive user activating "skip to content" gets the
+   whole page swept past them instead of an instant jump. */
+@media (prefers-reduced-motion: no-preference) {
+  html { scroll-behavior: smooth; }
 }
 
 body {
@@ -210,7 +238,6 @@ body {
   line-height: 1.6;
   letter-spacing: -0.01em;
   -webkit-font-smoothing: antialiased;
-  overflow-x: hidden;
 }
 
 h1, h2, h3, h4 {
@@ -247,8 +274,19 @@ button { font: inherit; }
 :focus-visible {
   outline: 2px solid var(--accent);
   outline-offset: 3px;
+}
+
+/* The focus ring follows whatever radius the element already has. This used
+   to force border-radius: 4px on every focused element, which squared off
+   pill buttons the moment they were focused. */
+:focus-visible:not([class*="btn"]):not(.nav a):not(.nav-toggle) {
   border-radius: 4px;
 }
+
+/* <main> carries tabindex="-1" purely so the skip link can move focus to it.
+   It is not an interactive control, so it should not paint a focus ring. */
+main:focus,
+main:focus-visible { outline: none; }
 
 .skip-link {
   position: absolute;
@@ -313,13 +351,6 @@ button { font: inherit; }
   background: var(--line);
 }
 
-.lede {
-  max-width: var(--measure-narrow);
-  color: var(--ink-soft);
-  font-size: 18px;
-  line-height: 1.5;
-}
-
 /* --------------------------------------------------------------------------
    4. Header / nav
    -------------------------------------------------------------------------- */
@@ -344,14 +375,24 @@ button { font: inherit; }
 .site-header button,
 .site-header .modes { pointer-events: auto; }
 
+/* Brand left, everything else right. The right-hand group is one flex item
+   pushed over by margin-left:auto, so the nav lands in the same place on every
+   page whether or not a theme toggle is present. `justify-content:
+   space-between` plus a separately auto-margined toggle used to move the nav
+   539px between index and the sub-pages. */
 .site-header__inner {
   display: flex;
   align-items: center;
-  justify-content: space-between;
   gap: var(--gap);
   max-width: var(--measure);
   margin: 0 auto;
   padding: 12px var(--gap-lg);
+}
+.site-header__end {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-left: auto;
 }
 
 .brand {
@@ -385,6 +426,23 @@ button { font: inherit; }
   color: var(--accent-ink);
   background: var(--accent-tint);
 }
+
+/* Theme switch for pages without the hero lamp (project, hobby, 404).
+   Sits between the brand and the nav, and stays visible at every width. */
+.theme-toggle {
+  /* Sits inside .site-header__end; no auto margin of its own, or it would
+     steal the space that keeps the nav aligned. */
+  padding: 6px 10px;
+  background: transparent;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius-pill);
+  color: var(--ink);
+  font-size: 14px;
+  line-height: 1;
+  cursor: pointer;
+  transition: color var(--dur) var(--ease), border-color var(--dur) var(--ease);
+}
+.theme-toggle:hover { color: var(--accent); border-color: var(--accent); }
 
 .nav-toggle {
   display: none;
@@ -570,7 +628,8 @@ button { font: inherit; }
   transform: translateX(-50%);
   display: flex;
   justify-content: center;
-  z-index: 21;
+  /* z-index is set to 60 !important further down (it has to beat the pen's
+     bounding box in clean mode); declaring 21 here only ever misled. */
   pointer-events: auto;
 }
 
@@ -588,15 +647,6 @@ button { font: inherit; }
   box-shadow: var(--shadow-card);
   transform: rotate(var(--r, 0deg));
   transition: box-shadow var(--dur) var(--ease), border-color var(--dur) var(--ease);
-}
-.obj__label {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  margin-bottom: 8px;
-  color: var(--ink-muted);
-  font-size: 11px;
-  font-weight: 500;
 }
 .obj__title {
   color: var(--ink);
@@ -623,12 +673,6 @@ button { font: inherit; }
   width: 100%;
   height: 100%;
   object-fit: contain;
-}
-.player__eq {
-  margin: 0 0 4px;
-  color: var(--ink-muted);
-  font-size: 10px;
-  letter-spacing: 0.2em;
 }
 .player__artist { margin: 0; }
 .player__track  { margin: 0 0 10px; }
@@ -671,11 +715,15 @@ button { font: inherit; }
   height: 88px;
   margin-bottom: 8px;
   border-radius: 6px;
+  /* Built from the palette's decorative tokens rather than five raw hex
+     values. The originals were cyan/red/purple/magenta/orange on a site whose
+     palette doc states "No orange remains" — and being hardcoded, they stayed
+     bright in the dark theme. These flip with it. */
   background:
-    radial-gradient(circle at 34% 44%, #7ef9ff 0%, transparent 46%),
-    radial-gradient(circle at 62% 58%, #ff4d4d 0%, transparent 50%),
-    linear-gradient(135deg, #6f5bd6, #d94fd0 55%, #ff7a45);
-  filter: saturate(1.15) contrast(1.05);
+    radial-gradient(circle at 34% 44%, var(--accent-pale) 0%, transparent 46%),
+    radial-gradient(circle at 62% 58%, var(--accent) 0%, transparent 50%),
+    linear-gradient(135deg, var(--accent-deep), var(--accent-mid) 55%, var(--accent-pale));
+  filter: saturate(1.1);
 }
 .share__actions {
   display: flex;
@@ -978,91 +1026,6 @@ button { font: inherit; }
 }
 
 /* --------------------------------------------------------------------------
-   8. Experience timeline
-   -------------------------------------------------------------------------- */
-.timeline {
-  display: flex;
-  flex-direction: column;
-  gap: var(--gap-lg);
-  max-width: 860px;
-}
-.job {
-  display: flex;
-  gap: var(--gap-lg);
-  padding-left: var(--gap-lg);
-  border-left: 2px solid var(--line);
-}
-.job:hover { border-left-color: var(--accent); }
-.job__when {
-  flex: 0 0 150px;
-  color: var(--ink-muted);
-  font-size: 12px;
-  padding-top: 3px;
-}
-.job__what { flex: 1 1 auto; }
-.job__role {
-  font-size: 16px;
-  font-weight: 500;
-  margin-bottom: 2px;
-}
-.job__org {
-  color: var(--accent-ink);
-  font-size: 13px;
-  margin-bottom: var(--gap);
-}
-.job__points li {
-  position: relative;
-  padding-left: 18px;
-  margin-bottom: 6px;
-  color: var(--ink-soft);
-  font-size: 14px;
-  line-height: 1.6;
-}
-.job__points li::before {
-  content: '▹';
-  position: absolute;
-  left: 0;
-  color: var(--accent-ink);
-}
-
-/* --------------------------------------------------------------------------
-   9. Skills
-   -------------------------------------------------------------------------- */
-.skills {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--gap-lg);
-}
-.skill-group {
-  flex: 1 1 240px;
-  padding: 18px;
-  background: var(--bg-raised);
-  border: 1px solid var(--line);
-  border-radius: var(--radius);
-}
-.skill-group h3 {
-  margin-bottom: var(--gap);
-  color: var(--ink-muted);
-  font-size: 11px;
-  font-weight: 500;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-}
-.skill-group ul {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-}
-.skill-group li {
-  color: var(--ink-body);
-  font-size: 13px;
-}
-.skill-group li:not(:last-child)::after {
-  content: ' ·';
-  color: var(--ink-faint);
-}
-
-/* --------------------------------------------------------------------------
    10. About + contact
    -------------------------------------------------------------------------- */
 .about {
@@ -1317,8 +1280,12 @@ button { font: inherit; }
 
 /* --------------------------------------------------------------------------
    13. Small screens
+
+   The nav collapses at the same 899.98px the hero stage does. They used to
+   differ (810 vs 900), which left an 810-899px band where the desktop prop
+   stage coexisted with the mobile dropdown. js/nav.js matches this value.
    -------------------------------------------------------------------------- */
-@media (max-width: 809.98px) {
+@media (max-width: 899.98px) {
   :root { --section-gap: 44px; }
 
   .nav {
@@ -1340,8 +1307,6 @@ button { font: inherit; }
 
   .hero { padding-top: 40px; }
   .hero__lockup { padding-top: 12px; }
-  .job { flex-direction: column; gap: var(--gap); }
-  .job__when { flex: none; }
   .site-footer__inner { justify-content: center; text-align: center; }
 }
 
@@ -1381,7 +1346,7 @@ button { font: inherit; }
   transition: color var(--dur) var(--ease), background var(--dur) var(--ease);
 }
 .modes button:hover { color: var(--accent); }
-.modes button[aria-pressed='true'] {
+.modes button[aria-checked='true'] {
   background: var(--accent-deep);
   /* --on-accent-deep is whatever reads on --accent-deep in the current theme:
      white on the light theme's navy, dark navy on the dark theme's pale blue. */
@@ -1436,18 +1401,6 @@ button { font: inherit; }
 }
 /* Shrink-wrap the name to its glyphs so its box (not just its text) sits flush
    right, matching the reference's 302px-wide name element. */
-[data-mode='clean'] .hero__name {
-  position: absolute !important;
-  /* Anchored right (the clean lockup is right-aligned) and sized to its own
-     text, so a long name extends leftwards instead of wrapping into the
-     role line beneath it. */
-  left: auto !important; right: 2.248% !important;
-  top: 11.986% !important; bottom: auto !important; margin: 0 !important;
-  width: max-content !important; max-width: 92vw !important;
-  white-space: nowrap !important; text-align: right !important;
-  transform: none !important;
-}
-
 /* --- Cards, palette and label per mode ---
    These all read left/top from --x/--y, so overrides must set the custom
    properties; a plain `left:` loses to the inline style. */
@@ -1461,11 +1414,6 @@ button { font: inherit; }
 
 /* In notebook mode the notebook page is the top surface and the lamp tucks
    behind it — on the reference the lamp's stem disappears under the page. */
-[data-mode='notebook'] .prop[data-prop='lamp'] {
-  z-index: 1 !important;
-  --nbx: 13.500% !important;   /* clear of the page's left edge */
-  --nby: 12.000% !important;
-}
 [data-mode='notebook'] .prop[src*='notebook-page'] { z-index: 4 !important; }
 [data-mode='notebook'] .prop[src*='dreams']        { z-index: 6 !important; }
 [data-mode='notebook'] .prop[src*='pen'] {
@@ -1485,14 +1433,11 @@ button { font: inherit; }
   --bg-sunken: #f3f0e6;
   --surface: #fffef9;
 }
-[data-mode='notebook'] .card,
 [data-mode='notebook'] .about__aside {
   box-shadow: none;
   background: transparent;
   border-style: dashed;
 }
-[data-mode='clean'] .card { box-shadow: none; }
-
 /* Lilies stay decorative in every mode */
 [data-mode='notebook'] .lily { --lily-o: 0.1; }
 
@@ -1538,11 +1483,6 @@ button { font: inherit; }
   width: 11.650% !important; height: 14.530% !important;
   transform: none !important; z-index: 3 !important;
 }
-[data-mode='clean'] .prop[src*='folder'] {
-  left: 83.510% !important; top: 45.520% !important;
-  width: 10.350% !important; height: 16.580% !important;
-  transform: none !important; z-index: 6 !important;
-}
 [data-mode='clean'] .prop[src*='pen'] {
   /* Rotated -90deg: the element's own width becomes the on-screen HEIGHT and
      its height becomes the on-screen WIDTH. Because rotation pivots about the
@@ -1555,6 +1495,21 @@ button { font: inherit; }
   transform: rotate(-90deg) !important;
   transform-origin: center center !important;
   z-index: 6 !important;
+}
+/* Clean pen scales in place on hover — no re-tilt. JS hover stands down for it
+   here so this composes cleanly onto the authored -90deg rotation. */
+@media (prefers-reduced-motion: no-preference) {
+  [data-mode='clean'] .prop[src*='pen'] {
+    transition: transform var(--dur) var(--ease) !important,
+                filter var(--dur) var(--ease) !important;
+  }
+  [data-mode='clean'] .prop[src*='pen']:hover {
+    transform: rotate(-90deg) scale(1.06) !important;
+    /* Same hover shadow the JS-driven props get via .is-hovered, composed onto
+       the theme's base --prop-filter so it dims in dark mode instead of flashing. */
+    filter: var(--prop-filter, ) drop-shadow(0 10px 20px var(--prop-shadow, rgba(28, 55, 90, 0.22))) !important;
+    z-index: 40 !important;
+  }
 }
 [data-mode='clean'] .lily--bl {
   left: -2.997% !important; top: 27.482% !important;
@@ -1586,10 +1541,6 @@ button { font: inherit; }
   --x: 67.030% !important; --y: 49.030% !important;
   width: 6.733% !important; z-index: 5 !important;
 }
-[data-mode='clean'] .prop-label {
-  --x: 84.060% !important; --y: 62.350% !important;
-  z-index: 7 !important;
-}
 [data-mode='clean'] .hero__lockup {
   left: 0 !important; right: auto !important; top: 0 !important;
   width: 100% !important; max-width: none !important;
@@ -1606,20 +1557,27 @@ button { font: inherit; }
 }
 [data-mode='clean'] .hero__role {
   position: absolute !important;
-  left: 84.877% !important; top: 24.818% !important;
-  right: auto !important; bottom: auto !important; margin: 0 !important;
+  /* Anchor the right edge to 97.616% — the headline's right edge below it
+     (left 60.831% + width 36.785%) — so both read as one right-aligned column. */
+  left: auto !important; right: 2.384% !important; top: 24.818% !important;
+  bottom: auto !important; margin: 0 !important;
   width: max-content !important;
   max-width: none !important;
-  text-align: left !important;
+  text-align: right !important;
   transform: none !important;
 }
 [data-mode='clean'] .hero__sub {
   position: absolute !important;
-  left: 92.507% !important; top: 28.208% !important;
-  right: auto !important; bottom: auto !important; margin: 0 !important;
+  /* Anchored to the right edge rather than left:92.507%. With a left anchor,
+     width:max-content and no right constraint, the text ran past the stage
+     between 900 and 1000px and was silently clipped by the hero's
+     overflow:hidden. Anchoring right keeps the same visual position at
+     1440px and cannot overflow at any narrower width. */
+  left: auto !important; right: 2.5% !important;
+  top: 28.208% !important; bottom: auto !important; margin: 0 !important;
   width: max-content !important;
-  max-width: none !important;
-  text-align: left !important;
+  max-width: 45vw !important;
+  text-align: right !important;
   transform: none !important;
 }
 [data-mode='clean'] .hero__headline {
@@ -1695,13 +1653,6 @@ button { font: inherit; }
   transform-origin: center center !important;
   z-index: 6 !important;
 }
-[data-mode='chaos'] .prop[src*='folder'] {
-  left: 71.095% !important; top: 62.043% !important;
-  width: 12.169% !important; height: 19.497% !important;
-  transform: rotate(-5deg) !important;
-  transform-origin: center center !important;
-  z-index: 6 !important;
-}
 [data-mode='chaos'] .lily--bl {
   left: -2.997% !important; top: 27.482% !important;
   right: auto !important; bottom: auto !important;
@@ -1732,13 +1683,6 @@ button { font: inherit; }
   width: 5.790% !important;
   transform: none !important;
   z-index: 6 !important;
-}
-/* --y is the element's own top, but the dump reports the rotated bounding
-   box, which sits 5px higher for this -5deg label. Offset to compensate. */
-[data-mode='chaos'] .prop-label {
-  --x: 73.420% !important; --y: 80.994% !important;
-  transform: rotate(-5deg) !important;
-  z-index: 7 !important;
 }
 [data-mode='chaos'] .hero__lockup {
   left: 0 !important; right: auto !important; top: 0 !important;
@@ -1844,16 +1788,7 @@ button { font: inherit; }
   transform-origin: center center !important;
   z-index: 8 !important;
 }
-[data-mode='notebook'] .prop[src*='folder'] {
-  display: block !important;
-  left: 63.537% !important; top: 7.653% !important;
-  width: 9.574% !important; height: 15.444% !important;
-  transform: rotate(12deg) !important;
-  transform-origin: center center !important;
-  z-index: 6 !important;
-}
-[data-mode='notebook'] .palette,
-[data-mode='notebook'] .prop-label { display: none !important; }
+[data-mode='notebook'] .palette { display: none !important; }
 [data-mode='notebook'] .lily--bl {
   left: -2.997% !important; top: 27.482% !important;
   right: auto !important; bottom: auto !important;
@@ -2031,7 +1966,10 @@ button { font: inherit; }
   opacity: 1 !important;
 }
 @media (prefers-reduced-motion: reduce) {
-  .prop--glow { transition: opacity 0.45s var(--ease); }
+  /* Remove the transition rather than re-declaring it: the previous rule kept
+     a 0.45s opacity fade, so the glow still animated for users who asked for
+     no motion. The lamp now switches instantly. */
+  .prop--glow { transition: none; }
 }
 
 /* --------------------------------------------------------------------------
@@ -2135,7 +2073,7 @@ button { font: inherit; }
   border: 1px solid var(--line-strong);
   border-radius: var(--radius);
   background: var(--bg-sunken);
-  color: #fff;
+  color: var(--on-photo);
   isolation: isolate;
 }
 .hob-card > img {
@@ -2290,7 +2228,6 @@ button { font: inherit; }
   .section { padding: 34px 0; }
   :root { --gap-lg: 18px; --section-gap: 34px; }
   .section-head h2 { font-size: 21px; }
-  .lede { font-size: 16px; }
 
   /* Cards stack, so the icon can be larger and the text gets full width. */
   .rm { padding: 14px; gap: 12px; }
@@ -2335,6 +2272,15 @@ button { font: inherit; }
     white-space: normal !important;
     transform: none !important;
   }
+  /* The hero is pulled up under the sticky header by --header-h so the desktop
+     prop stage can start at y=0. On mobile there is no stage — just stacked
+     type — and that negative margin was clipping the top of the name behind
+     the bar. Cancel it and pad clear of the header instead. */
+  .hero {
+    margin-top: 0 !important;
+    padding-top: 26px !important;
+  }
+
   [data-mode] .hero__name   { margin: 0 auto 14px !important; }
   [data-mode] .hero__role   { margin: 0 auto !important; }
   [data-mode] .hero__sub    { margin: 0 auto 20px !important; }
@@ -2344,7 +2290,7 @@ button { font: inherit; }
     position: relative !important;
     left: auto !important; top: auto !important;
     --w: auto !important;
-    width: min(320px, calc(100% - 40px)) !important;
+    width: min(258px, calc(100% - 72px)) !important;
     height: auto !important;
     margin: 0 auto var(--gap-lg) !important;
     transform: none !important;
@@ -2387,4 +2333,99 @@ button { font: inherit; }
   .site-footer__social a span { font-size: 13px; }
   .hob-card__count { font-size: 11.5px; }
   .hob-shot figcaption { font-size: 12.5px; }
+}
+
+/* --------------------------------------------------------------------------
+   404 page
+
+   Lives here rather than in project.css: these four rules were the only thing
+   404.html used out of that 563-line file, so the page was downloading an
+   entire stylesheet to render six lines of text.
+   -------------------------------------------------------------------------- */
+/* 404 */
+.notfound {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--gap);
+  min-height: 68vh;
+  text-align: center;
+}
+.notfound__code {
+  font-family: var(--font-script);
+  font-size: clamp(4rem, 16vw, 8rem);
+  line-height: 1;
+  color: var(--accent); /* decorative at this size; aria-hidden in the markup */
+}
+.notfound h1 { font-size: clamp(1.4rem, 4vw, 2rem); }
+.notfound p { color: var(--ink-soft); max-width: 420px; }
+
+/* --------------------------------------------------------------------------
+   Mobile hero atmosphere
+
+   Every prop is hidden below 900px, which left phone visitors with plain
+   centred type and no trace of the desk-collage the site is built around.
+   Two of the lightest props come back as ambient decoration — the pen (4 KB)
+   and the dreams clipping (65 KB, already fetched for the collage) — placed
+   in the margins where they cannot collide with the type or the cards.
+
+   Deliberately excluded: the lamp (it is the theme switch and needs to be
+   hittable), the notebook page (covers the whole stage) and the toolbar
+   (unreadable at this size). Hidden entirely in clean mode, per convention.
+   -------------------------------------------------------------------------- */
+@media (max-width: 899.98px) {
+  :root[data-mode='chaos'] .stage,
+  :root[data-mode='notebook'] .stage { position: relative; }
+
+  /* Re-show just these two, overriding the blanket hide above. The selectors
+     match the same attribute shapes so they out-specify it. */
+  :root[data-mode='chaos'] .prop[src*='pen'],
+  :root[data-mode='notebook'] .prop[src*='pen'],
+  :root[data-mode='chaos'] .prop[src*='dreams'],
+  :root[data-mode='notebook'] .prop[src*='dreams'] {
+    display: block !important;
+    position: absolute !important;
+    z-index: 0 !important;
+    opacity: 0.5;
+    pointer-events: none !important;   /* never steal a tap from the content */
+  }
+
+  :root[data-mode='chaos'] .prop[src*='dreams'],
+  :root[data-mode='notebook'] .prop[src*='dreams'] {
+    /* Fully inside the viewport: a negative right offset let the clipping run
+       off the edge on tablets, where the stage is much wider than a phone. */
+    left: auto !important; right: 2% !important;
+    /* Below the name, not behind it: at top:1% the clipping crossed the
+       descenders of the wordmark. */
+    top: 15% !important; bottom: auto !important;
+    /* Same reasoning as the pen: pin both axes, let object-fit letterbox. */
+    width: 118px !important; height: 94px !important;
+    object-fit: contain !important;
+    transform: rotate(9deg) !important;
+  }
+
+  :root[data-mode='chaos'] .prop[src*='pen'],
+  :root[data-mode='notebook'] .prop[src*='pen'] {
+    left: 6% !important; right: auto !important;
+    top: 34% !important; bottom: auto !important;
+    /* Both axes pinned: with height:auto the 56x560 source stretched a 13%
+       width into a 489px-tall element hanging off the left edge. */
+    width: 26px !important; height: 120px !important;
+    object-fit: contain !important;
+    transform: rotate(-24deg) !important;
+  }
+
+  /* Keep the lilies as the ground wash they already are, just softer. */
+  :root[data-mode] .lily { opacity: 0.1 !important; }
+
+  /* The lockup must sit above the decoration. */
+  [data-mode] .hero__lockup { position: relative !important; z-index: 2; }
+  [data-mode] .stage .obj   { z-index: 2; }
+}
+
+/* Narrow phones: the clipping crowds the name, so drop it and keep the pen. */
+@media (max-width: 419.98px) {
+  :root[data-mode='chaos'] .prop[src*='dreams'],
+  :root[data-mode='notebook'] .prop[src*='dreams'] { display: none !important; }
 }

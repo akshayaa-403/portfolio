@@ -3,19 +3,29 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="referrer" content="strict-origin-when-cross-origin">
+<!-- Static host (GitHub Pages) serves no custom headers, so the policy ships
+     in-document. style-src keeps 'unsafe-inline': the hero's prop coordinates
+     live in style attributes, and dropping it would collapse the whole stage.
+     script-src keeps it for the no-FOUC snippet that must run before paint.
+     frame-ancestors is omitted: browsers ignore it in a <meta> CSP and warn,
+     and GitHub Pages cannot send it as a header. -->
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data:; media-src 'self'; connect-src 'self'; base-uri 'none'; form-action 'none'; object-src 'none'">
 <title>Page not found — Akshayaa Kashyap</title>
 <meta name="description" content="That page doesn't exist. Head back to the portfolio home page.">
 <meta name="robots" content="noindex">
-<meta name="theme-color" content="#f4f7fa">
+<meta name="theme-color" content="#f4f7fa" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0c1620" media="(prefers-color-scheme: dark)">
 
+<link rel="canonical" href="https://akshayaa-403.github.io/portfolio/404.html">
 <link rel="icon" href="public/assets/favicon.webp" type="image/webp">
 <link rel="icon" href="public/assets/favicon.png" type="image/png">
+<link rel="apple-touch-icon" href="public/assets/favicon.png">
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Caveat:wght@500;600&display=swap">
 <link rel="stylesheet" href="css/style.css">
-<link rel="stylesheet" href="css/project.css">
 
 <!-- No-FOUC: mark JS available and apply the saved view mode + theme before
      first paint. Must stay in sync with js/theme.js. -->
@@ -42,6 +52,8 @@
 </head>
 <body>
 
+<a class="skip-link" href="#main">Skip to main content</a>
+
 <!-- Social icon sprite. Official brand marks, drawn as paths so they inherit
      currentColor and need no network request. Referenced via <use href="#id">. -->
 <svg width="0" height="0" aria-hidden="true" focusable="false" style="position:absolute">
@@ -59,20 +71,25 @@
   </symbol>
 </svg>
 
-<a class="skip-link" href="#main">Skip to main content</a>
-
-<header class="site-header">
+<header class="site-header" id="site-header">
   <div class="site-header__inner">
     <a class="brand" href="index.html"><img class="brand__mark" src="public/assets/brand-mark.webp" alt="" aria-hidden="true" width="96" height="96">Akshayaa Kashyap</a>
-    <nav class="nav" aria-label="Primary">
-      <a href="index.html#work">Work</a>
-      <a href="index.html#about">About</a>
-      <a href="index.html#contact">Contact</a>
-    </nav>
+    <div class="site-header__end">
+      <button class="theme-toggle" type="button" data-theme-toggle
+              aria-pressed="false" aria-label="Switch to dark theme">☀</button>
+      <button class="nav-toggle" type="button" data-nav-toggle aria-expanded="false" aria-controls="primary-nav">Menu</button>
+      <nav class="nav" id="primary-nav" aria-label="Primary">
+        <a href="index.html#work">Work</a>
+        <a href="index.html#hobbies">Hobbies</a>
+        <a href="index.html#about">About</a>
+        <a href="index.html#contact">Contact</a>
+        <a href="public/assets/resume.pdf" target="_blank" rel="noopener noreferrer">Resume ↗</a>
+      </nav>
+    </div>
   </div>
 </header>
 
-<main id="main">
+<main id="main" tabindex="-1">
   <div class="wrap">
     <div class="notfound">
       <p class="notfound__code" aria-hidden="true">404</p>
@@ -91,13 +108,15 @@
   <div class="site-footer__inner">
     <p style="margin:0;">© <span data-year>2026</span> Akshayaa Kashyap · built by hand, no framework</p>
     <nav aria-label="Footer">
-      <a href="https://github.com/akshayaa-403" target="_blank" rel="noopener">GitHub</a>
-      <a href="https://linkedin.com/in/akshayaa-kashyap" target="_blank" rel="noopener">LinkedIn</a>
+      <a href="https://github.com/akshayaa-403" target="_blank" rel="noopener noreferrer">GitHub</a>
+      <a href="https://linkedin.com/in/akshayaa-kashyap" target="_blank" rel="noopener noreferrer">LinkedIn</a>
       <a href="mailto:akshayaakashyap5@gmail.com">Email</a>
     </nav>
   </div>
 </footer>
 
-<script src="js/theme.js"></script>
+<script src="js/util.js" defer></script>
+<script src="js/theme.js" defer></script>
+<script src="js/nav.js" defer></script>
 </body>
 </html>

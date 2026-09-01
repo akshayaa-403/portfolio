@@ -88,12 +88,6 @@
 
   var ORDER = ['photography', 'artwork', 'cooking'];
 
-  function esc(v) {
-    return String(v == null ? '' : v)
-      .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
-      .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
-  }
-
   function currentId() {
     try {
       return new URLSearchParams(window.location.search).get('id');
@@ -129,9 +123,31 @@
     var shots = '';
     for (var i = 1; i <= g.n; i++) {
       var cap = (g.captions && g.captions[i - 1]) || '';
-      shots += '<figure class="hob-shot">' +
-        '<img src="public/assets/hobbies/' + esc(id) + '-' + i + '.webp"' +
+      var file = id + '-' + i + '.webp';
+      // Intrinsic size from js/hobby-dims.js, so the browser reserves the
+      // right box before the image arrives. Without width/height every tile
+      // resized on decode and the whole gallery shifted underneath the reader.
+      var dim = (typeof HOBBY_DIMS !== 'undefined') ? HOBBY_DIMS[file] : null;
+      var base = 'public/assets/hobbies/' + encodeURIComponent(file);
+
+      /* A 600px variant exists for every source wider than ~660px (see
+         tools/build-share-pages.js). Phones were being served the full-size
+         desktop file — up to 198 KB for a tile a few hundred px wide. */
+      var small = (dim && dim[0] > 660)
+        ? 'public/assets/hobbies/' +
+          encodeURIComponent(file.replace(/\.webp$/, '-600.webp'))
+        : null;
+
+      shots += '<figure class="hob-shot"' +
+          (dim ? ' style="--ar:' + (dim[0] / dim[1]).toFixed(4) + '"' : '') +
+          (dim && dim[0] / dim[1] > 1.2 ? ' data-wide="1"' : '') + '>' +
+        '<img src="' + base + '"' +
+             (small
+               ? ' srcset="' + small + ' 600w, ' + base + ' ' + dim[0] + 'w"' +
+                 ' sizes="(max-width: 599.98px) 100vw, (max-width: 899.98px) 50vw, 33vw"'
+               : '') +
              ' alt="' + esc(cap || (g.label + ' photograph ' + i)) + '"' +
+             (dim ? ' width="' + dim[0] + '" height="' + dim[1] + '"' : '') +
              ' loading="lazy" decoding="async">' +
         (cap ? '<figcaption>' + esc(cap) + '</figcaption>' : '') +
       '</figure>';
@@ -175,8 +191,13 @@
 
     function size(fig) {
       var img = fig.querySelector('img');
-      if (!img || !img.naturalWidth) return;
-      var ar = img.naturalWidth / img.naturalHeight;
+      // Prefer the ratio baked in at render time (js/hobby-dims.js); fall back
+      // to the decoded image only when this file has no entry yet.
+      var ar = parseFloat(fig.style.getPropertyValue('--ar'));
+      if (!ar) {
+        if (!img || !img.naturalWidth) return;
+        ar = img.naturalWidth / img.naturalHeight;
+      }
       fig.classList.toggle('hob-shot--wide', ar > 1.2);
       // Height the tile would take at its current rendered width, converted
       // to a whole number of grid rows (gaps count toward the span).
@@ -193,9 +214,10 @@
     for (var i = 0; i < figs.length; i++) {
       (function (fig) {
         var img = fig.querySelector('img');
-        if (img.complete && img.naturalWidth) {
-          size(fig);
-        } else {
+        // With --ar present this sizes the tile straight away, before the
+        // image has been fetched at all.
+        size(fig);
+        if (!fig.style.getPropertyValue('--ar')) {
           img.addEventListener('load', function () { size(fig); });
           img.addEventListener('error', function () { size(fig); });
         }
@@ -209,9 +231,5 @@
     });
   }
 
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', render);
-  } else {
-    render();
-  }
+  window.onReady(render);
 })();

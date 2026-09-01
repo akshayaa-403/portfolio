@@ -9,7 +9,6 @@ const projects = [
     "tagline": "Multi-factor equity screening with news sentiment.",
     "year": "2026",
     "role": "Solo project",
-    "featured": true,
     "summary": "A multi-factor stock screener that ranks S&P 500 equities by blending technical signals with ensemble news sentiment, backed by Redis caching, historical backtesting, and an interactive Streamlit dashboard.",
     "tech": [
       "Python",
@@ -101,8 +100,7 @@ const projects = [
     "title": "Arteza",
     "tagline": "An online gallery and shop for an original-art studio.",
     "year": "2026",
-    "role": "TODO-ROLE",
-    "featured": true,
+    "role": "Design & build",
     "summary": "A React storefront and portfolio for the artist Upasna, presenting 90+ original paintings across five curated collections, with a style-matching quiz, class booking, and a WhatsApp-based checkout suited to how the studio actually sells.",
     "tech": [
       "React",
@@ -195,7 +193,6 @@ const projects = [
     "tagline": "Removing halo artifacts from microscopy images.",
     "year": "2026",
     "role": "Solo project",
-    "featured": true,
     "summary": "A hybrid classical-CV and deep-learning pipeline that suppresses the halo artifact in phase-contrast microscopy and lifts cell contrast, shipping a pre-trained fp16 model so inference works with zero setup.",
     "tech": [
       "Python",
@@ -319,7 +316,6 @@ const projects = [
     "tagline": "Your to-do list as a routing problem, solved live.",
     "year": "2026",
     "role": "Solo project",
-    "featured": true,
     "summary": "An interactive visualiser that reframes a day of tasks as a routing problem and lets a colony of virtual ants converge on an order in the browser — with two problem formulations, live-tunable parameters, dependency constraints, and a convergence chart you watch flatten.",
     "tech": [
       "JavaScript",
@@ -441,7 +437,6 @@ const projects = [
     "tagline": "Eisenhower matrix that writes to your real calendar.",
     "year": "2026",
     "role": "Solo project",
-    "featured": true,
     "summary": "An Android task manager built on the Eisenhower Matrix. Sort tasks into four urgency-importance quadrants, then drag them onto a day timeline that writes real events into the phone’s own calendar — so time you set aside shows up wherever you already look, not only inside the app.",
     "tech": [
       "JavaScript (ES6)",
@@ -452,7 +447,7 @@ const projects = [
       "localStorage"
     ],
     "repo": "https://github.com/akshayaa-403/Habita",
-    "demo": "https://akshayaa-403.github.io/Habita/www/",
+    "demo": "https://akshayaa-403.github.io/Habita/src/",
     "overview": "A flat to-do list treats a tax deadline and a hobby idea as equals. Habita sorts every task into one of the Eisenhower Matrix quadrants — urgent and important, important but not urgent, urgent but not important, neither — so priority is a property of where a task sits rather than something you have to hold in your head. Each quadrant carries an SVG progress ring that fills as you complete work inside it.",
     "highlights": [
       "Four colour-coded quadrants — Focus, Backburner, Fit In, Goals — each with a live SVG progress ring.",
@@ -533,7 +528,6 @@ const projects = [
     "tagline": "Summer to winter, from unpaired photos.",
     "year": "2026",
     "role": "Solo project",
-    "featured": false,
     "summary": "A modular from-scratch PyTorch CycleGAN that translates Yosemite summer landscapes into winter scenes using only unpaired images, with full cycle-consistency training and benchmarked cost estimates across four GPU platforms.",
     "tech": [
       "Python",
@@ -605,7 +599,6 @@ const projects = [
     "tagline": "Four algorithms, one article, scored against the humans who wrote it.",
     "year": "2026",
     "role": "Solo project",
-    "featured": false,
     "summary": "A static, dependency-free browser app that summarises any Wikipedia article four ways at once and scores each result with ROUGE against the article's own lead section — the summary Wikipedia's editors wrote — so the algorithms are measured against a human ceiling rather than each other.",
     "tech": [
       "JavaScript (ES modules)",

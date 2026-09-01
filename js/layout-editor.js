@@ -20,7 +20,7 @@
 (function () {
   'use strict';
 
-  if (!/[?&]edit=1/.test(location.search)) return;
+  if (!window.isEditing()) return;
 
   var SEL = '.prop, .obj, .palette, .prop-label, .lily,' +
             '.hero__name, .hero__role, .hero__sub, .hero__headline,' +
@@ -62,13 +62,9 @@
      carry rotate() from their per-mode layout; apply() rebuilds the transform
      from scratch, so without seeding this the angle would be dropped the
      moment an element is first touched and the prop would snap upright. */
+  // Whole degrees; the shared reader in js/util.js returns a float.
   function rotationOf(el) {
-    var t = getComputedStyle(el).transform;
-    if (!t || t === 'none') return 0;
-    var m = t.match(/matrix\(([^)]+)\)/);
-    if (!m) return 0;
-    var p = m[1].split(',').map(parseFloat);
-    return Math.round(Math.atan2(p[1], p[0]) * 180 / Math.PI);
+    return Math.round(window.rotationOf(el));
   }
 
   function read(el) {
@@ -94,7 +90,13 @@
     if (st.scale !== 1) t += ' scale(' + st.scale.toFixed(3) + ')';
     el.style.setProperty('transform', t, 'important');
     el.style.setProperty('transform-origin', 'center center', 'important');
-    if (st.z) el.style.setProperty('z-index', st.z, 'important');
+    // z of 0 is a real value, so test for presence rather than truthiness —
+    // `if (st.z)` left a stale !important behind when a prop was sent to 0.
+    if (st.z !== null && st.z !== undefined && st.z !== '') {
+      el.style.setProperty('z-index', st.z, 'important');
+    } else {
+      el.style.removeProperty('z-index');
+    }
     if (st.isText && st.fs !== st.baseFs) {
       el.style.setProperty('font-size', st.fs.toFixed(1) + 'px', 'important');
     }
@@ -149,10 +151,17 @@
              (r.height / s.height * 100).toFixed(2) + '% */';
       lines.push(row);
     });
-    var out = lines.join('\n');
+    // Fold in any page comments from annotate.js when it has been loaded
+    // alongside this tool (see ?edit=1&annotate=1 in index.html).
+    var comments = (typeof window.__annotDump === 'function') ? window.__annotDump() : '';
+    var out = lines.join('\n') + (comments ? '\n\n' + comments : '');
     panel.textContent = out + '\n\n(copied — paste back to Claude)';
     console.log(out);
-    try { navigator.clipboard.writeText(out); } catch (e) {}
+    // writeText() returns a Promise: a sync try/catch never sees a rejection
+    // (denied permission, insecure origin), so handle it as one.
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(out).catch(function () {});
+    }
   }
 
   /* ---------- hit testing ---------- */
@@ -298,6 +307,12 @@
     }, { passive: false });
 
     document.addEventListener('keydown', function (e) {
+      // Single-letter shortcuts must not fire while the visitor is typing,
+      // and must not swallow browser/OS chords (Ctrl+D, Cmd+X).
+      if (e.ctrlKey || e.metaKey || e.altKey) return;
+      var t = e.target;
+      if (t && (t.isContentEditable ||
+                /^(INPUT|TEXTAREA|SELECT)$/.test(t.tagName))) return;
       if (e.key === 'd' || e.key === 'D') { dump(); return; }
       if (e.key === 'x' || e.key === 'X') { location.reload(); return; }
       // Cycle down through overlapping props, so one that sits entirely
@@ -334,9 +349,5 @@
     info();
   }
 
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', init);
-  } else {
-    init();
-  }
+  window.onReady(init);
 })();

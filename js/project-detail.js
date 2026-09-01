@@ -3,14 +3,6 @@
 (function () {
   'use strict';
 
-  function esc(value) {
-    return String(value == null ? '' : value)
-      .replace(/&/g, '&amp;')
-      .replace(/</g, '&lt;')
-      .replace(/>/g, '&gt;')
-      .replace(/"/g, '&quot;')
-      .replace(/'/g, '&#39;');
-  }
 
   function setMeta(selector, attr, value) {
     var el = document.querySelector(selector);
@@ -50,7 +42,7 @@
 
     figure: function (s) {
       return '<figure class="dd dd--figure">' +
-        '<img src="' + esc(s.src) + '" alt="' + esc(s.alt || '') + '" loading="lazy" decoding="async">' +
+        '<img src="' + safeUrl(s.src) + '" alt="' + esc(s.alt || '') + '" loading="lazy" decoding="async">' +
         (s.caption ? '<figcaption>' + esc(s.caption) + '</figcaption>' : '') +
       '</figure>';
     },
@@ -59,6 +51,11 @@
        case studies use. MathJax/KaTeX would mean a CDN request and ~300KB for
        eight short formulas, on a site that is deliberately buildless. */
     formula: function (s) {
+      // The ONE value on this page that reaches innerHTML unescaped, because
+      // renderTex returns markup by design. Its contract: every interpolated
+      // substring is escaped inside js/tex.js (see esc() there) and it emits
+      // only <span>/<sup>/<sub> with fixed class names. Keep that true, or
+      // escape here instead.
       var body = (typeof window.renderTex === 'function')
         ? window.renderTex(s.tex)
         : esc(s.tex);
@@ -141,11 +138,17 @@
       if (!code) return;
       var text = code.textContent;
 
+      /* The visible label changes but aria-label was fixed at "Copy code",
+         so the accessible name stopped matching the visible text (WCAG 2.5.3
+         label-in-name). Keep the two in step. */
       function done(ok) {
-        btn.textContent = ok ? 'Copied' : 'Press Ctrl+C';
+        var label = ok ? 'Copied' : 'Press Ctrl+C';
+        btn.textContent = label;
+        btn.setAttribute('aria-label', label);
         btn.classList.add('is-done');
         setTimeout(function () {
           btn.textContent = 'Copy';
+          btn.setAttribute('aria-label', 'Copy code');
           btn.classList.remove('is-done');
         }, 1600);
       }
@@ -168,6 +171,124 @@
     });
   }
 
+  /* ---------- live demo embed ----------
+     Click-to-activate, never auto-loaded: six case studies each pulling a
+     whole third-party app on page load would cost more than the case study
+     itself, and Streamlit apps wake slowly from idle.
+
+     The iframe is sandboxed and the src is only set on activation. If the
+     remote refuses to be framed (X-Frame-Options / frame-ancestors) or is
+     simply asleep, nothing paints — so a timer reveals a fallback with a
+     direct link rather than leaving an empty box. */
+  function liveEmbed(p) {
+    if (!p.demo) return '';
+    return '<section class="dd live" data-live>' +
+      '<h2>See it running <span class="glyph" aria-hidden="true">▸</span></h2>' +
+      '<div class="live__frame">' +
+        '<div class="live__chrome" aria-hidden="true">' +
+          '<span class="live__dot"></span><span class="live__dot"></span><span class="live__dot"></span>' +
+          '<span class="live__url">' + esc(p.demo.replace(/^https?:\/\//, '')) + '</span>' +
+        '</div>' +
+        '<div class="live__stage">' +
+          '<button class="live__start" type="button" data-live-start ' +
+                  'aria-label="Load the live demo of ' + esc(p.title) + ' in this page">' +
+            '<span class="live__play" aria-hidden="true">▶</span>' +
+            '<span class="live__label">Load live demo</span>' +
+            '<span class="live__note">Loads ' + esc(p.demo.replace(/^https?:\/\//, '').split('/')[0]) + '</span>' +
+          '</button>' +
+          '<div class="live__fallback" data-live-fallback hidden>' +
+            '<p>This demo can’t be shown inside the page.</p>' +
+            '<a class="btn btn--primary" href="' + safeUrl(p.demo) + '" ' +
+               'target="_blank" rel="noopener noreferrer">Open it in a new tab ↗</a>' +
+          '</div>' +
+        '</div>' +
+      '</div>' +
+      '<p class="live__caption">Running the real deployment. ' +
+        '<a href="' + safeUrl(p.demo) + '" target="_blank" rel="noopener noreferrer">' +
+        'Open in a new tab ↗</a></p>' +
+    '</section>';
+  }
+
+  /* Wire up the activation button. One delegated listener, like initCopy. */
+  function initLive(root) {
+    root.addEventListener('click', function (e) {
+      var btn = e.target.closest && e.target.closest('[data-live-start]');
+      if (!btn) return;
+
+      var section = btn.closest('[data-live]');
+      var stage = btn.parentNode;
+      var fallback = section.querySelector('[data-live-fallback]');
+      var url = section.querySelector('.live__caption a').href;
+
+      var frame = document.createElement('iframe');
+      frame.className = 'live__iframe';
+      frame.title = 'Live demo';
+      frame.loading = 'lazy';
+      frame.referrerPolicy = 'no-referrer';
+      /* allow-scripts without allow-same-origin: the two together let a frame
+         escape its own sandbox (the browser warns about it) and also made
+         contentDocument readable, which broke the load check below. Scripts,
+         forms and target=_blank links are all these demos need. */
+      frame.setAttribute('sandbox', 'allow-scripts allow-forms allow-popups');
+      frame.setAttribute('allow', 'clipboard-write');
+
+      /* Whether a cross-origin frame actually rendered is not observable from
+         this side: a refusal, an abort and a real page all end up as one
+         opaque frame, and all of them may fire `load`. So confirm out of band
+         with a no-cors fetch of the same URL — it resolves for a reachable
+         origin and rejects when the network or the host says no. That does not
+         prove the frame was allowed to paint, so the visitor always keeps the
+         "open in a new tab" link in the caption as an escape hatch. */
+      function giveUp() {
+        if (section.classList.contains('is-live')) return;
+        frame.remove();
+        section.classList.remove('is-loading');
+        if (fallback) fallback.hidden = false;
+      }
+
+      function succeed() {
+        if (!frame.parentNode) return;          // already given up
+        section.classList.add('is-live');
+        section.classList.remove('is-loading');
+      }
+
+      var decided = false;
+      function decide(ok) {
+        if (decided) return;
+        decided = true;
+        if (ok) succeed(); else giveUp();
+      }
+
+      /* The frame's own `load` is the primary signal: it fires for anything
+         the browser actually rendered. It cannot distinguish a real page from
+         an error page, but the probe below cannot be trusted to do that either
+         — a no-cors fetch rejects for hosts that embed perfectly well (a
+         redirecting Streamlit app, for one), so treating a rejection as
+         failure hid a working demo. So: `load` wins, and the probe only acts
+         when the frame stays silent. Either way the caption keeps a direct
+         link, so a blank frame is never a dead end. */
+      /* Whether an opaque cross-origin frame really painted is not knowable
+         from this side: refusals, aborts and real pages all look alike, and
+         all of them can fire `load`. A no-cors probe is no better — Streamlit
+         rejects it while embedding perfectly well.
+
+         So trust `load`, and keep the escape hatch permanent: the caption
+         under every embed carries a direct link, so even a frame that comes
+         up blank is one click from the real thing. `error` and the timeout
+         still catch the cases the browser does report. */
+      frame.addEventListener('load', function () { decide(true); });
+      frame.addEventListener('error', function () { decide(false); });
+
+      // Backstop: nothing above resolved, so stop showing a spinner forever.
+      window.setTimeout(function () { decide(false); }, 12000);
+
+      btn.remove();
+      section.classList.add('is-loading');
+      stage.appendChild(frame);
+      frame.src = url;
+    });
+  }
+
   function render() {
     var root = document.getElementById('detail-root');
     if (!root || typeof projects === 'undefined') return;
@@ -180,8 +301,15 @@
     if (index === -1) { notFound(root); return; }
 
     var p = projects[index];
-    var prev = projects[index - 1];
-    var next = projects[index + 1];
+
+    /* Walk the same order the home page presents: "Recently Made" first, then
+       "Other Work". Using the raw array order sent visitors to a neighbour
+       that sits nowhere near this card on the page they came from. */
+    var ordered = projects.filter(function (x) { return x.recent; })
+      .concat(projects.filter(function (x) { return !x.recent; }));
+    var at = ordered.indexOf(p);
+    var prev = ordered[at - 1];
+    var next = ordered[at + 1];
 
     /* --- metadata --- */
     var pageTitle = p.title + ' — Akshayaa Kashyap';
@@ -193,14 +321,17 @@
     setMeta('meta[name="twitter:description"]', 'content', p.summary);
 
     /* --- pieces --- */
-    var tech = p.tech.map(function (t) { return '<li>' + esc(t) + '</li>'; }).join('');
+    // || [] for the same reason s.rows || [] has it above: a project entry
+    // missing either field should render a short page, not throw and leave
+    // the visitor on an empty one.
+    var tech = (p.tech || []).map(function (t) { return '<li>' + esc(t) + '</li>'; }).join('');
 
-    var highlights = p.highlights.map(function (h) {
+    var highlights = (p.highlights || []).map(function (h) {
       return '<li>' + esc(h) + '</li>';
     }).join('');
 
-    var actions = '<a class="btn btn--primary" href="' + esc(p.repo) + '" target="_blank" rel="noopener">Source ↗</a>' +
-      (p.demo ? '<a class="btn" href="' + esc(p.demo) + '" target="_blank" rel="noopener">Live demo ↗</a>' : '');
+    var actions = '<a class="btn btn--primary" href="' + safeUrl(p.repo) + '" target="_blank" rel="noopener noreferrer">Source ↗</a>' +
+      (p.demo ? '<a class="btn" href="' + safeUrl(p.demo) + '" target="_blank" rel="noopener noreferrer">Live demo ↗</a>' : '');
 
     var navPrev = prev
       ? '<a href="project.html?id=' + encodeURIComponent(prev.id) + '">← ' + esc(prev.title) + '</a>'
@@ -234,6 +365,8 @@
           '<h2>What it does <span class="glyph" aria-hidden="true">⁕</span></h2>' +
           '<ul class="detail__list">' + highlights + '</ul>' +
 
+          liveEmbed(p) +
+
           '<h2>The tricky part <span class="glyph" aria-hidden="true">⌘</span></h2>' +
           '<p>' + esc(p.challenge) + '</p>' +
 
@@ -244,11 +377,8 @@
       '<nav class="detail__nav" aria-label="Project navigation">' + navPrev + navNext + '</nav>';
 
     initCopy(root);
+    initLive(root);
   }
 
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', render);
-  } else {
-    render();
-  }
+  window.onReady(render);
 })();

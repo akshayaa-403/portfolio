@@ -13,23 +13,20 @@
   'use strict';
 
   var SCALE = 1.06;
+  /* One threshold for "the fade has converged" and "the track is audible".
+     These were 0.04 and 0.05, so a click landing mid-fade could read as
+     silent and start a second play instead of pausing. */
+  var FADE_EPSILON = 0.04;
   var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
   /* The layout editor positions props by writing style.transform. This script
      writes the same property on hover and clears it on leave, which would wipe
      a drag the instant the pointer left the prop. The two cannot share the
      property, so hover scaling stands down entirely while editing. */
-  var editing = /[?&]edit=1/.test(location.search);
+  var editing = window.isEditing();
 
   /* ---------- hover scale ---------- */
-  function rotationOf(el) {
-    var t = getComputedStyle(el).transform;
-    if (!t || t === 'none') return 0;
-    var m = t.match(/matrix\(([^)]+)\)/);
-    if (!m) return 0;
-    var p = m[1].split(',').map(parseFloat);
-    return Math.atan2(p[1], p[0]) * 180 / Math.PI;
-  }
+  // rotationOf() and isEditing() come from js/util.js.
 
   /* The lamp's glow is a separate prop, so hovering the lamp has to light it
      explicitly — the two are siblings and CSS :hover on one cannot reach the
@@ -67,13 +64,26 @@
 
     // The glow is decorative and never hovered in its own right.
     var items = stage.querySelectorAll('.prop:not(.prop--glow), .obj, .palette');
+    var resetters = [];
 
     Array.prototype.forEach.call(items, function (el) {
+      // The clean-mode pen scales via a CSS :hover rule instead: rebuilding its
+      // -90deg rotation here made it visibly re-tilt on hover. CSS composes the
+      // scale onto the authored rotate cleanly, so JS stands down for it — only
+      // in clean mode; chaos/notebook keep the shared JS hover-scale.
+      // Match the pen asset itself, not any src that merely contains "pen"
+      // (open.webp, pencil.webp, happen.webp would all have qualified).
+      var isPen = /\/pen\.[a-z0-9]+$/i.test(el.getAttribute('src') || '');
+      function penClean() {
+        return isPen && document.documentElement.getAttribute('data-mode') === 'clean';
+      }
+
       var baseTransform = null;
       var deg = null;
 
       el.addEventListener('pointerenter', function () {
         if (el.classList.contains('is-dragging')) return;
+        if (penClean()) return;
         // Capture the authored transform once, lazily: the layout differs per
         // view mode, so reading it at load time would cache the wrong value.
         if (deg === null) deg = Math.round(rotationOf(el));
@@ -87,6 +97,9 @@
       });
 
       function reset() {
+        // Same stand-down as pointerenter: in clean mode the pen's scale is a
+        // CSS :hover rule, so clearing style.transform here would fight it.
+        if (penClean()) return;
         el.classList.remove('is-hovered');
         // Drop the override rather than re-writing it: the stylesheet rule is
         // the source of truth and may include more than a rotation.
@@ -102,8 +115,9 @@
       el.addEventListener('pointercancel', reset);
 
       // A mode switch re-lays-out the stage; drop the cached rotation so the
-      // next hover measures the new arrangement.
-      window.addEventListener('modechange', function () {
+      // next hover measures the new arrangement. Registered once for the whole
+      // stage below rather than once per element.
+      resetters.push(function () {
         deg = null;
         baseTransform = null;
         el.classList.remove('is-hovered');
@@ -111,6 +125,10 @@
         var glow = glowFor(el);
         if (glow) glow.classList.remove('is-lit');
       });
+    });
+
+    window.addEventListener('modechange', function () {
+      for (var i = 0; i < resetters.length; i++) resetters[i]();
     });
   }
 
@@ -134,7 +152,7 @@
       window.clearInterval(fade);
       fade = window.setInterval(function () {
         var d = to - audio.volume;
-        if (Math.abs(d) < 0.04) {
+        if (Math.abs(d) < FADE_EPSILON) {
           audio.volume = to;
           window.clearInterval(fade);
           if (done) done();
@@ -170,9 +188,9 @@
       var m = Math.floor(t / 60), sec = Math.floor(t % 60);
       return m + ':' + (sec < 10 ? '0' : '') + sec;
     }
+    var bar = document.querySelector('.player__bar span');
     audio.addEventListener('timeupdate', function () {
       if (timeEl) timeEl.textContent = fmt(audio.currentTime);
-      var bar = document.querySelector('.player__bar span');
       if (bar && audio.duration) {
         bar.style.right = (100 - (audio.currentTime / audio.duration) * 100).toFixed(2) + '%';
       }
@@ -184,7 +202,7 @@
         // Hover may already have started the track, so a naive audio.paused
         // check makes the first press read as "pause". Drive from intent:
         // if it is audibly playing, stop; otherwise start.
-        var audible = !audio.paused && audio.volume > 0.05;
+        var audible = !audio.paused && audio.volume > FADE_EPSILON;
         userControlled = true;
         if (audible) pause(); else play();
       });
@@ -207,9 +225,5 @@
     initAudio();
   }
 
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', init);
-  } else {
-    init();
-  }
+  window.onReady(init);
 })();

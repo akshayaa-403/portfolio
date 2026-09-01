@@ -7,14 +7,6 @@
   var reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
   /* ---------- helpers ---------- */
-  function esc(value) {
-    return String(value == null ? '' : value)
-      .replace(/&/g, '&amp;')
-      .replace(/</g, '&lt;')
-      .replace(/>/g, '&gt;')
-      .replace(/"/g, '&quot;')
-      .replace(/'/g, '&#39;');
-  }
 
   /* ---------- project cards ----------
      Two sections, matching the reference:
@@ -42,11 +34,11 @@
         // is an attribute on <html>, not the OS preference a <picture> would
         // react to.
         var icon =
-            '<img class="rm__icon" src="public/assets/work/' + esc(p.id) + '-icon.webp" alt="" ' +
+            '<img class="rm__icon" src="public/assets/work/' + encodeURIComponent(p.id) + '-icon.webp" alt="" ' +
               'width="320" height="320" loading="lazy">' +
             (p.iconDark
               ? '<img class="rm__icon rm__icon--dark" src="public/assets/work/' +
-                esc(p.id) + '-icon-dark.webp" alt="" width="320" height="320" loading="lazy">'
+                encodeURIComponent(p.id) + '-icon-dark.webp" alt="" width="320" height="320" loading="lazy">'
               : '');
 
         return '<a class="rm reveal" href="' + detailHref(p) + '">' + icon +
@@ -59,7 +51,7 @@
               var n = p.hoverShots || 1, out = '';
               for (var s = 1; s <= n; s++) {
                 out += '<img class="rm__hover' + (s === 1 ? ' is-shown' : '') + '"' +
-                  ' src="public/assets/work/' + esc(p.id) +
+                  ' src="public/assets/work/' + encodeURIComponent(p.id) +
                   (s === 1 ? '-hover.webp' : '-hover-' + s + '.webp') + '"' +
                   ' alt="" width="720" height="480" loading="lazy" aria-hidden="true">';
               }
@@ -75,14 +67,14 @@
       otherHost.insertAdjacentHTML('afterbegin', other.map(function (p) {
         var link = p.demo || p.repo;
         return '<article class="ow reveal">' +
-            '<img class="ow__thumb" src="public/assets/work/' + esc(p.id) + '-thumb.webp" alt="" ' +
+            '<img class="ow__thumb" src="public/assets/work/' + encodeURIComponent(p.id) + '-thumb.webp" alt="" ' +
               'width="400" height="300" loading="lazy">' +
             '<div class="ow__body">' +
               '<h3 class="ow__title"><a href="' + detailHref(p) + '">' + esc(p.title) + '</a></h3>' +
               '<p class="ow__meta">' + esc(p.context) + ' | ' + esc(p.year) + '</p>' +
               '<span class="ow__rule" aria-hidden="true"></span>' +
               '<p class="ow__desc">' + esc(p.tagline) + '</p>' +
-              '<a class="ow__link" href="' + esc(link) + '" target="_blank" rel="noopener" ' +
+              '<a class="ow__link" href="' + safeUrl(link) + '" target="_blank" rel="noopener noreferrer" ' +
                 'aria-label="' + esc(p.title) + ' — open link">&#128279;</a>' +
             '</div>' +
           '</article>';
@@ -117,11 +109,10 @@
 
     for (var j = 0; j < items.length; j++) io.observe(items[j]);
 
-    // Failsafe: nothing stays invisible for more than a few seconds.
-    window.setTimeout(function () {
-      io.disconnect();
-      showAll();
-    }, 4000);
+    // Failsafe: nothing stays invisible for more than a few seconds. The
+    // observer is left connected — disconnecting it here also cancelled the
+    // staggered reveal for anything still below the fold.
+    window.setTimeout(showAll, 4000);
   }
 
   /* ---------- active nav link ---------- */
@@ -161,46 +152,6 @@
     update();
   }
 
-  /* ---------- mobile menu ---------- */
-  function initNavToggle() {
-    var btn = document.querySelector('[data-nav-toggle]');
-    var nav = document.getElementById('primary-nav');
-    if (!btn || !nav) return;
-
-    var mq = window.matchMedia('(max-width: 809.98px)');
-
-    function close() {
-      nav.hidden = true;
-      btn.setAttribute('aria-expanded', 'false');
-    }
-    function open() {
-      nav.hidden = false;
-      btn.setAttribute('aria-expanded', 'true');
-    }
-    function sync() {
-      if (mq.matches) { close(); } else { nav.hidden = false; btn.setAttribute('aria-expanded', 'false'); }
-    }
-
-    btn.addEventListener('click', function () {
-      if (btn.getAttribute('aria-expanded') === 'true') { close(); } else { open(); }
-    });
-
-    nav.addEventListener('click', function (e) {
-      if (mq.matches && e.target.tagName === 'A') close();
-    });
-
-    document.addEventListener('keydown', function (e) {
-      if (e.key === 'Escape' && mq.matches && btn.getAttribute('aria-expanded') === 'true') {
-        close();
-        btn.focus();
-      }
-    });
-
-    if (mq.addEventListener) { mq.addEventListener('change', sync); }
-    else if (mq.addListener) { mq.addListener(sync); }
-    sync();
-  }
-
   /* ---------- draggable collage ----------
      Pointer-based dragging, enabled only on wide screens where the cards are
      absolutely positioned. Cards stay keyboard-focusable and can be nudged
@@ -212,7 +163,25 @@
     var cards = stage.querySelectorAll('.obj');
     var wide = window.matchMedia('(min-width: 900px)');
     var STEP = 12;
-    var z = 10;
+    var Z_BASE = 10, Z_MAX = 400;
+    var z = Z_BASE;
+
+    /* Bring a card to the front. z was previously incremented without bound,
+       so a long session could climb past the header (100) and the skip link
+       (200). Renumber from the base once it gets near the ceiling. */
+    function toFront(card) {
+      if (z >= Z_MAX) {
+        var order = Array.prototype.slice.call(cards).sort(function (a, b) {
+          return (parseInt(a.style.zIndex, 10) || 0) -
+                 (parseInt(b.style.zIndex, 10) || 0);
+        });
+        z = Z_BASE;
+        for (var i = 0; i < order.length; i++) {
+          if (order[i].style.zIndex) order[i].style.zIndex = ++z;
+        }
+      }
+      card.style.zIndex = ++z;
+    }
 
     // Only the chaos canvas is draggable; notebook and clean lay cards out in
     // normal flow, where absolute offsets would fight the layout.
@@ -226,8 +195,13 @@
         cards[i].classList.toggle('is-draggable', on);
         if (on) {
           cards[i].setAttribute('aria-describedby', 'collage-help');
+          // The help text promises an arrow-key path, so the card has to be
+          // reachable by keyboard for that promise to hold.
+          cards[i].setAttribute('tabindex', '0');
         } else {
           cards[i].removeAttribute('aria-describedby');
+          cards[i].removeAttribute('tabindex');
+          delete cards[i].dataset.rot;
           cards[i].style.transform = '';
           cards[i].style.zIndex = '';
           delete cards[i].dataset.dx;
@@ -245,11 +219,22 @@
       };
     }
 
+    /* --r is authored per card and never changes, but reading it through
+       getComputedStyle forces a style recalc — and this ran on every
+       pointermove. Resolve it once per card and cache it. */
+    function authoredRotation(card) {
+      if (card.dataset.rot === undefined) {
+        card.dataset.rot =
+          (getComputedStyle(card).getPropertyValue('--r') || '0deg').trim();
+      }
+      return card.dataset.rot;
+    }
+
     function place(card, dx, dy) {
       card.dataset.dx = dx;
       card.dataset.dy = dy;
-      var rot = getComputedStyle(card).getPropertyValue('--r') || '0deg';
-      card.style.transform = 'translate(' + dx + 'px,' + dy + 'px) rotate(' + rot.trim() + ')';
+      card.style.transform =
+        'translate(' + dx + 'px,' + dy + 'px) rotate(' + authoredRotation(card) + ')';
     }
 
     for (var i = 0; i < cards.length; i++) {
@@ -267,7 +252,7 @@
           var o = offsets(card);
           baseX = o.x; baseY = o.y;
           card.classList.add('is-dragging');
-          card.style.zIndex = ++z;
+          toFront(card);
           if (card.setPointerCapture) card.setPointerCapture(pid);
         });
 
@@ -303,7 +288,7 @@
           }
           if (moved) {
             e.preventDefault();
-            card.style.zIndex = ++z;
+            toFront(card);
           }
         });
       })(cards[i]);
@@ -401,9 +386,9 @@
 
     for (var j = 0; j < hosts.length; j++) io.observe(hosts[j]);
 
-    // Failsafe, same reasoning as initReveal: never leave text hidden.
+    // Failsafe, same reasoning as initReveal: never leave text hidden, and
+    // leave the observer connected so nothing loses its animation.
     window.setTimeout(function () {
-      io.disconnect();
       for (var m = 0; m < hosts.length; m++) hosts[m].classList.add('is-revealed');
     }, 5000);
   }
@@ -456,14 +441,9 @@
     initReveal();
     initActiveNav();
     initHeader();
-    initNavToggle();
     initCollage();
     initWordReveal();
   }
 
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', init);
-  } else {
-    init();
-  }
+  window.onReady(init);
 })();

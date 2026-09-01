@@ -12,13 +12,18 @@ dist
 dist-ssr
 *.local
 
-# Personal config (copy js/config.example.js -> js/config.js and fill in)
-js/config.js
+# (js/config.js was ignored here against a js/config.example.js that never
+#  existed, for a file no page loads. Rule removed rather than left to rot.)
 
 # Editor directories and files
 .vscode/*
-.claude/
 !.vscode/extensions.json
+
+# .claude/ holds the project guide (CLAUDE.md) and its reference docs, which
+# belong in version control so they reach anyone else working on this. Only
+# the machine-local settings and agent scratch are ignored.
+.claude/settings.local.json
+.claude/agents/
 .idea
 .DS_Store
 *.suo

@@ -3,24 +3,40 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="referrer" content="strict-origin-when-cross-origin">
+<!-- Static host (GitHub Pages) serves no custom headers, so the policy ships
+     in-document. style-src keeps 'unsafe-inline': the hero's prop coordinates
+     live in style attributes, and dropping it would collapse the whole stage.
+     script-src keeps it for the no-FOUC snippet that must run before paint.
+     frame-ancestors is omitted: browsers ignore it in a <meta> CSP and warn,
+     and GitHub Pages cannot send it as a header. -->
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data:; media-src 'self'; connect-src 'self'; base-uri 'none'; form-action 'none'; object-src 'none'">
 <title>Akshayaa Kashyap — AI Engineer</title>
 
 <meta name="description" content="Akshayaa Kashyap is an AI engineer with specialist experience in machine learning and data analysis, building data pipelines, LLM workflows and dashboards that turn messy data into clear decisions.">
 <meta name="author" content="Akshayaa Kashyap">
-<meta name="keywords" content="Akshayaa Kashyap, AI engineer, AI, machine learning, data analysis, Python, LLM, portfolio">
 <link rel="canonical" href="https://akshayaa-403.github.io/portfolio/">
-<meta name="theme-color" content="#f4f7fa">
+<meta name="theme-color" content="#f4f7fa" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0c1620" media="(prefers-color-scheme: dark)">
 
 <meta property="og:type" content="website">
 <meta property="og:title" content="Akshayaa Kashyap — AI Engineer">
 <meta property="og:description" content="AI engineer with AI specialist experience. Data pipelines, LLM workflows and dashboards that turn messy data into clear decisions.">
 <meta property="og:url" content="https://akshayaa-403.github.io/portfolio/">
-<meta name="twitter:card" content="summary">
+<meta property="og:site_name" content="Akshayaa Kashyap">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="https://akshayaa-403.github.io/portfolio/public/assets/og-card.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="Akshayaa Kashyap — AI Engineer, AI &amp; Data">
+<meta name="twitter:image" content="https://akshayaa-403.github.io/portfolio/public/assets/og-card.png">
+<meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="Akshayaa Kashyap — AI Engineer">
 <meta name="twitter:description" content="AI engineer with specialist experience in machine learning and data analysis, based in India.">
 
 <link rel="icon" href="public/assets/favicon.webp" type="image/webp">
 <link rel="icon" href="public/assets/favicon.png" type="image/png">
+<link rel="apple-touch-icon" href="public/assets/favicon.png">
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -75,21 +91,22 @@
 
 <header class="site-header" id="site-header">
   <div class="site-header__inner">
-    <a class="brand" href="#top"><img class="brand__mark" src="public/assets/brand-mark.webp" alt="" aria-hidden="true" width="96" height="96">Akshayaa Kashyap</a>
-    <button class="nav-toggle" type="button" data-nav-toggle aria-expanded="false" aria-controls="primary-nav">Menu</button>
-    <nav class="nav" id="primary-nav" aria-label="Primary">
-      <a href="#work">Work</a>
-      <a href="#hobbies">Hobbies</a>
-      <a href="#about">About</a>
-      <a href="#contact">Contact</a>
-      <a href="public/assets/resume.pdf" target="_blank" rel="noopener">Resume ↗</a>
-    </nav>
+    <a class="brand" href="#main"><img class="brand__mark" src="public/assets/brand-mark.webp" alt="" aria-hidden="true" width="96" height="96">Akshayaa Kashyap</a>
+    <div class="site-header__end">
+      <button class="theme-toggle" type="button" data-theme-toggle
+              aria-pressed="false" aria-label="Switch to dark theme">☀</button>
+      <button class="nav-toggle" type="button" data-nav-toggle aria-expanded="false" aria-controls="primary-nav">Menu</button>
+      <nav class="nav" id="primary-nav" aria-label="Primary">
+        <a href="#work">Work</a>
+        <a href="#hobbies">Hobbies</a>
+        <a href="#about">About</a>
+        <a href="#contact">Contact</a>
+        <a href="public/assets/resume.pdf" target="_blank" rel="noopener noreferrer">Resume ↗</a>
+      </nav>
+    </div>
   </div>
 </header>
 
-<!-- Organic displacement filter, matching the reference's feTurbulence +
-     feDisplacementMap setup (fractalNoise, baseFrequency 0.02, 1 octave,
-     scale 2). Gives edges a faint hand-drawn wobble. -->
 <!-- Social icon sprite. Official brand marks, drawn as paths so they inherit
      currentColor and need no network request. Referenced via <use href="#id">. -->
 <svg width="0" height="0" aria-hidden="true" focusable="false" style="position:absolute">
@@ -107,15 +124,7 @@
   </symbol>
 </svg>
 
-<svg width="0" height="0" aria-hidden="true" focusable="false" style="position:absolute">
-  <filter id="wobble" color-interpolation-filters="sRGB">
-    <feTurbulence type="fractalNoise" baseFrequency="0.02" numOctaves="1" seed="525" stitchTiles="stitch" result="noise"/>
-    <feDisplacementMap in="SourceGraphic" in2="noise" scale="2" xChannelSelector="R" yChannelSelector="G"/>
-  </filter>
-</svg>
-
-<main id="main">
-  <span id="top" aria-hidden="true"></span>
+<main id="main" tabindex="-1">
 
   <!-- ===================== Hero =====================
        Layout mirrors jackiehu.design: a full-viewport cream stage with props
@@ -132,14 +141,16 @@
            expand gently on load, standing in for the earlier animated SVG.
            Behind everything (z-index 0) and never announced to assistive tech. -->
       <img class="lily lily--bl" src="public/assets/props/lily-pair.webp"
-           alt="" aria-hidden="true" width="511" height="830">
+           alt="" aria-hidden="true" width="511" height="830"
+           loading="lazy" decoding="async" fetchpriority="low">
       <img class="lily lily--tr" src="public/assets/props/lily-single.webp"
-           alt="" aria-hidden="true" width="465" height="420">
+           alt="" aria-hidden="true" width="465" height="420"
+           loading="lazy" decoding="async" fetchpriority="low">
 
 
       <!-- ---------- LEFT CLUSTER ---------- -->
       <!-- Objects deliberately bleed off the left edge, as on the reference. -->
-      <img class="prop" src="public/assets/props/notebook-page.webp" alt="" aria-hidden="true" width="760" height="555"
+      <img class="prop" src="public/assets/props/notebook-page.webp" alt="" aria-hidden="true" width="760" height="555" decoding="async"
            style="--x:-6.000%; --y:24.000%; --w:54.514%; --h:80.889%; --z:1; --cl:1; --clx:-8.000%; --cly:33.000%; --clw:41.000%; --clh:56.000%; --nb:1; --nbx:23.403%; --nby:0.778%; --nbw:53.194%; --nbh:77.222%; --r:-7deg;">
       <!-- The glow is a prop in its own right, positioned independently of the
            lamp. It is lit whenever the dark theme is on (and previewed on
@@ -148,6 +159,7 @@
            other prop. -->
       <img class="prop prop--glow" data-prop="lamp-glow" src="public/assets/props/lamp-light.webp"
            alt="" aria-hidden="true" width="600" height="599"
+           loading="lazy" decoding="async" fetchpriority="low"
            style="--x:15.483%; --y:49.687%; --w:15.637%; --h:25.018%; --z:3; --cl:1; --clx:33.476%; --cly:66.942%; --clw:8.590%; --clh:13.745%; --nb:1; --nbx:73.297%; --nby:54.409%; --nbw:10.244%; --nbh:16.390%; --r:0deg;">
       <!-- The lamp switches the colour theme: lit lamp = dark room. It is a
            real <button> so it is reachable by keyboard and announces its
@@ -157,11 +169,11 @@
               style="--x:1.200%; --y:3.000%; --w:23.819%; --h:50.778%; --z:4; --cl:1; --clx:-1.458%; --cly:-1.111%; --clw:16.597%; --clh:35.444%; --nb:1; --nbx:37.431%; --nby:19.556%; --nbw:16.667%; --nbh:35.556%; --r:2deg;">
         <img src="public/assets/props/lamp.webp" alt="" aria-hidden="true" width="354" height="743">
       </button>
-      <img class="prop" data-prop="camera" src="public/assets/props/camera.webp" alt="" aria-hidden="true" width="420" height="429"
+      <img class="prop" data-prop="camera" src="public/assets/props/camera.webp" alt="" aria-hidden="true" width="420" height="429" decoding="async"
            style="--x:2.000%; --y:57.000%; --w:14.931%; --h:23.556%; --z:5; --cl:1; --clx:12.153%; --cly:21.111%; --clw:9.583%; --clh:15.000%; --nb:0; --r:11deg;">
-      <img class="prop" src="public/assets/props/dreams.webp" alt="" aria-hidden="true" width="687" height="536"
+      <img class="prop" src="public/assets/props/dreams.webp" alt="" aria-hidden="true" width="687" height="536" decoding="async"
            style="--x:22.500%; --y:13.000%; --w:12.569%; --h:17.222%; --z:3; --cl:1; --clx:22.014%; --cly:6.111%; --clw:7.153%; --clh:8.889%; --nb:1; --nbx:21.458%; --nby:14.556%; --nbw:11.597%; --nbh:16.000%; --r:-9deg;">
-      <img class="prop" src="public/assets/props/pen.webp" alt="" aria-hidden="true" width="56" height="560"
+      <img class="prop" src="public/assets/props/pen.webp" alt="" aria-hidden="true" width="56" height="560" decoding="async"
            style="--x:26.000%; --y:36.000%; --w:4.792%; --h:22.667%; --z:6; --cl:1; --clx:76.111%; --cly:7.778%; --clw:4.722%; --clh:25.556%; --nb:1; --nbx:68.681%; --nby:6.333%; --nbw:7.014%; --nbh:29.000%; --r:16deg;">
 
       <!-- ---------- CENTRE LOCKUP ---------- -->
@@ -182,13 +194,17 @@
       <!-- Hover-to-play track for the music card. Drop an mp3 at
            public/assets/audio/track.mp3; until then the card simply stays
            silent (play() rejects harmlessly). -->
-      <audio id="hero-audio" preload="metadata" loop
+      <!-- preload="none": the file is ~2 MB, the largest asset on the site by
+           10x, and a passive hover must not pull it down. It is fetched only
+           when playback actually starts. -->
+      <audio id="hero-audio" preload="none" loop
              src="public/assets/audio/track.mp3"></audio>
       <!-- Music player: a real card, with the vinyl spinning inside it -->
-      <article class="obj obj--player" tabindex="0"
+      <article class="obj obj--player"
                style="--x:80.0%; --y:6.5%; --w:15.6%; --r:2deg; --z:6;">
         <div class="player__disc" aria-hidden="true">
-          <img src="public/assets/props/vinyl.webp" alt="" width="760" height="760">
+          <img src="public/assets/props/vinyl.webp" alt="" aria-hidden="true" width="760" height="760"
+               loading="lazy" decoding="async">
         </div>
         <button class="player__play" type="button" id="player-play"
                 aria-label="Play track" aria-pressed="false">
@@ -197,22 +213,21 @@
         <p class="obj__meta player__artist">Miles Davis Quartet</p>
         <p class="obj__title player__track">Old Devil Moon</p>
         <div class="player__bar" aria-hidden="true"><span></span></div>
-        <div class="player__times" aria-hidden="true"><span id="player-time">0:00</span><span>/ 3:31</span></div>
+        <!-- The elapsed time is written live by js/hero-hover.js, so it is
+             announced politely rather than hidden; the "/ 3:31" total is
+             decorative duplication of the same information. -->
+        <div class="player__times"><span id="player-time" role="timer" aria-live="off">0:00</span><span aria-hidden="true">/ 3:31</span></div>
       </article>
 
-      <img class="prop" src="public/assets/props/folder.webp" alt="" aria-hidden="true" width="760" height="644"
-           style="--x:58.500%; --y:60.000%; --w:12.153%; --h:19.444%; --z:6; --cl:1; --clx:85.417%; --cly:63.667%; --clw:10.347%; --clh:16.556%; --nb:0; --r:-5deg;">
-      <p class="prop-label" aria-hidden="true" style="--x:59.500%; --y:79.000%; --z:7;">resume_final_final</p>
-
       <!-- AirDrop-style share card: real markup, as on the reference -->
-      <article class="obj obj--share" tabindex="0"
+      <article class="obj obj--share"
                style="--x:73.5%; --y:56.0%; --w:13.1%; --r:-3deg; --z:7;">
         <p class="share__title">AirDrop</p>
         <p class="share__sub">Akshayaa would like to share a file</p>
         <div class="share__thumb" aria-hidden="true"></div>
         <div class="share__actions">
           <a class="share__btn" href="#about">Decline</a>
-          <a class="share__btn share__btn--go" href="public/assets/resume.pdf" target="_blank" rel="noopener">Accept</a>
+          <a class="share__btn share__btn--go" href="public/assets/resume.pdf" target="_blank" rel="noopener noreferrer">Accept</a>
         </div>
       </article>
 
@@ -221,15 +236,16 @@
            every per-mode coordinate and the hover lift still apply. -->
       <img class="palette" src="public/assets/props/paint-toolbar.webp"
            alt="" aria-hidden="true" width="380" height="1480"
+           loading="lazy" decoding="async" fetchpriority="low"
            style="--x:88.5%; --y:46.0%; --z:5;">
 
       <!-- Mode switcher: bottom-centre of the stage, where the reference puts
            its coffee/broom/pencil icon row -->
       <div class="hero__actions">
-        <span class="modes" role="group" aria-label="View mode">
-          <button type="button" data-mode-btn="chaos"    aria-pressed="true">chaos</button>
-          <button type="button" data-mode-btn="notebook" aria-pressed="false">notebook</button>
-          <button type="button" data-mode-btn="clean"    aria-pressed="false">clean</button>
+        <span class="modes" role="radiogroup" aria-label="View mode">
+          <button type="button" role="radio" data-mode-btn="chaos"    aria-checked="true">chaos</button>
+          <button type="button" role="radio" data-mode-btn="notebook" aria-checked="false">notebook</button>
+          <button type="button" role="radio" data-mode-btn="clean"    aria-checked="false">clean</button>
         </span>
       </div>
 
@@ -243,7 +259,12 @@
   -->
   <section class="strip-section" aria-labelledby="skills-h">
     <h2 class="strip__heading" id="skills-h">Skills</h2>
+    <!-- The drag is decoration, not a control: the track is aria-hidden and
+         the list is duplicated, so scrubbing it reveals nothing new. The same
+         skills are stated in readable form below for anyone not dragging. -->
     <div class="strip" data-marquee>
+      <p class="visually-hidden">Skills: Python, SQL, PyTorch, LangChain, Streamlit,
+        Pandas, OpenCV, Docker, TypeScript, Next.js, Azure, Power BI.</p>
       <div class="strip__track" aria-hidden="true">
         <span>Python</span><span>SQL</span><span>PyTorch</span><span>LangChain</span>
         <span>Streamlit</span><span>Pandas</span><span>OpenCV</span><span>Docker</span>
@@ -269,7 +290,7 @@
       <div class="rm-list" id="recent-cards">
         <noscript>
           <p>Project cards need JavaScript. All source lives at
-            <a href="https://github.com/akshayaa-403" rel="noopener">github.com/akshayaa-403</a>.</p>
+            <a href="https://github.com/akshayaa-403" rel="noopener noreferrer">github.com/akshayaa-403</a>.</p>
         </noscript>
       </div>
     </div>
@@ -324,7 +345,7 @@
             messy — a CRM export, a scraped lead list, a noisy microscopy image — into something
             a person can read and act on.</p>
           <p data-squiggle>Outside client work I build things to understand them. I also
-            <a href="https://akshayaakashyap.substack.com" target="_blank" rel="noopener">write on Substack</a>.</p>
+            <a href="https://akshayaakashyap.substack.com" target="_blank" rel="noopener noreferrer">write on Substack</a>.</p>
         </div>
 
         <aside class="about__aside reveal">
@@ -346,11 +367,11 @@
         AI-shaped, or a question about any of the projects above.</p>
       <div class="contact__links reveal">
         <a class="btn btn--primary" href="mailto:akshayaakashyap5@gmail.com">akshayaakashyap5@gmail.com</a>
-        <a class="btn btn--icon" href="https://github.com/akshayaa-403" target="_blank" rel="noopener">
+        <a class="btn btn--icon" href="https://github.com/akshayaa-403" target="_blank" rel="noopener noreferrer">
           <svg class="icon" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" focusable="false"><use href="#i-github"></use></svg>GitHub</a>
-        <a class="btn btn--icon" href="https://linkedin.com/in/akshayaa-kashyap" target="_blank" rel="noopener">
+        <a class="btn btn--icon" href="https://linkedin.com/in/akshayaa-kashyap" target="_blank" rel="noopener noreferrer">
           <svg class="icon" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" focusable="false"><use href="#i-linkedin"></use></svg>LinkedIn</a>
-        <a class="btn btn--icon" href="https://akshayaakashyap.substack.com" target="_blank" rel="noopener">
+        <a class="btn btn--icon" href="https://akshayaakashyap.substack.com" target="_blank" rel="noopener noreferrer">
           <svg class="icon" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" focusable="false"><use href="#i-substack"></use></svg>Substack</a>
       </div>
     </div>
@@ -361,11 +382,11 @@
   <div class="site-footer__inner">
     <p style="margin:0;">© <span data-year>2026</span> Akshayaa Kashyap</p>
     <nav class="site-footer__social" aria-label="Footer">
-      <a href="https://github.com/akshayaa-403" target="_blank" rel="noopener" aria-label="GitHub">
+      <a href="https://github.com/akshayaa-403" target="_blank" rel="noopener noreferrer" aria-label="GitHub">
         <svg class="icon" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" focusable="false"><use href="#i-github"></use></svg><span>GitHub</span></a>
-      <a href="https://linkedin.com/in/akshayaa-kashyap" target="_blank" rel="noopener" aria-label="LinkedIn">
+      <a href="https://linkedin.com/in/akshayaa-kashyap" target="_blank" rel="noopener noreferrer" aria-label="LinkedIn">
         <svg class="icon" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" focusable="false"><use href="#i-linkedin"></use></svg><span>LinkedIn</span></a>
-      <a href="https://akshayaakashyap.substack.com" target="_blank" rel="noopener" aria-label="Substack">
+      <a href="https://akshayaakashyap.substack.com" target="_blank" rel="noopener noreferrer" aria-label="Substack">
         <svg class="icon" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" focusable="false"><use href="#i-substack"></use></svg><span>Substack</span></a>
       <a href="mailto:akshayaakashyap5@gmail.com" aria-label="Email">
         <svg class="icon" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" focusable="false"><use href="#i-mail"></use></svg><span>Email</span></a>
@@ -373,24 +394,29 @@
   </div>
 </footer>
 
-<script src="js/project-data.js"></script>
-<script src="js/theme.js"></script>
-<script src="js/modes.js"></script>
-<script src="js/squiggle.js"></script>
-<script src="js/hero-hover.js"></script>
-<script src="js/marquee.js"></script>
+<script src="js/util.js" defer></script>
+<script src="js/project-data.js" defer></script>
+<script src="js/theme.js" defer></script>
+<script src="js/nav.js" defer></script>
+<script src="js/modes.js" defer></script>
+<script src="js/squiggle.js" defer></script>
+<script src="js/hero-hover.js" defer></script>
+<script src="js/marquee.js" defer></script>
 <!-- Must load before script.js: it injects .reveal elements, and script.js
      registers the reveal observer over whatever is in the DOM at that point. -->
-<script src="js/hobbies.js"></script>
-<!-- Dev-only layout editor: loaded solely when ?edit=1 is in the URL, so it
-     never ships behaviour to real visitors. -->
+<script src="js/hobbies.js" defer></script>
+<!-- Dev-only tooling: fetched solely when ?edit=1 is in the URL, so real
+     visitors never download or run it. Both files self-gate on the same
+     param as a second line of defence. -->
 <script>
 if (/[?&]edit=1/.test(location.search)) {
-  var _le = document.createElement('script');
-  _le.src = 'js/layout-editor.js';
-  document.head.appendChild(_le);
+  ['js/layout-editor.js', 'js/annotate.js'].forEach(function (src) {
+    var el = document.createElement('script');
+    el.src = src;
+    document.head.appendChild(el);
+  });
 }
 </script>
-<script src="js/script.js"></script>
+<script src="js/script.js" defer></script>
 </body>
 </html>

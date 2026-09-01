@@ -62,6 +62,47 @@
     else if (mq.addListener) mq.addListener(onChange);
   }
 
+  /* Publish the real header height as --header-h. The hero pulls itself up by
+     this amount to sit under the sticky bar; a hardcoded fallback is wrong at
+     every breakpoint where the bar grows (the mobile toggle is taller than the
+     desktop nav row). Measured rather than guessed. */
+  function initHeaderHeight() {
+    var header = document.querySelector('.site-header');
+    if (!header) return;
+    function set() {
+      document.documentElement.style.setProperty(
+        '--header-h', header.offsetHeight + 'px');
+    }
+    set();
+    if (window.ResizeObserver) {
+      new ResizeObserver(set).observe(header);
+    } else {
+      window.addEventListener('resize', set);
+    }
+  }
+
+  /* Pages without the hero lamp still need a way to change theme. Any page
+     carrying [data-theme-toggle] gets the control wired up here; index.html
+     has the lamp instead and ships no such button. */
+  function initToggle() {
+    var btn = document.querySelector('[data-theme-toggle]');
+    if (!btn) return;
+
+    function sync() {
+      var dark = current() === 'dark';
+      btn.setAttribute('aria-pressed', dark ? 'true' : 'false');
+      btn.setAttribute('aria-label',
+        dark ? 'Switch to light theme' : 'Switch to dark theme');
+      btn.textContent = dark ? '☾' : '☀';
+    }
+
+    btn.addEventListener('click', function () {
+      window.portfolioTheme.toggle();
+    });
+    window.addEventListener('themechange', sync);
+    sync();
+  }
+
   function initYear() {
     var slots = document.querySelectorAll('[data-year]');
     var year = String(new Date().getFullYear());
@@ -76,12 +117,10 @@
       if (want === 'dark') apply('dark', false);
     }
     watchSystem();
+    initHeaderHeight();
+    initToggle();
     initYear();
   }
 
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', init);
-  } else {
-    init();
-  }
+  window.onReady(init);
 })();
