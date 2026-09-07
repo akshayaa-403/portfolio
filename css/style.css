@@ -930,6 +930,22 @@ main:focus-visible { outline: none; }
   pointer-events: none;
   transition: opacity var(--dur) var(--ease), transform var(--dur) var(--ease);
 }
+/* Transparent cut-outs (phone mockups) rather than opaque screenshots: a
+   shadow and radius here would outline the empty space around the cut-out,
+   so both come off and the frame is sized by height instead of width. */
+.rm__hover--bare {
+  /* --hx/--hy are the hand-placed offsets from the default preview slot,
+     dumped by the ?edit=1 placement editor in js/script.js. */
+  --hx: 0px;
+  --hy: 0px;
+  width: auto;
+  height: 360px;
+  border-radius: 0;
+  box-shadow: none;
+  filter: drop-shadow(0 12px 24px rgb(0 0 0 / 0.22));
+  transform: translate(var(--hx), calc(-50% + var(--hy))) scale(0.97);
+}
+
 /* Multiple frames stack in the same slot; only .is-shown is visible, and
    js/script.js advances it while the card is hovered. */
 @media (prefers-reduced-motion: no-preference) {
@@ -943,6 +959,23 @@ main:focus-visible { outline: none; }
 @media (prefers-reduced-motion: reduce) {
   .rm:hover .rm__hover.is-shown,
   .rm:focus-visible .rm__hover.is-shown { opacity: 1; }
+}
+/* The generic hover rule above rebuilds transform from scratch, which would
+   drop the hand-placed --hx/--hy. Re-assert them after it. */
+.rm:hover .rm__hover--bare.is-shown,
+.rm:focus-visible .rm__hover--bare.is-shown {
+  transform: translate(var(--hx), calc(-50% + var(--hy))) scale(1);
+}
+/* Hand-placed with the ?edit=1 placement editor (js/script.js, P to dump). */
+.rm__hover--bare[src$="habita-hover.webp"] {
+  --hx: 347px;
+  --hy: -118px;
+  height: 360px;
+}
+.rm__hover--bare[src$="habita-hover-2.webp"] {
+  --hx: 42px;
+  --hy: -116px;
+  height: 360px;
 }
 @media (max-width: 1099.98px) {
   .rm__hover { display: none; }

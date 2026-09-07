@@ -518,7 +518,8 @@ const projects = [
         "body": "State persists to localStorage, so a user can return weeks later carrying a shape the current code no longer expects. Habita validates the stored object on load and migrates older shapes forward rather than trusting it — a stale save degrades into a correct one instead of a crash."
       }
     ],
-    "hoverShots": 2
+    "hoverShots": 2,
+    "bareShots": [1, 2]
   },
   {
     "id": "yosemite-cyclegan",
