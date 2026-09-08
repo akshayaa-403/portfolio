@@ -22,9 +22,12 @@
 
   if (!window.isEditing()) return;
 
-  var SEL = '.prop, .obj, .palette, .prop-label, .lily,' +
-            '.hero__name, .hero__role, .hero__sub, .hero__headline,' +
-            '.hero__actions';
+  // .hero__actions (the mode toggle) is deliberately ABSENT: it is a
+  // control, not scenery, and sits in the same spot in all three modes.
+  // Leaving it selectable meant it could be dragged out of alignment and
+  // dumped back into CSS, so it is locked out of the editor entirely.
+  var SEL = '.prop, .obj, .lily,' +
+            '.hero__name, .hero__role, .hero__sub, .hero__headline';
 
   var stage, panel, current = null;
   var cycle = 0;          // depth offset for picking through stacked props
@@ -44,18 +47,15 @@
     if (el.classList.contains('lily')) {
       return el.classList.contains('lily--bl') ? 'lily-bl' : 'lily-tr';
     }
-    if (el.classList.contains('palette')) return 'palette';
-    if (el.classList.contains('prop-label')) return 'prop-label';
     if (el.classList.contains('hero__name')) return 'text-name';
     if (el.classList.contains('hero__role')) return 'text-role';
     if (el.classList.contains('hero__sub')) return 'text-sub';
     if (el.classList.contains('hero__headline')) return 'text-headline';
-    if (el.classList.contains('hero__actions')) return 'text-modes';
     return el.tagName.toLowerCase();
   }
 
   function isTextEl(el) {
-    return /hero__(name|role|sub|headline|actions)/.test(el.className || '');
+    return /hero__(name|role|sub|headline)/.test(el.className || '');
   }
 
   /* Authored rotation, in degrees, read back from the computed matrix. Props
@@ -193,9 +193,7 @@
     for (var i = 0; i < stack.length; i++) {
       var c = stack[i].closest && stack[i].closest(SEL);
       if (!c || !stage.contains(c) || out.indexOf(c) !== -1) continue;
-      if (isTextEl(c) &&
-          !c.classList.contains('hero__actions') &&
-          !overGlyphs(c, e.clientX, e.clientY)) continue;
+      if (isTextEl(c) && !overGlyphs(c, e.clientX, e.clientY)) continue;
       out.push(c);
     }
     return out;

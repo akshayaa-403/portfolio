@@ -63,6 +63,13 @@
      ground — so it stays light in both themes and is NOT flipped in the dark
      block below. Used by the notebook hero copy and the hobby card labels. */
   --on-photo: #f2f6fa;
+  /* Hover colour for a title sitting on a photo. Like --on-photo it has
+     no dark counterpart on purpose: the hobby card's text sits on its own
+     dark gradient, not on the theme ground, so it must not flip. Light
+     mode used to inherit --accent-ink (#094e94) here, which put dark navy
+     on a near-black overlay and all but erased the title. 9.5:1 on the
+     gradient. */
+  --on-photo-accent: #8fb8e8;
 
   /* Lines */
   --line: rgba(22, 40, 61, 0.14);
@@ -175,8 +182,7 @@
 /* Applied via the same --prop-filter variable the hover rule composes with,
    so the two never fight over the `filter` property. The selector is kept at
    the same specificity as the hover rule and appears earlier, so hover wins. */
-:root[data-theme='dark'] .stage .prop,
-:root[data-theme='dark'] .stage .palette {
+:root[data-theme='dark'] .stage .prop {
   filter: var(--prop-filter);
 }
 /* The glow is the light source and must not be dimmed. */
@@ -187,18 +193,12 @@
 :root[data-theme='dark'] .prop--lamp-btn {
   --prop-filter: brightness(0.94) saturate(0.95);
 }
-
-/* In notebook mode the hero lockup sits ON the paper prop, which stays a light
-   photograph whatever the theme. Pale-on-navy text would be pale-on-paper
-   there and unreadable, so the lockup keeps dark ink over that page. The
-   notebook page is dimmed further than the other props to soften the contrast
-   between a bright sheet and the dark room around it. */
-:root[data-theme='dark'][data-mode='notebook'] .prop[src*='notebook-page'] {
-  --prop-filter: brightness(0.62) saturate(0.85) contrast(1.05);
-}
 :root[data-theme='dark'][data-mode='notebook'] .hero__name,
+
 :root[data-theme='dark'][data-mode='notebook'] .hero__role,
+
 :root[data-theme='dark'][data-mode='notebook'] .hero__sub,
+
 :root[data-theme='dark'][data-mode='notebook'] .hero__headline {
   color: var(--on-photo);
   text-shadow: 0 1px 10px rgba(0, 0, 0, 0.75), 0 0 3px rgba(0, 0, 0, 0.6);
@@ -208,7 +208,9 @@
    2. Reset & base
    -------------------------------------------------------------------------- */
 *,
+
 *::before,
+
 *::after { box-sizing: border-box; }
 
 html {
@@ -240,7 +242,16 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
-h1, h2, h3, h4 {
+h1,
+
+
+h2,
+
+
+h3,
+
+
+h4 {
   margin: 0;
   color: var(--ink);
   font-weight: 500;
@@ -251,7 +262,10 @@ h1, h2, h3, h4 {
 p { margin: 0 0 var(--gap); }
 ul { margin: 0; padding: 0; list-style: none; }
 
-img, svg {
+img,
+
+
+svg {
   max-width: 100%;
   height: auto;
   display: block;
@@ -286,6 +300,7 @@ button { font: inherit; }
 /* <main> carries tabindex="-1" purely so the skip link can move focus to it.
    It is not an interactive control, so it should not paint a focus ring. */
 main:focus,
+
 main:focus-visible { outline: none; }
 
 .skip-link {
@@ -372,7 +387,9 @@ main:focus-visible { outline: none; }
    dead space; the brand, nav links and buttons opt back in. */
 .site-header { pointer-events: none; }
 .site-header a,
+
 .site-header button,
+
 .site-header .modes { pointer-events: auto; }
 
 /* Brand left, everything else right. The right-hand group is one flex item
@@ -422,6 +439,7 @@ main:focus-visible { outline: none; }
   transition: color var(--dur) var(--ease), background var(--dur) var(--ease);
 }
 .nav a:hover,
+
 .nav a.is-active {
   color: var(--accent-ink);
   background: var(--accent-tint);
@@ -521,7 +539,7 @@ main:focus-visible { outline: none; }
 
 @keyframes lily-bloom {
   from { opacity: 0; transform: scale(0.72) rotate(-4deg); }
-  to   { opacity: var(--lily-o, 0.16); transform: scale(1) rotate(0deg); }
+  to { opacity: var(--lily-o, 0.16); transform: scale(1) rotate(0deg); }
 }
 
 /* They compete with content on small screens */
@@ -552,18 +570,6 @@ main:focus-visible { outline: none; }
   user-select: none;
 }
 
-.prop-label {
-  position: absolute;
-  left: var(--x);
-  top: var(--y);
-  z-index: var(--z, 6);
-  margin: 0;
-  color: var(--ink-soft);
-  font-size: 12px;
-  white-space: nowrap;
-  pointer-events: none;
-}
-
 /* --- Centre lockup ------------------------------------------------------ */
 .hero__lockup {
   position: absolute;
@@ -578,6 +584,7 @@ main:focus-visible { outline: none; }
   pointer-events: none;
 }
 .hero__lockup a,
+
 .hero__lockup button { pointer-events: auto; }
 
 .hero__name {
@@ -675,7 +682,7 @@ main:focus-visible { outline: none; }
   object-fit: contain;
 }
 .player__artist { margin: 0; }
-.player__track  { margin: 0 0 10px; }
+.player__track { margin: 0 0 10px; }
 .player__bar {
   position: relative;
   height: 3px;
@@ -739,27 +746,10 @@ main:focus-visible { outline: none; }
 }
 .share__btn--go { font-weight: 600; }
 
-/* MacPaint-style tool palette */
-/* The MS Paint toolbar prop. The artwork is 380x1480 (191:744), so height is
-   derived from width via aspect-ratio and every per-mode rule only needs to
-   set --x/--y/width, exactly as before. image-rendering keeps the pixel-art
-   buttons crisp instead of letting the browser smooth them. */
-.palette {
-  position: absolute;
-  left: var(--x);
-  top: var(--y);
-  z-index: var(--z, 5);
-  width: 64px;
-  height: auto;
-  aspect-ratio: 191 / 744;
-  object-fit: contain;
-  image-rendering: pixelated;
-  pointer-events: none;
-}
-
 /* Drag affordances (JS adds .is-draggable in chaos mode on wide screens) */
 .obj.is-draggable { cursor: grab; touch-action: none; }
 .obj.is-draggable:active,
+
 .obj.is-dragging { cursor: grabbing; }
 .obj.is-dragging {
   box-shadow: var(--shadow-card-hover);
@@ -773,7 +763,7 @@ main:focus-visible { outline: none; }
    readable rather than becoming a pile of overlaps. */
 @media (max-width: 899.98px) {
   .stage { min-height: 0; padding-bottom: var(--gap-lg); }
-  .prop, .prop-label, .palette { display: none; }
+  .prop { display: none; }
 
   .hero__lockup {
     position: relative;
@@ -950,6 +940,7 @@ main:focus-visible { outline: none; }
    js/script.js advances it while the card is hovered. */
 @media (prefers-reduced-motion: no-preference) {
   .rm:hover .rm__hover.is-shown,
+
   .rm:focus-visible .rm__hover.is-shown {
     opacity: 1;
     transform: translateY(-50%) scale(1);
@@ -958,11 +949,13 @@ main:focus-visible { outline: none; }
 /* Without motion the first frame still shows on hover — just no cycling. */
 @media (prefers-reduced-motion: reduce) {
   .rm:hover .rm__hover.is-shown,
+
   .rm:focus-visible .rm__hover.is-shown { opacity: 1; }
 }
 /* The generic hover rule above rebuilds transform from scratch, which would
    drop the hand-placed --hx/--hy. Re-assert them after it. */
 .rm:hover .rm__hover--bare.is-shown,
+
 .rm:focus-visible .rm__hover--bare.is-shown {
   transform: translate(var(--hx), calc(-50% + var(--hy))) scale(1);
 }
@@ -999,6 +992,7 @@ main:focus-visible { outline: none; }
   transition: border-color var(--dur) var(--ease), background var(--dur) var(--ease);
 }
 .ow:hover,
+
 .ow:focus-within {
   border-color: var(--line-strong);
   background: var(--surface);
@@ -1252,7 +1246,7 @@ main:focus-visible { outline: none; }
 
 @keyframes drift {
   from { transform: translateX(0); }
-  to   { transform: translateX(-50%); }
+  to { transform: translateX(-50%); }
 }
 
 /* --------------------------------------------------------------------------
@@ -1263,34 +1257,36 @@ main:focus-visible { outline: none; }
    -------------------------------------------------------------------------- */
 @media (prefers-reduced-motion: no-preference) {
   .js .hero__name,
+
   .js .hero__role,
+
   .js .hero__sub,
+
   .js .hero__headline,
+
   .js .hero__actions,
+
   .js .stage .prop,
-  .js .stage .prop-label,
-  .js .stage .obj,
-  .js .stage .palette {
+
+  .js .stage .obj {
     animation: appear 0.62s var(--ease) backwards;
   }
-  .js .hero__name     { animation-delay: 0.05s; }
-  .js .hero__role     { animation-delay: 0.14s; }
-  .js .hero__sub      { animation-delay: 0.20s; }
+  .js .hero__name { animation-delay: 0.05s; }
+  .js .hero__role { animation-delay: 0.14s; }
+  .js .hero__sub { animation-delay: 0.20s; }
   .js .hero__headline { animation-delay: 0.26s; }
-  .js .hero__actions  { animation-delay: 0.34s; }
+  .js .hero__actions { animation-delay: 0.34s; }
 
   /* Props trail in from the outside of the composition inwards */
-  .js .stage .prop            { animation-delay: 0.40s; }
-  .js .stage .prop:nth-of-type(2n)  { animation-delay: 0.48s; }
-  .js .stage .prop:nth-of-type(3n)  { animation-delay: 0.56s; }
-  .js .stage .obj             { animation-delay: 0.62s; }
-  .js .stage .palette         { animation-delay: 0.70s; }
-  .js .stage .prop-label      { animation-delay: 0.70s; }
+  .js .stage .prop { animation-delay: 0.40s; }
+  .js .stage .prop:nth-of-type(2n) { animation-delay: 0.48s; }
+  .js .stage .prop:nth-of-type(3n) { animation-delay: 0.56s; }
+  .js .stage .obj { animation-delay: 0.62s; }
 }
 
 @keyframes appear {
   from { opacity: 0.001; }
-  to   { opacity: 1; }
+  to { opacity: 1; }
 }
 
 /* --------------------------------------------------------------------------
@@ -1308,7 +1304,7 @@ main:focus-visible { outline: none; }
 
 @keyframes vinyl-spin {
   from { transform: rotate(0deg); }
-  to   { transform: rotate(360deg); }
+  to { transform: rotate(360deg); }
 }
 
 /* --------------------------------------------------------------------------
@@ -1438,26 +1434,10 @@ main:focus-visible { outline: none; }
    These all read left/top from --x/--y, so overrides must set the custom
    properties; a plain `left:` loses to the inline style. */
 [data-mode='clean'] .obj--player { --x: 40.000% !important; --y: 5.778%  !important; }
-[data-mode='clean'] .obj--share  { --x: 70.972% !important; --y: 68.444% !important; }
-[data-mode='clean'] .palette     { --x: 92.500% !important; --y: 6.500%  !important; }
-[data-mode='clean'] .prop-label  { --x: 85.417% !important; --y: 80.222% !important; }
+[data-mode='clean'] .obj--share { --x: 70.972% !important; --y: 68.444% !important; }
 
 [data-mode='notebook'] .obj--player { --x: 74.500% !important; --y: 6.500%  !important; }
-[data-mode='notebook'] .obj--share  { --x: 23.958% !important; --y: 61.111% !important; }
-
-/* In notebook mode the notebook page is the top surface and the lamp tucks
-   behind it — on the reference the lamp's stem disappears under the page. */
-[data-mode='notebook'] .prop[src*='notebook-page'] { z-index: 4 !important; }
-[data-mode='notebook'] .prop[src*='dreams']        { z-index: 6 !important; }
-[data-mode='notebook'] .prop[src*='pen'] {
-  z-index: 8 !important;      /* lies ON the page, as a pen would */
-  --nbx: 60.000% !important;
-  --nby: 58.000% !important;
-}
-
-/* notebook drops the paint palette and the file label */
-[data-mode='notebook'] .palette,
-[data-mode='notebook'] .prop-label { display: none; }
+[data-mode='notebook'] .obj--share { --x: 23.958% !important; --y: 61.111% !important; }
 
 /* Surfaces: notebook warms the paper, clean keeps the default ground */
 :root[data-mode='notebook'] {
@@ -1482,67 +1462,68 @@ main:focus-visible { outline: none; }
 /* ---------- clean mode: hand-placed layout ----------
    Positioned by hand in the browser (js/layout-editor.js, ?edit=1) and pasted
    back verbatim. Deliberate design decisions - do not "correct" them against
-   the other modes or any reference site.
-
-   --player-w is the single source of truth for the music card's width; the pen
-   reads it too, so the two always span the same distance. Change it once. */
-:root { --player-w: 15.599%; }
-[data-mode='clean'] .prop[src*='notebook-page'] {
-  /* Rotated 2deg. The dump reports the rotated bounding box (593x482), so the
-     element's own box is solved back from it: 577.2x462.1. */
-  left: 2.242% !important; top: 10.512% !important;
-  width: 39.347% !important; height: 55.881% !important;
-  transform: rotate(2deg) !important;
-  transform-origin: center center !important;
-  z-index: 1 !important;
-}
+   the other modes or any reference site. */
 [data-mode='clean'] .prop--glow {
-  left: 33.610% !important; top: 69.360% !important;
-  width: 8.590% !important; height: 13.740% !important;
+  left: 29.048% !important; top: 59.157% !important;
+  width: 13.810% !important; height: 14.699% !important;
   transform: none !important; z-index: 3 !important;
 }
 [data-mode='clean'] .prop[data-prop='lamp'] {
-  left: 30.860% !important; top: 68.520% !important;
-  width: 14.100% !important; height: 30.140% !important;
+  left: 25.850% !important; top: 58.916% !important;
+  width: 20.204% !important; height: 28.795% !important;
   transform: none !important; z-index: 4 !important;
 }
 [data-mode='clean'] .prop[data-prop='camera'] {
-  left: 6.810% !important; top: 73.240% !important;
-  width: 9.600% !important; height: 15.010% !important;
-  transform: none !important; z-index: 5 !important;
+  --rb: 0deg;
+  left: 0.476% !important; top: 66.627% !important;
+  width: 16.395% !important; height: 17.108% !important;
+  transform: rotate(var(--rb));
+  transform-origin: center center;
+  z-index: 5 !important;
 }
-[data-mode='clean'] .prop[src*='dreams'] {
-  left: 18.390% !important; top: 73.120% !important;
-  width: 11.650% !important; height: 14.530% !important;
-  transform: none !important; z-index: 3 !important;
+/* --- clean mode: new props (hand-placed, ?edit=1 D dump) ---
+   Only stars is rotated here; the rest are axis-aligned, so their dumped
+   boxes are used directly. */
+[data-mode='clean'] .prop[data-prop='notebook-open'] {
+  /* Spans the full stage width and bleeds off both edges. Above the lamp
+     band at z 6, per the dump. */
+  display: block !important;
+  left: -28.163% !important; top: 13.614% !important;
+  width: 100.000% !important; height: 40.482% !important;
+  transform: none !important;
+  z-index: 2 !important;
+  pointer-events: none !important;
 }
-[data-mode='clean'] .prop[src*='pen'] {
-  /* Rotated -90deg: the element's own width becomes the on-screen HEIGHT and
-     its height becomes the on-screen WIDTH. Because rotation pivots about the
-     centre, left/top are set so the ROTATED box lands where it was placed.
-     On-screen span is 207 px. */
-  left: 25.665% !important;
-  top: 49.274% !important;
-  width: 53.442% !important;    /* becomes on-screen height */
-  height: 25.030% !important;   /* becomes on-screen width  */
-  transform: rotate(-90deg) !important;
+[data-mode='clean'] .prop[data-prop='glass-flower'] {
+  --rb: 0deg;
+  display: block !important;
+  left: 85.170% !important; top: 42.289% !important;
+  width: 14.082% !important; height: 14.940% !important;
+  transform: rotate(var(--rb)); z-index: 2 !important;
+}
+[data-mode='clean'] .prop[data-prop='soda-can'] {
+  display: block !important;
+  left: 76.745% !important; top: 44.433% !important;
+  width: 6.919% !important; height: 13.182% !important;
+  transform: rotate(-29deg) !important;
   transform-origin: center center !important;
-  z-index: 6 !important;
+  z-index: 2 !important;
 }
-/* Clean pen scales in place on hover — no re-tilt. JS hover stands down for it
-   here so this composes cleanly onto the authored -90deg rotation. */
-@media (prefers-reduced-motion: no-preference) {
-  [data-mode='clean'] .prop[src*='pen'] {
-    transition: transform var(--dur) var(--ease) !important,
-                filter var(--dur) var(--ease) !important;
-  }
-  [data-mode='clean'] .prop[src*='pen']:hover {
-    transform: rotate(-90deg) scale(1.06) !important;
-    /* Same hover shadow the JS-driven props get via .is-hovered, composed onto
-       the theme's base --prop-filter so it dims in dark mode instead of flashing. */
-    filter: var(--prop-filter, ) drop-shadow(0 10px 20px var(--prop-shadow, rgba(28, 55, 90, 0.22))) !important;
-    z-index: 40 !important;
-  }
+/* Sits exactly where the intact can sits, bottom edges flush, so the
+   cross-fade reads as a collapse rather than a swap. */
+[data-mode='clean'] .prop[data-prop='soda-can-crushed'] {
+  --rb: -29deg;
+  display: block !important;
+  left: 75.015% !important; top: 47.333% !important;
+  width: 10.379% !important; height: 10.282% !important;
+  transform: rotate(var(--rb));
+  z-index: 2 !important;
+}
+[data-mode='clean'] .prop[data-prop='paper-stack'] {
+  display: block !important;
+  left: 13.878% !important; top: 64.337% !important;
+  width: 16.531% !important; height: 21.566% !important;
+  transform: none !important; z-index: 2 !important;
 }
 [data-mode='clean'] .lily--bl {
   left: -2.997% !important; top: 27.482% !important;
@@ -1557,22 +1538,16 @@ main:focus-visible { outline: none; }
   transform: none !important; z-index: 1 !important;
 }
 [data-mode='clean'] .obj--player {
-  --x: 44.480% !important; --y: 13.800% !important;
-  --w: var(--player-w) !important;
-  height: 40.190% !important; transform: none !important; z-index: 6 !important;
+  --x: 42.313% !important; --y: 13.855% !important;
+  --w: 15.102% !important;
+  height: auto !important; transform: none !important; z-index: 6 !important;
 }
 /* height:auto rather than the dumped figure: the recorded box was taller than
    the card's own content, which left a band of empty space under the buttons.
    The width still comes from the dump, so the card lands where it was placed. */
 [data-mode='clean'] .obj--share {
-  --x: 80.650% !important; --y: 66.710% !important; --w: 15.050% !important;
+  --x: 80.068% !important; --y: 65.783% !important; --w: 16.395% !important;
   height: auto !important; transform: none !important; z-index: 7 !important;
-}
-/* The real toolbar is proportionally taller than the CSS grid it replaced, so
-   width comes down from 7.900% to keep the authored 385px height. */
-[data-mode='clean'] .palette {
-  --x: 67.030% !important; --y: 49.030% !important;
-  width: 6.733% !important; z-index: 5 !important;
 }
 [data-mode='clean'] .hero__lockup {
   left: 0 !important; right: auto !important; top: 0 !important;
@@ -1627,65 +1602,81 @@ main:focus-visible { outline: none; }
    buttons did not, so they overflowed and their visual centre crept rightwards.
    Sizing to content keeps the buttons' centre fixed at the authored point, so
    the skills heading below can track it with one figure at every width. */
+/* The mode toggle sits in the SAME place in all three modes: it is a
+   control, not scenery, so it must not appear to jump when the mode
+   changes. chaos and notebook both centre it at 50% / 71.307%, and clean
+   now matches them. The layout editor is not allowed to move it — see
+   the SEL list in js/layout-editor.js. */
 [data-mode='clean'] .hero__actions {
   position: absolute !important;
-  left: 45.300% !important; top: 69.734% !important;
+  left: 50.000% !important; top: 71.307% !important;
   right: auto !important; bottom: auto !important; margin: 0 !important;
   width: max-content !important;
   max-width: none !important;
-  text-align: left !important;
-  transform: none !important;
+  text-align: center !important;
+  transform: translateX(-50%) !important;
   display: flex !important;
-  justify-content: flex-start !important;
-}
-
-/* ---------- chaos mode: hand-placed layout ----------
+  justify-content: center !important;
+}/* ---------- chaos mode: hand-placed layout ----------
    Positioned by hand in the browser (js/layout-editor.js, ?edit=1).
    For rotated items the CSS box is solved back from the desired ON-SCREEN
    box, because a rotated element's bounding box is larger than the element.
    The lockup text is centred on the mode toggle's axis (x=734 of 1468).
    Values are % of the stage. */
-[data-mode='chaos'] .prop[src*='notebook-page'] {
-  left: -13.329% !important; top: 3.051% !important;
-  width: 43.075% !important; height: 63.996% !important;
-  transform: rotate(20deg) !important;
-  transform-origin: center center !important;
-  z-index: 1 !important;
-}
+
 [data-mode='chaos'] .prop--glow {
-  left: 15.480% !important; top: 49.690% !important;
-  width: 15.640% !important; height: 25.020% !important;
+  left: 1.528% !important; top: 43.333% !important;
+  width: 15.972% !important; height: 23.111% !important;
   transform: none !important; z-index: 3 !important;
 }
 [data-mode='chaos'] .prop[data-prop='lamp'] {
-  /* Rotated -12deg; box solved back from the dumped 391x441 bounding box. */
-  left: 13.648% !important; top: 50.048% !important;
-  width: 21.681% !important; height: 46.336% !important;
-  transform: rotate(-12deg) !important;
+  /* Rotated -19deg; box solved back from the dumped 452x495 bounding box. */
+  left: -0.064% !important; top: 42.656% !important;
+  width: 23.461% !important; height: 45.244% !important;
+  transform: rotate(-19deg) !important;
   transform-origin: center center !important;
   z-index: 4 !important;
 }
 [data-mode='chaos'] .prop[data-prop='camera'] {
-  left: 4.752% !important; top: 71.011% !important;
-  width: 13.180% !important; height: 20.690% !important;
-  transform: rotate(17deg) !important;
-  transform-origin: center center !important;
+  --rb: 17deg;
+  left: 2.981% !important; top: 8.942% !important;
+  width: 13.412% !important; height: 19.117% !important;
+  transform: rotate(var(--rb));
+  transform-origin: center center;
   z-index: 5 !important;
 }
-[data-mode='chaos'] .prop[src*='dreams'] {
-  left: 12.178% !important; top: 20.201% !important;
-  width: 12.565% !important; height: 17.226% !important;
-  transform: rotate(17deg) !important;
-  transform-origin: center center !important;
-  z-index: 3 !important;
+/* --- chaos mode: new props (hand-placed, ?edit=1 D dump) ---
+   Rotated boxes solved back from the dumped on-screen bbox, as above. */
+[data-mode='chaos'] .prop[data-prop='glass-flower'] {
+  --rb: 0deg;
+  display: block !important;
+  left: 68.333% !important; top: 56.556% !important;
+  width: 13.264% !important; height: 19.111% !important;
+  transform: rotate(var(--rb));
+  z-index: 2 !important;
 }
-[data-mode='chaos'] .prop[src*='pen'] {
-  left: 5.154% !important; top: 36.426% !important;
-  width: 6.382% !important; height: 30.175% !important;
-  transform: rotate(15deg) !important;
+[data-mode='chaos'] .prop[data-prop='soda-can'] {
+  display: block !important;
+  left: 21.000% !important; top: 52.707% !important;
+  width: 7.122% !important; height: 18.808% !important;
+  transform: rotate(13deg) !important;
   transform-origin: center center !important;
-  z-index: 6 !important;
+  z-index: 2 !important;
 }
+/* Sits exactly where the intact can sits, bottom edges flush, so the
+   cross-fade reads as a collapse rather than a swap. */
+[data-mode='chaos'] .prop[data-prop='soda-can-crushed'] {
+  --rb: 13deg;
+  display: block !important;
+  left: 19.220% !important; top: 56.845% !important;
+  width: 10.683% !important; height: 14.670% !important;
+  transform: rotate(var(--rb));
+  z-index: 2 !important;
+}
+/* Absent from this arrangement. */
+[data-mode='chaos'] .prop[data-prop='notebook-open'],
+
+[data-mode='chaos'] .prop[data-prop='paper-stack'] { display: none !important; }
 [data-mode='chaos'] .lily--bl {
   left: -2.997% !important; top: 27.482% !important;
   right: auto !important; bottom: auto !important;
@@ -1700,22 +1691,17 @@ main:focus-visible { outline: none; }
 }
 [data-mode='chaos'] .obj--player {
   --x: 72.792% !important; --y: 12.089% !important;
-  --w: 15.588% !important; height: 40.229% !important;
+  --w: 15.588% !important; height: auto !important;
   transform: rotate(-9deg) !important;
   transform-origin: center center !important;
   z-index: 6 !important;
 }
 [data-mode='chaos'] .obj--share {
-  --x: 84.333% !important; --y: 57.630% !important;
-  --w: 15.400% !important; height: auto !important;
-  transform: none !important;
+  --x: 83.747% !important; --y: 60.807% !important;
+  --w: 15.701% !important; height: auto !important;
+  transform: rotate(10deg) !important;
+  transform-origin: center center !important;
   z-index: 7 !important;
-}
-[data-mode='chaos'] .palette {
-  --x: 92.166% !important; --y: 14.752% !important;
-  width: 5.790% !important;
-  transform: none !important;
-  z-index: 6 !important;
 }
 [data-mode='chaos'] .hero__lockup {
   left: 0 !important; right: auto !important; top: 0 !important;
@@ -1765,63 +1751,90 @@ main:focus-visible { outline: none; }
   display: flex !important;
   justify-content: center !important;
   transform: translateX(-50%) !important;
-}
-
-/* ---------- notebook mode: hand-placed layout ----------
+}/* ---------- notebook mode: hand-placed layout ----------
    Positioned by hand in the browser (js/layout-editor.js, ?edit=1).
    Rotated items have their CSS box solved back from the desired ON-SCREEN
    box. The lockup text is centred on the mode toggle's axis.
    palette and prop-label are absent from this arrangement, so hidden. */
-[data-mode='notebook'] .prop[src*='notebook-page'] {
-  display: block !important;
-  left: 25.253% !important; top: 15.972% !important;
-  width: 53.172% !important; height: 77.379% !important;
-  transform: rotate(-14deg) !important;
-  transform-origin: center center !important;
-  z-index: 4 !important;
-}
+
 /* Above the notebook page (z 4) but below the lamp (z 27): the glow spills
    onto the paper, while the shade still covers its own top edge. */
 [data-mode='notebook'] .prop--glow {
   display: block !important;
-  left: 74.864% !important; top: 56.590% !important;
-  width: 10.218% !important; height: 16.445% !important;
+  left: 75.034% !important; top: 60.482% !important;
+  width: 10.612% !important; height: 13.855% !important;
   transform: none !important; z-index: 6 !important;
 }
 [data-mode='notebook'] .prop[data-prop='lamp'] {
-  /* Rotated 12deg; box solved back from the dumped 255x288 bounding box. */
+  /* Upright: at -19deg the lamp read as toppled, and the tilt pushed its
+     base off the page's right edge. A desk lamp beside an open notebook
+     should stand. */
   display: block !important;
-  left: 71.986% !important; top: 57.054% !important;
-  width: 14.134% !important; height: 30.270% !important;
-  transform: rotate(12deg) !important;
-  transform-origin: center center !important;
+  left: 73.042% !important; top: 60.487% !important;
+  width: 13.100% !important; height: 26.617% !important;
+  transform: rotate(10deg) !important;
   z-index: 27 !important;
+  transform-origin: center center !important;
 }
 [data-mode='notebook'] .prop[data-prop='camera'] {
+  --rb: 17deg;
   display: block !important;
-  left: 20.088% !important; top: 52.072% !important;
-  width: 7.303% !important; height: 11.594% !important;
-  transform: rotate(27deg) !important;
-  transform-origin: center center !important;
+  left: 18.258% !important; top: 35.511% !important;
+  width: 12.941% !important; height: 16.931% !important;
+  transform: rotate(var(--rb));
+  transform-origin: center center;
   z-index: 5 !important;
 }
-[data-mode='notebook'] .prop[src*='dreams'] {
+/* --- notebook mode: new props (hand-placed, ?edit=1 D dump) ---
+   Rotated items have their CSS box solved back from the dumped ON-SCREEN
+   bounding box, as with the props above: CSS sizes the element first and
+   rotates afterwards, so authoring the bbox directly would oversize them. */
+[data-mode='notebook'] .prop[data-prop='notebook-open'] {
+  /* The page the whole arrangement sits on. Its bounding box is larger than
+     the stage and object-fit letterboxes the artwork inside it, matching the
+     dumped placement. z-index 0 keeps it behind every other prop while
+     staying in the stage's own stacking context — the dumped z=-67 would
+     have dropped it behind the stage background entirely. */
   display: block !important;
-  left: 16.430% !important; top: 27.701% !important;
-  width: 11.621% !important; height: 16.027% !important;
-  transform: rotate(10deg) !important;
+  left: 24.078% !important; top: -38.045% !important;
+  width: 54.498% !important; height: 184.644% !important;
+  transform: rotate(-9deg) !important;
   transform-origin: center center !important;
-  z-index: 6 !important;
+  z-index: 0 !important;
 }
-[data-mode='notebook'] .prop[src*='pen'] {
+[data-mode='notebook'] .prop[data-prop='glass-flower'] {
+  --rb: 0deg;
   display: block !important;
-  left: 25.660% !important; top: 23.422% !important;
-  width: 6.991% !important; height: 29.064% !important;
-  transform: rotate(13deg) !important;
-  transform-origin: center center !important;
-  z-index: 8 !important;
+  left: 58.707% !important; top: 74.940% !important;
+  width: 13.537% !important; height: 17.711% !important;
+  transform: rotate(var(--rb));
+  z-index: 2 !important;
 }
-[data-mode='notebook'] .palette { display: none !important; }
+[data-mode='notebook'] .prop[data-prop='soda-can'] {
+  display: block !important;
+  left: 40.636% !important; top: 80.782% !important;
+  width: 7.844% !important; height: 17.352% !important;
+  transform: rotate(7deg) !important;
+  transform-origin: center center !important;
+  z-index: 2 !important;
+}
+/* Sits exactly where the intact can sits, bottom edges flush, so the
+   cross-fade reads as a collapse rather than a swap. */
+[data-mode='notebook'] .prop[data-prop='soda-can-crushed'] {
+  --rb: 7deg;
+  display: block !important;
+  left: 38.675% !important; top: 84.599% !important;
+  width: 11.766% !important; height: 13.535% !important;
+  transform: rotate(var(--rb));
+  z-index: 2 !important;
+}
+/* Absent from this arrangement. */
+[data-mode='notebook'] .prop[data-prop='paper-stack'] { display: none !important; }
+/* The page covers most of the stage; like the old notebook-page it must never
+   eat a hover or a click meant for what is drawn on top of it. */
+[data-mode='notebook'] .prop[data-prop='notebook-open'] {
+  pointer-events: none !important;
+}
 [data-mode='notebook'] .lily--bl {
   left: -2.997% !important; top: 27.482% !important;
   right: auto !important; bottom: auto !important;
@@ -1836,17 +1849,16 @@ main:focus-visible { outline: none; }
 }
 /* Sits on the page rather than under it, same band as the glow. */
 [data-mode='notebook'] .obj--player {
-  --x: 75.000% !important; --y: 11.985% !important;
-  --w: 15.599% !important; height: 40.194% !important;
+  --x: 65.646% !important; --y: 11.687% !important;
+  --w: 15.918% !important; height: auto !important;
   transform: rotate(0deg) !important;
   transform-origin: center center !important;
   z-index: 6 !important;
 }
 [data-mode='notebook'] .obj--share {
-  --x: 19.994% !important; --y: 70.269% !important;
-  --w: 13.078% !important; height: 23.385% !important;
-  transform: rotate(-8deg) !important;
-  transform-origin: center center !important;
+  --x: 19.660% !important; --y: 71.928% !important;
+  --w: 15.034% !important; height: auto !important;
+  transform: none !important;
   z-index: 7 !important;
 }
 [data-mode='notebook'] .hero__lockup {
@@ -1906,8 +1918,8 @@ main:focus-visible { outline: none; }
    -------------------------------------------------------------------------- */
 @media (prefers-reduced-motion: no-preference) {
   .js .stage .prop,
-  .js .stage .obj,
-  .js .stage .palette {
+
+  .js .stage .obj {
     transition: transform 0.32s cubic-bezier(0.2, 0.7, 0.3, 1),
                 filter 0.32s cubic-bezier(0.2, 0.7, 0.3, 1);
   }
@@ -1926,9 +1938,8 @@ main:focus-visible { outline: none; }
      later in the file, so a hovered prop keeps its dim treatment AND gains the
      shadow rather than losing one to the other. */
   :root[data-theme] .js .stage .prop.is-hovered,
-  :root[data-theme] .js .stage .palette.is-hovered,
-  .js .stage .prop.is-hovered,
-  .js .stage .palette.is-hovered {
+
+  .js .stage .prop.is-hovered {
     filter: var(--prop-filter, ) drop-shadow(0 10px 20px var(--prop-shadow, rgba(28, 55, 90, 0.22)));
   }
   .js .stage .obj.is-hovered {
@@ -1938,6 +1949,7 @@ main:focus-visible { outline: none; }
 
 /* A hovered card must never be trapped under a neighbour */
 .stage .obj.is-hovered,
+
 .stage .prop.is-hovered { z-index: 40 !important; }
 
 
@@ -1995,6 +2007,7 @@ main:focus-visible { outline: none; }
 }
 /* Lit whenever the lamp is on (dark theme), or previewed on hover. */
 .prop--glow.is-lit,
+
 :root[data-theme='dark'] .prop--glow {
   opacity: 1 !important;
 }
@@ -2003,9 +2016,7 @@ main:focus-visible { outline: none; }
      a 0.45s opacity fade, so the glow still animated for users who asked for
      no motion. The lamp now switches instantly. */
   .prop--glow { transition: none; }
-}
-
-/* --------------------------------------------------------------------------
+}/* --------------------------------------------------------------------------
    Hover-interaction exclusions
 
    A rotated prop still has an axis-aligned bounding box, so a long thin object
@@ -2017,13 +2028,12 @@ main:focus-visible { outline: none; }
    anyway because .hero__actions is pinned to z-index 60 below, which turned out
    to be enough and cheaper than trimming the pen's hit area.
    -------------------------------------------------------------------------- */
-.js .stage .prop[src*='notebook-page'] {
-  pointer-events: none !important;
-}
+
 
 /* The mode toggle must always win the hit test, whatever is drawn over it. */
 .hero__actions { z-index: 60 !important; }
 .hero__actions .modes,
+
 .hero__actions button { pointer-events: auto !important; }
 
 /* --------------------------------------------------------------------------
@@ -2063,8 +2073,102 @@ main:focus-visible { outline: none; }
 .player__play:hover .player__icon { color: var(--on-accent-deep, #fff); }
 
 @media print {
-  .site-header, .stage, .strip, .nav-toggle, .prop, .modes { display: none !important; }
+  .site-header,
+
+  .stage,
+
+  .strip,
+
+  .nav-toggle,
+
+  .prop,
+
+  .modes { display: none !important; }
   body { background: #fff; color: #000; background-image: none; }
+}
+
+/* --------------------------------------------------------------------------
+   Prop hover animations
+
+   Each animated prop declares data-anim in the markup. js/hero-hover.js
+   stands down for those props: it writes an inline !important transform, and
+   an important declaration outranks a keyframe animation in the cascade, so
+   the animation would compute but never paint. CSS therefore owns their whole
+   hover, which is why every keyframe restates the 1.06 scale the other props
+   get from that JS.
+
+   Each prop also carries its authored per-mode angle in --rb rather than in a
+   literal, because the same keyframes run in all three modes: the dice sits at
+   0deg in notebook but 30deg in clean, so a hardcoded rotation would snap the
+   prop straight before it animated. calc() composes the animation on top.
+
+   All of it sits inside prefers-reduced-motion: no-preference, per the
+   project convention that no motion is unconditional.
+   -------------------------------------------------------------------------- */
+@media (prefers-reduced-motion: no-preference) {
+
+  /* Shared resting state for a hovered animated prop: the composed scale, and
+     a lift above its neighbours since these props no longer get the
+     .is-hovered z-index bump from JS. */
+  .js .stage .prop[data-anim]:hover {
+    transform: rotate(var(--rb, 0deg)) scale(1.06);
+    z-index: 41 !important;
+  }
+
+  /* Soda can - crushed. This one is a cross-fade between two photographs
+     rather than a transform: CSS can squash a cylinder but it cannot crumple
+     metal, and the creases have to be real pixels. The intact can keeps the
+     hover hit test while it fades (opacity does not affect hit testing), so
+     the pair does not flicker when the pointer sits still over it. */
+  .js .stage .prop[data-anim="crush"],
+
+  .js .stage .prop[data-prop="soda-can-crushed"] {
+    transition: opacity 0.26s var(--ease), transform 0.26s var(--ease);
+  }
+  /* Never let the crushed can intercept the hover meant for the intact one:
+     they overlap, and it is stacked on top. */
+  .js .stage .prop[data-prop="soda-can-crushed"] {
+    opacity: 0;
+    pointer-events: none !important;
+  }
+  .js .stage .prop[data-anim="crush"]:hover { opacity: 0; }
+  .js .stage .prop[data-anim="crush"]:hover + .prop[data-prop="soda-can-crushed"] {
+    opacity: 1;
+    transform: rotate(var(--rb, 0deg)) scale(1.06);
+    z-index: 41 !important;
+  }
+
+  /* Camera — shutter flash. Filter only, so the composed scale above is left
+     to stand. --prop-filter carries the dark theme dimming, so the flash
+     brightens from that base instead of overwriting it and blowing out. */
+  @keyframes prop-flash {
+    0% { filter: var(--prop-filter, ) brightness(1); }
+    7% { filter: var(--prop-filter, ) brightness(2.9) saturate(0.15)
+                   drop-shadow(0 0 26px rgba(255, 255, 255, 0.95)); }
+    17% { filter: var(--prop-filter, ) brightness(1.02); }
+    28% { filter: var(--prop-filter, ) brightness(2.1) saturate(0.3)
+                   drop-shadow(0 0 18px rgba(255, 255, 255, 0.8)); }
+    45% { filter: var(--prop-filter, ) brightness(1); }
+    100% { filter: var(--prop-filter, ) brightness(1); }
+  }
+  .js .stage .prop[data-anim="flash"]:hover {
+    animation: prop-flash 1s var(--ease) both;
+  }
+
+  /* Glass flower — spins about the blossom itself. 50%/54% is measured from
+     the artwork: the opaque centroid lands at 50.2%/52.0%, and the stamen
+     cluster it should turn on sits a little below that. Spinning about the box
+     centre instead made it wobble like a bad wheel. */
+  .js .stage .prop[data-anim="spin"] {
+    transform-origin: 50% 54%;
+  }
+  @keyframes prop-spin {
+    from { transform: rotate(var(--rb, 0deg)) scale(1.06); }
+    to { transform: rotate(calc(var(--rb, 0deg) + 360deg)) scale(1.06); }
+  }
+  .js .stage .prop[data-anim="spin"]:hover {
+    animation: prop-spin 2.6s linear infinite;
+  }
 }
 
 /* --------------------------------------------------------------------------
@@ -2147,6 +2251,12 @@ main:focus-visible { outline: none; }
   font-size: clamp(24px, 3.4vw, 33px);
   line-height: 1.05;
 }
+/* Overrides the generic `a:hover { color: var(--accent-ink) }`, which
+   resolves to a dark navy in light mode - unreadable against the card's
+   own dark gradient. Same colour in both themes, by design. */
+.hob-card:hover .hob-card__label {
+  color: var(--on-photo-accent);
+}
 .hob-card__note {
   color: rgba(255, 255, 255, 0.82);
   font-size: 12.5px;
@@ -2184,7 +2294,6 @@ main:focus-visible { outline: none; }
 }
 
 
-
 /* --- Recently Made: theme-aware project icon ------------------------------
    Some marks ship a second artwork drawn for a dark ground. Both <img> are in
    the DOM and CSS picks one, because the theme lives on [data-theme] rather
@@ -2216,6 +2325,7 @@ main:focus-visible { outline: none; }
      text, so growing the box keeps them in the layout instead of stretching
      their line. */
   .site-footer nav a,
+
   .site-footer__social a {
     padding: 11px 4px;
     min-height: 44px;
@@ -2235,6 +2345,8 @@ main:focus-visible { outline: none; }
   }
 
   .detail__back,
+
+
   .ow__link {
     display: inline-flex;
     align-items: center;
@@ -2249,10 +2361,13 @@ main:focus-visible { outline: none; }
   .share__sub { font-size: 13px; }
   .share__title { font-size: 13px; }
   .obj__title,
+
   .obj__meta { font-size: 13px; }
   .ow__meta,
+
   .rm__desc { font-size: 13.5px; }
   .dd--table th,
+
   .dd--table td { font-size: 13px; }
   .hob-card__note { font-size: 13px; }
 
@@ -2283,11 +2398,10 @@ main:focus-visible { outline: none; }
      high-specificity selectors ([src*=], [data-prop=]). To out-specify those
      and still beat the base, match the same attribute shapes with !important. */
   [data-mode] .prop,
-  [data-mode] .prop-label,
-  [data-mode] .palette,
+
   :root[data-mode] .prop[src],
-  :root[data-mode] .prop[data-prop],
-  :root[data-mode] .prop[src*='notebook-page'] { display: none !important; }
+
+  :root[data-mode] .prop[data-prop] { display: none !important; }
 
   [data-mode] .hero__lockup {
     position: relative !important;
@@ -2296,8 +2410,11 @@ main:focus-visible { outline: none; }
     transform: none !important;
   }
   [data-mode] .hero__name,
+
   [data-mode] .hero__role,
+
   [data-mode] .hero__sub,
+
   [data-mode] .hero__headline {
     position: static !important;
     left: auto !important; top: auto !important; right: auto !important;
@@ -2314,9 +2431,9 @@ main:focus-visible { outline: none; }
     padding-top: 26px !important;
   }
 
-  [data-mode] .hero__name   { margin: 0 auto 14px !important; }
-  [data-mode] .hero__role   { margin: 0 auto !important; }
-  [data-mode] .hero__sub    { margin: 0 auto 20px !important; }
+  [data-mode] .hero__name { margin: 0 auto 14px !important; }
+  [data-mode] .hero__role { margin: 0 auto !important; }
+  [data-mode] .hero__sub { margin: 0 auto 20px !important; }
   [data-mode] .hero__headline { margin: 0 auto 28px !important; }
 
   [data-mode] .stage .obj {
@@ -2355,6 +2472,7 @@ main:focus-visible { outline: none; }
   .nav a { padding: 12px; min-height: 44px; display: flex; align-items: center; }
   .modes button { padding: 13px 14px; }
   .contact__links .btn,
+
   .hero__actions .btn { min-height: 46px; }
   .skip-link { padding: 13px 18px; }
   .ow__title a { display: inline-flex; align-items: center; min-height: 44px; }
@@ -2409,56 +2527,13 @@ main:focus-visible { outline: none; }
    -------------------------------------------------------------------------- */
 @media (max-width: 899.98px) {
   :root[data-mode='chaos'] .stage,
+
   :root[data-mode='notebook'] .stage { position: relative; }
-
-  /* Re-show just these two, overriding the blanket hide above. The selectors
-     match the same attribute shapes so they out-specify it. */
-  :root[data-mode='chaos'] .prop[src*='pen'],
-  :root[data-mode='notebook'] .prop[src*='pen'],
-  :root[data-mode='chaos'] .prop[src*='dreams'],
-  :root[data-mode='notebook'] .prop[src*='dreams'] {
-    display: block !important;
-    position: absolute !important;
-    z-index: 0 !important;
-    opacity: 0.5;
-    pointer-events: none !important;   /* never steal a tap from the content */
-  }
-
-  :root[data-mode='chaos'] .prop[src*='dreams'],
-  :root[data-mode='notebook'] .prop[src*='dreams'] {
-    /* Fully inside the viewport: a negative right offset let the clipping run
-       off the edge on tablets, where the stage is much wider than a phone. */
-    left: auto !important; right: 2% !important;
-    /* Below the name, not behind it: at top:1% the clipping crossed the
-       descenders of the wordmark. */
-    top: 15% !important; bottom: auto !important;
-    /* Same reasoning as the pen: pin both axes, let object-fit letterbox. */
-    width: 118px !important; height: 94px !important;
-    object-fit: contain !important;
-    transform: rotate(9deg) !important;
-  }
-
-  :root[data-mode='chaos'] .prop[src*='pen'],
-  :root[data-mode='notebook'] .prop[src*='pen'] {
-    left: 6% !important; right: auto !important;
-    top: 34% !important; bottom: auto !important;
-    /* Both axes pinned: with height:auto the 56x560 source stretched a 13%
-       width into a 489px-tall element hanging off the left edge. */
-    width: 26px !important; height: 120px !important;
-    object-fit: contain !important;
-    transform: rotate(-24deg) !important;
-  }
 
   /* Keep the lilies as the ground wash they already are, just softer. */
   :root[data-mode] .lily { opacity: 0.1 !important; }
 
   /* The lockup must sit above the decoration. */
   [data-mode] .hero__lockup { position: relative !important; z-index: 2; }
-  [data-mode] .stage .obj   { z-index: 2; }
-}
-
-/* Narrow phones: the clipping crowds the name, so drop it and keep the pen. */
-@media (max-width: 419.98px) {
-  :root[data-mode='chaos'] .prop[src*='dreams'],
-  :root[data-mode='notebook'] .prop[src*='dreams'] { display: none !important; }
+  [data-mode] .stage .obj { z-index: 2; }
 }

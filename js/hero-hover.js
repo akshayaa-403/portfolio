@@ -1,5 +1,5 @@
 /* Hero hover behaviour:
-     1. Every prop / card / palette scales up slightly on hover and eases back.
+     1. Every prop / card scales up slightly on hover and eases back.
      2. Hovering the music card plays a track; leaving it fades the audio out.
 
    Scaling is done in JS rather than pure CSS because each object carries its
@@ -63,27 +63,22 @@
     if (!stage) return;
 
     // The glow is decorative and never hovered in its own right.
-    var items = stage.querySelectorAll('.prop:not(.prop--glow), .obj, .palette');
+    var items = stage.querySelectorAll('.prop:not(.prop--glow), .obj');
     var resetters = [];
 
     Array.prototype.forEach.call(items, function (el) {
-      // The clean-mode pen scales via a CSS :hover rule instead: rebuilding its
-      // -90deg rotation here made it visibly re-tilt on hover. CSS composes the
-      // scale onto the authored rotate cleanly, so JS stands down for it — only
-      // in clean mode; chaos/notebook keep the shared JS hover-scale.
-      // Match the pen asset itself, not any src that merely contains "pen"
-      // (open.webp, pencil.webp, happen.webp would all have qualified).
-      var isPen = /\/pen\.[a-z0-9]+$/i.test(el.getAttribute('src') || '');
-      function penClean() {
-        return isPen && document.documentElement.getAttribute('data-mode') === 'clean';
-      }
+      // Props carrying data-anim run their own CSS hover animation, which
+      // needs the `transform` property to itself. The inline !important this
+      // function writes would outrank a keyframe animation in the cascade, so
+      // the animation would never be seen. CSS owns those props' hover
+      // entirely, scale included.
+      if (el.hasAttribute('data-anim')) return;
 
       var baseTransform = null;
       var deg = null;
 
       el.addEventListener('pointerenter', function () {
         if (el.classList.contains('is-dragging')) return;
-        if (penClean()) return;
         // Capture the authored transform once, lazily: the layout differs per
         // view mode, so reading it at load time would cache the wrong value.
         if (deg === null) deg = Math.round(rotationOf(el));
@@ -97,9 +92,6 @@
       });
 
       function reset() {
-        // Same stand-down as pointerenter: in clean mode the pen's scale is a
-        // CSS :hover rule, so clearing style.transform here would fight it.
-        if (penClean()) return;
         el.classList.remove('is-hovered');
         // Drop the override rather than re-writing it: the stylesheet rule is
         // the source of truth and may include more than a rotation.

@@ -149,9 +149,7 @@
 
 
       <!-- ---------- LEFT CLUSTER ---------- -->
-      <!-- Objects deliberately bleed off the left edge, as on the reference. -->
-      <img class="prop" src="public/assets/props/notebook-page.webp" alt="" aria-hidden="true" width="760" height="555" decoding="async"
-           style="--x:-6.000%; --y:24.000%; --w:54.514%; --h:80.889%; --z:1; --cl:1; --clx:-8.000%; --cly:33.000%; --clw:41.000%; --clh:56.000%; --nb:1; --nbx:23.403%; --nby:0.778%; --nbw:53.194%; --nbh:77.222%; --r:-7deg;">
+
       <!-- The glow is a prop in its own right, positioned independently of the
            lamp. It is lit whenever the dark theme is on (and previewed on
            hover), and sits just below the lamp in the stacking order so the
@@ -169,12 +167,40 @@
               style="--x:1.200%; --y:3.000%; --w:23.819%; --h:50.778%; --z:4; --cl:1; --clx:-1.458%; --cly:-1.111%; --clw:16.597%; --clh:35.444%; --nb:1; --nbx:37.431%; --nby:19.556%; --nbw:16.667%; --nbh:35.556%; --r:2deg;">
         <img src="public/assets/props/lamp.webp" alt="" aria-hidden="true" width="354" height="743">
       </button>
-      <img class="prop" data-prop="camera" src="public/assets/props/camera.webp" alt="" aria-hidden="true" width="420" height="429" decoding="async"
+      <img class="prop" data-prop="camera" data-anim="flash" src="public/assets/props/camera.webp" alt="" aria-hidden="true" width="420" height="429" decoding="async"
            style="--x:2.000%; --y:57.000%; --w:14.931%; --h:23.556%; --z:5; --cl:1; --clx:12.153%; --cly:21.111%; --clw:9.583%; --clh:15.000%; --nb:0; --r:11deg;">
-      <img class="prop" src="public/assets/props/dreams.webp" alt="" aria-hidden="true" width="687" height="536" decoding="async"
-           style="--x:22.500%; --y:13.000%; --w:12.569%; --h:17.222%; --z:3; --cl:1; --clx:22.014%; --cly:6.111%; --clw:7.153%; --clh:8.889%; --nb:1; --nbx:21.458%; --nby:14.556%; --nbw:11.597%; --nbh:16.000%; --r:-9deg;">
-      <img class="prop" src="public/assets/props/pen.webp" alt="" aria-hidden="true" width="56" height="560" decoding="async"
-           style="--x:26.000%; --y:36.000%; --w:4.792%; --h:22.667%; --z:6; --cl:1; --clx:76.111%; --cly:7.778%; --clw:4.722%; --clh:25.556%; --nb:1; --nbx:68.681%; --nby:6.333%; --nbw:7.014%; --nbh:29.000%; --r:16deg;">
+
+      <!-- ---------- NEW PROPS (unplaced) ----------
+           Parked along the top and bottom edges, clear of the lockup, so
+           each one is visible and grabbable in ?edit=1. Coordinates here
+           are placeholders: they carry only chaos --x/--y/--w/--h, so all
+           three modes fall back to the same spot until per-mode --cl*/--nb*
+           values are dumped in. -->
+      <img class="prop" data-prop="glass-flower" data-anim="spin" src="public/assets/props/glass-flower.webp"
+           alt="" aria-hidden="true" width="454" height="453"
+           loading="lazy" decoding="async" fetchpriority="low"
+           style="--x:2.000%; --y:2.000%; --w:13.000%; --h:20.754%; --z:2; --r:0deg;">
+      <img class="prop" data-prop="soda-can" data-anim="crush" src="public/assets/props/soda-can.webp"
+           alt="" aria-hidden="true" width="109" height="198"
+           loading="lazy" decoding="async" fetchpriority="low"
+           style="--x:40.000%; --y:2.000%; --w:7.000%; --h:20.345%; --z:2; --r:0deg;">
+      <!-- The crushed can. Cross-fades in over the intact one on hover, so it
+           must stay the immediate next sibling (the CSS uses `:hover +`). Its
+           box is derived from the can it replaces: same centre, bottom edge
+           pinned, 78% of the height, and wide enough that object-fit sizes it
+           by height - which lands its width close to the intact can, so the
+           swap reads as the can collapsing rather than changing object. -->
+      <img class="prop" data-prop="soda-can-crushed" src="public/assets/props/soda-can-crushed.webp"
+           alt="" aria-hidden="true" width="258" height="382"
+           loading="lazy" decoding="async" fetchpriority="low">
+      <img class="prop" data-prop="notebook-open" src="public/assets/props/notebook-open.webp"
+           alt="" aria-hidden="true" width="486" height="363"
+           loading="lazy" decoding="async" fetchpriority="low"
+           style="--x:2.000%; --y:72.000%; --w:20.000%; --h:23.901%; --z:2; --r:0deg;">
+      <img class="prop" data-prop="paper-stack" src="public/assets/props/paper-stack.webp"
+           alt="" aria-hidden="true" width="280" height="341"
+           loading="lazy" decoding="async" fetchpriority="low"
+           style="--x:22.000%; --y:72.000%; --w:12.000%; --h:23.383%; --z:2; --r:0deg;">
 
       <!-- ---------- CENTRE LOCKUP ---------- -->
       <div class="hero__lockup">
@@ -230,14 +256,6 @@
           <a class="share__btn share__btn--go" href="public/assets/resume.pdf" target="_blank" rel="noopener noreferrer">Accept</a>
         </div>
       </article>
-
-      <!-- The MS Paint (2003) tool palette. Was a CSS-drawn grid of glyphs;
-           now the real toolbar, background keyed out. Kept on .palette so
-           every per-mode coordinate and the hover lift still apply. -->
-      <img class="palette" src="public/assets/props/paint-toolbar.webp"
-           alt="" aria-hidden="true" width="380" height="1480"
-           loading="lazy" decoding="async" fetchpriority="low"
-           style="--x:88.5%; --y:46.0%; --z:5;">
 
       <!-- Mode switcher: bottom-centre of the stage, where the reference puts
            its coffee/broom/pencil icon row -->
