@@ -36,33 +36,11 @@ function loadProjects() {
   return sandbox.__out;
 }
 
-/* hobby-page.js keeps GROUPS inside an IIFE, so evaluating the whole file
-   would not expose it. Pull just the object literal out and evaluate that. */
 function loadHobbies() {
-  const src = fs.readFileSync(path.join(ROOT, 'js/hobby-page.js'), 'utf8');
-  const start = src.indexOf('var GROUPS = {');
-  if (start === -1) throw new Error('GROUPS not found in js/hobby-page.js');
-  const open = src.indexOf('{', start);
-
-  // Walk to the matching brace so nested objects, and braces inside strings,
-  // do not end the scan early.
-  let depth = 0, end = -1, quote = null;
-  for (let i = open; i < src.length; i++) {
-    const c = src[i];
-    if (quote) {
-      if (c === '\\') { i++; continue; }
-      if (c === quote) quote = null;
-      continue;
-    }
-    if (c === '"' || c === "'" || c === '`') { quote = c; continue; }
-    if (c === '{') depth++;
-    else if (c === '}') { depth--; if (depth === 0) { end = i; break; } }
-  }
-  if (end === -1) throw new Error('unbalanced GROUPS object');
-
+  const src = fs.readFileSync(path.join(ROOT, 'js/hobby-data.js'), 'utf8');
   const sandbox = {};
   vm.createContext(sandbox);
-  new vm.Script('this.__out = ' + src.slice(open, end + 1) + ';').runInContext(sandbox);
+  new vm.Script(src + ';this.__out = hobbies;').runInContext(sandbox);
   return sandbox.__out;
 }
 

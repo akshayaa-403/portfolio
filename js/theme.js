@@ -7,8 +7,8 @@
    though they have no lamp of their own.
 
    Order of precedence: an explicit stored choice, then the OS preference, then
-   light. The no-FOUC snippet in each page's <head> applies the same logic
-   before first paint; this file must agree with it. */
+   light. js/boot.js applies the same logic before first paint; this file must
+   agree with it. */
 (function () {
   'use strict';
 
@@ -22,8 +22,7 @@
   }
 
   function systemPrefersDark() {
-    return window.matchMedia &&
-           window.matchMedia('(prefers-color-scheme: dark)').matches;
+    return window.matchMedia('(prefers-color-scheme: dark)').matches;
   }
 
   function current() {
@@ -52,14 +51,11 @@
 
   /* Follow the OS while the visitor has not made an explicit choice. */
   function watchSystem() {
-    if (!window.matchMedia) return;
-    var mq = window.matchMedia('(prefers-color-scheme: dark)');
-    var onChange = function (e) {
-      if (stored()) return;                 // an explicit choice wins
-      apply(e.matches ? 'dark' : 'light', false);
-    };
-    if (mq.addEventListener) mq.addEventListener('change', onChange);
-    else if (mq.addListener) mq.addListener(onChange);
+    window.matchMedia('(prefers-color-scheme: dark)')
+      .addEventListener('change', function (e) {
+        if (stored()) return;               // an explicit choice wins
+        apply(e.matches ? 'dark' : 'light', false);
+      });
   }
 
   /* Publish the real header height as --header-h. The hero pulls itself up by
@@ -74,11 +70,7 @@
         '--header-h', header.offsetHeight + 'px');
     }
     set();
-    if (window.ResizeObserver) {
-      new ResizeObserver(set).observe(header);
-    } else {
-      window.addEventListener('resize', set);
-    }
+    new ResizeObserver(set).observe(header);
   }
 
   /* Pages without the hero lamp still need a way to change theme. Any page
@@ -110,8 +102,8 @@
   }
 
   function init() {
-    // The head snippet has already set the attribute; only reconcile if it
-    // did not run (e.g. the script was stripped).
+    // js/boot.js has already set the attribute; only reconcile if it did not
+    // run (e.g. the script was stripped).
     if (!document.documentElement.hasAttribute('data-theme')) {
       var want = stored() || (systemPrefersDark() ? 'dark' : 'light');
       if (want === 'dark') apply('dark', false);

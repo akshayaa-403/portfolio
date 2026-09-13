@@ -7,18 +7,19 @@
 
    One shared canvas per card, created on first hover and torn down on leave,
    so idle cards cost nothing. The whole effect is gated on
-   prefers-reduced-motion. */
+   prefers-reduced-motion.
+
+   Gallery copy comes from js/hobby-data.js, which must load first. */
 (function () {
   'use strict';
 
-  var GROUPS = [
-    { id: 'photography', label: 'Photography', note: 'light, and whatever it lands on',          n: 27 },
-    { id: 'artwork',     label: 'Artwork',     note: 'graphite, ink, and color', n: 6  },
-    { id: 'cooking',     label: 'Cooking',     note: 'mostly dinner, occasionally dessert',      n: 14 }
-  ];
+  // Labels, notes and counts come from js/hobby-data.js — the same object the
+  // gallery page and the share-page build read, so the three never drift.
+  var GROUPS = Object.keys(hobbies).map(function (id) {
+    return { id: id, label: hobbies[id].label, note: hobbies[id].note, n: hobbies[id].n };
+  });
 
-  var reduce = window.matchMedia &&
-               window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
   /* ---------- neural-net mesh ---------- */
   function mesh(card) {

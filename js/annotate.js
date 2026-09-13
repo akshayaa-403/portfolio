@@ -113,9 +113,6 @@
     });
     return lines.join('\n');
   }
-  // Let the layout editor fold comments into its own D-dump.
-  window.__annotDump = dumpComments;
-
   function copyComments() {
     var out = dumpComments();
     if (!out) return;

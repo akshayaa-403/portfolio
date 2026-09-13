@@ -41,28 +41,9 @@
 <link rel="stylesheet" href="css/style.css">
 <link rel="stylesheet" href="css/project.css">
 
-<!-- No-FOUC: mark JS available and apply the saved view mode + theme before
-     first paint. Must stay in sync with js/theme.js. -->
-<script>
-(function () {
-  var r = document.documentElement;
-  r.classList.add('js');
-  var m = 'chaos';
-  try {
-    var s = localStorage.getItem('viewMode');
-    if (s === 'notebook' || s === 'clean' || s === 'chaos') m = s;
-  } catch (e) {}
-  r.setAttribute('data-mode', m);
-
-  var t = null;
-  try { t = localStorage.getItem('theme'); } catch (e) {}
-  if (t !== 'dark' && t !== 'light') {
-    t = (window.matchMedia &&
-         window.matchMedia('(prefers-color-scheme: dark)').matches) ? 'dark' : 'light';
-  }
-  if (t === 'dark') r.setAttribute('data-theme', 'dark');
-})();
-</script>
+<!-- No-FOUC: mark JS available and apply the saved view mode + theme
+     before first paint. Not deferred, on purpose. -->
+<script src="js/boot.js"></script>
 </head>
 <body>
 
@@ -130,6 +111,7 @@
 <script src="js/util.js" defer></script>
 <script src="js/theme.js" defer></script>
 <script src="js/nav.js" defer></script>
+<script src="js/hobby-data.js" defer></script>
 <script src="js/hobby-dims.js" defer></script>
 <script src="js/hobby-page.js" defer></script>
 </body>

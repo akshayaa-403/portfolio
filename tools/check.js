@@ -112,6 +112,8 @@ for (const page of PAGES) {
     ['referrer meta', /name="referrer"/],
     ['dark theme-color', /theme-color[^>]*prefers-color-scheme: dark/],
     ['util.js first', /js\/util\.js/],
+    // Not deferred, on purpose: it has to run before first paint.
+    ['boot.js in head', /<script src="js\/boot\.js"><\/script>/],
     ['nav toggle', /data-nav-toggle/]
   ];
   for (const [label, re] of need) {

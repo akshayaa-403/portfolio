@@ -1,7 +1,7 @@
 /* View-mode switcher: chaos (default) / notebook / clean.
-   The mode lives as data-mode on <html>; the inline <head> script has already
-   applied the saved value before paint, so this only wires the buttons and
-   keeps their aria-checked state honest. */
+   The mode lives as data-mode on <html>; js/boot.js has already applied the
+   saved value before paint, so this only wires the buttons and keeps their
+   aria-checked state honest. */
 (function () {
   'use strict';
 
@@ -9,9 +9,9 @@
   var KEY = 'viewMode';
   var root = document.documentElement;
 
-  /* The head snippet normally sets data-mode before paint. Fall back to
-     storage when it did not run (script stripped, CSP), the way theme.js
-     already does — otherwise a saved mode is silently lost. */
+  /* js/boot.js normally sets data-mode before paint. Fall back to storage
+     when it did not run (script stripped, CSP), the way theme.js already
+     does — otherwise a saved mode is silently lost. */
   function current() {
     var m = root.getAttribute('data-mode');
     if (MODES.indexOf(m) !== -1) return m;

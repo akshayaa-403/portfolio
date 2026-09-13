@@ -44,7 +44,6 @@
   --ink-body: #1e3a5f;
   --ink-soft: #3c5a7a;
   --ink-muted: #4e6880;   /* 5.40:1 on paper */
-  --ink-faint: #647c96;   /* 4.01:1 — decorative meta only, never body copy */
 
   /* Accent — sampled from public/assets/favicon.png.
      --accent is the mid blue from the mark's petals; it already clears AA for
@@ -129,7 +128,6 @@
   --ink-body: #d5e2ee;    /* 12.8:1 */
   --ink-soft: #b3c6d8;    /*  8.9:1 */
   --ink-muted: #93a9bd;   /*  6.3:1 */
-  --ink-faint: #7a8fa4;   /*  4.6:1 — decorative meta only */
 
   /* Accent — the light theme's blues are far too dark to read on navy, so the
      pale end of the same ramp carries the accent role here. */
@@ -1910,8 +1908,9 @@ main:focus-visible { outline: none; }
 /* --------------------------------------------------------------------------
    Hover lift on hero objects
    Every prop, card and the palette scales up slightly on hover and settles
-   back. The scale is layered on top of each item's own rotation via a
-   --hover-scale custom property, so a hovered object keeps its tilt.
+   back. js/hero-hover.js rebuilds the full transform on hover (rotation plus
+   scale) so a hovered object keeps its tilt; the rules here own the
+   transition and the props that opt in.
 
    Props are pointer-events:none by default (they must not block drags), so
    they opt in here. Gated on prefers-reduced-motion.

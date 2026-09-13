@@ -12,13 +12,15 @@ Personal portfolio for **Akshayaa Kashyap** (Software Engineer, AI & data). Stat
 - [404.html](../404.html) — custom not-found page.
 - [css/style.css](../css/style.css) — global styles + all design tokens (`:root`).
 - [css/project.css](../css/project.css) — detail-page + 404 styles.
+- [js/boot.js](../js/boot.js) — the only non-deferred script: applies the saved view mode + theme to `<html>` before first paint. Shared by all four pages; `theme.js`/`modes.js` must agree with its precedence rules.
 - [js/theme.js](../js/theme.js) — light/dark theme (`data-theme="dark"` on `<html>`), persisted to localStorage, OS preference honoured on first visit; plus the footer year. Exposes `window.portfolioTheme`.
 - [js/hero-hover.js](../js/hero-hover.js) — prop hover-scale, player hover-to-play, and the **hero lamp as the theme switch** (lit lamp = dark theme).
 - [js/marquee.js](../js/marquee.js) — draggable skills marquee; also keeps the "Skills" heading aligned to the mode toggle.
-- [js/layout-editor.js](../js/layout-editor.js) — dev-only prop positioning, enabled with `?edit=1`. Press **A** to select behind an overlapping prop, **D** to dump coordinates.
+- [js/layout-editor.js](../js/layout-editor.js) — dev-only, enabled with `?edit=1`. Hero props: **A** selects behind an overlapping prop, **D** dumps coordinates. A second editor at the end of the file drags the bare phone cut-outs on the work cards; **P** dumps those as CSS.
 - [js/modes.js](../js/modes.js) — chaos/notebook/clean view-mode switcher (`data-mode` on `<html>`).
 - [js/script.js](../js/script.js) — card rendering, scroll reveals, active-nav/header observers, mobile menu, draggable collage.
 - [js/project-data.js](../js/project-data.js) — full copy for all 6 projects.
+- [js/hobby-data.js](../js/hobby-data.js) — labels, blurbs, photo counts and captions for the 3 galleries. Read by `hobbies.js`, `hobby-page.js` **and** `tools/build-share-pages.js` — a bare global so the Node tools can evaluate it.
 - [js/project-detail.js](../js/project-detail.js) — injects detail content + per-project meta.
 - [robots.txt](../robots.txt), [sitemap.xml](../sitemap.xml) — SEO.
 

@@ -109,7 +109,7 @@
       for (var i = 0; i < items.length; i++) items[i].classList.add('is-visible');
     }
 
-    if (reduceMotion || !('IntersectionObserver' in window)) {
+    if (reduceMotion) {
       showAll();
       return;
     }
@@ -134,7 +134,7 @@
   function initActiveNav() {
     var sections = document.querySelectorAll('main section[id]');
     var links = document.querySelectorAll('.nav a[href^="#"]');
-    if (!sections.length || !links.length || !('IntersectionObserver' in window)) return;
+    if (!sections.length || !links.length) return;
 
     var io = new IntersectionObserver(function (entries) {
       entries.forEach(function (entry) {
@@ -268,7 +268,7 @@
           baseX = o.x; baseY = o.y;
           card.classList.add('is-dragging');
           toFront(card);
-          if (card.setPointerCapture) card.setPointerCapture(pid);
+          card.setPointerCapture(pid);
         });
 
         card.addEventListener('pointermove', function (e) {
@@ -281,7 +281,7 @@
           if (!dragging || (e && e.pointerId !== pid)) return;
           dragging = false;
           card.classList.remove('is-dragging');
-          if (card.releasePointerCapture && pid !== null) {
+          if (pid !== null) {
             try { card.releasePointerCapture(pid); } catch (err) { /* already released */ }
           }
           pid = null;
@@ -310,8 +310,7 @@
     }
 
     function sync() { enable(wide.matches && chaos()); }
-    if (wide.addEventListener) { wide.addEventListener('change', sync); }
-    else if (wide.addListener) { wide.addListener(sync); }
+    wide.addEventListener('change', sync);
     window.addEventListener('modechange', sync);
     sync();
 
@@ -386,7 +385,7 @@
     if (!words.length) return;
 
     // Reduced motion: CSS never dims the words, so just mark them revealed.
-    if (reduceMotion || !('IntersectionObserver' in window)) {
+    if (reduceMotion) {
       for (var k = 0; k < hosts.length; k++) hosts[k].classList.add('is-revealed');
       return;
     }
@@ -413,8 +412,7 @@
      The interval only runs during a hover, so idle cards cost nothing, and it
      is skipped entirely under prefers-reduced-motion. */
   function initHoverCycle() {
-    if (window.matchMedia &&
-        window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    if (reduceMotion) return;
 
     var cards = document.querySelectorAll('a.rm');
     for (var i = 0; i < cards.length; i++) {
@@ -453,136 +451,10 @@
     }
   }
 
-  /* ---------- hover-frame placement editor (dev-only, ?edit=1) ----------
-     The bare phone cut-outs are positioned by hand, not by the hero layout
-     editor: that one is scoped to .stage and works in percentages of a fixed
-     1440x900 canvas, neither of which fits a card in normal page flow.
-
-     With ?edit=1 the frames are parked in the blank column to the right of
-     the card list and stay visible so they can be dragged without holding a
-     hover. D dumps the offsets as ready-to-paste CSS; those values become
-     --hx/--hy on .rm__hover--bare, after which the frames only appear on
-     hover as usual. P dumps; D belongs to the hero layout editor. */
-  function initHoverEdit() {
-    if (!window.isEditing()) return;
-
-    var frames = document.querySelectorAll('.rm__hover--bare');
-    if (!frames.length) return;
-
-    var st = {};
-    var panel = document.createElement('div');
-    panel.style.cssText = 'position:fixed;left:12px;bottom:12px;z-index:99999;' +
-      'width:380px;max-height:50vh;overflow:auto;background:rgba(12,22,38,.94);' +
-      'color:#dbe8f5;font:11px/1.55 ui-monospace,Menlo,monospace;padding:10px 12px;' +
-      'border-radius:10px;box-shadow:0 8px 30px rgba(0,0,0,.35);white-space:pre-wrap';
-    panel.textContent = 'drag the phones - wheel to resize - P to dump CSS';
-    document.body.appendChild(panel);
-
-    // Unhide the frames and let them take the pointer, overriding the
-    // opacity/pointer-events the production rules set for hover-only display.
-    var css = document.createElement('style');
-    css.textContent =
-      '.rm__hover--bare{opacity:1!important;pointer-events:auto!important;cursor:grab}';
-    document.head.appendChild(css);
-
-    function keyOf(img) {
-      return (img.getAttribute('src') || '').split('/').pop().replace('.webp', '');
-    }
-    function read(img) {
-      var k = keyOf(img);
-      if (!st[k]) {
-        var cs = getComputedStyle(img);
-        st[k] = {
-          dx: parseFloat(cs.getPropertyValue('--hx')) || 0,
-          dy: parseFloat(cs.getPropertyValue('--hy')) || 0,
-          h: parseFloat(cs.height) || 360
-        };
-      }
-      return st[k];
-    }
-    function apply(img) {
-      var s = read(img);
-      img.style.setProperty('--hx', s.dx + 'px');
-      img.style.setProperty('--hy', s.dy + 'px');
-      img.style.height = s.h + 'px';
-    }
-
-    for (var i = 0; i < frames.length; i++) {
-      (function (img) {
-        var card = img.closest('a.rm');
-        var drag = null, sx = 0, sy = 0, ox = 0, oy = 0;
-        apply(img);
-
-        img.addEventListener('pointerdown', function (e) {
-          e.preventDefault();
-          e.stopPropagation();
-          var s = read(img);
-          drag = e.pointerId; sx = e.clientX; sy = e.clientY;
-          ox = s.dx; oy = s.dy;
-          img.style.cursor = 'grabbing';
-          if (img.setPointerCapture) img.setPointerCapture(drag);
-        });
-        img.addEventListener('pointermove', function (e) {
-          if (drag === null) return;
-          var s = read(img);
-          s.dx = ox + (e.clientX - sx);
-          s.dy = oy + (e.clientY - sy);
-          apply(img);
-        });
-        function end() {
-          if (drag === null) return;
-          if (img.releasePointerCapture) {
-            try { img.releasePointerCapture(drag); } catch (err) { /* gone */ }
-          }
-          drag = null;
-          img.style.cursor = 'grab';
-        }
-        img.addEventListener('pointerup', end);
-        img.addEventListener('pointercancel', end);
-        // The frame sits inside the card's <a>; without this a drag that ends
-        // as a click navigates to the project page.
-        if (card) {
-          img.addEventListener('click', function (e) {
-            e.preventDefault();
-            e.stopPropagation();
-          });
-        }
-        img.addEventListener('wheel', function (e) {
-          e.preventDefault();
-          var s = read(img);
-          s.h = Math.max(80, Math.min(900, s.h + (e.deltaY < 0 ? 8 : -8)));
-          apply(img);
-        }, { passive: false });
-      })(frames[i]);
-    }
-
-    document.addEventListener('keydown', function (e) {
-      // P, not D: js/layout-editor.js already owns D and writes the
-      // clipboard from it, so sharing the key makes the dump a coin flip.
-      if (e.key !== 'p' && e.key !== 'P') return;
-      var t = e.target;
-      if (t && /^(INPUT|TEXTAREA|SELECT)$/.test(t.tagName)) return;
-      var lines = ['/* paste into css/style.css */'];
-      Object.keys(st).forEach(function (k) {
-        var s = st[k];
-        lines.push('.rm__hover--bare[src$="' + k + '.webp"] {');
-        lines.push('  --hx: ' + Math.round(s.dx) + 'px;');
-        lines.push('  --hy: ' + Math.round(s.dy) + 'px;');
-        lines.push('  height: ' + Math.round(s.h) + 'px;');
-        lines.push('}');
-      });
-      var out = lines.join(String.fromCharCode(10));
-      panel.textContent = out;
-      console.log(out);
-      if (navigator.clipboard) navigator.clipboard.writeText(out);
-    });
-  }
-
   /* ---------- boot ---------- */
   function init() {
     renderCards();
     initHoverCycle();
-    initHoverEdit();
     initReveal();
     initActiveNav();
     initHeader();

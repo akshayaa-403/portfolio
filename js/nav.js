@@ -52,8 +52,7 @@
       }
     });
 
-    if (mq.addEventListener) { mq.addEventListener('change', sync); }
-    else if (mq.addListener) { mq.addListener(sync); }
+    mq.addEventListener('change', sync);
     sync();
   }
 

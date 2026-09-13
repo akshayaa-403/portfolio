@@ -124,9 +124,8 @@
 }
 .detail__nav a { color: var(--ink-soft); }
 .detail__nav a:hover { color: var(--accent-ink); }
-/* --ink-faint is 4.01:1 and the palette doc marks it decorative-only. This
-   is real text ("start of list" / "end of list"), so it needs a token
-   that clears AA. */
+/* Real text ("start of list" / "end of list"), not decoration, so it takes a
+   token that clears AA rather than the dimmest thing that looks right. */
 .detail__nav span { color: var(--ink-soft); }
 
 /* Missing / unknown project id */

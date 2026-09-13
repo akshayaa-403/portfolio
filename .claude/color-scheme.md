@@ -28,7 +28,6 @@ Note: this replaced an earlier warm-cream + orange scheme. No orange remains.
 | `--ink-body` | `#1e3a5f` | 10.70:1 | Body text |
 | `--ink-soft` | `#3c5a7a` | 6.65:1 | Secondary prose, nav, lede |
 | `--ink-muted` | `#4e6880` | 5.40:1 | Meta, labels, chips |
-| `--ink-faint` | `#647c96` | 4.01:1 | Decorative meta only — never body copy |
 
 ## Accent (sampled from the favicon)
 
