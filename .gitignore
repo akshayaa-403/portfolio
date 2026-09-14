@@ -22,8 +22,6 @@ dist-ssr
 # .claude/ holds the project guide (CLAUDE.md) and its reference docs, which
 # belong in version control so they reach anyone else working on this. Only
 # the machine-local settings and agent scratch are ignored.
-.claude/settings.local.json
-.claude/agents/
 .claude/
 .idea
 .DS_Store

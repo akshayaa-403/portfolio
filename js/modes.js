@@ -1,11 +1,11 @@
-/* View-mode switcher: chaos (default) / notebook / clean.
+/* View-mode switcher: graph (default) / notebook / clean.
    The mode lives as data-mode on <html>; js/boot.js has already applied the
    saved value before paint, so this only wires the buttons and keeps their
    aria-checked state honest. */
 (function () {
   'use strict';
 
-  var MODES = ['chaos', 'notebook', 'clean'];
+  var MODES = ['graph', 'notebook', 'clean'];
   var KEY = 'viewMode';
   var root = document.documentElement;
 
@@ -19,7 +19,7 @@
       var s = localStorage.getItem(KEY);
       if (MODES.indexOf(s) !== -1) return s;
     } catch (err) { /* private mode */ }
-    return 'chaos';
+    return 'graph';
   }
 
   /* `persist` is false on the initial sync: landing on the page is not a
@@ -27,7 +27,7 @@
      visitor into someone with a saved preference, so a later change to the
      default could never reach them. Only a real click records anything. */
   function apply(mode, buttons, persist) {
-    if (MODES.indexOf(mode) === -1) mode = 'chaos';
+    if (MODES.indexOf(mode) === -1) mode = 'graph';
     var changed = root.getAttribute('data-mode') !== mode;
     root.setAttribute('data-mode', mode);
     if (persist) {

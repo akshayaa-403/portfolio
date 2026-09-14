@@ -8,7 +8,7 @@
    mid blue and pale blue on cool paper. Light-only; every colour is a token
    so a dark variant can be added in one block.
 
-   Three view modes (chaos / notebook / clean) are set as a `data-mode`
+   Three view modes (graph / notebook / clean) are set as a `data-mode`
    attribute on <html> — see section 14.
    ========================================================================== */
 
@@ -24,7 +24,6 @@
      0        hero stage background (lilies)
      1-8      hero props, ordered back-to-front (--z on each element)
      20       hero name lockup, above every prop
-     27       notebook-mode lamp, which sits over the page
      40       dragged / hovered element lifted out of its band
      60       hero mode switcher, above the pen's rotated bounding box
      100      sticky site header
@@ -98,7 +97,9 @@
 
   --ease: cubic-bezier(0.4, 0, 0.2, 1);
   --ease-bloom: cubic-bezier(0.22, 0.68, 0.24, 1); /* slow, organic unfurl */
-  --dur: 0.45s;
+  /* Interaction feedback only — every use of --dur is a hover/focus
+     transition. 0.45s read as lag on a link; reveals set their own 0.6s. */
+  --dur: 0.16s;
 
   color-scheme: light;
 }
@@ -616,12 +617,56 @@ main:focus-visible { outline: none; }
 
 .hero__headline {
   max-width: min(540px, calc(100vw - 64px));
-  margin: 0 auto 34px;
+  margin: 0 auto 22px;
   color: var(--ink-body);
   font-size: 15px;
   line-height: 1.55;
   letter-spacing: -0.01em;
 }
+
+.hero__cta {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 10px;
+  margin: 0 0 34px;
+}
+.hero__cta-btn {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  padding: 0 18px;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius-pill);
+  /* An opaque ground, not a transparent one: in notebook mode the lockup sits
+     on a light photographic prop whatever the theme, where --ink alone would
+     need the same text-shadow rescue the headline gets. */
+  background: var(--surface);
+  color: var(--ink);
+  font-size: 14px;
+  font-weight: 500;
+  transition: background var(--dur) var(--ease), border-color var(--dur) var(--ease),
+              color var(--dur) var(--ease);
+}
+.hero__cta-btn:hover,
+.hero__cta-btn:focus-visible { border-color: var(--accent); color: var(--accent); }
+.hero__cta-btn--primary {
+  border-color: var(--accent-deep);
+  background: var(--accent-deep);
+  color: var(--on-accent-deep, #fff);
+}
+.hero__cta-btn--primary:hover,
+.hero__cta-btn--primary:focus-visible {
+  background: var(--accent-hover);
+  border-color: var(--accent-hover);
+  color: var(--on-accent-deep, #fff);
+}
+/* Each mode pins .hero__cta with the rest of the lockup (see the per-mode
+   blocks below). Without that it stayed in normal flow at the top of a
+   full-stage lockup box, where the sticky header clipped it — the one call to
+   action above the fold, invisible. */
+/* clean/notebook right- and left-align the lockup; the buttons follow it. */
+[data-mode='clean'] .hero__cta { justify-content: flex-end; }
 
 /* The switcher is pinned to the bottom-centre of the stage in every mode, as
    the reference does with its icon row — keeping it out of the text block means
@@ -744,7 +789,7 @@ main:focus-visible { outline: none; }
 }
 .share__btn--go { font-weight: 600; }
 
-/* Drag affordances (JS adds .is-draggable in chaos mode on wide screens) */
+/* Drag affordances (JS adds .is-draggable in notebook mode on wide screens) */
 .obj.is-draggable { cursor: grab; touch-action: none; }
 .obj.is-draggable:active,
 
@@ -794,7 +839,7 @@ main:focus-visible { outline: none; }
 }
 /* Sits directly under the hero's mode toggle, vertically in line with it.
    --skills-cx is the toggle's measured centre, written by js/marquee.js on load,
-   mode change and resize; the 50% fallback is correct for chaos and notebook,
+   mode change and resize; the 50% fallback is correct for graph and notebook,
    where the toggle is centred, and is what no-JS visitors get. The word is
    centred on that point rather than on its own box. */
 .strip-section {
@@ -1262,6 +1307,8 @@ main:focus-visible { outline: none; }
 
   .js .hero__headline,
 
+  .js .hero__cta,
+
   .js .hero__actions,
 
   .js .stage .prop,
@@ -1273,7 +1320,8 @@ main:focus-visible { outline: none; }
   .js .hero__role { animation-delay: 0.14s; }
   .js .hero__sub { animation-delay: 0.20s; }
   .js .hero__headline { animation-delay: 0.26s; }
-  .js .hero__actions { animation-delay: 0.34s; }
+  .js .hero__cta { animation-delay: 0.32s; }
+  .js .hero__actions { animation-delay: 0.40s; }
 
   /* Props trail in from the outside of the composition inwards */
   .js .stage .prop { animation-delay: 0.40s; }
@@ -1288,7 +1336,7 @@ main:focus-visible { outline: none; }
 }
 
 /* --------------------------------------------------------------------------
-   12b. Idle / ambient motion (chaos mode, motion-safe only)
+   12b. Idle / ambient motion (graph mode, motion-safe only)
    The reference keeps small things gently alive — objects bob, the status
    caret blinks, stickers rotate. All of it is decorative and gated.
    -------------------------------------------------------------------------- */
@@ -1342,7 +1390,7 @@ main:focus-visible { outline: none; }
    Set as data-mode on <html> by js/modes.js; persisted to localStorage and
    applied by an inline <head> script before paint so there's no flash.
 
-     chaos    — the default. Scattered draggable desk objects, rotations,
+     graph    — the default. The latent field: a 2-D projection of the work,
                 marquee, spinning vinyl. Closest to the reference.
      notebook — same layout on warm paper; cards below the hero become dashed
                 taped-in notes. Reading mode.
@@ -1350,7 +1398,7 @@ main:focus-visible { outline: none; }
    -------------------------------------------------------------------------- */
 
 /* Mode switcher control. Hidden without JS, where the buttons would do
-   nothing — the CSS default (chaos) still applies. */
+   nothing — the CSS default (graph) still applies. */
 .modes { display: none; }
 .js .modes {
   display: inline-flex;
@@ -1373,11 +1421,12 @@ main:focus-visible { outline: none; }
   transition: color var(--dur) var(--ease), background var(--dur) var(--ease);
 }
 .modes button:hover { color: var(--accent); }
+/* Ghost, not filled: this is a viewing preference, and filled in
+   --accent-deep it out-shouted the name and the call to action. */
 .modes button[aria-checked='true'] {
-  background: var(--accent-deep);
-  /* --on-accent-deep is whatever reads on --accent-deep in the current theme:
-     white on the light theme's navy, dark navy on the dark theme's pale blue. */
-  color: var(--on-accent-deep, #fff);
+  background: var(--surface);
+  color: var(--accent-ink);
+  box-shadow: inset 0 0 0 1px var(--line-strong);
 }
 
 /* ---------- Per-mode prop arrangements ----------
@@ -1385,16 +1434,18 @@ main:focus-visible { outline: none; }
    objects, not one layout with different surfaces. Coordinates for all three
    came from a live render of jackiehu.design at 1440x900.
 
-   Each prop carries its chaos coords in --x/--y/--w/--h, plus optional
+   Each prop carries its notebook coords in --x/--y/--w/--h, plus optional
    cleaned-up (--cl*) and notebook (--nb*) overrides. Props with no override
    for a mode are absent from that mode on the reference and are hidden. */
 
-/* cleaned-up: everything tidied into aligned rows, name moves right */
-[data-mode='clean'] .prop {
-  left: var(--clx, var(--x)) !important;
-  top: var(--cly, var(--y)) !important;
-  width: var(--clw, var(--w)) !important;
-  height: var(--clh, var(--h)) !important;
+/* clean: no ornament at all. The mode's whole promise is "skip the art, show
+   me the person", and it used to ship more props than notebook did — eight of
+   them, hand-placed, plus both lilies. One rule replaces ~85 lines of
+   coordinates. The lamp doubled as the theme switch; the header toggle covers
+   that, and is the discoverable control anyway. */
+[data-mode='clean'] .prop,
+[data-mode='clean'] .lily {
+  display: none !important;
 }
 
 /* notebook: every prop is visible. The old rule hid anything without an
@@ -1409,7 +1460,7 @@ main:focus-visible { outline: none; }
 }
 
 /* --- Lockup position per mode ---
-   chaos + notebook sit centre-left; cleaned-up moves the block right.
+   graph + notebook sit centre-left; cleaned-up moves the block right.
    The left offset is a percentage, so the block must also be told it can never
    exceed the space remaining to its right — otherwise the headline runs off the
    viewport on narrow screens. */
@@ -1457,84 +1508,11 @@ main:focus-visible { outline: none; }
    spread instead of overlapping. */
 [data-mode='notebook'] .hero__name { font-size: clamp(2.4rem, 4.6vw, 62px); }
 
-/* ---------- clean mode: hand-placed layout ----------
+/* ---------- clean mode: cards and lockup ----------
    Positioned by hand in the browser (js/layout-editor.js, ?edit=1) and pasted
    back verbatim. Deliberate design decisions - do not "correct" them against
-   the other modes or any reference site. */
-[data-mode='clean'] .prop--glow {
-  left: 29.048% !important; top: 59.157% !important;
-  width: 13.810% !important; height: 14.699% !important;
-  transform: none !important; z-index: 3 !important;
-}
-[data-mode='clean'] .prop[data-prop='lamp'] {
-  left: 25.850% !important; top: 58.916% !important;
-  width: 20.204% !important; height: 28.795% !important;
-  transform: none !important; z-index: 4 !important;
-}
-[data-mode='clean'] .prop[data-prop='camera'] {
-  --rb: 0deg;
-  left: 0.476% !important; top: 66.627% !important;
-  width: 16.395% !important; height: 17.108% !important;
-  transform: rotate(var(--rb));
-  transform-origin: center center;
-  z-index: 5 !important;
-}
-/* --- clean mode: new props (hand-placed, ?edit=1 D dump) ---
-   Only stars is rotated here; the rest are axis-aligned, so their dumped
-   boxes are used directly. */
-[data-mode='clean'] .prop[data-prop='notebook-open'] {
-  /* Spans the full stage width and bleeds off both edges. Above the lamp
-     band at z 6, per the dump. */
-  display: block !important;
-  left: -28.163% !important; top: 13.614% !important;
-  width: 100.000% !important; height: 40.482% !important;
-  transform: none !important;
-  z-index: 2 !important;
-  pointer-events: none !important;
-}
-[data-mode='clean'] .prop[data-prop='glass-flower'] {
-  --rb: 0deg;
-  display: block !important;
-  left: 85.170% !important; top: 42.289% !important;
-  width: 14.082% !important; height: 14.940% !important;
-  transform: rotate(var(--rb)); z-index: 2 !important;
-}
-[data-mode='clean'] .prop[data-prop='soda-can'] {
-  display: block !important;
-  left: 76.745% !important; top: 44.433% !important;
-  width: 6.919% !important; height: 13.182% !important;
-  transform: rotate(-29deg) !important;
-  transform-origin: center center !important;
-  z-index: 2 !important;
-}
-/* Sits exactly where the intact can sits, bottom edges flush, so the
-   cross-fade reads as a collapse rather than a swap. */
-[data-mode='clean'] .prop[data-prop='soda-can-crushed'] {
-  --rb: -29deg;
-  display: block !important;
-  left: 75.015% !important; top: 47.333% !important;
-  width: 10.379% !important; height: 10.282% !important;
-  transform: rotate(var(--rb));
-  z-index: 2 !important;
-}
-[data-mode='clean'] .prop[data-prop='paper-stack'] {
-  display: block !important;
-  left: 13.878% !important; top: 64.337% !important;
-  width: 16.531% !important; height: 21.566% !important;
-  transform: none !important; z-index: 2 !important;
-}
-[data-mode='clean'] .lily--bl {
-  left: -2.997% !important; top: 27.482% !important;
-  right: auto !important; bottom: auto !important;
-  width: 27.248% !important; height: 78.814% !important;
-  transform: none !important; z-index: 1 !important;
-}
-[data-mode='clean'] .lily--tr {
-  left: 79.768% !important; top: -7.022% !important;
-  right: auto !important; bottom: auto !important;
-  width: 24.251% !important; height: 38.862% !important;
-  transform: none !important; z-index: 1 !important;
-}
+   the other modes or any reference site. The prop and lily coordinates that
+   used to live here were deleted: clean hides both outright. */
 [data-mode='clean'] .obj--player {
   --x: 42.313% !important; --y: 13.855% !important;
   --w: 15.102% !important;
@@ -1602,9 +1580,16 @@ main:focus-visible { outline: none; }
    the skills heading below can track it with one figure at every width. */
 /* The mode toggle sits in the SAME place in all three modes: it is a
    control, not scenery, so it must not appear to jump when the mode
-   changes. chaos and notebook both centre it at 50% / 71.307%, and clean
+   changes. graph and notebook both centre it at 50% / 71.307%, and clean
    now matches them. The layout editor is not allowed to move it — see
    the SEL list in js/layout-editor.js. */
+[data-mode='clean'] .hero__cta {
+  position: absolute !important;
+  left: 60.831% !important; top: 44.000% !important;
+  right: auto !important; bottom: auto !important; margin: 0 !important;
+  width: 36.785% !important; max-width: 92vw !important;
+  transform: none !important;
+}
 [data-mode='clean'] .hero__actions {
   position: absolute !important;
   left: 50.000% !important; top: 71.307% !important;
@@ -1615,98 +1600,124 @@ main:focus-visible { outline: none; }
   transform: translateX(-50%) !important;
   display: flex !important;
   justify-content: center !important;
-}/* ---------- chaos mode: hand-placed layout ----------
-   Positioned by hand in the browser (js/layout-editor.js, ?edit=1).
-   For rotated items the CSS box is solved back from the desired ON-SCREEN
-   box, because a rotated element's bounding box is larger than the element.
-   The lockup text is centred on the mode toggle's axis (x=734 of 1468).
-   Values are % of the stage. */
+}
 
-[data-mode='chaos'] .prop--glow {
-  left: 1.528% !important; top: 43.333% !important;
-  width: 15.972% !important; height: 23.111% !important;
-  transform: none !important; z-index: 3 !important;
-}
-[data-mode='chaos'] .prop[data-prop='lamp'] {
-  /* Rotated -19deg; box solved back from the dumped 452x495 bounding box. */
-  left: -0.064% !important; top: 42.656% !important;
-  width: 23.461% !important; height: 45.244% !important;
-  transform: rotate(-19deg) !important;
-  transform-origin: center center !important;
-  z-index: 4 !important;
-}
-[data-mode='chaos'] .prop[data-prop='camera'] {
-  --rb: 17deg;
-  left: 2.981% !important; top: 8.942% !important;
-  width: 13.412% !important; height: 19.117% !important;
-  transform: rotate(var(--rb));
-  transform-origin: center center;
-  z-index: 5 !important;
-}
-/* --- chaos mode: new props (hand-placed, ?edit=1 D dump) ---
-   Rotated boxes solved back from the dumped on-screen bbox, as above. */
-[data-mode='chaos'] .prop[data-prop='glass-flower'] {
-  --rb: 0deg;
-  display: block !important;
-  left: 68.333% !important; top: 56.556% !important;
-  width: 13.264% !important; height: 19.111% !important;
-  transform: rotate(var(--rb));
-  z-index: 2 !important;
-}
-[data-mode='chaos'] .prop[data-prop='soda-can'] {
-  display: block !important;
-  left: 21.000% !important; top: 52.707% !important;
-  width: 7.122% !important; height: 18.808% !important;
-  transform: rotate(13deg) !important;
-  transform-origin: center center !important;
-  z-index: 2 !important;
-}
-/* Sits exactly where the intact can sits, bottom edges flush, so the
-   cross-fade reads as a collapse rather than a swap. */
-[data-mode='chaos'] .prop[data-prop='soda-can-crushed'] {
-  --rb: 13deg;
-  display: block !important;
-  left: 19.220% !important; top: 56.845% !important;
-  width: 10.683% !important; height: 14.670% !important;
-  transform: rotate(var(--rb));
-  z-index: 2 !important;
-}
-/* Absent from this arrangement. */
-[data-mode='chaos'] .prop[data-prop='notebook-open'],
+/* ---------- graph mode: the latent field ----------
+   The default mode. The desk is gone; the stage is a 2-D projection of the
+   work, drawn to a canvas by js/field.js. The lockup keeps the coordinates
+   the collage used — centred on the mode toggle's axis (x=734 of 1468),
+   values as % of the stage — so it reads as the centroid of the field. */
 
-[data-mode='chaos'] .prop[data-prop='paper-stack'] { display: none !important; }
-[data-mode='chaos'] .lily--bl {
-  left: -2.997% !important; top: 27.482% !important;
-  right: auto !important; bottom: auto !important;
-  width: 27.248% !important; height: 78.692% !important;
-  transform: none !important; z-index: 1 !important;
+/* graph mode hides the whole desk. Every prop, lily and card belongs to
+   notebook's hand-placed arrangement; graph replaces the stage with the
+   latent field, so they are hidden outright rather than re-positioned —
+   the same single rule clean already uses. */
+[data-mode='graph'] .prop,
+[data-mode='graph'] .lily,
+[data-mode='graph'] .obj { display: none !important; }
+
+/* --- The graph ----------------------------------------------------------
+   Every destination on the site as a node, every real relationship as an
+   edge, laid out by a force simulation in js/field.js. Node labels are drawn
+   onto the canvas rather than set as elements: ~90 of them as DOM nodes would
+   mean 90 layout boxes moved every frame.
+
+   Hidden in notebook and clean, which keep their own arrangements. */
+.field {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  display: none;
+  pointer-events: none;
 }
-[data-mode='chaos'] .lily--tr {
-  left: 79.768% !important; top: -7.022% !important;
-  right: auto !important; bottom: auto !important;
-  width: 24.251% !important; height: 38.862% !important;
-  transform: none !important; z-index: 1 !important;
+[data-mode='graph'] .field { display: block; }
+
+/* The canvas takes pointer events — nodes are hovered, dragged and clicked.
+   It stays aria-hidden and unfocusable: every node's destination is also a
+   real link further down the page, so nothing here is the only route to
+   anything. */
+.field__canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+  pointer-events: auto;
+  touch-action: none;
 }
-[data-mode='chaos'] .obj--player {
-  --x: 72.792% !important; --y: 12.089% !important;
-  --w: 15.588% !important; height: auto !important;
-  transform: rotate(-9deg) !important;
-  transform-origin: center center !important;
-  z-index: 6 !important;
+
+/* Bottom-left. aria-live is off by omission: it rewrites on every hover,
+   which would flood a screen reader with names it can already reach. */
+.field__read {
+  position: absolute;
+  left: 4%;
+  top: 92%;
+  margin: 0;
+  max-width: 38%;
+  /* The graph runs under this corner too, so the readout needs its own
+     ground to stay legible over edges and node labels. */
+  padding: 6px 10px;
+  background: var(--bg);
+  border-radius: var(--radius-pill);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--ink-muted);
+  pointer-events: none;
 }
-[data-mode='chaos'] .obj--share {
-  --x: 83.747% !important; --y: 60.807% !important;
-  --w: 15.701% !important; height: auto !important;
-  transform: rotate(10deg) !important;
-  transform-origin: center center !important;
-  z-index: 7 !important;
+.field__read b { color: var(--accent-ink); font-weight: 600; display: block; }
+
+/* Legend. Generated by js/field.js from the same category map that colours
+   the dots, so it lists exactly the categories the graph contains and counts
+   exactly what it drew. Top-left, on its own ground — the graph runs under
+   this corner too. */
+.field__legend {
+  position: absolute;
+  left: 4%;
+  top: 9%;
+  margin: 0;
+  padding: 8px 12px;
+  list-style: none;
+  display: grid;
+  gap: 5px;
+  background: var(--bg);
+  border-radius: var(--radius);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  line-height: 1.4;
+  color: var(--ink-soft);
+  pointer-events: none;
 }
-[data-mode='chaos'] .hero__lockup {
+.field__legend li { display: flex; align-items: center; gap: 7px; }
+.field__legend b {
+  color: var(--ink-muted);
+  font-weight: 400;
+  font-variant-numeric: tabular-nums;
+}
+.field__swatch {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex: none;
+}
+
+/* Below the prop breakpoint the stage stops being a stage: min-height drops
+   to 0 and the lockup returns to normal flow, so there is no canvas to lay
+   the graph out on and the nodes would pile up behind the name. The graph
+   goes the same way the props do at this width — the phone hero is the
+   lockup, a sentence and two buttons, which is the right hero for a phone
+   anyway. The selector matches [data-mode='graph'] .field so it wins without
+   !important. */
+@media (max-width: 899.98px) {
+  [data-mode='graph'] .field { display: none; }
+}
+
+[data-mode='graph'] .hero__lockup {
   left: 0 !important; right: auto !important; top: 0 !important;
   width: 100% !important; max-width: none !important;
   height: 100% !important;
 }
-[data-mode='chaos'] .hero__name {
+[data-mode='graph'] .hero__name {
   position: absolute !important;
   /* Centred on the toggle axis. width:max-content + translateX(-50%)
      keeps it one line whatever the string length. */
@@ -1717,7 +1728,7 @@ main:focus-visible { outline: none; }
   text-align: center !important;
   transform: translateX(-50%) !important;
 }
-[data-mode='chaos'] .hero__role {
+[data-mode='graph'] .hero__role {
   position: absolute !important;
   left: 50.000% !important; top: 49.879% !important;
   right: auto !important; bottom: auto !important; margin: 0 !important;
@@ -1725,7 +1736,7 @@ main:focus-visible { outline: none; }
   white-space: nowrap !important; text-align: center !important;
   transform: translateX(-50%) !important;
 }
-[data-mode='chaos'] .hero__sub {
+[data-mode='graph'] .hero__sub {
   position: absolute !important;
   left: 50.000% !important; top: 54.480% !important;
   right: auto !important; bottom: auto !important; margin: 0 !important;
@@ -1733,7 +1744,7 @@ main:focus-visible { outline: none; }
   white-space: nowrap !important; text-align: center !important;
   transform: translateX(-50%) !important;
 }
-[data-mode='chaos'] .hero__headline {
+[data-mode='graph'] .hero__headline {
   position: absolute !important;
   left: 50.000% !important; top: 60.412% !important;
   right: auto !important; bottom: auto !important; margin: 0 !important;
@@ -1741,9 +1752,17 @@ main:focus-visible { outline: none; }
   text-align: center !important;
   transform: translateX(-50%) !important;
 }
-[data-mode='chaos'] .hero__actions {
+/* No CTA pair in graph mode: "See the work" and "Get in touch" are both
+   nodes you can click, sitting in the graph a few hundred pixels away, and a
+   button pair in the middle of the stage only crowds the name. Scoped to the
+   width where the graph actually renders — below that the field is hidden and
+   the buttons are the only way out of the hero. */
+@media (min-width: 900px) {
+  [data-mode='graph'] .hero__cta { display: none !important; }
+}
+[data-mode='graph'] .hero__actions {
   position: absolute !important;
-  left: 50.000% !important; top: 71.307% !important;
+  left: 50.000% !important; top: 70.000% !important;
   right: auto !important; bottom: auto !important; margin: 0 !important;
   width: max-content !important; text-align: center !important;
   display: flex !important;
@@ -1759,26 +1778,25 @@ main:focus-visible { outline: none; }
    onto the paper, while the shade still covers its own top edge. */
 [data-mode='notebook'] .prop--glow {
   display: block !important;
-  left: 75.034% !important; top: 60.482% !important;
-  width: 10.612% !important; height: 13.855% !important;
-  transform: none !important; z-index: 6 !important;
+  left: 16.826% !important; top: 20.602% !important;
+  width: 15.736% !important; height: 20.482% !important;
+  transform: none !important; z-index: 3 !important;
 }
 [data-mode='notebook'] .prop[data-prop='lamp'] {
-  /* Upright: at -19deg the lamp read as toppled, and the tilt pushed its
-     base off the page's right edge. A desk lamp beside an open notebook
-     should stand. */
+  /* Near-upright: at -19deg the lamp read as toppled. A desk lamp beside an
+     open notebook should stand. */
   display: block !important;
-  left: 73.042% !important; top: 60.487% !important;
-  width: 13.100% !important; height: 26.617% !important;
-  transform: rotate(10deg) !important;
-  z-index: 27 !important;
+  left: 13.090% !important; top: 19.335% !important;
+  width: 20.549% !important; height: 41.811% !important;
+  transform: rotate(13deg) !important;
+  z-index: 4 !important;
   transform-origin: center center !important;
 }
 [data-mode='notebook'] .prop[data-prop='camera'] {
   --rb: 17deg;
   display: block !important;
-  left: 18.258% !important; top: 35.511% !important;
-  width: 12.941% !important; height: 16.931% !important;
+  left: 72.370% !important; top: 64.547% !important;
+  width: 12.958% !important; height: 16.931% !important;
   transform: rotate(var(--rb));
   transform-origin: center center;
   z-index: 5 !important;
@@ -1794,8 +1812,8 @@ main:focus-visible { outline: none; }
      staying in the stage's own stacking context — the dumped z=-67 would
      have dropped it behind the stage background entirely. */
   display: block !important;
-  left: 24.078% !important; top: -38.045% !important;
-  width: 54.498% !important; height: 184.644% !important;
+  left: 24.105% !important; top: -38.043% !important;
+  width: 54.583% !important; height: 184.519% !important;
   transform: rotate(-9deg) !important;
   transform-origin: center center !important;
   z-index: 0 !important;
@@ -1803,26 +1821,8 @@ main:focus-visible { outline: none; }
 [data-mode='notebook'] .prop[data-prop='glass-flower'] {
   --rb: 0deg;
   display: block !important;
-  left: 58.707% !important; top: 74.940% !important;
-  width: 13.537% !important; height: 17.711% !important;
-  transform: rotate(var(--rb));
-  z-index: 2 !important;
-}
-[data-mode='notebook'] .prop[data-prop='soda-can'] {
-  display: block !important;
-  left: 40.636% !important; top: 80.782% !important;
-  width: 7.844% !important; height: 17.352% !important;
-  transform: rotate(7deg) !important;
-  transform-origin: center center !important;
-  z-index: 2 !important;
-}
-/* Sits exactly where the intact can sits, bottom edges flush, so the
-   cross-fade reads as a collapse rather than a swap. */
-[data-mode='notebook'] .prop[data-prop='soda-can-crushed'] {
-  --rb: 7deg;
-  display: block !important;
-  left: 38.675% !important; top: 84.599% !important;
-  width: 11.766% !important; height: 13.535% !important;
+  left: 57.766% !important; top: 77.349% !important;
+  width: 13.556% !important; height: 17.711% !important;
   transform: rotate(var(--rb));
   z-index: 2 !important;
 }
@@ -1847,16 +1847,17 @@ main:focus-visible { outline: none; }
 }
 /* Sits on the page rather than under it, same band as the glow. */
 [data-mode='notebook'] .obj--player {
-  --x: 65.646% !important; --y: 11.687% !important;
-  --w: 15.918% !important; height: auto !important;
-  transform: rotate(0deg) !important;
+  --x: 67.306% !important; --y: 10.329% !important;
+  --w: 15.934% !important; height: auto !important;
+  transform: rotate(-4deg) !important;
   transform-origin: center center !important;
   z-index: 6 !important;
 }
 [data-mode='notebook'] .obj--share {
-  --x: 19.660% !important; --y: 71.928% !important;
-  --w: 15.034% !important; height: auto !important;
-  transform: none !important;
+  --x: 22.578% !important; --y: 70.517% !important;
+  --w: 15.062% !important; height: auto !important;
+  transform: rotate(5deg) !important;
+  transform-origin: center center !important;
   z-index: 7 !important;
 }
 [data-mode='notebook'] .hero__lockup {
@@ -1894,6 +1895,14 @@ main:focus-visible { outline: none; }
   right: auto !important; bottom: auto !important; margin: 0 !important;
   width: 36.785% !important; max-width: 92vw !important;
   text-align: center !important; transform: translateX(-50%) !important;
+}
+[data-mode='notebook'] .hero__cta {
+  position: absolute !important;
+  left: 50.000% !important; top: 64.200% !important;
+  right: auto !important; bottom: auto !important; margin: 0 !important;
+  width: max-content !important; max-width: 92vw !important;
+  justify-content: center !important;
+  transform: translateX(-50%) !important;
 }
 [data-mode='notebook'] .hero__actions {
   position: absolute !important;
@@ -2114,29 +2123,6 @@ main:focus-visible { outline: none; }
     z-index: 41 !important;
   }
 
-  /* Soda can - crushed. This one is a cross-fade between two photographs
-     rather than a transform: CSS can squash a cylinder but it cannot crumple
-     metal, and the creases have to be real pixels. The intact can keeps the
-     hover hit test while it fades (opacity does not affect hit testing), so
-     the pair does not flicker when the pointer sits still over it. */
-  .js .stage .prop[data-anim="crush"],
-
-  .js .stage .prop[data-prop="soda-can-crushed"] {
-    transition: opacity 0.26s var(--ease), transform 0.26s var(--ease);
-  }
-  /* Never let the crushed can intercept the hover meant for the intact one:
-     they overlap, and it is stacked on top. */
-  .js .stage .prop[data-prop="soda-can-crushed"] {
-    opacity: 0;
-    pointer-events: none !important;
-  }
-  .js .stage .prop[data-anim="crush"]:hover { opacity: 0; }
-  .js .stage .prop[data-anim="crush"]:hover + .prop[data-prop="soda-can-crushed"] {
-    opacity: 1;
-    transform: rotate(var(--rb, 0deg)) scale(1.06);
-    z-index: 41 !important;
-  }
-
   /* Camera — shutter flash. Filter only, so the composed scale above is left
      to stand. --prop-filter carries the dark theme dimming, so the flash
      brightens from that base instead of overwriting it and blowing out. */
@@ -2186,19 +2172,13 @@ main:focus-visible { outline: none; }
   line-height: 1.6;
 }
 
+/* One row of three, on the content rail. The old 2+1 pyramid was capped at
+   860px and centred, and its third card was centred again inside that — so
+   the block had three left edges, none of them the column's. */
 .hob-tri {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 18px;
-  max-width: 860px;
-  margin: 0 auto;
-}
-/* The third card centres under the pair: it spans both columns and is width-
-   capped, which keeps the triangle without absolute positioning. */
-.hob-tri > :nth-child(3) {
-  grid-column: 1 / -1;
-  width: min(100%, calc(50% - 9px));
-  margin: 0 auto;
 }
 
 .hob-card {
@@ -2287,9 +2267,12 @@ main:focus-visible { outline: none; }
   outline-offset: 3px;
 }
 
+/* Three 4:3 tiles get cramped before the phone breakpoint does. */
+@media (max-width: 899.98px) {
+  .hob-tri { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
 @media (max-width: 599.98px) {
   .hob-tri { grid-template-columns: 1fr; gap: 14px; }
-  .hob-tri > :nth-child(3) { width: 100%; }
 }
 
 
@@ -2386,7 +2369,7 @@ main:focus-visible { outline: none; }
 /* --------------------------------------------------------------------------
    Hero: force natural flow on mobile, in EVERY view mode.
 
-   The [data-mode='chaos'|'notebook'|'clean'] blocks pin the lockup text, the
+   The [data-mode='graph'|'notebook'|'clean'] blocks pin the lockup text, the
    two cards and the toggle with `position: absolute !important` and no media
    guard, so below 900px they overlapped the base mobile reset (which had no
    !important). This block wins by coming later with matching specificity plus
@@ -2414,6 +2397,8 @@ main:focus-visible { outline: none; }
 
   [data-mode] .hero__sub,
 
+  [data-mode] .hero__cta,
+
   [data-mode] .hero__headline {
     position: static !important;
     left: auto !important; top: auto !important; right: auto !important;
@@ -2434,6 +2419,13 @@ main:focus-visible { outline: none; }
   [data-mode] .hero__role { margin: 0 auto !important; }
   [data-mode] .hero__sub { margin: 0 auto 20px !important; }
   [data-mode] .hero__headline { margin: 0 auto 28px !important; }
+  /* The CTA row is positioned absolutely in graph mode like the rest of the
+     lockup, so it needs the same reset — without it the buttons sat at 68.5%
+     of a lockup that no longer has a height, on top of the headline. */
+  [data-mode] .hero__cta {
+    margin: 0 auto 28px !important;
+    justify-content: center !important;
+  }
 
   [data-mode] .stage .obj {
     position: relative !important;
@@ -2525,7 +2517,7 @@ main:focus-visible { outline: none; }
    (unreadable at this size). Hidden entirely in clean mode, per convention.
    -------------------------------------------------------------------------- */
 @media (max-width: 899.98px) {
-  :root[data-mode='chaos'] .stage,
+  :root[data-mode='graph'] .stage,
 
   :root[data-mode='notebook'] .stage { position: relative; }
 

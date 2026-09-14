@@ -33,6 +33,24 @@ const projects = [
       "Deterministic offline demo mode, a pytest suite, and CI that deliberately excludes the heavy ML stack so it stays fast."
     ],
     "challenge": "Streamlit Community Cloud allows roughly 1 GB of memory and FinBERT alone does not fit comfortably alongside the data layer, so the sentiment model tier became configuration: lexicon scorers by default to keep the hosted app inside budget, FinBERT one environment variable away for local runs. The other free-tier problem was hibernation — Community Cloud sleeps an idle app, so a cron workflow drives headless Chrome against it every ten hours to keep it awake. Neither is glamorous; both are the difference between a demo that loads and a demo that 404s when someone actually clicks the link.",
+    "created": "2025-09-22",
+    "updated": "2026-08-22",
+    "tags": [
+      ["Factor investing", "https://en.wikipedia.org/wiki/Factor_investing"],
+      ["Sharpe ratio", "https://en.wikipedia.org/wiki/Sharpe_ratio"],
+      ["FinBERT", "https://arxiv.org/abs/1908.10063"],
+      ["VADER", "https://ojs.aaai.org/index.php/ICWSM/article/view/14550"]
+    ],
+    "notes": {
+      "overview": [
+        ["never both", "the whole reason this exists"],
+        ["only rises to the top when the technicals and the narrative agree", "agreement is the signal. one without the other is noise"]
+      ],
+      "challenge": [
+        ["roughly 1 GB of memory", "the real constraint. everything after this follows from one number"],
+        ["Neither is glamorous", "true. but the link works when you click it, which is the point"]
+      ]
+    },
     "deepDive": [
       {
         "kind": "prose",
@@ -123,6 +141,21 @@ const projects = [
       "Light and dark themes, with a serif display face over a clean neutral ground."
     ],
     "challenge": "Conventional e-commerce checkout assumes fungible stock and an impersonal transaction. Neither holds here: every painting is unique, and buyers reasonably want to ask about colour accuracy, framing and shipping before spending on an original. Forcing a card form into that flow would have added friction at exactly the wrong moment. Instead the cart composes a pre-filled WhatsApp message and hands the conversation to the artist, where price, shipping and UPI payment get settled directly. It is a deliberately smaller technical surface than a payment integration, and it matches how the studio already sells.",
+    "tags": [
+      ["Conversational commerce", "https://en.wikipedia.org/wiki/Conversational_commerce"],
+      ["Supabase", "https://supabase.com/docs"],
+      ["shadcn/ui", "https://ui.shadcn.com"]
+    ],
+    "notes": {
+      "overview": [
+        ["one of each, hand-signed", "no restock, ever. the whole model is this line"],
+        ["rather than around a conventional retail funnel", "a funnel would have thrown away the conversation"]
+      ],
+      "challenge": [
+        ["pre-filled WhatsApp message", "this is how the studio already sold. we matched it instead of fighting it"],
+        ["deliberately smaller technical surface", "the hardest call on this project was building less"]
+      ]
+    },
     "deepDive": [
       {
         "kind": "figure",
@@ -214,6 +247,25 @@ const projects = [
       "YAML-driven configuration and unit plus integration tests; runs on CPU, uses CUDA when present."
     ],
     "challenge": "Learning the cleaned image directly made the network fight to reproduce detail it had already been given. Predicting the residual instead — just the artifact to remove — meant the model only had to learn the error term, which trained faster and preserved cell structure far better. Shipping fp16 weights kept the checkpoint small enough to commit, so the project is runnable the moment it is cloned.",
+    "created": "2026-07-23",
+    "updated": "2026-08-13",
+    "tags": [
+      ["Phase-contrast microscopy", "https://en.wikipedia.org/wiki/Phase-contrast_microscopy"],
+      ["U-Net", "https://arxiv.org/abs/1505.04597"],
+      ["Residual learning", "https://arxiv.org/abs/1512.03385"],
+      ["CLAHE", "https://en.wikipedia.org/wiki/Adaptive_histogram_equalization"],
+      ["Difference of Gaussians", "https://en.wikipedia.org/wiki/Difference_of_Gaussians"]
+    ],
+    "notes": {
+      "overview": [
+        ["bright halo around every object", "invisible to you. fatal to the segmentation downstream"],
+        ["the input minus the predicted residual", "one subtraction. that is the whole trick"]
+      ],
+      "challenge": [
+        ["Predicting the residual instead", "the single decision that made this work"],
+        ["Shipping fp16 weights", "clone it and run it. no download step, no setup"]
+      ]
+    },
     "deepDive": [
       {
         "kind": "prose",
@@ -336,6 +388,23 @@ const projects = [
       "Pure HTML, CSS and JavaScript in a single file — no build step, no dependencies."
     ],
     "challenge": "Ant Colony Optimization is usually taught as a wall of notation. The interesting part is not the formula but the emergent behaviour: no single ant is smart, yet the colony reliably finds a good route. Exposing the parameters as controls turns the algorithm into something you can poke at — crank evaporation up and watch the colony forget good routes, drop the ant count and watch convergence get noisy.",
+    "created": "2026-04-12",
+    "updated": "2026-08-10",
+    "tags": [
+      ["Ant colony optimization", "https://en.wikipedia.org/wiki/Ant_colony_optimization_algorithms"],
+      ["Travelling salesman", "https://en.wikipedia.org/wiki/Travelling_salesman_problem"],
+      ["Swarm intelligence", "https://en.wikipedia.org/wiki/Swarm_intelligence"]
+    ],
+    "notes": {
+      "overview": [
+        ["a routing problem in disguise", "once you see it you can't unsee it"],
+        ["you watch the convergence happen", "watching is the point. the answer is almost secondary"]
+      ],
+      "challenge": [
+        ["a wall of notation", "it was for me too, the first time"],
+        ["crank evaporation up and watch the colony forget good routes", "try this one. it forgets everything in about twenty iterations"]
+      ]
+    },
     "deepDive": [
       {
         "kind": "prose",
@@ -459,6 +528,23 @@ const projects = [
       "State persisted to localStorage with shape validation and migration, so an old save can never crash a newer build."
     ],
     "challenge": "A to-do app that only knows about itself is another place to check. The hard part was making Habita write into the calendar the user already lives in — and read it back, so scheduling a task can account for the meeting already sitting in that slot. That meant a real Android calendar integration through Capacitor rather than a self-contained store, and it changes what the app is: not a list that tracks intentions, but a tool that commits them to time. The browser build degrades honestly, labelling itself “device calendar unavailable” instead of pretending to sync.",
+    "created": "2026-04-19",
+    "updated": "2026-08-25",
+    "tags": [
+      ["Eisenhower Matrix", "https://en.wikipedia.org/wiki/Time_management"],
+      ["Capacitor", "https://capacitorjs.com/docs"],
+      ["Calendar Provider", "https://developer.android.com/guide/topics/providers/calendar-provider"]
+    ],
+    "notes": {
+      "overview": [
+        ["one of the Eisenhower Matrix quadrants", "the matrix does the deciding so you don't redo it every morning"],
+        ["an SVG progress ring", "no library. it's one stroke-dasharray"]
+      ],
+      "challenge": [
+        ["making Habita write into the calendar the user already lives in", "the whole reason this isn't another to-do app"],
+        ["degrades honestly", "it says what it can't do rather than faking a sync"]
+      ]
+    },
     "deepDive": [
       {
         "kind": "prose",
@@ -524,6 +610,7 @@ const projects = [
   {
     "id": "yosemite-cyclegan",
     "recent": false,
+    "thumb": false,
     "context": "Deep learning",
     "title": "Yosemite CycleGAN",
     "tagline": "Summer to winter, from unpaired photos.",
@@ -548,6 +635,23 @@ const projects = [
       "Benchmark table of time and cost per epoch across Colab T4, Lambda V100, AWS SageMaker and a local RTX 3090."
     ],
     "challenge": "Adversarial training is unstable and slow, and a full run is measured in tens of hours. The practical lesson was operational rather than architectural: without periodic sample grids and loss curves you cannot tell a model that is still converging from one that has collapsed until you have burned a day of GPU time. Benchmarking the real cost across platforms first made it clear which experiments were actually affordable.",
+    "created": "2025-04-04",
+    "updated": "2026-08-16",
+    "tags": [
+      ["CycleGAN", "https://arxiv.org/abs/1703.10593"],
+      ["Cycle consistency", "https://junyanz.github.io/CycleGAN/"],
+      ["GANs", "https://arxiv.org/abs/1406.2661"]
+    ],
+    "notes": {
+      "overview": [
+        ["barely exists", "so the missing data shaped the architecture, not the other way round"],
+        ["That round-trip requirement", "cycle consistency. if you take one idea from this page, take this"]
+      ],
+      "challenge": [
+        ["measured in tens of hours", "and it fails quietly. that's the expensive part"],
+        ["Benchmarking the real cost across platforms first", "do this before training, not after the bill"]
+      ]
+    },
     "deepDive": [
       {
         "kind": "prose",
@@ -621,6 +725,24 @@ const projects = [
       "Zero dependencies and no build: ES modules served as static files, hand-rolled SVG charts, deployed to GitHub Pages."
     ],
     "challenge": "The first version leaned on BART for an abstractive summary, which meant a 1.6 GB checkpoint and a server — and abstractive quality collapsed on exactly the long articles that most need summarising, because they overflow the model's context window. Going extractive-only removed both problems at once: every algorithm now reads the document end to end with no window to overflow and nothing silently discarded, and the whole thing collapses to static files that cost nothing to host. The tradeoff is honest and stated in the repo — no summary here writes a new sentence.",
+    "created": "2025-01-30",
+    "updated": "2026-08-12",
+    "tags": [
+      ["ROUGE", "https://aclanthology.org/W04-1013/"],
+      ["TextRank", "https://aclanthology.org/W04-3252/"],
+      ["Extractive summarization", "https://en.wikipedia.org/wiki/Automatic_summarization"],
+      ["MediaWiki API", "https://www.mediawiki.org/wiki/API:Main_page"]
+    ],
+    "notes": {
+      "overview": [
+        ["a reference that already exists", "the editors' own lead section. a human ceiling, not another algorithm"],
+        ["around 60 ms for a 4,300-word article", "in the browser. there is no server anywhere in this"]
+      ],
+      "challenge": [
+        ["a 1.6 GB checkpoint and a server", "and it got worse on long articles. exactly the wrong way to fail"],
+        ["no summary here writes a new sentence", "stated in the repo too. worth being blunt about"]
+      ]
+    },
     "deepDive": [
       {
         "kind": "prose",

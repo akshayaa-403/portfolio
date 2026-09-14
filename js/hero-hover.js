@@ -124,10 +124,9 @@
     });
   }
 
-  /* ---------- player: hover to play + explicit play/pause ----------
-     Hovering the card starts the track and fades it in; leaving fades out and
-     pauses. The button is the accessible, deliberate control — once it has
-     been used, hover stops hijacking playback so the user's choice sticks. */
+  /* ---------- player: explicit play/pause ----------
+     The button is the only trigger; playback fades in and out so it never
+     starts or stops abruptly. Audio is never started by hover. */
   function initAudio() {
     var card = document.querySelector('.obj--player');
     var audio = document.getElementById('hero-audio');
@@ -135,7 +134,6 @@
 
     var btn = document.getElementById('player-play');
     var timeEl = document.getElementById('player-time');
-    var userControlled = false;      // set once the button is pressed
     var fade = null;
 
     audio.volume = 0;
@@ -191,24 +189,14 @@
     if (btn) {
       btn.addEventListener('click', function (e) {
         e.stopPropagation();
-        // Hover may already have started the track, so a naive audio.paused
-        // check makes the first press read as "pause". Drive from intent:
-        // if it is audibly playing, stop; otherwise start.
-        var audible = !audio.paused && audio.volume > FADE_EPSILON;
-        userControlled = true;
-        if (audible) pause(); else play();
+        // Mid-fade the element is still "playing" at near-zero volume, so
+        // drive from audibility rather than audio.paused.
+        if (!audio.paused && audio.volume > FADE_EPSILON) pause(); else play();
       });
     }
 
-    // Hover-to-play would fire every time the card is grabbed in the editor.
-    card.addEventListener('pointerenter', function () {
-      if (!userControlled && !editing) play();
-    });
-    function leave() {
-      if (!userControlled) pause();
-    }
-    card.addEventListener('pointerleave', leave);
-    card.addEventListener('pointercancel', leave);
+    // No hover-to-play: unprompted audio on a pointer path is hostile, and it
+    // could never fire on touch anyway. The button above is the only trigger.
   }
 
   function init() {

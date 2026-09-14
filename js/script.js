@@ -1,5 +1,5 @@
 /* Homepage behaviour: card rendering, scroll reveals, active-nav tracking,
-   mobile menu, and the draggable hero collage.
+   mobile menu, and the draggable hero collage (notebook mode).
    No dependencies. All motion is gated on prefers-reduced-motion. */
 (function () {
   'use strict';
@@ -82,8 +82,11 @@
       otherHost.insertAdjacentHTML('afterbegin', other.map(function (p) {
         var link = p.demo || p.repo;
         return '<article class="ow reveal">' +
-            '<img class="ow__thumb" src="public/assets/work/' + encodeURIComponent(p.id) + '-thumb.webp" alt="" ' +
-              'width="400" height="300" loading="lazy">' +
+            // thumb:false means no real screenshot exists yet — a text-only
+            // card beats shipping a "placeholder" image.
+            (p.thumb === false ? '' :
+              '<img class="ow__thumb" src="public/assets/work/' + encodeURIComponent(p.id) + '-thumb.webp" alt="" ' +
+                'width="400" height="300" loading="lazy">') +
             '<div class="ow__body">' +
               '<h3 class="ow__title"><a href="' + detailHref(p) + '">' + esc(p.title) + '</a></h3>' +
               '<p class="ow__meta">' + esc(p.context) + ' | ' + esc(p.year) + '</p>' +
@@ -136,13 +139,22 @@
     var links = document.querySelectorAll('.nav a[href^="#"]');
     if (!sections.length || !links.length) return;
 
+    // Sections without a nav link of their own borrow one, so the highlight
+    // never blanks out mid-page (it used to, for the whole of Other Work).
+    var ALIAS = { 'other-work': 'work' };
+
     var io = new IntersectionObserver(function (entries) {
       entries.forEach(function (entry) {
         if (!entry.isIntersecting) return;
         var id = entry.target.getAttribute('id');
-        for (var i = 0; i < links.length; i++) {
-          var match = links[i].getAttribute('href') === '#' + id;
-          links[i].classList.toggle('is-active', match);
+        var href = '#' + (ALIAS[id] || id);
+        var i, hit = false;
+        for (i = 0; i < links.length; i++) {
+          if (links[i].getAttribute('href') === href) hit = true;
+        }
+        if (!hit) return;   // unmapped section: leave the current link lit
+        for (i = 0; i < links.length; i++) {
+          links[i].classList.toggle('is-active', links[i].getAttribute('href') === href);
         }
       });
     }, { rootMargin: '-45% 0px -50% 0px' });
@@ -198,11 +210,12 @@
       card.style.zIndex = ++z;
     }
 
-    // Only the chaos canvas is draggable; notebook and clean lay cards out in
-    // normal flow, where absolute offsets would fight the layout.
-    function chaos() {
-      return document.documentElement.getAttribute('data-mode') !== 'notebook' &&
-             document.documentElement.getAttribute('data-mode') !== 'clean';
+    // Only notebook keeps the desk-object arrangement, so only notebook is
+    // draggable. graph replaces the stage with the latent field and hides
+    // every card; clean is deliberately static. Enabling drag in either would
+    // put tabindex on a display:none card.
+    function draggableMode() {
+      return document.documentElement.getAttribute('data-mode') === 'notebook';
     }
 
     function enable(on) {
@@ -257,7 +270,7 @@
         var startX = 0, startY = 0, baseX = 0, baseY = 0, dragging = false, pid = null;
 
         card.addEventListener('pointerdown', function (e) {
-          if (!wide.matches || !chaos() || e.button !== 0) return;
+          if (!wide.matches || !draggableMode() || e.button !== 0) return;
           // let links and buttons inside the card behave normally
           if (e.target.closest('a, button')) return;
           dragging = true;
@@ -291,7 +304,7 @@
 
         // Keyboard equivalent so the interaction isn't mouse-only
         card.addEventListener('keydown', function (e) {
-          if (!wide.matches || !chaos()) return;
+          if (!wide.matches || !draggableMode()) return;
           var o = offsets(card), moved = true;
           switch (e.key) {
             case 'ArrowLeft':  place(card, o.x - STEP, o.y); break;
@@ -309,7 +322,7 @@
       })(cards[i]);
     }
 
-    function sync() { enable(wide.matches && chaos()); }
+    function sync() { enable(wide.matches && draggableMode()); }
     wide.addEventListener('change', sync);
     window.addEventListener('modechange', sync);
     sync();

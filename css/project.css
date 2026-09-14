@@ -1,5 +1,9 @@
-/* Detail-page-only styles. 40/60 two-column split borrowed from
-   deidredriscoll.com, mapped onto the warm-paper tokens in style.css. */
+/* Detail-page-only styles.
+
+   One centred column, not the old 40/60 split: the facts that used to sit in
+   a sticky sidebar box (year, role, stack, links) are part of the header now,
+   so the prose gets the middle of the page and the outer margins are free for
+   the annotation layer below. */
 
 .detail {
   padding: 40px 0 var(--section-gap);
@@ -31,52 +35,132 @@
   line-height: 1.5;
 }
 
-.detail__cols {
+/* --- header facts ---------------------------------------------------------
+   One horizontal row under the tagline: date created, last updated, tech
+   stack, tags. It replaced a sticky sidebar card — as a row of label-over-
+   value columns it costs a fifth of the space and stops competing with the
+   prose for the reader's first look. The columns wrap to two, then one. */
+.detail__facts {
   display: flex;
   flex-wrap: wrap;
-  gap: 40px;
+  gap: var(--gap-lg) 40px;
   align-items: flex-start;
+  margin: var(--gap-lg) 0 0;
+  padding-top: var(--gap-lg);
+  border-top: 1px solid var(--line);
 }
+/* Dates stay narrow; the two chip lists take whatever is left, so a long
+   stack wraps inside its own column instead of pushing Tags onto a new row. */
+.detail__facts > div { flex: 1 1 auto; min-width: 0; }
+.detail__facts > div:has(.fact__chips) { flex: 1 1 260px; }
 
-/* 40 / 60 */
-.detail__aside { flex: 1 1 280px; max-width: 360px; }
-.detail__body  { flex: 2 1 460px; }
-
-.detail__aside {
-  position: sticky;
-  top: 76px;
-  padding: 20px;
-  background: var(--bg-raised);
-  border: 1px solid var(--line);
-  border-radius: var(--radius);
-  box-shadow: var(--shadow-sticker);
-}
-.detail__aside dt {
+.detail__facts dt {
+  margin-bottom: 8px;
   color: var(--ink-muted);
   font-size: 11px;
   letter-spacing: 0.1em;
   text-transform: uppercase;
-  margin-bottom: 4px;
+  white-space: nowrap;
 }
-.detail__aside dd {
-  margin: 0 0 var(--gap-lg);
+.detail__facts dd {
+  margin: 0;
   color: var(--ink-body);
   font-size: 14px;
   line-height: 1.6;
 }
-.detail__aside dd:last-of-type { margin-bottom: var(--gap); }
+.detail__facts time { font-variant-numeric: tabular-nums; }
 
-.detail__aside .card__tech { margin-bottom: 0; }
-
-.detail__actions {
+.fact__chips {
   display: flex;
   flex-wrap: wrap;
-  gap: 8px;
-  margin-top: var(--gap);
-  padding-top: var(--gap);
-  border-top: 1px solid var(--line);
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
 }
-.detail__actions .btn { padding: 8px 14px; font-size: 12px; }
+.fact__chips li {
+  padding: 3px 9px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-pill);
+  background: var(--bg-raised);
+  color: var(--ink-body);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  line-height: 1.5;
+}
+/* Tags are links out to the paper or spec behind the idea, so they carry the
+   accent and a hover state; the stack chips are inert labels. */
+.fact__chips--tags li {
+  padding: 0;
+  border-color: var(--accent-mid);
+  background: transparent;
+}
+.fact__chips--tags a {
+  display: block;
+  padding: 3px 9px;
+  color: var(--accent-ink);
+}
+.fact__chips--tags li:hover,
+.fact__chips--tags li:focus-within { border-color: var(--accent-ink); }
+
+/* Title left, links right, on the same first line. */
+.detail__headrow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--gap) var(--gap-lg);
+}
+.detail__headtext { flex: 1 1 320px; min-width: 0; }
+
+/* Stacked, not side by side, and right-aligned under each other so their
+   trailing arrows line up. */
+.detail__actions {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 8px;
+  flex: 0 0 auto;
+}
+.detail__actions .btn {
+  justify-content: space-between;
+  padding: 8px 14px;
+  font-size: 12px;
+  min-width: 132px;
+}
+
+/* Both links look the same, and at rest they are the page: only the outline
+   says there is something here. Hover fills them pale blue, pressing fills
+   them deep blue — and because --accent-pale and --accent-deep swap roles in
+   the dark theme, the same two rules read as dark-then-light there without a
+   second set of colours. */
+.btn--quiet {
+  background: var(--bg);
+  border-color: var(--line-strong);
+  color: var(--ink);
+}
+.btn--quiet:hover,
+.btn--quiet:focus-visible {
+  background: var(--accent-pale);
+  border-color: var(--accent-pale);
+  color: var(--ink);
+}
+.btn--quiet:active {
+  background: var(--accent-deep);
+  border-color: var(--accent-deep);
+  color: var(--on-accent-deep, #fff);
+}
+
+@media (max-width: 599.98px) {
+  .detail__actions { width: 100%; }
+}
+
+/* The body is one centred measure now. min-width:0 keeps a wide code block
+   or table from stretching it (see the grid note further down). */
+.detail__body {
+  max-width: var(--measure-narrow);
+  margin-inline: auto;
+}
 
 .detail__body h2 {
   display: flex;
@@ -142,8 +226,76 @@
   margin-bottom: var(--gap-lg);
 }
 
-@media (max-width: 809.98px) {
-  .detail__aside { position: static; max-width: none; }
+/* ==========================================================================
+   Marginalia — Overview and The tricky part
+
+   The prose is set plain in the centre column and a second, handwritten
+   voice lives in the margins: each note in a project's `notes` array marks a
+   phrase in the paragraph and parks an aside beside it. The vertical
+   alignment is done in js/project-detail.js after layout, because only the
+   browser knows which line a marked phrase wrapped onto.
+
+   Below --measure there is no gutter to write in, so the notes fall inline
+   under the paragraph and keep their handwriting. Nothing is lost either
+   way: the note is real text in the document at both sizes.
+   ========================================================================== */
+.mg {
+  position: relative;
+  margin: 32px 0 var(--gap-lg);
+}
+.mg:first-child { margin-top: 0; }
+
+.mg__col {
+  max-width: var(--measure-narrow);
+  margin-inline: auto;
+}
+
+/* The marked phrase. An underline rather than a highlight block: the note in
+   the margin is already the loud element, and two of them fight. */
+.mg__mark {
+  background: none;
+  color: inherit;
+  border-bottom: 1.5px solid var(--accent-mid);
+  padding-bottom: 1px;
+}
+
+.mg__note {
+  font-family: var(--font-script);
+  font-size: 20px;
+  line-height: 1.25;
+  color: var(--accent-ink);
+  margin: var(--gap) 0 0;
+}
+
+@media (min-width: 1060px) {
+  .mg__note {
+    position: absolute;
+    top: 0;                       /* js sets the real value per note */
+    width: 180px;
+    margin: 0;
+  }
+  /* 720px column + 2 x (180px note + 20px gap) = 1120px = --measure. */
+  .mg__note--l {
+    right: 50%;
+    margin-right: calc(var(--measure-narrow) / 2 + 20px);
+    text-align: right;
+  }
+  .mg__note--r {
+    left: 50%;
+    margin-left: calc(var(--measure-narrow) / 2 + 20px);
+  }
+}
+
+/* Inline fallback: a small stack under the paragraph, ruled off so the two
+   voices stay visibly separate. */
+@media (max-width: 1059.98px) {
+  .mg__note {
+    max-width: var(--measure-narrow);
+    margin-inline: auto;
+    padding-left: var(--gap-lg);
+    border-left: 2px solid var(--accent-mid);
+  }
+  .mg__note + .mg__note { margin-top: 8px; }
 }
 
 /* ==========================================================================
@@ -280,8 +432,7 @@
    what actually allows that — without it a grid/flex child refuses to shrink
    below its content and the overflow escapes to the document instead.
    -------------------------------------------------------------------------- */
-.detail__body,
-.detail__cols { min-width: 0; }
+.detail__body { min-width: 0; }
 
 .dd--code,
 .dd--formula,
@@ -456,11 +607,124 @@
 }
 .hob-shot--wide { grid-column: span 2; }
 
+/* The whole tile is the control that opens the popover. */
+.hob-shot__btn {
+  display: block;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: none;
+  cursor: zoom-in;
+}
+.hob-shot__btn:focus-visible {
+  outline: 2px solid var(--accent-ink);
+  outline-offset: -3px;
+}
 .hob-shot img {
   display: block;
   width: 100%;
   height: 100%;
   object-fit: cover;
+  transition: transform var(--dur) var(--ease);
+}
+.hob-shot__btn:hover img { transform: scale(1.03); }
+
+@media (prefers-reduced-motion: reduce) {
+  .hob-shot img,
+  .hob-shot__btn:hover img { transition: none; transform: none; }
+}
+
+/* ==========================================================================
+   The popover — a native <dialog>, built by js/hobby-page.js
+
+   showModal() carries focus trapping, page inertness, Escape-to-close and
+   ::backdrop, so none of that is reimplemented here. What is left is layout:
+   the image gets the viewport minus room for the caption and the two step
+   buttons, and never scales past its own pixels.
+   ========================================================================== */
+.lightbox {
+  width: min(96vw, 1500px);
+  max-width: none;
+  max-height: 94vh;
+  padding: 0;
+  border: 0;
+  border-radius: var(--radius);
+  background: var(--bg);
+  color: var(--ink);
+  overflow: visible;
+}
+.lightbox::backdrop {
+  background: rgba(6, 14, 22, 0.82);
+  backdrop-filter: blur(3px);
+}
+.lightbox__fig {
+  display: grid;
+  gap: 12px;
+  margin: 0;
+  padding: 14px;
+  justify-items: center;
+}
+.lightbox__fig img {
+  display: block;
+  max-width: 100%;
+  max-height: calc(94vh - 90px);
+  width: auto;
+  height: auto;
+  object-fit: contain;
+  border-radius: 2px;
+  background: var(--bg-sunken);
+}
+.lightbox__fig figcaption {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 4px 12px;
+  color: var(--ink-soft);
+  font-size: 14px;
+  font-style: italic;
+  text-align: center;
+}
+.lightbox__count {
+  color: var(--ink-muted);
+  font-family: var(--font-mono);
+  font-style: normal;
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+}
+
+.lightbox__close,
+.lightbox__nav {
+  position: absolute;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border: 1px solid var(--line);
+  border-radius: 50%;
+  background: var(--bg-raised);
+  color: var(--ink);
+  font-size: 18px;
+  line-height: 1;
+  cursor: pointer;
+  transition: background var(--dur) var(--ease), color var(--dur) var(--ease);
+}
+.lightbox__close:hover,
+.lightbox__nav:hover { background: var(--accent-deep); color: var(--on-accent-deep, #fff); }
+.lightbox__close { top: -14px; right: -14px; }
+.lightbox__nav--prev { left: -14px; top: 50%; transform: translateY(-50%); }
+.lightbox__nav--next { right: -14px; top: 50%; transform: translateY(-50%); }
+
+/* On a phone there is no room outside the dialog for the controls, so they
+   come inside and sit over the image. */
+@media (max-width: 599.98px) {
+  .lightbox { width: 100vw; border-radius: 0; }
+  .lightbox__close { top: 8px; right: 8px; }
+  .lightbox__nav--prev { left: 8px; }
+  .lightbox__nav--next { right: 8px; }
 }
 .hob-shot figcaption {
   position: absolute;
@@ -495,7 +759,6 @@
 @media (max-width: 599.98px) {
   .detail__title { font-size: clamp(26px, 8vw, 34px); }
   .detail__tagline { font-size: 15px; }
-  .detail__aside { max-width: none; }
   .detail__actions { gap: 8px; }
   .detail__actions .btn { padding: 11px 15px; font-size: 13px; min-height: 44px; }
 

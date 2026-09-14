@@ -2,7 +2,7 @@
 
    Marks JS available and applies the saved view mode and theme to <html>
    before anything is drawn, so a returning visitor never sees a flash of the
-   default light/chaos look. js/theme.js and js/modes.js reconcile with these
+   default light/graph look. js/theme.js and js/modes.js reconcile with these
    same attributes later; the precedence rules must match theirs.
 
    Blocking parsing for one small uncached file is the price of no FOUC. */
@@ -10,10 +10,10 @@
   var r = document.documentElement;
   r.classList.add('js');
 
-  var m = 'chaos';
+  var m = 'graph';
   try {
     var s = localStorage.getItem('viewMode');
-    if (s === 'notebook' || s === 'clean' || s === 'chaos') m = s;
+    if (s === 'notebook' || s === 'clean' || s === 'graph') m = s;
   } catch (e) { /* private mode */ }
   r.setAttribute('data-mode', m);
 

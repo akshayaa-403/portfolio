@@ -289,6 +289,131 @@
     });
   }
 
+  /* ---------- header facts ----------
+     One horizontal row under the tagline: when the repo was started, when it
+     was last touched, what it was built with, and the concepts it leans on.
+
+     The two dates come from the GitHub API (created_at / pushed_at) and are
+     recorded in project-data.js rather than fetched at run time — a live call
+     would mean a third-party request on every page view, a rate limit, and a
+     row that renders empty when the API is slow. Arteza has no public repo,
+     so it simply has no dates: the rows are omitted rather than filled with a
+     guess or a dash that reads like missing data.
+
+     Tags are keywords that point outward — the paper, the spec, the docs
+     behind the idea — so a reader who does not know CycleGAN or ROUGE has
+     one click to the source rather than a search. */
+  function facts(p, tech) {
+    var rows = '';
+
+    if (p.created) {
+      rows += '<div><dt>Date created</dt><dd>' +
+        '<time datetime="' + esc(p.created) + '">' + longDate(p.created) + '</time></dd></div>';
+    }
+    if (p.updated) {
+      rows += '<div><dt>Last updated</dt><dd>' +
+        '<time datetime="' + esc(p.updated) + '">' + longDate(p.updated) + '</time></dd></div>';
+    }
+    if (tech) {
+      rows += '<div><dt>Tech stack used</dt><dd><ul class="fact__chips">' + tech + '</ul></dd></div>';
+    }
+
+    var tags = (p.tags || []).map(function (t) {
+      return '<li><a href="' + safeUrl(t[1]) + '" target="_blank" rel="noopener noreferrer">' +
+        esc(t[0]) + ' ↗</a></li>';
+    }).join('');
+    if (tags) {
+      rows += '<div><dt>Tags</dt><dd><ul class="fact__chips fact__chips--tags">' + tags + '</ul></dd></div>';
+    }
+
+    return rows ? '<dl class="detail__facts">' + rows + '</dl>' : '';
+  }
+
+  /* "2025-04-04" -> "4 April 2025". Built from the parts rather than
+     toLocaleDateString(new Date(s)): parsing a bare date string gives UTC
+     midnight, which renders as the previous day for anyone west of London. */
+  var MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July',
+                'August', 'September', 'October', 'November', 'December'];
+  function longDate(iso) {
+    var m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(iso || '');
+    if (!m) return esc(iso || '');
+    return Number(m[3]) + ' ' + MONTHS[Number(m[2]) - 1] + ' ' + m[1];
+  }
+
+  /* ---------- marginalia ----------
+     Overview and The tricky part are printed as one centred column with a
+     second, handwritten voice in the margin. Each entry in a project's
+     `notes` array is a [phrase, note] pair: the phrase is marked in the
+     prose, the note is parked beside it, sides alternating.
+
+     Everything is escaped before it is spliced, and the search runs over the
+     already-escaped text so a phrase containing & or a quote still matches
+     what is actually in the document. A phrase that no longer appears — the
+     copy was edited and the note left behind — drops its note silently
+     rather than rendering an aside pointing at nothing. tools/check.js
+     fails on that case, so it is caught before it ships. */
+  function marginalia(heading, glyph, text, notes, key) {
+    var body = esc(text || '');
+    var asides = '';
+
+    for (var i = 0; i < (notes || []).length; i++) {
+      var phrase = esc(notes[i][0]);
+      var at = body.indexOf(phrase);
+      if (at === -1) continue;
+
+      var id = 'mg-' + key + '-' + i;
+      body = body.slice(0, at) +
+             '<mark class="mg__mark" id="' + id + '">' + phrase + '</mark>' +
+             body.slice(at + phrase.length);
+
+      asides += '<aside class="mg__note mg__note--' + (i % 2 ? 'l' : 'r') + '" ' +
+                'data-mg-for="' + id + '">' + esc(notes[i][1]) + '</aside>';
+    }
+
+    return '<section class="mg">' +
+      '<div class="mg__col">' +
+        '<h2>' + esc(heading) + ' <span class="glyph" aria-hidden="true">' + glyph + '</span></h2>' +
+        '<p class="mg__para">' + body + '</p>' +
+      '</div>' +
+      asides +
+    '</section>';
+  }
+
+  /* Park each note at the vertical position of the phrase it annotates. This
+     cannot be CSS: where a phrase lands depends on where the line wrapped,
+     which only the browser knows, and it moves when the column resizes or
+     when Caveat finishes loading and the notes reflow.
+
+     Below the gutter breakpoint the notes are static, so any inline top left
+     over from a wider layout has to be cleared or they sit in the wrong
+     place. */
+  function alignNotes(root) {
+    var notes = root.querySelectorAll('[data-mg-for]');
+    if (!notes.length) return;
+
+    var wide = window.matchMedia('(min-width: 1060px)');
+
+    function place() {
+      for (var i = 0; i < notes.length; i++) {
+        if (!wide.matches) { notes[i].style.top = ''; continue; }
+        var mark = document.getElementById(notes[i].getAttribute('data-mg-for'));
+        // .mg is the only positioned ancestor, so offsetTop is already
+        // measured from the section both elements share.
+        if (mark) notes[i].style.top = Math.max(0, mark.offsetTop - 2) + 'px';
+      }
+    }
+
+    place();
+    wide.addEventListener('change', place);
+    if (window.ResizeObserver) {
+      new ResizeObserver(place).observe(root);
+    } else {
+      window.addEventListener('resize', place);
+    }
+    // Caveat arrives after first paint and changes every note's height.
+    if (document.fonts && document.fonts.ready) document.fonts.ready.then(place);
+  }
+
   function render() {
     var root = document.getElementById('detail-root');
     if (!root || typeof projects === 'undefined') return;
@@ -330,8 +455,11 @@
       return '<li>' + esc(h) + '</li>';
     }).join('');
 
-    var actions = '<a class="btn btn--primary" href="' + safeUrl(p.repo) + '" target="_blank" rel="noopener noreferrer">Source ↗</a>' +
-      (p.demo ? '<a class="btn" href="' + safeUrl(p.demo) + '" target="_blank" rel="noopener noreferrer">Live demo ↗</a>' : '');
+    /* Both links carry the same weight — neither the repo nor the running
+       demo is the "primary" thing to do with a case study, and styling one as
+       the loud one was an arbitrary call. */
+    var actions = '<a class="btn btn--quiet" href="' + safeUrl(p.repo) + '" target="_blank" rel="noopener noreferrer">Source ↗</a>' +
+      (p.demo ? '<a class="btn btn--quiet" href="' + safeUrl(p.demo) + '" target="_blank" rel="noopener noreferrer">Live demo ↗</a>' : '');
 
     var navPrev = prev
       ? '<a href="project.html?id=' + encodeURIComponent(prev.id) + '">← ' + esc(prev.title) + '</a>'
@@ -340,44 +468,42 @@
       ? '<a href="project.html?id=' + encodeURIComponent(next.id) + '">' + esc(next.title) + ' →</a>'
       : '<span>end of list →</span>';
 
+    var notes = p.notes || {};
+
     root.innerHTML =
       '<a class="detail__back" href="index.html#work">← All work</a>' +
 
       '<header class="detail__head">' +
-        '<h1 class="detail__title">' + esc(p.title) + '</h1>' +
-        '<p class="detail__tagline">' + esc(p.tagline) + '</p>' +
+        // Title on the left, the two links stacked on the right, sharing the
+        // heading's first line.
+        '<div class="detail__headrow">' +
+          '<div class="detail__headtext">' +
+            '<h1 class="detail__title">' + esc(p.title) + '</h1>' +
+            '<p class="detail__tagline">' + esc(p.tagline) + '</p>' +
+          '</div>' +
+          '<div class="detail__actions">' + actions + '</div>' +
+        '</div>' +
+        facts(p, tech) +
       '</header>' +
 
-      '<div class="detail__cols">' +
-        '<aside class="detail__aside">' +
-          '<dl>' +
-            '<dt>Year</dt><dd>' + esc(p.year) + '</dd>' +
-            '<dt>Role</dt><dd>' + esc(p.role) + '</dd>' +
-            '<dt>Built with</dt><dd><ul class="card__tech">' + tech + '</ul></dd>' +
-          '</dl>' +
-          '<div class="detail__actions">' + actions + '</div>' +
-        '</aside>' +
+      '<div class="detail__body">' +
+        marginalia('Overview', '▶', p.overview, notes.overview, 'overview') +
 
-        '<div class="detail__body">' +
-          '<h2>Overview <span class="glyph" aria-hidden="true">▶</span></h2>' +
-          '<p>' + esc(p.overview) + '</p>' +
+        '<h2>What it does <span class="glyph" aria-hidden="true">⁕</span></h2>' +
+        '<ul class="detail__list">' + highlights + '</ul>' +
 
-          '<h2>What it does <span class="glyph" aria-hidden="true">⁕</span></h2>' +
-          '<ul class="detail__list">' + highlights + '</ul>' +
+        liveEmbed(p) +
 
-          liveEmbed(p) +
+        marginalia('The tricky part', '⌘', p.challenge, notes.challenge, 'challenge') +
 
-          '<h2>The tricky part <span class="glyph" aria-hidden="true">⌘</span></h2>' +
-          '<p>' + esc(p.challenge) + '</p>' +
-
-          renderDeepDive(p.deepDive) +
-        '</div>' +
+        renderDeepDive(p.deepDive) +
       '</div>' +
 
       '<nav class="detail__nav" aria-label="Project navigation">' + navPrev + navNext + '</nav>';
 
     initCopy(root);
     initLive(root);
+    alignNotes(root);
   }
 
   window.onReady(render);

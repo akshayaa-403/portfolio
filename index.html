@@ -13,7 +13,7 @@
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data:; media-src 'self'; connect-src 'self'; base-uri 'none'; form-action 'none'; object-src 'none'">
 <title>Akshayaa Kashyap — AI Engineer</title>
 
-<meta name="description" content="Akshayaa Kashyap is an AI engineer with specialist experience in machine learning and data analysis, building data pipelines, LLM workflows and dashboards that turn messy data into clear decisions.">
+<meta name="description" content="Akshayaa Kashyap is an AI engineer working in machine learning and data analysis, building data pipelines, LLM workflows and dashboards that turn messy data into clear decisions.">
 <meta name="author" content="Akshayaa Kashyap">
 <link rel="canonical" href="https://akshayaa-403.github.io/portfolio/">
 <meta name="theme-color" content="#f4f7fa" media="(prefers-color-scheme: light)">
@@ -21,7 +21,7 @@
 
 <meta property="og:type" content="website">
 <meta property="og:title" content="Akshayaa Kashyap — AI Engineer">
-<meta property="og:description" content="AI engineer with AI specialist experience. Data pipelines, LLM workflows and dashboards that turn messy data into clear decisions.">
+<meta property="og:description" content="AI engineer. Data pipelines, LLM workflows and dashboards that turn messy data into clear decisions.">
 <meta property="og:url" content="https://akshayaa-403.github.io/portfolio/">
 <meta property="og:site_name" content="Akshayaa Kashyap">
 <meta property="og:locale" content="en_US">
@@ -32,7 +32,7 @@
 <meta name="twitter:image" content="https://akshayaa-403.github.io/portfolio/public/assets/og-card.png">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="Akshayaa Kashyap — AI Engineer">
-<meta name="twitter:description" content="AI engineer with specialist experience in machine learning and data analysis, based in India.">
+<meta name="twitter:description" content="AI engineer working in machine learning and data analysis, based in India.">
 
 <link rel="icon" href="public/assets/favicon.webp" type="image/webp">
 <link rel="icon" href="public/assets/favicon.png" type="image/png">
@@ -108,7 +108,9 @@
 <main id="main" tabindex="-1">
 
   <!-- ===================== Hero =====================
-       Layout mirrors jackiehu.design: a full-viewport cream stage with props
+       graph mode (the default) draws the latent field below; notebook and
+       clean keep the prop collage, whose layout mirrors jackiehu.design: a
+       full-viewport cream stage with props
        clustered at the left and right edges, the name lockup centred between
        them, and a scroll chevron at the bottom. Coordinates below were taken
        from a live render of the reference at 1440x900 and expressed as
@@ -117,6 +119,30 @@
   <section class="hero" aria-labelledby="hero-name">
 
     <div class="stage" data-collage>
+
+      <!-- ---------- The graph (graph mode) ----------
+           Every destination on this site as a node, every real relationship
+           as an edge, laid out by a force simulation in js/field.js: section
+           hubs, the seven case studies, each tool in their stacks, the three
+           galleries and every photograph in them, and the four off-site
+           links. Two projects sharing a tool are two hops apart, so the
+           clusters that form are the real ones. Hover lights a neighbourhood
+           and dims the rest; clicking a node goes there; nodes can be dragged.
+
+           Built from js/project-data.js and js/hobby-data.js, so it cannot
+           claim more than the site holds.
+
+           Decorative by contract — the canvas is aria-hidden and takes no
+           keyboard focus, because every node's destination is also a real,
+           focusable link further down this page. notebook and clean keep the
+           desk instead; CSS hides this whole block in both. -->
+      <div class="field" aria-hidden="true">
+        <canvas class="field__canvas" data-field></canvas>
+        <!-- Both filled by js/field.js from the same category map the dots are
+             drawn from, so neither can fall out of step with the graph. -->
+        <ul class="field__legend" data-field-legend></ul>
+        <p class="field__read" data-field-read>Every page, project, image and tool on this site — hover a node, click to go there</p>
+      </div>
 
       <!-- Decorative blue lilies: bottom-left and top-right. They fade up and
            expand gently on load, standing in for the earlier animated SVG.
@@ -154,26 +180,13 @@
       <!-- ---------- NEW PROPS (unplaced) ----------
            Parked along the top and bottom edges, clear of the lockup, so
            each one is visible and grabbable in ?edit=1. Coordinates here
-           are placeholders: they carry only chaos --x/--y/--w/--h, so all
+           are placeholders: they carry only notebook --x/--y/--w/--h, so all
            three modes fall back to the same spot until per-mode --cl*/--nb*
            values are dumped in. -->
       <img class="prop" data-prop="glass-flower" data-anim="spin" src="public/assets/props/glass-flower.webp"
            alt="" aria-hidden="true" width="454" height="453"
            loading="lazy" decoding="async" fetchpriority="low"
            style="--x:2.000%; --y:2.000%; --w:13.000%; --h:20.754%; --z:2; --r:0deg;">
-      <img class="prop" data-prop="soda-can" data-anim="crush" src="public/assets/props/soda-can.webp"
-           alt="" aria-hidden="true" width="109" height="198"
-           loading="lazy" decoding="async" fetchpriority="low"
-           style="--x:40.000%; --y:2.000%; --w:7.000%; --h:20.345%; --z:2; --r:0deg;">
-      <!-- The crushed can. Cross-fades in over the intact one on hover, so it
-           must stay the immediate next sibling (the CSS uses `:hover +`). Its
-           box is derived from the can it replaces: same centre, bottom edge
-           pinned, 78% of the height, and wide enough that object-fit sizes it
-           by height - which lands its width close to the intact can, so the
-           swap reads as the can collapsing rather than changing object. -->
-      <img class="prop" data-prop="soda-can-crushed" src="public/assets/props/soda-can-crushed.webp"
-           alt="" aria-hidden="true" width="258" height="382"
-           loading="lazy" decoding="async" fetchpriority="low">
       <img class="prop" data-prop="notebook-open" src="public/assets/props/notebook-open.webp"
            alt="" aria-hidden="true" width="486" height="363"
            loading="lazy" decoding="async" fetchpriority="low"
@@ -189,17 +202,23 @@
         <p class="hero__role">AI Engineer</p>
         <p class="hero__sub">AI &amp; Data</p>
         <p class="hero__headline">
-          a thoughtful process of turning messy data into decisions that
-          sharpen clarity, and spark momentum.
+          I build data pipelines, LLM workflows and dashboards that turn
+          messy data into clear decisions.
         </p>
-
+        <!-- The only call to action above the fold. It lives in the lockup
+             rather than in .hero__actions, which is pinned to the bottom of
+             the stage for the mode switcher. -->
+        <p class="hero__cta">
+          <a class="hero__cta-btn hero__cta-btn--primary" href="#work">See the work &rarr;</a>
+          <a class="hero__cta-btn" href="#contact">Get in touch</a>
+        </p>
       </div>
 
       <!-- ---------- RIGHT CLUSTER ---------- -->
 
 
-      <!-- Hover-to-play track for the music card. Drop an mp3 at
-           public/assets/audio/track.mp3; until then the card simply stays
+      <!-- Track for the music card, played only from its button. Drop an mp3
+           at public/assets/audio/track.mp3; until then the card simply stays
            silent (play() rejects harmlessly). -->
       <!-- preload="none": the file is ~2 MB, the largest asset on the site by
            10x, and a passive hover must not pull it down. It is fetched only
@@ -229,12 +248,11 @@
       <!-- AirDrop-style share card: real markup, as on the reference -->
       <article class="obj obj--share"
                style="--x:73.5%; --y:56.0%; --w:13.1%; --r:-3deg; --z:7;">
-        <p class="share__title">AirDrop</p>
-        <p class="share__sub">Akshayaa would like to share a file</p>
+        <p class="share__title">Résumé</p>
+        <p class="share__sub">PDF · 1 page · updated Sept 2026</p>
         <div class="share__thumb" aria-hidden="true"></div>
         <div class="share__actions">
-          <a class="share__btn" href="#about">Decline</a>
-          <a class="share__btn share__btn--go" href="public/assets/resume.pdf" target="_blank" rel="noopener noreferrer">Accept</a>
+          <a class="share__btn share__btn--go" href="public/assets/resume.pdf" target="_blank" rel="noopener noreferrer">Download ↗</a>
         </div>
       </article>
 
@@ -242,7 +260,7 @@
            its coffee/broom/pencil icon row -->
       <div class="hero__actions">
         <span class="modes" role="radiogroup" aria-label="View mode">
-          <button type="button" role="radio" data-mode-btn="chaos"    aria-checked="true">chaos</button>
+          <button type="button" role="radio" data-mode-btn="graph"    aria-checked="true">graph</button>
           <button type="button" role="radio" data-mode-btn="notebook" aria-checked="false">notebook</button>
           <button type="button" role="radio" data-mode-btn="clean"    aria-checked="false">clean</button>
         </span>
@@ -404,6 +422,10 @@
 <!-- Must load before script.js: it injects .reveal elements, and script.js
      registers the reveal observer over whatever is in the DOM at that point. -->
 <script src="js/hobby-data.js" defer></script>
+<!-- field.js reads both data files. onReady fires synchronously for a
+     deferred script (readyState is already "interactive"), so this has to
+     sit after project-data.js AND hobby-data.js, not merely be deferred. -->
+<script src="js/field.js" defer></script>
 <script src="js/hobbies.js" defer></script>
 <!-- Dev-only tooling: fetched solely when ?edit=1 is in the URL, so real
      visitors never download or run it. Both files self-gate on the same

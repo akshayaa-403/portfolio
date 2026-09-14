@@ -127,7 +127,7 @@ function writeAll() {
     // Prefer the project's own thumbnail for the preview card; fall back to
     // the site card when there is no image for it.
     const thumb = 'public/assets/work/' + p.id + '-thumb.webp';
-    const image = fs.existsSync(path.join(ROOT, thumb)) ? BASE + thumb : OG_FALLBACK;
+    const image = p.thumb !== false && fs.existsSync(path.join(ROOT, thumb)) ? BASE + thumb : OG_FALLBACK;
     const file = path.join(outWork, p.id + '.html');
     fs.writeFileSync(file, page({
       title: p.title + ' — Akshayaa Kashyap',

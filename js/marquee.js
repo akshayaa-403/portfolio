@@ -18,7 +18,7 @@
   var DRIFT_MS = 38000;   // must match the `drift` duration in style.css
 
   /* Keep the "Skills" heading vertically in line with the hero's mode toggle.
-     The toggle is centred in chaos and notebook but hand-placed off-centre in
+     The toggle is centred in graph and notebook but hand-placed off-centre in
      clean, and its width is intrinsic to the button labels, so the centre is
      measured rather than hard-coded. */
   function alignHeading() {

@@ -56,6 +56,11 @@
       shots += '<figure class="hob-shot"' +
           (dim ? ' style="--ar:' + (dim[0] / dim[1]).toFixed(4) + '"' : '') +
           (dim && dim[0] / dim[1] > 1.2 ? ' data-wide="1"' : '') + '>' +
+        /* A real <button>, not a click handler on the <img>: the tile has to
+           be reachable and operable from the keyboard, and the browser's own
+           button semantics announce it as something that does a thing. */
+        '<button class="hob-shot__btn" type="button" data-shot="' + i + '" ' +
+                'aria-label="Open ' + esc(cap || (g.label + ' ' + i)) + ' full size">' +
         '<img src="' + base + '"' +
              (small
                ? ' srcset="' + small + ' 600w, ' + base + ' ' + dim[0] + 'w"' +
@@ -64,6 +69,7 @@
              ' alt="' + esc(cap || (g.label + ' photograph ' + i)) + '"' +
              (dim ? ' width="' + dim[0] + '" height="' + dim[1] + '"' : '') +
              ' loading="lazy" decoding="async">' +
+        '</button>' +
         (cap ? '<figcaption>' + esc(cap) + '</figcaption>' : '') +
       '</figure>';
     }
@@ -94,6 +100,88 @@
       '</nav>';
 
     sizeMosaic(root);
+    initLightbox(root, id, g);
+  }
+
+  /* ---------- the popover ----------
+     A native <dialog>. showModal() brings focus trapping, inertness for the
+     rest of the page, Escape-to-close and the ::backdrop for free — all of
+     which a hand-rolled overlay would have to reimplement and would get
+     subtly wrong.
+
+     The full-size file is used here rather than the 600px variant the mosaic
+     may be showing: this is the view where the detail is the point. It is
+     only fetched when a tile is actually opened.
+
+     Deep-linkable as ?id=<gallery>&i=<n>, one-based, which is what the home
+     page graph's image nodes point at — clicking a photograph in the graph
+     lands on the gallery with that photograph already open. */
+  function initLightbox(root, id, g) {
+    var dlg = document.createElement('dialog');
+    dlg.className = 'lightbox';
+    dlg.innerHTML =
+      '<button class="lightbox__close" type="button" data-lb-close aria-label="Close">&times;</button>' +
+      '<button class="lightbox__nav lightbox__nav--prev" type="button" data-lb-step="-1" aria-label="Previous image">&larr;</button>' +
+      '<figure class="lightbox__fig">' +
+        '<img data-lb-img alt="">' +
+        '<figcaption><span data-lb-cap></span> <span class="lightbox__count" data-lb-count></span></figcaption>' +
+      '</figure>' +
+      '<button class="lightbox__nav lightbox__nav--next" type="button" data-lb-step="1" aria-label="Next image">&rarr;</button>';
+    document.body.appendChild(dlg);
+
+    var img = dlg.querySelector('[data-lb-img]');
+    var cap = dlg.querySelector('[data-lb-cap]');
+    var num = dlg.querySelector('[data-lb-count]');
+    var at = 0;
+
+    function show(i) {
+      // One-based, wrapping at both ends like the gallery's prev/next links.
+      at = ((i - 1) % g.n + g.n) % g.n + 1;
+      var file = id + '-' + at + '.webp';
+      var text = (g.captions && g.captions[at - 1]) || (g.label + ' ' + at);
+      img.src = 'public/assets/hobbies/' + encodeURIComponent(file);
+      img.alt = text;
+      cap.textContent = text;
+      num.textContent = at + ' / ' + g.n;
+      if (!dlg.open) dlg.showModal();
+      mark(at);
+    }
+
+    /* Reflect the open image in the URL so it can be copied and shared, and
+       so a reload comes back to the same place. replaceState, not pushState:
+       stepping through twenty photographs should not bury the page the
+       visitor arrived from under twenty history entries. */
+    function mark(i) {
+      try {
+        history.replaceState(null, '',
+          'hobby.html?id=' + encodeURIComponent(id) + (i ? '&i=' + i : ''));
+      } catch (err) { /* file:// and some privacy modes refuse this */ }
+    }
+
+    root.addEventListener('click', function (e) {
+      var btn = e.target.closest && e.target.closest('[data-shot]');
+      if (btn) show(Number(btn.getAttribute('data-shot')));
+    });
+
+    dlg.addEventListener('click', function (e) {
+      var step = e.target.closest && e.target.closest('[data-lb-step]');
+      if (step) { show(at + Number(step.getAttribute('data-lb-step'))); return; }
+      if (e.target.closest('[data-lb-close]')) { dlg.close(); return; }
+      // A click that lands on the dialog itself is a click on the backdrop
+      // area around the figure.
+      if (e.target === dlg) dlg.close();
+    });
+
+    dlg.addEventListener('keydown', function (e) {
+      if (e.key === 'ArrowRight') { e.preventDefault(); show(at + 1); }
+      if (e.key === 'ArrowLeft')  { e.preventDefault(); show(at - 1); }
+    });
+
+    // Escape closes it natively, so only the URL needs tidying up.
+    dlg.addEventListener('close', function () { mark(0); });
+
+    var want = Number(new URLSearchParams(window.location.search).get('i'));
+    if (want >= 1 && want <= g.n) show(want);
   }
 
   /* ---------- mosaic sizing ----------

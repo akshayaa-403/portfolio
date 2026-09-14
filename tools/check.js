@@ -175,10 +175,12 @@ for (const p of sandbox.__out) {
       fail('project-data', p.id + '.' + field + ' is empty');
     }
   }
-  // Every project needs the images the cards and share pages reference.
+  // Every project needs the images the cards and share pages reference —
+  // unless it declares thumb:false, which renders a text-only card rather
+  // than shipping a stand-in image.
   const thumb = 'public/assets/work/' + p.id + (p.recent ? '-icon.webp' : '-thumb.webp');
   checked++;
-  if (!fs.existsSync(path.join(ROOT, thumb))) {
+  if (p.thumb !== false && !fs.existsSync(path.join(ROOT, thumb))) {
     fail('project-data', p.id + ' missing image ' + thumb);
   }
 }
@@ -222,6 +224,82 @@ for (const p of sandbox.__out) {
   } else if (!fs.readFileSync(f, 'utf8').includes('<title>' + p.title + ' —')) {
     fail('generated', 'work/' + p.id + '.html is stale — re-run tools/build-share-pages.js');
   }
+}
+
+/* ---------- 8. margin notes still point at real phrases ----------
+
+   Each [phrase, note] pair in a project's `notes` has to quote the Overview
+   or The tricky part verbatim, or js/project-detail.js silently drops the
+   note: the aside would have nothing to sit beside. Editing the prose and
+   forgetting the note is the obvious way to break this, and it breaks
+   quietly, so it is worth a check. */
+
+console.log('8. margin notes');
+for (const p of sandbox.__out) {
+  if (!p.notes) continue;
+  for (const key of Object.keys(p.notes)) {
+    const text = p[key];
+    checked++;
+    if (typeof text !== 'string') {
+      fail('notes', p.id + ' has notes for "' + key + '" but no such field');
+      continue;
+    }
+    for (const [phrase, say] of p.notes[key]) {
+      checked++;
+      const hits = text.split(phrase).length - 1;
+      if (hits === 0) {
+        fail('notes', p.id + '/' + key + ': phrase not in the prose — "' + phrase + '"');
+      } else if (hits > 1) {
+        fail('notes', p.id + '/' + key + ': phrase appears ' + hits +
+                      ' times, so the note marks the wrong one — "' + phrase + '"');
+      }
+      if (!say || !say.trim()) {
+        fail('notes', p.id + '/' + key + ': empty note on "' + phrase + '"');
+      }
+    }
+  }
+}
+
+/* ---------- 9. header facts and graph targets ----------
+
+   The two dates are transcribed from the GitHub API rather than fetched at
+   run time, so nothing at run time can catch a typo in them. Tags are
+   outbound links and get the same rel/protocol treatment as every other
+   external link on the site. And js/field.js hard-codes one anchor for its
+   tech nodes — if that heading ever loses its id, every tool in the graph
+   quietly links to nothing. */
+
+console.log('9. header facts');
+const ISO = /^\d{4}-\d{2}-\d{2}$/;
+for (const p of sandbox.__out) {
+  checked++;
+  if ((p.created && !p.updated) || (p.updated && !p.created)) {
+    fail('facts', p.id + ' has one of created/updated but not the other');
+  }
+  for (const key of ['created', 'updated']) {
+    if (!p[key]) continue;
+    checked++;
+    if (!ISO.test(p[key])) fail('facts', p.id + '.' + key + ' is not YYYY-MM-DD: ' + p[key]);
+  }
+  if (p.created && p.updated && ISO.test(p.created) && ISO.test(p.updated)) {
+    checked++;
+    if (p.created > p.updated) {
+      fail('facts', p.id + ' was created after it was last updated');
+    }
+  }
+  for (const t of p.tags || []) {
+    checked++;
+    if (!Array.isArray(t) || t.length !== 2 || !t[0] || !t[1]) {
+      fail('facts', p.id + ' has a malformed tag: ' + JSON.stringify(t));
+    } else if (!/^https:\/\//.test(t[1])) {
+      fail('facts', p.id + ' tag "' + t[0] + '" must point somewhere over https: ' + t[1]);
+    }
+  }
+}
+
+checked++;
+if (!read('index.html').includes('id="skills-h"')) {
+  fail('facts', 'js/field.js links its tech nodes to #skills-h, which index.html no longer has');
 }
 
 /* ---------- report ---------- */
