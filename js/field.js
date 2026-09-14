@@ -1,37 +1,193 @@
 /* The graph — graph mode's hero.
 
-   Everything this site contains, drawn the way Obsidian draws a vault: every
-   destination is a node, every real relationship is an edge, and a force
-   simulation finds the shape. Hover a node and its neighbourhood lights while
-   the rest dims; click it and you go there.
+   Two maps, one either side of the name: Projects on the left, Hobbies on the
+   right. Each is a force-directed graph of real destinations, drawn the way
+   Obsidian draws a vault — nodes, edges, hover a node and its neighbourhood
+   lights while the rest dims, click it and you go there.
 
-   The node set is built from the site's own data at run time — js/project-data.js
-   and js/hobby-data.js — so it cannot drift out of step with what actually
-   exists or claim more than there is. Nothing here is a decorative particle:
-   every dot is a page, a photograph, a tool, or a link.
+   Two categories, and only two. A project's tools belong to Projects; a
+   gallery's images belong to Hobbies; nothing else is on the stage. Colour
+   says which map you are looking at, and the left/right split says it again,
+   so the graph still reads in greyscale or with colour-blind vision.
 
-   What makes it a graph rather than a scatter is the stack. Two projects that
-   both use PyTorch are two hops apart through the PyTorch node, so the
-   clusters that form are the real ones — the models pull together, the web
-   builds pull together — without anybody hand-placing them.
+   Everything comes from js/project-data.js and js/hobby-data.js at run time,
+   so the graph cannot claim more than the site holds. Nothing here is a
+   decorative particle: every dot is a case study, a gallery, a photograph, or
+   a tool something was actually built with.
 
-   Canvas, and no library. A d3-force import would be ~80KB from a CDN for a
+   Canvas, and no library — a d3-force import would be ~80KB from a CDN for a
    spring, a repulsion and a damping term, on a site that is deliberately
    buildless and offline-safe.
 
    Decorative by contract: the canvas is aria-hidden and takes no keyboard
    focus, because every destination in it is also a real, focusable link
-   further down the same page — the work cards, the hobby tiles, the nav and
-   the footer. The graph is a second way to reach them, never the only one. */
+   further down the same page. The graph is a second way there, never the
+   only one. */
 (function () {
   'use strict';
 
-  /* ---------- 1. the node set ---------- */
+  /* ---------- the palette ----------
 
-  /* "JavaScript (ES6)" and "JavaScript (ES modules)" are the same tool wearing
-     two labels, and as separate nodes they would split a cluster that should
-     be one. Dropping a trailing parenthetical merges them and leaves every
-     other entry alone. */
+     Sanzo Wada's *A Dictionary of Color Combinations*, the 1933-34 study of
+     colour harmony: 348 combinations, of which 120 are exactly three colours
+     wide. The 105 below are those 120 minus the ones whose three colours stop
+     being told apart once lightness is bent to the theme (see `shade`) — a
+     combination is only useful here if all three of its colours can carry a
+     category at a glance.
+
+     One combination is drawn at random on every reload and handed out in
+     CAT_ORDER, so the graph is the same picture in a different set of
+     historically-harmonious colours each visit. Hue and saturation are Wada's
+     and are never touched. */
+  var WADA = [
+    ['#6c2b11','#d99e73','#405416'],
+    ['#d60036','#ffb852','#00d973'],
+    ['#ff7399','#f2ff26','#6b2e63'],
+    ['#730f1f','#e0b81f','#99b333'],
+    ['#d1b0b3','#29bdad','#202d85'],
+    ['#ffbf6e','#56aa69','#4d52de'],
+    ['#ffa6d9','#6bffb3','#9161f2'],
+    ['#ffe600','#b68400','#96bfe6'],
+    ['#b85e00','#a10b2b','#2619d1'],
+    ['#b85e00','#de4500','#00cf91'],
+    ['#f5f5b8','#fa9442','#000000'],
+    ['#ff5ec4','#9161f2','#3400a3'],
+    ['#f5f5b8','#328e13','#96bfe6'],
+    ['#d50c42','#19cc33','#3400a3'],
+    ['#c9303e','#ffbf6e','#56aa69'],
+    ['#fa9442','#f2ff26','#6bffb3'],
+    ['#ff5200','#a6ff47','#0d2b52'],
+    ['#9e194d','#baa600','#96bfe6'],
+    ['#0d75ff','#b875eb','#9cb29e'],
+    ['#b319ab','#ff5200','#000000'],
+    ['#6c2b11','#a6d40d','#06004f'],
+    ['#b68400','#505423','#1b8e13'],
+    ['#ff4dc9','#740909','#b5ffc2'],
+    ['#d1bd19','#ff5200','#0f261f'],
+    ['#ffcfc4','#a6d40d','#b3e8c2'],
+    ['#f5f5b8','#ff8c00','#003e83'],
+    ['#c9303e','#681916','#a6e6db'],
+    ['#ff5ec4','#ffab00','#a6d40d'],
+    ['#d60036','#ffff00','#0d75ff'],
+    ['#fa2b00','#00d973','#000831'],
+    ['#d1bd19','#94ff94','#2619d1'],
+    ['#6f0043','#d1bd19','#4f8fe6'],
+    ['#f2ff26','#c2612c','#7aff00'],
+    ['#b68400','#80ffcc','#b8b8ff'],
+    ['#baa600','#5e4017','#417777'],
+    ['#6c2b11','#f2ad78','#0057ba'],
+    ['#d94d99','#85b857','#b875eb'],
+    ['#ffe600','#b5ffc2','#008aa1'],
+    ['#e81900','#ffab00','#2619d1'],
+    ['#ff616b','#faed8f','#0f261f'],
+    ['#c0b490','#abf5ed','#003e83'],
+    ['#f2ff26','#003e83','#7e3075'],
+    ['#ffa6d9','#fff59e','#9cb29e'],
+    ['#b319ab','#ffab00','#3400a3'],
+    ['#730f1f','#ff8c00','#b3e8c2'],
+    ['#c2612c','#008aa1','#3400a3'],
+    ['#f2ff26','#651300','#b5ffc2'],
+    ['#ffa6d9','#bfabcc','#6b2e63'],
+    ['#f2ad78','#bcd382','#4733ff'],
+    ['#ffb3f0','#ffcfc4','#80ffcc'],
+    ['#730f1f','#888d2a','#b8b8ff'],
+    ['#ebd999','#a6e6db','#2dbc94'],
+    ['#e81900','#fa9442','#0024cc'],
+    ['#ffbf6e','#9161f2','#b5d1cc'],
+    ['#a10b2b','#2619d1','#340059'],
+    ['#b85e00','#362304','#000831'],
+    ['#5c7287','#7e3075','#3400a3'],
+    ['#ff4dc9','#ebd999','#76844e'],
+    ['#681916','#d99e73','#0d75ff'],
+    ['#85b857','#96bfe6','#94ff94'],
+    ['#f2ff26','#172713','#6bffb3'],
+    ['#ebd999','#de4500','#000000'],
+    ['#b08699','#e0b81f','#0d75ff'],
+    ['#ffb852','#362304','#5c7287'],
+    ['#ff616b','#faed8f','#23c17c'],
+    ['#fa2b00','#ffcfc4','#4f8fe6'],
+    ['#ff4dc9','#fff59e','#b5d1cc'],
+    ['#a6d40d','#abf5ed','#4733ff'],
+    ['#ff5ec4','#4d52de','#b5d1cc'],
+    ['#a93400','#ffe600','#40c945'],
+    ['#a7374b','#706934','#0024cc'],
+    ['#a10b2b','#bcd382','#66ab56'],
+    ['#ff616b','#718600','#94ff94'],
+    ['#fff59e','#f59994','#405416'],
+    ['#b319ab','#c2612c','#a6e6db'],
+    ['#730f1f','#f59994','#2619d1'],
+    ['#9b5348','#b3e8c2','#000000'],
+    ['#f5f5b8','#2dbc94','#008aa1'],
+    ['#ebd999','#ff8c00','#96bfe6'],
+    ['#ffbf6e','#f2ff26','#405416'],
+    ['#ff7340','#99b333','#000831'],
+    ['#a90636','#8c6510','#96bfe6'],
+    ['#f59994','#ffe600','#abf5ed'],
+    ['#ebd999','#9b5348','#2619d1'],
+    ['#ffb852','#0d75ff','#bf36e0'],
+    ['#fa2b00','#40c945','#000000'],
+    ['#730f1f','#d99e73','#1b8e13'],
+    ['#fa2b00','#00592e','#66ab56'],
+    ['#b90078','#d99e73','#9c52f2'],
+    ['#a10b2b','#b5d1cc','#000000'],
+    ['#ff4dc9','#417777','#6b2e63'],
+    ['#d60036','#00592e','#53225c'],
+    ['#5c2c45','#ffb852','#2619d1'],
+    ['#ffb3f0','#a6e6db','#29bdad'],
+    ['#a10b2b','#fff59e','#b5d1cc'],
+    ['#fa9442','#172713','#b5d1cc'],
+    ['#e6adcf','#681916','#4f8fe6'],
+    ['#d60036','#f2ad78','#000831'],
+    ['#a10b2b','#888d2a','#202d85'],
+    ['#ffbf6e','#5e4017','#abf5ed'],
+    ['#ebd999','#ff8c00','#bfabcc'],
+    ['#b68400','#0024cc','#754260'],
+    ['#a10b2b','#651300','#96bfe6'],
+    ['#b08699','#c4bf33','#b3e8c2'],
+    ['#ff788c','#ffff00','#29bdad']
+  ];
+
+  /* ---------- categories ---------- */
+
+  /* `side` is which half of the stage the category's map occupies; `token` is
+     the CSS custom property its dots are drawn in, which field.js sets from
+     the drawn palette so the legend's swatches follow the dots. */
+  var CATS = {
+    projects:  { name: 'Projects',  token: '--graph-projects',  side: 'L' },
+    hobbies:   { name: 'Hobbies',   token: '--graph-hobbies',   side: 'R' },
+    resources: { name: 'Resources', token: '--graph-resources', side: 'C' }
+  };
+  var CAT_ORDER = ['projects', 'hobbies', 'resources'];
+
+  /* Within a category, what a node is decides how big it draws, whether it
+     carries a label at rest, and whether clicking it goes anywhere. Each
+     category has exactly one hub, and everything in that category hangs off
+     it — so the three names are always the three largest things on screen. */
+  var KIND_CAT = {
+    project: 'projects', tech: 'projects',
+    gallery: 'hobbies',  photo: 'hobbies',
+    resource: 'resources'
+  };
+  var KIND = {
+    hub:      { r: 10.0, label: true,  nav: true,  dim: 1.00 },
+    project:  { r: 6.5,  label: true,  nav: true,  dim: 1.00 },
+    tech:     { r: 3.0,  label: false, nav: false, dim: 0.55 },
+    gallery:  { r: 6.5,  label: true,  nav: true,  dim: 1.00 },
+    photo:    { r: 2.4,  label: false, nav: true,  dim: 0.55 },
+    resource: { r: 5.5,  label: true,  nav: true,  dim: 1.00 }
+  };
+
+  /* Where each category's map is drawn. Projects left, Hobbies right, and
+     Resources in the band under the name — it is five nodes, so it needs a
+     strip rather than a half. Nothing is allowed into the name's own band. */
+  var RECT = {
+    L: { x0: 0.020, x1: 0.300, y0: 0.100, y1: 0.860 },
+    R: { x0: 0.700, x1: 0.980, y0: 0.100, y1: 0.860 },
+    C: { x0: 0.305, x1: 0.695, y0: 0.790, y1: 0.945 }
+  };
+
+  /* "JavaScript (ES6)" and "JavaScript (ES modules)" are one tool wearing two
+     labels; as separate nodes they split a cluster that should be one. */
   function normTech(t) {
     return String(t).replace(/\s*\([^)]*\)\s*$/, '').trim();
   }
@@ -42,6 +198,8 @@
     function add(n) {
       if (byId[n.id]) return byId[n.id];
       n.deg = 0;
+      n.cat = n.cat || KIND_CAT[n.kind];
+      n.side = CATS[n.cat].side;
       byId[n.id] = n;
       nodes.push(n);
       return n;
@@ -52,19 +210,16 @@
       a.deg++; b.deg++;
     }
 
-    /* Section hubs — the four places the nav goes. Named hWork/hHobbies and
-       not work/hobbies: `hobbies` is the gallery data global, and shadowing
-       it here silently emptied every gallery. */
-    var hWork    = add({ id: 'hub:work',    label: 'Work',    href: '#work',    kind: 'hub' });
-    var hHobbies = add({ id: 'hub:hobbies', label: 'Hobbies', href: '#hobbies', kind: 'hub' });
-    var hAbout   = add({ id: 'hub:about',   label: 'About',   href: '#about',   kind: 'hub' });
-    var hContact = add({ id: 'hub:contact', label: 'Contact', href: '#contact', kind: 'hub' });
+    /* One hub per category, and everything in the category hangs off it. The
+       hub is the category made clickable: it is the largest node in its map
+       and it goes to the section of the page that holds the same things. */
+    var hubs = {
+      projects:  add({ id: 'hub:projects',  label: 'Projects',  href: '#work',    kind: 'hub', cat: 'projects' }),
+      hobbies:   add({ id: 'hub:hobbies',   label: 'Hobbies',   href: '#hobbies', kind: 'hub', cat: 'hobbies' }),
+      resources: add({ id: 'hub:resources', label: 'Resources', href: '#contact', kind: 'hub', cat: 'resources' })
+    };
 
-    // The page's own reading order, so the four hubs form one spine rather
-    // than four islands.
-    link(hWork, hHobbies); link(hHobbies, hAbout); link(hAbout, hContact); link(hContact, hWork);
-
-    // Case studies, and the stack that bridges them.
+    // Left: the seven case studies, bridged by the tools they share.
     if (typeof projects !== 'undefined') {
       for (var i = 0; i < projects.length; i++) {
         var p = projects[i];
@@ -74,24 +229,18 @@
           href: 'project.html?id=' + encodeURIComponent(p.id),
           kind: 'project'
         });
-        link(pn, hWork);
+        link(pn, hubs.projects);
 
         var tech = p.tech || [];
         for (var t = 0; t < tech.length; t++) {
           var name = normTech(tech[t]);
           if (!name) continue;
-          link(pn, add({
-            id: 'tech:' + name.toLowerCase(),
-            label: name,
-            // The Skills strip is the page's own statement of the stack.
-            href: '#skills-h',
-            kind: 'tech'
-          }));
+          link(pn, add({ id: 'tech:' + name.toLowerCase(), label: name, kind: 'tech' }));
         }
       }
     }
 
-    // Galleries, and one node per photograph in them.
+    // Right: the three galleries and every image in them.
     if (typeof hobbies !== 'undefined') {
       for (var key in hobbies) {
         if (!Object.prototype.hasOwnProperty.call(hobbies, key)) continue;
@@ -102,14 +251,14 @@
           href: 'hobby.html?id=' + encodeURIComponent(key),
           kind: 'gallery'
         });
-        link(gn, hHobbies);
+        link(gn, hubs.hobbies);
 
         var caps = h.captions || [];
         for (var c = 0; c < caps.length; c++) {
-          /* Straight to that image's popover on its gallery page — the `i`
-             param is one-based and js/hobby-page.js opens the dialog on load.
-             Not a link to the bare .webp: that is a picture with no caption,
-             no neighbours and no way back into the site. */
+          /* Straight to that image's popover on its gallery page — `i` is
+             one-based and js/hobby-page.js opens the dialog on load. Not a
+             link to the bare .webp: that is a picture with no caption, no
+             neighbours and no way back into the site. */
           link(gn, add({
             id: 'photo:' + key + ':' + c,
             label: caps[c],
@@ -119,21 +268,24 @@
         }
       }
     }
-    // Off-site: where the work and the person actually live.
-    link(add({ id: 'ext:github',   label: 'GitHub',   href: 'https://github.com/akshayaa-403',          kind: 'ext' }), hWork);
-    link(add({ id: 'ext:linkedin', label: 'LinkedIn', href: 'https://linkedin.com/in/akshayaa-kashyap', kind: 'ext' }), hContact);
-    link(add({ id: 'ext:substack', label: 'Writing',  href: 'https://akshayaakashyap.substack.com',     kind: 'ext' }), hAbout);
-    link(add({ id: 'ext:resume',   label: 'Résumé',   href: 'public/assets/resume.pdf',                 kind: 'ext' }), hContact);
+
+    /* Centre: where the work and the person actually live. Four real
+       destinations, all off-site except the PDF. */
+    [
+      ['github',   'GitHub',   'https://github.com/akshayaa-403'],
+      ['linkedin', 'LinkedIn', 'https://linkedin.com/in/akshayaa-kashyap'],
+      ['substack', 'Writing',  'https://akshayaakashyap.substack.com'],
+      ['resume',   'Résumé',   'public/assets/resume.pdf']
+    ].forEach(function (r) {
+      link(add({ id: 'res:' + r[0], label: r[1], href: r[2], kind: 'resource' }), hubs.resources);
+    });
 
     return { nodes: nodes, links: links };
   }
 
-  /* ---------- 2. geometry ---------- */
-
-  /* Everything below works in a unit box (0..1 on both axes) and is scaled to
+  /* ---------- geometry ----------
+     Everything works in a unit box (0..1 on both axes) and is scaled to
      pixels only at draw time, so a resize never re-runs the simulation. */
-
-  var KEEP = { x: 0.50, y: 0.57, rx: 0.30, ry: 0.33 };
 
   var seed = 20260914;
   function rnd() {
@@ -141,33 +293,9 @@
     return seed / 4294967296;
   }
 
-  /* Every node belongs to exactly one category. The name is what the legend
-     prints and what the readout says on hover; `token` is the CSS custom
-     property its dots are drawn in, so the whole graph stays inside the
-     navy-on-paper palette and flips with the theme like everything else.
-
-     The names are chosen to be true of every member. "Images" rather than
-     "Photographs" because the galleries are photography, artwork and cooking
-     — two thirds of those are not photographs. "Tools" rather than "Skills"
-     because the nodes come from each project's `tech` array, which is what
-     was used, not what is claimed. */
-  var KIND = {
-    project: { r: 6.5, label: true,  nav: true,  name: 'Projects',  token: '--accent-deep' },
-    gallery: { r: 6.5, label: true,  nav: true,  name: 'Hobbies',   token: '--accent' },
-    photo:   { r: 2.2, label: false, nav: true,  name: 'Images',    token: '--accent-mid' },
-    tech:    { r: 3.2, label: false, nav: false, name: 'Tools',     token: '--ink-soft' },
-    hub:     { r: 5.0, label: true,  nav: true,  name: 'Sections',  token: '--ink-body' },
-    ext:     { r: 4.5, label: true,  nav: true,  name: 'Elsewhere', token: '--accent-ink' }
-  };
-  /* Projects and Hobbies lead — they are what the site is for, and they draw
-     largest and darkest. The rest support them: Images are what a Hobby
-     contains, Tools are what a Project was built with, Sections are where
-     both live on the page, Elsewhere is the four links off it. */
-  var ORDER = ['project', 'gallery', 'photo', 'tech', 'hub', 'ext'];
-
-  /* Canvas resolves a font shorthand itself — it has no access to the CSS
-     custom property, so the stack is repeated here. Keep it in step with
-     --font-mono in css/style.css. */
+  /* Canvas resolves a font shorthand itself — it cannot see the CSS custom
+     property, so the stack is repeated here. Keep it in step with --font-mono
+     in css/style.css. */
   var MONO = '"IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, monospace';
 
   function init() {
@@ -186,35 +314,36 @@
 
     var reduce = window.matchMedia('(prefers-reduced-motion: reduce)');
 
-    // Seed positions on a ring per kind, so the simulation starts from
-    // something ordered and settles the same way every time.
+    // Seed each node inside its own half, so the two maps never start
+    // entangled and the simulation only has to tidy, not separate.
     for (var i = 0; i < nodes.length; i++) {
       var n = nodes[i];
-      var a = (i / nodes.length) * Math.PI * 2 + rnd() * 0.4;
-      var rad = 0.30 + rnd() * 0.16;
-      n.x = 0.5 + Math.cos(a) * rad * 1.35;
-      n.y = 0.5 + Math.sin(a) * rad;
+      var r = RECT[n.side];
+      n.x = r.x0 + rnd() * (r.x1 - r.x0);
+      n.y = r.y0 + rnd() * (r.y1 - r.y0);
       n.vx = 0; n.vy = 0;
-      n.r = KIND[n.kind].r;
-      // Degree is the whole reason a hub looks like a hub.
-      n.rad = n.r + Math.min(n.deg, 24) * 0.30;
+      // Degree is the whole reason a gallery of 27 looks like a hub.
+      n.rad = KIND[n.kind].r + Math.min(n.deg, 30) * 0.22;
     }
 
-    // Adjacency, for the hover highlight.
     var adj = {};
     for (i = 0; i < links.length; i++) {
       (adj[links[i].a.id] || (adj[links[i].a.id] = [])).push(links[i].b);
       (adj[links[i].b.id] || (adj[links[i].b.id] = [])).push(links[i].a);
     }
 
-    /* ---------- 3. the simulation ----------
-       Three forces and a damping term. Repulsion is the O(n^2) all-pairs kind
-       — with ~90 nodes that is about 4,000 pair tests a tick, which is far
-       cheaper than the quadtree that would replace it. */
-    /* The unit box is square but the stage is not, so a step of 0.01 in x is
-       1.6x the pixels of the same step in y. Every distance below is measured
-       with x scaled by ASPECT, or the layout comes out squashed sideways. */
-    var ASPECT = 1.6;
+    /* ---------- the simulation ----------
+       A map is only ~40 or ~50 nodes, and links never cross sides, so these
+       are two independent simulations sharing one loop. Repulsion is
+       all-pairs within a side: about 1,200 pair tests a tick, cheaper than
+       the quadtree that would replace it.
+
+       The unit box is square and the stage is not: one unit of x is 1440px
+       and one unit of y is 900px, so x distances are scaled by that ratio
+       before they are measured. Scaling by the rectangle's width instead —
+       which is what this said first — under-counts x, and every node shoves
+       sideways until it piles up against the wall in a vertical line. */
+    var ASPECT = 1.6;          // stage width / stage height
 
     var alpha = 1;
     function tickSim() {
@@ -224,10 +353,11 @@
         a = nodes[i];
         for (j = i + 1; j < nodes.length; j++) {
           b = nodes[j];
+          if (a.side !== b.side) continue;
           dx = (b.x - a.x) * ASPECT; dy = b.y - a.y;
           d2 = dx * dx + dy * dy + 0.0004;
-          f = 0.000075 / d2;
-          if (f > 0.02) f = 0.02;          // clamp: two coincident nodes must not explode
+          f = 0.000030 / d2;
+          if (f > 0.02) f = 0.02;
           d = Math.sqrt(d2);
           dx /= d; dy /= d;
           a.vx -= dx * f / ASPECT; a.vy -= dy * f;
@@ -239,7 +369,7 @@
         a = links[i].a; b = links[i].b;
         dx = (b.x - a.x) * ASPECT; dy = b.y - a.y;
         d = Math.sqrt(dx * dx + dy * dy) + 0.0001;
-        f = (d - 0.10) * 0.016;
+        f = (d - 0.090) * 0.020;
         dx = dx / d * f; dy = dy / d * f;
         a.vx += dx / ASPECT; a.vy += dy;
         b.vx -= dx / ASPECT; b.vy -= dy;
@@ -248,109 +378,192 @@
       for (i = 0; i < nodes.length; i++) {
         a = nodes[i];
         if (a.held) { a.vx = a.vy = 0; continue; }
+        var rc = RECT[a.side];
 
-        /* Pull to centre. It has to beat ~90 nodes' worth of mutual repulsion
-           or the whole graph expands until it hits the walls and piles up
-           along them — which is exactly what a too-weak value looked like. */
-        a.vx += (0.5 - a.x) * 0.015;
-        a.vy += (0.5 - a.y) * 0.015;
-
-        // And a hard push out of the lockup's ellipse: the name has to stay
-        // the most legible thing on the stage.
-        var kx = (a.x - KEEP.x) / KEEP.rx;
-        var ky = (a.y - KEEP.y) / KEEP.ry;
-        var kd = Math.sqrt(kx * kx + ky * ky);
-        if (kd < 1) {
-          var push = (1 - kd) * 0.004;
-          if (kd < 0.001) { kx = 1; ky = 0; kd = 1; }
-          a.vx += (kx / kd) * push;
-          a.vy += (ky / kd) * push;
-        }
+        // Pull to the middle of its own half. It has to beat the mutual
+        // repulsion of forty nodes, or the map expands until it piles up
+        // against its walls.
+        a.vx += ((rc.x0 + rc.x1) / 2 - a.x) * 0.020;
+        a.vy += ((rc.y0 + rc.y1) / 2 - a.y) * 0.020;
 
         a.vx *= 0.86; a.vy *= 0.86;
         a.x += a.vx * alpha;
         a.y += a.vy * alpha;
 
-        if (a.x < 0.02) { a.x = 0.02; a.vx = 0; }
-        if (a.x > 0.98) { a.x = 0.98; a.vx = 0; }
-        if (a.y < 0.03) { a.y = 0.03; a.vy = 0; }
-        if (a.y > 0.90) { a.y = 0.90; a.vy = 0; }
+        if (a.x < rc.x0) { a.x = rc.x0; a.vx = 0; }
+        if (a.x > rc.x1) { a.x = rc.x1; a.vx = 0; }
+        if (a.y < rc.y0) { a.y = rc.y0; a.vy = 0; }
+        if (a.y > rc.y1) { a.y = rc.y1; a.vy = 0; }
       }
 
       if (alpha > 0.06) alpha *= 0.994;
     }
 
-    // Settle before the first paint. The graph should be a finished shape when
-    // it appears, not a cloud that visibly untangles itself while you read the
-    // name — and under reduced motion this is the only run it ever gets.
+    // Settle before the first paint: the graph should be a finished shape when
+    // it appears, not a cloud that untangles itself while you read the name.
+    // Under reduced motion this is the only run it ever gets.
     for (i = 0; i < 520; i++) tickSim();
 
-    /* Then fit what settled to the box. Tuning force constants until the
-       layout happens to fill the stage is a losing game — it drifts the
-       moment a project or a gallery is added. Measuring the result and
-       mapping it onto the target rectangle is exact, and it costs one pass.
-       Done once, after the initial settle: rescaling under the cursor while
-       someone drags a node would feel like the floor moving. */
-    (function fit() {
-      var minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
-      for (var k = 0; k < nodes.length; k++) {
-        if (nodes[k].x < minX) minX = nodes[k].x;
-        if (nodes[k].x > maxX) maxX = nodes[k].x;
-        if (nodes[k].y < minY) minY = nodes[k].y;
-        if (nodes[k].y > maxY) maxY = nodes[k].y;
-      }
-      var sx = (maxX - minX) > 0.001 ? 0.94 / (maxX - minX) : 1;
-      var sy = (maxY - minY) > 0.001 ? 0.82 / (maxY - minY) : 1;
-      for (k = 0; k < nodes.length; k++) {
-        nodes[k].x = 0.03 + (nodes[k].x - minX) * sx;
-        nodes[k].y = 0.05 + (nodes[k].y - minY) * sy;
-        nodes[k].vx = nodes[k].vy = 0;
-      }
-    })();
+    /* Then fit each map to its own rectangle. Tuning force constants until a
+       layout happens to fill its half is a losing game — it drifts the moment
+       a project or a gallery is added. Measuring the result and mapping it on
+       is exact, and costs one pass per side. */
+    CAT_ORDER.forEach(function (key) {
+      var side = CATS[key].side, rc = RECT[side];
+      var minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity, any = false;
+      nodes.forEach(function (n) {
+        if (n.side !== side) return;
+        any = true;
+        if (n.x < minX) minX = n.x;
+        if (n.x > maxX) maxX = n.x;
+        if (n.y < minY) minY = n.y;
+        if (n.y > maxY) maxY = n.y;
+      });
+      if (!any) return;
+      /* One scale for both axes, then centred. Fitting each axis separately
+         stretches a roughly round layout into the rectangle's proportions and
+         the map stops looking like a graph. */
+      var sx = (maxX - minX) > 0.001 ? (rc.x1 - rc.x0) / (maxX - minX) : 1;
+      var sy = (maxY - minY) > 0.001 ? (rc.y1 - rc.y0) / (maxY - minY) : 1;
+      var k = Math.min(sx, sy);
+      var ox = rc.x0 + ((rc.x1 - rc.x0) - (maxX - minX) * k) / 2;
+      var oy = rc.y0 + ((rc.y1 - rc.y0) - (maxY - minY) * k) / 2;
+      nodes.forEach(function (n) {
+        if (n.side !== side) return;
+        n.x = ox + (n.x - minX) * k;
+        n.y = oy + (n.y - minY) * k;
+        n.vx = n.vy = 0;
+      });
+    });
 
-    /* Fitting rescales everything, including back over the lockup's keep-out
-       ellipse — which is how labels ended up sitting on the CTA and the mode
-       toggle. A short second settle lets the keep-out push clear again; the
-       layout barely moves otherwise, and the wall clamps hold the box. */
-    for (i = 0; i < 180; i++) tickSim();
-    alpha = 0.05;   // settled: the simulation now only runs while a node is held
+    // A short second settle, so the fit's uniform stretch relaxes back into
+    // even spacing. The wall clamps hold each map inside its rectangle.
+    for (i = 0; i < 150; i++) tickSim();
+    alpha = 0.05;
 
     /* Each node drifts around wherever it settled. The offset is applied at
-       draw time only and never written back into x/y, so the layout itself
-       stays exactly where the simulation put it — a float folded into the
-       positions would compound frame over frame and the graph would slowly
-       wander off the stage.
-
-       Per-node phase and frequency, so ninety dots breathe independently
-       rather than pulsing as one organism. */
+       draw time only and never written back into x/y: folded into the
+       positions it would compound frame over frame and the maps would slowly
+       wander. Per-node phase and frequency, so the dots breathe independently
+       rather than pulsing as one organism — and small, because the first
+       version moved a 2px image dot further than its own hit target. */
     for (i = 0; i < nodes.length; i++) {
       nodes[i].ph = rnd() * 6.2832;
       nodes[i].fq = 0.55 + rnd() * 0.75;
-      nodes[i].am = 0.0010 + rnd() * 0.0012;
+      nodes[i].am = 0.0009 + rnd() * 0.0011;
     }
 
-    /* ---------- 4. colours ---------- */
+    /* ---------- colours ----------
+       Every node in a category is the hub's colour and only lighter: hue and
+       saturation come from Wada and never move, and lightness ramps with how
+       small the dot is. So a tool reads as a faint version of Projects rather
+       than as an idea of its own, and size and colour say the same thing
+       twice — which is what keeps the map legible once it is dense.
+
+       Only lightness is bent to the theme. Wada mixed for ink on paper, so
+       half his combinations are invisible on a dark ground and the other half
+       on a light one; clamping lightness into a band the ground can hold
+       keeps the harmony (which lives in the hues) and drops only the part
+       that was never going to survive the screen. */
     var C = {};
+    var PALETTE = WADA[Math.floor(Math.random() * WADA.length)];
+
+    var RR = (function () {
+      var a = [], k;
+      for (k in KIND) a.push(KIND[k].r);
+      return { hi: Math.max.apply(null, a), lo: Math.min.apply(null, a) };
+    })();
+
+    function toHsl(css) {
+      var m = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(css.trim());
+      if (!m) return null;
+      var r = parseInt(m[1], 16) / 255, g2 = parseInt(m[2], 16) / 255, b2 = parseInt(m[3], 16) / 255;
+      var mx = Math.max(r, g2, b2), mn = Math.min(r, g2, b2), d = mx - mn;
+      var l = (mx + mn) / 2, h = 0, sat = 0;
+      if (d) {
+        sat = l > 0.5 ? d / (2 - mx - mn) : d / (mx + mn);
+        if (mx === r) h = ((g2 - b2) / d + (g2 < b2 ? 6 : 0));
+        else if (mx === g2) h = (b2 - r) / d + 2;
+        else h = (r - g2) / d + 4;
+        h *= 60;
+      }
+      return { h: h, s: sat * 100, l: l * 100 };
+    }
+
+    function hslRgb(h, sa, l) {
+      h /= 360; sa /= 100; l /= 100;
+      var c = function (t) {
+        t = (t % 1 + 1) % 1;
+        var q = l < 0.5 ? l * (1 + sa) : l + sa - l * sa, pp = 2 * l - q;
+        if (t < 1 / 6) return pp + (q - pp) * 6 * t;
+        if (t < 1 / 2) return q;
+        if (t < 2 / 3) return pp + (q - pp) * (2 / 3 - t) * 6;
+        return pp;
+      };
+      return [c(h + 1 / 3), c(h), c(h - 1 / 3)];
+    }
+    function lum(rgb) {
+      var a = rgb.map(function (v) {
+        return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4);
+      });
+      return 0.2126 * a[0] + 0.7152 * a[1] + 0.0722 * a[2];
+    }
+    function ratio(a, b) {
+      return (Math.max(a, b) + 0.05) / (Math.min(a, b) + 0.05);
+    }
+
+    /* Every node in a category is its hub's colour, lighter the smaller it is
+       — and then dragged back until it actually reads against the ground.
+
+       HSL lightness is not luminance: Wada's yellows sit at L 46% and vanish
+       on paper, his deep blues at L 46% vanish in dark mode. So the ramp is
+       only the starting point, and the colour is stepped toward the safe end
+       until it measures. The hub is held to 4.5:1 and the smallest dot to
+       3:1 — the non-text bar — which also leaves the hub enough headroom for
+       the ramp to be visible at all. Hue and saturation never move: the
+       harmony Wada published lives in those, not in lightness. */
+    function shade(base, rad, dark, gl) {
+      if (!base) return '#094e94';
+      var t = Math.max(0, Math.min(1, (RR.hi - rad) / (RR.hi - RR.lo)));
+      var sa = Math.min(92, base.s);
+      var l = dark ? Math.max(46, Math.min(66, base.l)) + t * 22
+                   : Math.max(26, Math.min(46, base.l)) + t * 24;
+      var need = 4.5 - 1.5 * t;
+      var step = dark ? 2 : -2;
+      for (var k = 0; k < 40 && l > 2 && l < 98; k++) {
+        if (ratio(lum(hslRgb(base.h, sa, l)), gl) >= need) break;
+        l += step;
+      }
+      return 'hsl(' + base.h.toFixed(0) + ',' + sa.toFixed(0) + '%,' + l.toFixed(0) + '%)';
+    }
+
     function readTokens() {
       var cs = getComputedStyle(root);
-      function v(name, fallback) {
-        return (cs.getPropertyValue(name) || '').trim() || fallback;
-      }
-      for (var k in KIND) {
-        if (Object.prototype.hasOwnProperty.call(KIND, k)) {
-          C[k] = v(KIND[k].token, '#094e94');
-        }
-      }
-      C.line    = v('--ink-muted', '#4e6880');
-      C.hot     = v('--accent-ink', '#094e94');
-      C.label   = v('--ink', '#16283d');
-      C.ground  = v('--bg', '#f4f7fa');
+      function v(name, fallback) { return (cs.getPropertyValue(name) || '').trim() || fallback; }
+      C.line   = v('--ink-muted', '#4e6880');
+      C.label  = v('--ink', '#16283d');
+      C.ground = v('--bg', '#f4f7fa');
+
+      // Which way to clamp is a question about the ground, not about the
+      // data-theme attribute — which is absent when the OS is deciding.
+      var g = toHsl(C.ground);
+      var dark = !!g && g.l < 50;
+      var gl = g ? lum(hslRgb(g.h, g.s, g.l)) : (dark ? 0.01 : 0.9);
+
+      CAT_ORDER.forEach(function (k, idx) {
+        var base = toHsl(PALETTE[idx]);
+        C[k] = shade(base, RR.hi, dark, gl);
+        host.style.setProperty(CATS[k].token, C[k]);
+        nodes.forEach(function (n) {
+          if (n.cat === k) n.color = shade(base, n.rad, dark, gl);
+        });
+      });
     }
     readTokens();
     new MutationObserver(function () { readTokens(); tick(); })
       .observe(root, { attributes: true, attributeFilter: ['data-theme'] });
 
-    /* ---------- 5. sizing ---------- */
+    /* ---------- sizing ---------- */
     var w = 0, h = 0;
     function resize() {
       var dpr = Math.min(window.devicePixelRatio || 1, 2);
@@ -367,17 +580,12 @@
 
     /* The single source of on-screen position: layout + float. Hit-testing,
        edges, nodes and labels all read these, so a dot is always clickable
-       exactly where it is drawn rather than where it would sit if it were
-       not floating. */
+       exactly where it is drawn. */
     var now = 0;
-    function px(n) {
-      return (n.x + Math.sin(now * n.fq + n.ph) * n.am * 1.6) * w;
-    }
-    function py(n) {
-      return (n.y + Math.cos(now * n.fq * 0.85 + n.ph) * n.am) * h;
-    }
+    function px(n) { return (n.x + Math.sin(now * n.fq + n.ph) * n.am * 1.6) * w; }
+    function py(n) { return (n.y + Math.cos(now * n.fq * 0.85 + n.ph) * n.am) * h; }
 
-    /* ---------- 6. pointer ---------- */
+    /* ---------- pointer ---------- */
     var hover = null, held = null, downAt = null, moved = 0;
 
     function nodeAt(mx, my) {
@@ -386,12 +594,10 @@
         var n = nodes[i];
         var dx = px(n) - mx, dy = py(n) - my;
         var d = Math.sqrt(dx * dx + dy * dy);
-        // A generous target on the small nodes; the photo dots are 2px.
-        if (d < n.rad + 9 && d < bestD) { best = n; bestD = d; }
+        if (d < n.rad + 9 && d < bestD) { best = n; bestD = d; }   // photo dots are 2px
       }
       return best;
     }
-
     function local(e) {
       var box = canvas.getBoundingClientRect();
       return { x: e.clientX - box.left, y: e.clientY - box.top };
@@ -399,16 +605,15 @@
 
     canvas.addEventListener('pointermove', function (e) {
       var m = local(e);
-
       if (held) {
         moved += Math.abs(e.movementX || 0) + Math.abs(e.movementY || 0);
-        held.x = Math.min(0.98, Math.max(0.02, m.x / w));
-        held.y = Math.min(0.97, Math.max(0.03, m.y / h));
-        alpha = Math.max(alpha, 0.35);   // let the neighbours follow
+        var rc = RECT[held.side];
+        held.x = Math.min(rc.x1, Math.max(rc.x0, m.x / w));
+        held.y = Math.min(rc.y1, Math.max(rc.y0, m.y / h));
+        alpha = Math.max(alpha, 0.35);
         tick();
         return;
       }
-
       var n = nodeAt(m.x, m.y);
       if (n !== hover) {
         hover = n;
@@ -431,12 +636,9 @@
       var n = held;
       n.held = false; held = null;
       try { canvas.releasePointerCapture(e.pointerId); } catch (err) {}
-
-      // A drag is a drag, not a click. 5px of slop covers a shaky hand on a
-      // trackpad without swallowing a real one.
+      // A drag is a drag, not a click. 5px of slop covers a shaky hand.
       var m = local(e);
-      var slip = Math.abs(m.x - downAt.x) + Math.abs(m.y - downAt.y);
-      if (slip < 5 && moved < 12) go(n);
+      if (Math.abs(m.x - downAt.x) + Math.abs(m.y - downAt.y) < 5 && moved < 12) go(n);
       tick();
     });
 
@@ -450,12 +652,10 @@
 
     function go(n) {
       /* Tools are structure, not destinations. They exist so two projects
-         sharing PyTorch sit near each other, and there is no page on this
-         site that shows "PyTorch" — so the node hovers and names itself but
-         goes nowhere, and never claims otherwise with a pointer cursor. */
+         sharing PyTorch sit near each other, and no page on this site shows
+         "PyTorch" — so the node hovers and names itself but goes nowhere, and
+         never claims otherwise with a pointer cursor. */
       if (!n.href || !KIND[n.kind].nav) return;
-      // Off-site and the PDF open in their own tab, with the same noopener
-      // the rest of the site's outbound links carry.
       if (/^https?:/i.test(n.href) || /\.pdf$/i.test(n.href)) {
         window.open(n.href, '_blank', 'noopener,noreferrer');
       } else {
@@ -467,12 +667,12 @@
     function say(n) {
       if (!readout) return;
       readout.innerHTML = n
-        ? '<b>' + esc(n.label) + '</b><br>' + esc(KIND[n.kind].name) + ' · ' +
+        ? '<b>' + esc(n.label) + '</b>' + esc(CATS[n.cat].name) + ' · ' +
           String(n.deg) + (n.deg === 1 ? ' link' : ' links')
         : esc(DEFAULT_READ);
     }
 
-    /* ---------- 7. draw ---------- */
+    /* ---------- draw ---------- */
     var onScreen = true;
     if (window.IntersectionObserver) {
       new IntersectionObserver(function (en) {
@@ -484,20 +684,19 @@
     function isNear(n) {
       if (!hover) return true;
       if (n === hover) return true;
-      var list = adj[hover.id] || [];
-      return list.indexOf(n) !== -1;
+      return (adj[hover.id] || []).indexOf(n) !== -1;
     }
 
-    var queued = false;
+    var t0 = Date.now(), freezeAt = 0, queued = false;
+
     function draw() {
       queued = false;
       if (!w || !h) return;
       if (root.getAttribute('data-mode') !== 'graph' || !onScreen) return;
 
-      /* The drift pauses while a node is hovered. Without it a dot can wander
-         out from under the cursor between the hover and the click — which is
-         exactly what stopped the 2px image dots from ever being clickable.
-         t0 is shifted by the pause on resume so nothing jumps back. */
+      /* The drift pauses while a node is hovered — without it a dot can wander
+         out from under the cursor between the hover and the click. t0 is
+         shifted by the pause on resume, so nothing jumps. */
       var floating = !reduce.matches;
       if (floating) {
         if (hover && !freezeAt) freezeAt = Date.now();
@@ -511,81 +710,135 @@
       ctx.clearRect(0, 0, w, h);
 
       // Edges first, so nodes sit on top of their own lines.
-      for (var i = 0; i < links.length; i++) {
-        var a = links[i].a, b = links[i].b;
+      var i, a, b;
+      for (i = 0; i < links.length; i++) {
+        a = links[i].a; b = links[i].b;
         var lit = hover && (a === hover || b === hover);
-        ctx.globalAlpha = hover ? (lit ? 0.75 : 0.06) : 0.22;
-        ctx.strokeStyle = lit ? C.hot : C.line;
-        ctx.lineWidth = lit ? 1.3 : 0.8;
+        ctx.globalAlpha = hover ? (lit ? 0.8 : 0.05) : 0.18;
+        ctx.strokeStyle = lit ? a.color : C.line;
+        ctx.lineWidth = lit ? 1.4 : 0.8;
         ctx.beginPath();
         ctx.moveTo(px(a), py(a));
         ctx.lineTo(px(b), py(b));
         ctx.stroke();
       }
 
-      // Nodes.
+      // Nodes, coloured by category.
       for (i = 0; i < nodes.length; i++) {
         var n = nodes[i];
         var near = isNear(n);
-        ctx.globalAlpha = hover ? (near ? 1 : 0.12) : 0.9;
-        ctx.fillStyle = (hover && n === hover) ? C.hot : C[n.kind];
+        ctx.globalAlpha = hover ? (near ? 1 : 0.10) : KIND[n.kind].dim;
+        ctx.fillStyle = n.color;
         ctx.beginPath();
         ctx.arc(px(n), py(n), n === hover ? n.rad * 1.4 : n.rad, 0, 6.2832);
         ctx.fill();
 
-        // A ring in the page's own ground colour separates overlapping dots
-        // the way Obsidian's node borders do.
-        if (n.rad > 3) {
-          ctx.globalAlpha = hover ? (near ? 0.9 : 0.1) : 0.8;
+        // A ring in the page's own ground separates overlapping dots, the way
+        // Obsidian's node borders do.
+        if (n.rad > 3.2) {
+          ctx.globalAlpha = hover ? (near ? 0.9 : 0.08) : 0.85;
           ctx.strokeStyle = C.ground;
           ctx.lineWidth = 1.4;
           ctx.stroke();
         }
       }
 
-      // Labels last. The named kinds always carry one; the small fry only
-      // label up when they are in the hovered neighbourhood, which is what
-      // keeps ~90 nodes from turning into a wall of type.
-      ctx.textAlign = 'center';
-      ctx.textBaseline = 'top';
-      for (i = 0; i < nodes.length; i++) {
-        var nd = nodes[i];
-        var always = KIND[nd.kind].label;
-        var show = hover ? isNear(nd) : always;
-        if (!show) continue;
-
-        var big = nd === hover || KIND[nd.kind].label;
-        ctx.font = (big ? '600 11px ' : '400 10px ') + MONO;
-        ctx.globalAlpha = hover ? (nd === hover ? 1 : 0.75) : 0.62;
-        ctx.fillStyle = C.label;
-
-        var text = nd.label.length > 32 ? nd.label.slice(0, 31) + '…' : nd.label;
-        /* Labels are centred under their node, so one near an edge would run
-           off the canvas — which is how "Yosemite CycleGAN" first rendered as
-           "mite CycleGAN". Clamp the centre by the measured half-width. */
-        var half = ctx.measureText(text).width / 2 + 4;
-        var lx = Math.min(w - half, Math.max(half, px(nd)));
-        var ly = py(nd) + nd.rad + 4;
-        ctx.fillText(text, lx, ly);
-
-        // The hovered node also says which category it belongs to, so the
-        // legend never has to be consulted for the dot actually under the
-        // cursor.
-        if (nd === hover) {
-          ctx.font = '400 9px ' + MONO;
-          ctx.globalAlpha = 0.7;
-          ctx.fillStyle = C[nd.kind];
-          ctx.fillText(KIND[nd.kind].name.toUpperCase(), lx, ly + 14);
-        }
-      }
+      drawLabels();
       ctx.globalAlpha = 1;
 
-      // Keep the loop alive for the drift. Under reduced motion nothing
-      // moves, so the page paints once and then only on interaction.
+      // Keep the loop alive for the drift. Under reduced motion nothing moves,
+      // so the page paints once and then only on interaction.
       if (floating || settling || held) tick();
     }
 
-    var t0 = Date.now(), freezeAt = 0;
+    /* ---------- labels ----------
+       No two labels may overlap, and none may stray into the band the name
+       occupies. Candidates are offered in priority order — the hovered node
+       first, then its neighbours, then the named kinds largest first — and
+       each is drawn only if its box clears everything already placed.
+
+       A label that cannot be placed is dropped rather than nudged: moving it
+       breaks the one thing a label has to do, which is sit unambiguously
+       under its own dot. */
+    /* The name's band. It stops at the Resources strip, which is the one
+       place in the centre column where labels are wanted. */
+    var CENTRE = { x0: 0.302, x1: 0.698, y0: 0.04, y1: 0.775 };
+
+    function drawLabels() {
+      var placed = [];
+
+      function clear(r) {
+        if (r.x1 > CENTRE.x0 * w && r.x0 < CENTRE.x1 * w &&
+            r.y1 > CENTRE.y0 * h && r.y0 < CENTRE.y1 * h) return false;
+        if (r.y0 < 2 || r.y1 > h - 2) return false;
+        for (var i = 0; i < placed.length; i++) {
+          var p = placed[i];
+          if (r.x0 < p.x1 && r.x1 > p.x0 && r.y0 < p.y1 && r.y1 > p.y0) return false;
+        }
+        return true;
+      }
+
+      var queue = [];
+      if (hover) {
+        queue.push(hover);
+        (adj[hover.id] || []).forEach(function (n) { queue.push(n); });
+      } else {
+        nodes.forEach(function (n) { if (KIND[n.kind].label) queue.push(n); });
+        queue.sort(function (x, y) { return y.rad - x.rad; });
+      }
+
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'top';
+
+      for (var q = 0; q < queue.length; q++) {
+        var nd = queue[q];
+        ctx.font = ((nd === hover || KIND[nd.kind].label) ? '600 11px ' : '400 10px ') + MONO;
+
+        var text = nd.label.length > 30 ? nd.label.slice(0, 29) + '…' : nd.label;
+        var lineH = 13;
+        var lines = nd === hover ? 2 : 1;      // the hovered node adds its category
+        var tw = ctx.measureText(text).width;
+        var half = tw / 2 + 3;
+        var boxH = lineH * lines;
+        var nx = px(nd), ny = py(nd), gap = nd.rad + 4;
+
+        /* Four placements, tried in order: under the dot, over it, then out
+           to the right and the left. Dropping a name because the space
+           directly below it happened to be taken loses information the graph
+           exists to carry — but a label that wanders far from its dot is
+           worse than none, so the search stops at one dot-width away. */
+        var spots = [
+          [nx, ny + gap],
+          [nx, ny - gap - boxH],
+          [nx + half + gap, ny - boxH / 2],
+          [nx - half - gap, ny - boxH / 2]
+        ];
+
+        var rect = null, cx = 0, top = 0;
+        for (var sp = 0; sp < spots.length; sp++) {
+          // A label on a node near the edge is pulled back inside rather than
+          // dropped: slightly off-centre beats absent, and at the canvas edge
+          // there is only one dot it could belong to anyway.
+          var tx = Math.min(w - half - 2, Math.max(half + 2, spots[sp][0]));
+          var ty = spots[sp][1];
+          var r2 = { x0: tx - half, x1: tx + half, y0: ty, y1: ty + boxH };
+          if (clear(r2)) { rect = r2; cx = tx; top = ty; break; }
+        }
+        if (!rect) continue;
+        placed.push(rect);
+
+        ctx.globalAlpha = hover ? (nd === hover ? 1 : 0.8) : 0.68;
+        ctx.fillStyle = C.label;
+        ctx.fillText(text, cx, top);
+
+        if (nd === hover) {
+          ctx.font = '400 9px ' + MONO;
+          ctx.globalAlpha = 0.8;
+          ctx.fillStyle = nd.color;
+          ctx.fillText(CATS[nd.cat].name.toUpperCase(), cx, top + lineH);
+        }
+      }
+    }
 
     function tick() {
       if (queued) return;
@@ -593,24 +846,17 @@
       window.requestAnimationFrame(draw);
     }
 
-    /* The legend is generated from KIND and the node set, never hand-written:
-       a category that stops having members stops being listed, and a new one
-       appears the moment something belongs to it. */
+    /* The legend is generated from the same map the dots are drawn from, so a
+       category that stops having members stops being listed. */
     (function legend() {
       var box = host.querySelector('[data-field-legend]');
       if (!box) return;
       var count = {};
-      for (var i = 0; i < nodes.length; i++) {
-        count[nodes[i].kind] = (count[nodes[i].kind] || 0) + 1;
-      }
-      var html = '';
-      for (i = 0; i < ORDER.length; i++) {
-        var k = ORDER[i];
-        if (!count[k]) continue;
-        html += '<li><span class="field__swatch" style="background:var(' + KIND[k].token + ')"></span>' +
-                esc(KIND[k].name) + ' <b>' + count[k] + '</b></li>';
-      }
-      box.innerHTML = html;
+      nodes.forEach(function (n) { count[n.cat] = (count[n.cat] || 0) + 1; });
+      box.innerHTML = CAT_ORDER.filter(function (k) { return count[k]; }).map(function (k) {
+        return '<li><span class="field__swatch" style="background:var(' + CATS[k].token + ')"></span>' +
+               esc(CATS[k].name) + ' <b>' + count[k] + '</b></li>';
+      }).join('');
     })();
 
     window.addEventListener('modechange', function () { alpha = Math.max(alpha, 0.25); tick(); });

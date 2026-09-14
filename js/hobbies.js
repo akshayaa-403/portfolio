@@ -1,7 +1,8 @@
 /* Hobbies — three cards in a triangular arrangement.
 
-   Each card links to its own page (hobby.html?id=...) rather than expanding
-   inline. On hover a neural-net mesh animates over the card: particles drift
+   Each card opens the shared popover (js/lightbox.js) on the spot, and is
+   still a real link to its own page (hobby.html?id=...) for middle-click,
+   keyboard and no-JS. On hover a neural-net mesh animates over the card: particles drift
    and draw a line to every neighbour within a radius, the same idea as the
    canvas mesh on jackiehu.dev.
 
@@ -107,7 +108,8 @@
     host.innerHTML =
       '<div class="hob-tri">' +
         GROUPS.map(function (g) {
-          return '<a class="hob-card" href="hobby.html?id=' + esc(g.id) + '">' +
+          return '<a class="hob-card" href="hobby.html?id=' + esc(g.id) + '"' +
+                    ' data-gallery="' + esc(g.id) + '">' +
             '<img src="public/assets/hobbies/' + esc(g.id) + '-1.webp" alt=""' +
                  ' aria-hidden="true" width="600" height="450" loading="lazy" decoding="async">' +
             '<span class="hob-card__body">' +
@@ -118,6 +120,18 @@
           '</a>';
         }).join('') +
       '</div>';
+
+    /* The cards stay real links — middle-click, keyboard and no-JS all still
+       reach the gallery — but a plain left click opens the popover on the
+       spot. Clicking an image anywhere on this site means the same thing. */
+    host.addEventListener('click', function (e) {
+      var card = e.target.closest && e.target.closest('.hob-card');
+      if (!card) return;
+      if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey || e.button !== 0) return;
+      if (!window.portfolioLightbox) return;
+      var id = card.getAttribute('data-gallery');
+      if (id && window.portfolioLightbox.open(id, 1)) e.preventDefault();
+    });
 
     if (reduce) return;
 
