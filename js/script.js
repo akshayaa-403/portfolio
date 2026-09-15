@@ -9,95 +9,69 @@
   /* ---------- helpers ---------- */
 
   /* ---------- project cards ----------
-     Two sections, matching the reference:
+     One narrow column of rows: square icon tile, title, one-line description.
+     A larger preview image fades in on hover.
 
-     Recently Made — a narrow single column of rows: square icon tile, title,
-       one-line description. A larger preview image fades in on hover.
-     Other Work — a two-column grid of wider cards: thumbnail, title,
-       "context | year" meta, a short rule, description, and a link icon. */
+     `recent` no longer splits the page into two sections; it now only says
+     which projects have purpose-drawn icon/hover art. The rest reuse their
+     one thumbnail for both slots. */
   function renderCards() {
     if (typeof projects === 'undefined') return;
 
-    var recentHost = document.getElementById('recent-cards');
-    var otherHost = document.getElementById('other-cards');
+    var host = document.getElementById('recent-cards');
+    if (!host) return;
 
-    function detailHref(p) {
-      return 'project.html?id=' + encodeURIComponent(p.id);
-    }
+    host.insertAdjacentHTML('afterbegin', projects.map(function (p) {
+      var base = 'public/assets/work/' + encodeURIComponent(p.id);
+      // A project may ship a second icon drawn for a dark ground. The swap is
+      // done in CSS off [data-theme] (see .rm__icon--dark), because the theme
+      // is an attribute on <html>, not the OS preference a <picture> would
+      // react to.
+      var icon =
+          '<img class="rm__icon" src="' + base + (p.recent ? '-icon.webp' : '-thumb.webp') + '" alt="" ' +
+            'width="320" height="320" loading="lazy">' +
+          (p.iconDark
+            ? '<img class="rm__icon rm__icon--dark" src="' + base +
+              '-icon-dark.webp" alt="" width="320" height="320" loading="lazy">'
+            : '');
 
-    /* --- Recently Made --- */
-    if (recentHost) {
-      var recent = projects.filter(function (p) { return p.recent; });
-      recentHost.insertAdjacentHTML('afterbegin', recent.map(function (p) {
-        // A project may ship a second icon drawn for a dark ground. The swap is
-        // done in CSS off [data-theme] (see .rm__icon--dark), because the theme
-        // is an attribute on <html>, not the OS preference a <picture> would
-        // react to.
-        var icon =
-            '<img class="rm__icon" src="public/assets/work/' + encodeURIComponent(p.id) + '-icon.webp" alt="" ' +
-              'width="320" height="320" loading="lazy">' +
-            (p.iconDark
-              ? '<img class="rm__icon rm__icon--dark" src="public/assets/work/' +
-                encodeURIComponent(p.id) + '-icon-dark.webp" alt="" width="320" height="320" loading="lazy">'
-              : '');
+      // hoverShots > 1 stacks extra frames. Opaque screenshots are
+      // cycled while hovered; bare cut-outs all show at once.
+      var hover = '';
+      if (p.recent) {
+        var n = p.hoverShots || 1;
+        // bareShots names the frames that are transparent cut-outs
+        // rather than opaque screenshots: they get no card shadow or
+        // radius, which would otherwise draw a box around empty space.
+        var bare = p.bareShots || [];
+        for (var s = 1; s <= n; s++) {
+          // Bare frames are one composition shown together, so
+          // every one is marked shown, not just the first;
+          // initHoverCycle() skips cards laid out this way.
+          var isBare = bare.indexOf(s) > -1;
+          hover += '<img class="rm__hover' +
+            (s === 1 || isBare ? ' is-shown' : '') +
+            (isBare ? ' rm__hover--bare' : '') + '"' +
+            ' src="' + base + (s === 1 ? '-hover.webp' : '-hover-' + s + '.webp') + '"' +
+            ' alt="" ' +
+            (isBare
+              ? 'width="346" height="432"'   // portrait phone cut-outs
+              : 'width="720" height="480"') +
+            ' loading="lazy" aria-hidden="true">';
+        }
+      } else if (p.thumb !== false) {
+        // No hover art drawn for this one: the thumbnail stands in.
+        hover = '<img class="rm__hover is-shown" src="' + base + '-thumb.webp" alt="" ' +
+          'width="720" height="480" loading="lazy" aria-hidden="true">';
+      }
 
-        return '<a class="rm reveal" href="' + detailHref(p) + '">' + icon +
-            '<span class="rm__text">' +
-              '<span class="rm__title">' + esc(p.title) + '</span>' +
-              '<span class="rm__desc">' + esc(p.tagline) + '</span>' +
-            '</span>' +
-            // hoverShots > 1 stacks extra frames. Opaque screenshots are
-            // cycled while hovered; bare cut-outs all show at once.
-            (function () {
-              var n = p.hoverShots || 1, out = '';
-              // bareShots names the frames that are transparent cut-outs
-              // rather than opaque screenshots: they get no card shadow or
-              // radius, which would otherwise draw a box around empty space.
-              var bare = p.bareShots || [];
-              for (var s = 1; s <= n; s++) {
-                // Bare frames are one composition shown together, so
-                // every one is marked shown, not just the first;
-                // initHoverCycle() skips cards laid out this way.
-                var isBare = bare.indexOf(s) > -1;
-                out += '<img class="rm__hover' +
-                  (s === 1 || isBare ? ' is-shown' : '') +
-                  (isBare ? ' rm__hover--bare' : '') + '"' +
-                  ' src="public/assets/work/' + encodeURIComponent(p.id) +
-                  (s === 1 ? '-hover.webp' : '-hover-' + s + '.webp') + '"' +
-                  ' alt="" ' +
-                  (isBare
-                    ? 'width="346" height="432"'   // portrait phone cut-outs
-                    : 'width="720" height="480"') +
-                  ' loading="lazy" aria-hidden="true">';
-              }
-              return out;
-            })() +
-          '</a>';
-      }).join(''));
-    }
-
-    /* --- Other Work --- */
-    if (otherHost) {
-      var other = projects.filter(function (p) { return !p.recent; });
-      otherHost.insertAdjacentHTML('afterbegin', other.map(function (p) {
-        var link = p.demo || p.repo;
-        return '<article class="ow reveal">' +
-            // thumb:false means no real screenshot exists yet — a text-only
-            // card beats shipping a "placeholder" image.
-            (p.thumb === false ? '' :
-              '<img class="ow__thumb" src="public/assets/work/' + encodeURIComponent(p.id) + '-thumb.webp" alt="" ' +
-                'width="400" height="300" loading="lazy">') +
-            '<div class="ow__body">' +
-              '<h3 class="ow__title"><a href="' + detailHref(p) + '">' + esc(p.title) + '</a></h3>' +
-              '<p class="ow__meta">' + esc(p.context) + ' | ' + esc(p.year) + '</p>' +
-              '<span class="ow__rule" aria-hidden="true"></span>' +
-              '<p class="ow__desc">' + esc(p.tagline) + '</p>' +
-              '<a class="ow__link" href="' + safeUrl(link) + '" target="_blank" rel="noopener noreferrer" ' +
-                'aria-label="' + esc(p.title) + ' — open link">&#128279;</a>' +
-            '</div>' +
-          '</article>';
-      }).join(''));
-    }
+      return '<a class="rm reveal" href="project.html?id=' + encodeURIComponent(p.id) + '">' + icon +
+          '<span class="rm__text">' +
+            '<span class="rm__title">' + esc(p.title) + '</span>' +
+            '<span class="rm__desc">' + esc(p.tagline) + '</span>' +
+          '</span>' + hover +
+        '</a>';
+    }).join(''));
   }
 
   /* ---------- scroll reveal ----------
@@ -139,15 +113,11 @@
     var links = document.querySelectorAll('.nav a[href^="#"]');
     if (!sections.length || !links.length) return;
 
-    // Sections without a nav link of their own borrow one, so the highlight
-    // never blanks out mid-page (it used to, for the whole of Other Work).
-    var ALIAS = { 'other-work': 'work' };
-
     var io = new IntersectionObserver(function (entries) {
       entries.forEach(function (entry) {
         if (!entry.isIntersecting) return;
         var id = entry.target.getAttribute('id');
-        var href = '#' + (ALIAS[id] || id);
+        var href = '#' + id;
         var i, hit = false;
         for (i = 0; i < links.length; i++) {
           if (links[i].getAttribute('href') === href) hit = true;

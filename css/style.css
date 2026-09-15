@@ -912,14 +912,12 @@ main:focus-visible { outline: none; }
    7. Work / project cards
    Two shapes, both copied from the reference:
 
-   .rm  (Recently Made) — narrow left column, ~500px wide. Square icon tile +
+   .rm  (Projects) — narrow left column, ~500px wide. Square icon tile +
         title + one-line description per row. A bigger preview fades in beside
         the row on hover (placeholder art for now).
-   .ow  (Other Work) — 2-up grid of wider cards: thumbnail, title,
-        "context | year" meta, rule, description, link icon.
    -------------------------------------------------------------------------- */
 
-/* --- Recently Made ------------------------------------------------------ */
+/* --- Projects ------------------------------------------------------ */
 .rm-list {
   display: flex;
   flex-direction: column;
@@ -977,8 +975,11 @@ main:focus-visible { outline: none; }
   position: absolute;
   left: calc(100% + 32px);
   top: 50%;
-  width: 300px;
-  height: auto;
+  /* Fill the whole empty column to the right of the 500px list: the wrap's
+     content width, less the list and the gutter between them. */
+  width: calc(min(var(--measure), 100vw) - 2 * var(--gap-lg) - 500px - 32px);
+  aspect-ratio: 3 / 2;
+  object-fit: cover;
   border-radius: var(--radius);
   box-shadow: var(--shadow-card);
   opacity: 0;
@@ -996,6 +997,8 @@ main:focus-visible { outline: none; }
   --hy: 0px;
   width: auto;
   height: 360px;
+  aspect-ratio: auto;
+  object-fit: contain;
   border-radius: 0;
   box-shadow: none;
   filter: drop-shadow(0 12px 24px rgb(0 0 0 / 0.22));
@@ -1038,84 +1041,6 @@ main:focus-visible { outline: none; }
 }
 @media (max-width: 1099.98px) {
   .rm__hover { display: none; }
-}
-
-/* --- Other Work --------------------------------------------------------- */
-.ow-grid {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: var(--gap-lg);
-}
-
-.ow {
-  display: flex;
-  align-items: flex-start;
-  gap: 20px;
-  padding: 18px;
-  border: 1px solid var(--line);
-  border-radius: var(--radius-lg);
-  background: var(--bg-raised);
-  transition: border-color var(--dur) var(--ease), background var(--dur) var(--ease);
-}
-.ow:hover,
-
-.ow:focus-within {
-  border-color: var(--line-strong);
-  background: var(--surface);
-}
-
-.ow__thumb {
-  flex: none;
-  width: 132px;
-  height: 168px;
-  border-radius: 10px;
-  border: 1px solid var(--line);
-  object-fit: cover;
-  background: var(--bg-sunken);
-}
-
-.ow__body {
-  min-width: 0;
-  padding-top: 2px;
-}
-.ow__title {
-  font-size: 17px;
-  font-weight: 500;
-  letter-spacing: -0.02em;
-  margin-bottom: 4px;
-}
-.ow__title a { color: var(--ink); }
-.ow__title a:hover { color: var(--accent); }
-
-.ow__meta {
-  margin: 0;
-  color: var(--ink-muted);
-  font-size: 12px;
-}
-.ow__rule {
-  display: block;
-  width: 46px;
-  height: 1px;
-  margin: 12px 0;
-  background: var(--line-strong);
-}
-.ow__desc {
-  margin: 0 0 12px;
-  color: var(--ink-soft);
-  font-size: 14px;
-  line-height: 1.5;
-}
-.ow__link {
-  display: inline-block;
-  color: var(--ink-muted);
-  font-size: 15px;
-  line-height: 1;
-}
-.ow__link:hover { color: var(--accent); }
-
-@media (max-width: 809.98px) {
-  .ow-grid { grid-template-columns: 1fr; }
-  .ow__thumb { width: 96px; height: 122px; }
 }
 
 /* --------------------------------------------------------------------------
@@ -2288,7 +2213,7 @@ main:focus-visible { outline: none; }
 }
 
 
-/* --- Recently Made: theme-aware project icon ------------------------------
+/* --- Projects: theme-aware project icon ------------------------------
    Some marks ship a second artwork drawn for a dark ground. Both <img> are in
    the DOM and CSS picks one, because the theme lives on [data-theme] rather
    than the OS preference a <picture> element would follow. */
@@ -2338,10 +2263,7 @@ main:focus-visible { outline: none; }
     height: 44px;
   }
 
-  .detail__back,
-
-
-  .ow__link {
+  .detail__back {
     display: inline-flex;
     align-items: center;
     min-height: 44px;
@@ -2357,8 +2279,6 @@ main:focus-visible { outline: none; }
   .obj__title,
 
   .obj__meta { font-size: 13px; }
-  .ow__meta,
-
   .rm__desc { font-size: 13.5px; }
   .dd--table th,
 
@@ -2374,8 +2294,6 @@ main:focus-visible { outline: none; }
   /* Cards stack, so the icon can be larger and the text gets full width. */
   .rm { padding: 14px; gap: 12px; }
   .rm__icon { width: 60px; height: 60px; }
-  .ow { flex-direction: column; }
-  .ow__thumb { width: 100%; height: 170px; }
 }
 
 /* --------------------------------------------------------------------------
@@ -2478,10 +2396,8 @@ main:focus-visible { outline: none; }
 
   .hero__actions .btn { min-height: 46px; }
   .skip-link { padding: 13px 18px; }
-  .ow__title a { display: inline-flex; align-items: center; min-height: 44px; }
   .about__body a { display: inline-block; padding: 8px 0; }
   .code-copy { min-height: 44px; padding: 11px 14px; }
-  .ow__link { min-width: 44px; justify-content: center; }
   /* Footer year and social labels were 12px. */
   .site-footer__inner { font-size: 13px; }
   .site-footer__social a span { font-size: 13px; }

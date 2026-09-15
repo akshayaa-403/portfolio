@@ -350,7 +350,7 @@
 /* ==========================================================================
    Hover-frame placement editor — dev-only, same ?edit=1 flag.
 
-   The bare phone cut-outs on the "Recently Made" cards are positioned by
+   The bare phone cut-outs on the project cards are positioned by
    hand, not by the hero editor above: that one is scoped to .stage and works
    in percentages of a fixed 1440x900 canvas, neither of which fits a card in
    normal page flow.

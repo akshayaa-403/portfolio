@@ -427,14 +427,10 @@
 
     var p = projects[index];
 
-    /* Walk the same order the home page presents: "Recently Made" first, then
-       "Other Work". Using the raw array order sent visitors to a neighbour
-       that sits nowhere near this card on the page they came from. */
-    var ordered = projects.filter(function (x) { return x.recent; })
-      .concat(projects.filter(function (x) { return !x.recent; }));
-    var at = ordered.indexOf(p);
-    var prev = ordered[at - 1];
-    var next = ordered[at + 1];
+    /* One list on the home page now, in array order: the neighbour here is
+       the neighbour there. */
+    var prev = projects[index - 1];
+    var next = projects[index + 1];
 
     /* --- metadata --- */
     var pageTitle = p.title + ' — Akshayaa Kashyap';
