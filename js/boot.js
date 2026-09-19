@@ -13,7 +13,7 @@
   var m = 'graph';
   try {
     var s = localStorage.getItem('viewMode');
-    if (s === 'notebook' || s === 'clean' || s === 'graph') m = s;
+    if (s === 'graph' || s === 'mosaic') m = s;
   } catch (e) { /* private mode */ }
   r.setAttribute('data-mode', m);
 

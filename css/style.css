@@ -8,7 +8,7 @@
    mid blue and pale blue on cool paper. Light-only; every colour is a token
    so a dark variant can be added in one block.
 
-   Three view modes (graph / notebook / clean) are set as a `data-mode`
+   Two view modes (graph / mosaic) are set as a `data-mode`
    attribute on <html> — see section 14.
    ========================================================================== */
 
@@ -78,7 +78,7 @@
   --link: #094e94;
   /* Text over a photograph or a light photographic prop, never over a page
      ground — so it stays light in both themes and is NOT flipped in the dark
-     block below. Used by the notebook hero copy and the hobby card labels. */
+     block below. Used by the hobby card labels. */
   --on-photo: #f2f6fa;
   /* Hover colour for a title sitting on a photo. Like --on-photo it has
      no dark counterpart on purpose: the hobby card's text sits on its own
@@ -111,6 +111,13 @@
   --radius-lg: 20px;
   --radius-pill: 100px;
 
+  /* Layer-stack slabs (css/project.css). Hue comes from the project's own
+     data as --lh; only lightness and saturation are the theme's, so one pair
+     of tokens covers every layer of every project. */
+  --slab-fill: hsl(var(--lh, 210) 82% 92%);
+  --slab-edge: hsl(var(--lh, 210) 52% 64%);
+  --slab-ink: hsl(var(--lh, 210) 55% 26%);
+
   --measure: 1120px;
   --measure-narrow: 720px;
 
@@ -136,6 +143,12 @@
    in the comments are measured, not estimated.
    -------------------------------------------------------------------------- */
 :root[data-theme='dark'] {
+  /* Same hues, dropped to the dark ground: the slabs stay distinguishable
+     from each other without glowing off a #0c1620 page. */
+  --slab-fill: hsl(var(--lh, 210) 46% 30%);
+  --slab-edge: hsl(var(--lh, 210) 52% 56%);
+  --slab-ink: hsl(var(--lh, 210) 60% 82%);
+
   /* Ground — deep navy, never pure black */
   --bg: #0c1620;
   --bg-raised: #16232f;
@@ -182,16 +195,6 @@
   color-scheme: dark;
 }
 
-/* Notebook mode warms the paper in the light theme. In the dark theme that
-   would put a cream page back on screen, so the warm override is itself
-   overridden — a dim, slightly warm navy stands in for lamplit paper. */
-:root[data-theme='dark'][data-mode='notebook'] {
-  --bg: #12191c;
-  --bg-raised: #1c2529;
-  --bg-sunken: #0d1315;
-  --surface: #1c2529;
-}
-
 /* The hero props are photographs lit for a bright room; at full brightness on
    a dark ground they glare. Dim and cool them so they read as objects sitting
    in the same low light as everything else. Set as a variable so the hover
@@ -201,31 +204,6 @@
   --prop-filter: brightness(0.78) saturate(0.9) contrast(1.02);
   --prop-shadow: rgba(0, 0, 0, 0.5);
 }
-/* Applied via the same --prop-filter variable the hover rule composes with,
-   so the two never fight over the `filter` property. The selector is kept at
-   the same specificity as the hover rule and appears earlier, so hover wins. */
-:root[data-theme='dark'] .stage .prop {
-  filter: var(--prop-filter);
-}
-/* The glow is the light source and must not be dimmed. */
-:root[data-theme='dark'] .stage .prop--glow {
-  --prop-filter: none;
-}
-/* The lamp itself stays brighter — it is switched on. */
-:root[data-theme='dark'] .prop--lamp-btn {
-  --prop-filter: brightness(0.94) saturate(0.95);
-}
-:root[data-theme='dark'][data-mode='notebook'] .hero__name,
-
-:root[data-theme='dark'][data-mode='notebook'] .hero__role,
-
-:root[data-theme='dark'][data-mode='notebook'] .hero__sub,
-
-:root[data-theme='dark'][data-mode='notebook'] .hero__headline {
-  color: var(--on-photo);
-  text-shadow: 0 1px 10px rgba(0, 0, 0, 0.75), 0 0 3px rgba(0, 0, 0, 0.6);
-}
-
 /* --------------------------------------------------------------------------
    2. Reset & base
    -------------------------------------------------------------------------- */
@@ -266,12 +244,9 @@ body {
 
 h1,
 
-
 h2,
 
-
 h3,
-
 
 h4 {
   margin: 0;
@@ -285,7 +260,6 @@ p { margin: 0 0 var(--gap); }
 ul { margin: 0; padding: 0; list-style: none; }
 
 img,
-
 
 svg {
   max-width: 100%;
@@ -460,6 +434,16 @@ main:focus-visible { outline: none; }
   font-size: 13px;
   transition: color var(--dur) var(--ease), background var(--dur) var(--ease);
 }
+/* Slash separators between the links, after emilycampbell.co. Decorative
+   only: it is a pseudo-element, so it never lands in the accessible name,
+   and it is dropped in the stacked mobile drawer below. */
+.nav a + a::before {
+  content: '/';
+  margin-right: 10px;
+  margin-left: -4px;
+  color: var(--line-strong);
+}
+
 .nav a:hover,
 
 .nav a.is-active {
@@ -521,77 +505,6 @@ main:focus-visible { outline: none; }
   overflow: hidden;
 }
 
-/* --- Decorative lilies --------------------------------------------------
-   Two blue lily cut-outs anchored to opposite corners of the stage, sitting
-   behind every other layer. They fade in and expand slightly on load (the
-   "bloom" gesture, without the SVG petal rig), then hold.
-
-   Faded via opacity so the props and text stay legible on top. Static and
-   fully visible under reduced motion / no JS. */
-.lily {
-  position: absolute;
-  z-index: 0;
-  height: auto;
-  pointer-events: none;
-  user-select: none;
-  opacity: var(--lily-o, 0.16);
-}
-
-.lily--bl {
-  left: -3%;
-  bottom: -6%;
-  width: clamp(220px, 27vw, 400px);
-  transform-origin: 20% 100%;
-}
-.lily--tr {
-  right: -4%;
-  top: -7%;
-  width: clamp(200px, 24vw, 360px);
-  transform-origin: 80% 0%;
-  --lily-o: 0.14;
-}
-
-@media (prefers-reduced-motion: no-preference) {
-  .js .lily {
-    animation: lily-bloom 2.6s var(--ease-bloom) backwards;
-  }
-  .js .lily--bl { animation-delay: 0.25s; }
-  .js .lily--tr { animation-delay: 0.55s; }
-}
-
-@keyframes lily-bloom {
-  from { opacity: 0; transform: scale(0.72) rotate(-4deg); }
-  to { opacity: var(--lily-o, 0.16); transform: scale(1) rotate(0deg); }
-}
-
-/* They compete with content on small screens */
-@media (max-width: 899.98px) {
-  .lily { --lily-o: 0.12; }
-  .lily--bl { width: 42vw; left: -8%; }
-  .lily--tr { width: 38vw; right: -10%; }
-}
-
-/* --- Props ------------------------------------------------------------- */
-/* Both --w and --h come from the reference's real pixel boxes. Setting both
-   (with object-fit: contain) means the composition is defined by the layout,
-   not by each PNG's aspect ratio — my re-cropped art has different ratios than
-   the originals, and sizing on width alone made tall objects (pen, lighter)
-   3x too long. */
-.prop {
-  position: absolute;
-  left: var(--x);
-  top: var(--y);
-  width: var(--w);
-  height: var(--h, auto);
-  object-fit: contain;
-  object-position: center;
-  transform: rotate(var(--r, 0deg));
-  opacity: var(--o, 1);
-  z-index: var(--z, 1);
-  pointer-events: none;
-  user-select: none;
-}
-
 /* --- Centre lockup ------------------------------------------------------ */
 .hero__lockup {
   position: absolute;
@@ -647,189 +560,11 @@ main:focus-visible { outline: none; }
   letter-spacing: -0.01em;
 }
 
-.hero__cta {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: 10px;
-  margin: 0 0 34px;
-}
-.hero__cta-btn {
-  display: inline-flex;
-  align-items: center;
-  min-height: 44px;
-  padding: 0 18px;
-  border: 1px solid var(--line-strong);
-  border-radius: var(--radius-pill);
-  /* An opaque ground, not a transparent one: in notebook mode the lockup sits
-     on a light photographic prop whatever the theme, where --ink alone would
-     need the same text-shadow rescue the headline gets. */
-  background: var(--surface);
-  color: var(--ink);
-  font-size: 14px;
-  font-weight: 500;
-  transition: background var(--dur) var(--ease), border-color var(--dur) var(--ease),
-              color var(--dur) var(--ease);
-}
-.hero__cta-btn:hover,
-.hero__cta-btn:focus-visible { border-color: var(--accent); color: var(--accent); }
-.hero__cta-btn--primary {
-  border-color: var(--accent-deep);
-  background: var(--accent-deep);
-  color: var(--on-accent-deep, #fff);
-}
-.hero__cta-btn--primary:hover,
-.hero__cta-btn--primary:focus-visible {
-  background: var(--accent-hover);
-  border-color: var(--accent-hover);
-  color: var(--on-accent-deep, #fff);
-}
-/* Each mode pins .hero__cta with the rest of the lockup (see the per-mode
-   blocks below). Without that it stayed in normal flow at the top of a
-   full-stage lockup box, where the sticky header clipped it — the one call to
-   action above the fold, invisible. */
-/* clean/notebook right- and left-align the lockup; the buttons follow it. */
-[data-mode='clean'] .hero__cta { justify-content: flex-end; }
-
-/* The switcher is pinned to the bottom-centre of the stage in every mode, as
-   the reference does with its icon row — keeping it out of the text block means
-   it can't collide with props when the lockup moves. */
-.hero__actions {
-  position: absolute;
-  left: 50%;
-  top: 71.222%;              /* y=641 of 900 */
-  transform: translateX(-50%);
-  display: flex;
-  justify-content: center;
-  /* z-index is set to 60 !important further down (it has to beat the pen's
-     bounding box in clean mode); declaring 21 here only ever misled. */
-  pointer-events: auto;
-}
-
-/* --- Cards on the stage ------------------------------------------------- */
-.obj {
-  position: absolute;
-  left: var(--x);
-  top: var(--y);
-  width: var(--w);
-  z-index: var(--z, 6);
-  padding: 12px;
-  background: var(--surface);
-  border: 1px solid var(--line);
-  border-radius: var(--radius);
-  box-shadow: var(--shadow-card);
-  transform: rotate(var(--r, 0deg));
-  transition: box-shadow var(--dur) var(--ease), border-color var(--dur) var(--ease);
-}
-.obj__title {
-  color: var(--ink);
-  font-size: 12px;
-  font-weight: 500;
-  line-height: 1.4;
-}
-.obj__meta {
-  color: var(--ink-muted);
-  font-size: 11px;
-}
-
-/* Music player: square art up top, meta below — as on the reference */
-.obj--player {
-  text-align: center;
-  padding: 14px 14px 16px;
-}
-.player__disc {
-  width: 100%;
-  aspect-ratio: 1;
-  margin-bottom: 12px;
-}
-.player__disc img {
-  width: 100%;
-  height: 100%;
-  object-fit: contain;
-}
-.player__artist { margin: 0; }
-.player__track { margin: 0 0 10px; }
-.player__bar {
-  position: relative;
-  height: 3px;
-  border-radius: 2px;
-  background: var(--surface-muted);
-  overflow: hidden;
-}
-.player__bar span {
-  position: absolute;
-  inset: 0 62% 0 0;
-  background: var(--ink-soft);
-}
-.player__times {
-  display: flex;
-  justify-content: center;
-  gap: 5px;
-  margin-top: 6px;
-  color: var(--ink-muted);
-  font-size: 10px;
-}
-
-/* AirDrop-style share card */
-.obj--share { padding: 10px; text-align: center; }
-.share__title {
-  margin: 0 0 2px;
-  color: var(--ink);
-  font-size: 11px;
-  font-weight: 600;
-}
-.share__sub {
-  margin: 0 0 8px;
-  color: var(--ink-muted);
-  font-size: 9px;
-  line-height: 1.4;
-}
-.share__thumb {
-  height: 88px;
-  margin-bottom: 8px;
-  border-radius: 6px;
-  /* Built from the palette's decorative tokens rather than five raw hex
-     values. The originals were cyan/red/purple/magenta/orange on a site whose
-     palette doc states "No orange remains" — and being hardcoded, they stayed
-     bright in the dark theme. These flip with it. */
-  background:
-    radial-gradient(circle at 34% 44%, var(--accent-pale) 0%, transparent 46%),
-    radial-gradient(circle at 62% 58%, var(--accent) 0%, transparent 50%),
-    linear-gradient(135deg, var(--accent-deep), var(--accent-mid) 55%, var(--accent-pale));
-  filter: saturate(1.1);
-}
-.share__actions {
-  display: flex;
-  justify-content: space-between;
-  gap: 6px;
-  padding-top: 6px;
-  border-top: 1px solid var(--line);
-}
-.share__btn {
-  flex: 1;
-  color: var(--link);
-  font-size: 10px;
-}
-.share__btn--go { font-weight: 600; }
-
-/* Drag affordances (JS adds .is-draggable in notebook mode on wide screens) */
-.obj.is-draggable { cursor: grab; touch-action: none; }
-.obj.is-draggable:active,
-
-.obj.is-dragging { cursor: grabbing; }
-.obj.is-dragging {
-  box-shadow: var(--shadow-card-hover);
-  border-color: var(--accent);
-  z-index: 40;
-}
-
 /* --- Narrow screens ----------------------------------------------------
-   The canvas composition needs width. Below 900px the props are dropped and
-   the cards return to normal flow under the lockup, so the hero stays
-   readable rather than becoming a pile of overlaps. */
+   The graph needs width to read. Below 900px the lockup returns to normal
+   flow so the hero stays readable rather than becoming a pile of overlaps. */
 @media (max-width: 899.98px) {
   .stage { min-height: 0; padding-bottom: var(--gap-lg); }
-  .prop { display: none; }
 
   .hero__lockup {
     position: relative;
@@ -841,14 +576,6 @@ main:focus-visible { outline: none; }
     pointer-events: auto;
   }
   .hero__name { margin-bottom: 22px; }
-
-  .obj {
-    position: relative;
-    left: auto; top: auto;
-    width: min(300px, calc(100% - 48px)) !important;
-    margin: 0 auto var(--gap-lg);
-    transform: none;
-  }
 }
 
 /* --------------------------------------------------------------------------
@@ -862,8 +589,8 @@ main:focus-visible { outline: none; }
 }
 /* Sits directly under the hero's mode toggle, vertically in line with it.
    --skills-cx is the toggle's measured centre, written by js/marquee.js on load,
-   mode change and resize; the 50% fallback is correct for graph and notebook,
-   where the toggle is centred, and is what no-JS visitors get. The word is
+   mode change and resize; the 50% fallback is correct in both modes, where
+   the toggle is centred, and is what no-JS visitors get. The word is
    centred on that point rather than on its own box. */
 .strip-section {
   --skills-cx: 50%;
@@ -919,16 +646,19 @@ main:focus-visible { outline: none; }
 
 /* --- Projects ------------------------------------------------------ */
 .rm-list {
+  /* The reading column. Nothing sits beside it any more, so this is just how
+     wide a numbered list wants to be. */
+  --rm-w: 700px;
   display: flex;
   flex-direction: column;
   gap: var(--gap);
-  max-width: 500px;
+  max-width: var(--rm-w);
 }
 
 .rm {
   position: relative;
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: 18px;
   padding: 14px;
   border: 1px solid var(--line);
@@ -943,12 +673,16 @@ main:focus-visible { outline: none; }
   color: var(--ink);
 }
 
-.rm__icon {
+/* The index. Tabular so 01..10 stay in one column, and muted so it reads as
+   an ordinal rather than a heading. */
+.rm__num {
   flex: none;
-  width: 78px;
-  height: 78px;
-  border-radius: 14px;
-  object-fit: cover;
+  padding-top: 2px;
+  width: 2ch;
+  color: var(--ink-faint, var(--ink-soft));
+  font-size: 13px;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.04em;
 }
 
 .rm__text {
@@ -969,78 +703,206 @@ main:focus-visible { outline: none; }
   line-height: 1.45;
 }
 
-/* Hover preview: sits to the right of the column, out of flow. Hidden by
-   default and on touch/narrow screens, where there is no room for it. */
-.rm__hover {
+/* Context and year, above the description. */
+.rm__meta {
+  color: var(--ink-soft);
+  font-size: 12px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+/* The stack, as a labelled row rather than pills: four items at most, so the
+   row stays one line and the list keeps its rhythm. */
+.rm__focus {
+  margin-top: 4px;
+  color: var(--ink-soft);
+  font-size: 12.5px;
+  line-height: 1.5;
+}
+.rm__focus-label {
+  margin-right: 8px;
+  color: var(--accent);
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+}
+
+/* --- Readings ------------------------------------------------------
+   A shelf of books that turn. Each one stands as a spine and, when it is the
+   chosen one, rotates a quarter turn in place to face you — the spine going
+   edge-on as the cover comes round. There is no separate preview panel: the
+   cover appears where the book already was, and the shelf opens a gap for it.
+
+   The geometry: .book is a 3D box hinged on its left edge. The spine fills it
+   and faces the viewer; the cover sits at the same left edge pre-rotated 90deg,
+   so it is edge-on and invisible at rest. Turning the box -90deg swaps them,
+   and because the cover was hinged at the same edge it lands exactly in the
+   space the slot has grown into.
+
+   Sizes are real. One scale (PX_PER_MM in js/script.js) turns each edition's
+   trim into pixels and its page count into spine thickness, so the shelf is
+   uneven for the reason a real shelf is.
+
+   The books are <button>s, not links: they change what this page shows, which
+   is what a button is for, and it means the shelf works by tap as well as by
+   hover. */
+.readings__intro {
+  max-width: 60ch;
+  margin-bottom: var(--gap-lg);
+  color: var(--ink-soft);
+  font-size: 16px;
+}
+.readings__asof {
+  color: var(--ink-faint, var(--ink-soft));
+  font-size: 13px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.readings { margin-top: 10px; }
+
+.shelf__books {
+  display: flex;
+  align-items: flex-end;
+  gap: 5px;
+  list-style: none;
+  margin: 0;
+  padding: 0 0 10px;
+  /* The vanishing point the books turn against. Without it the rotation is a
+     flat squash rather than a book turning. */
+  perspective: 1500px;
+  perspective-origin: 50% 60%;
+  /* The board they stand on, with its own shadow under it. */
+  border-bottom: 3px solid var(--line-strong);
+  box-shadow: 0 7px 14px -10px rgb(0 0 0 / 0.5);
+}
+
+/* The slot is the gap on the shelf. It is as wide as the spine until the book
+   turns, then as wide as the cover — so the neighbours slide aside rather than
+   being covered up. */
+.book-slot {
+  flex: none;
+  width: var(--bt, 22px);
+  transition: width 0.55s cubic-bezier(0.2, 0.7, 0.2, 1);
+}
+.book-slot:has(.book[aria-pressed='true']) { width: var(--bw, 160px); }
+
+.book {
+  position: relative;
+  display: block;
+  width: var(--bt, 22px);
+  height: var(--bh, 240px);
+  padding: 0;
+  border: 0;
+  background: none;
+  font: inherit;
+  cursor: pointer;
+  transform-style: preserve-3d;
+  transform-origin: left center;
+  transition: transform 0.55s cubic-bezier(0.2, 0.7, 0.2, 1);
+}
+.book[aria-pressed='true'] { transform: rotateY(-90deg); }
+
+/* Both faces are hinged on the same left edge. backface-visibility keeps each
+   from showing through the other as they pass. */
+.book__spine,
+.book__cover {
   position: absolute;
-  left: calc(100% + 32px);
-  top: 50%;
-  /* Fill the whole empty column to the right of the 500px list: the wrap's
-     content width, less the list and the gutter between them. */
-  width: calc(min(var(--measure), 100vw) - 2 * var(--gap-lg) - 500px - 32px);
-  aspect-ratio: 3 / 2;
+  left: 0;
+  top: 0;
+  height: 100%;
+  backface-visibility: hidden;
+  border-radius: 2px 3px 3px 2px;
+  overflow: hidden;
+}
+
+.book__spine {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 12px 0;
+  background: var(--spine-bg, #d9dde2);
+  color: var(--spine-ink, #10161d);
+  /* The head-band and the shadow in the gutter, as two gradients rather than
+     two more elements. */
+  box-shadow:
+    inset -5px 0 0 -3px rgb(255 255 255 / 0.22),
+    inset 5px 0 8px -5px rgb(0 0 0 / 0.5),
+    0 2px 4px rgb(0 0 0 / 0.22);
+}
+
+.book__cover {
+  width: var(--bw, 160px);
+  transform-origin: left center;
+  transform: rotateY(90deg);
+  box-shadow: 0 10px 22px -12px rgb(0 0 0 / 0.55);
+}
+.book__cover img {
+  display: block;
+  width: 100%;
+  height: 100%;
   object-fit: cover;
-  border-radius: var(--radius);
-  box-shadow: var(--shadow-card);
-  opacity: 0;
-  transform: translateY(-50%) scale(0.97);
-  pointer-events: none;
-  transition: opacity var(--dur) var(--ease), transform var(--dur) var(--ease);
-}
-/* Transparent cut-outs (phone mockups) rather than opaque screenshots: a
-   shadow and radius here would outline the empty space around the cut-out,
-   so both come off and the frame is sized by height instead of width. */
-.rm__hover--bare {
-  /* --hx/--hy are the hand-placed offsets from the default preview slot,
-     dumped by the ?edit=1 placement editor in js/script.js. */
-  --hx: 0px;
-  --hy: 0px;
-  width: auto;
-  height: 360px;
-  aspect-ratio: auto;
-  object-fit: contain;
-  border-radius: 0;
-  box-shadow: none;
-  filter: drop-shadow(0 12px 24px rgb(0 0 0 / 0.22));
-  transform: translate(var(--hx), calc(-50% + var(--hy))) scale(0.97);
 }
 
-/* Multiple frames stack in the same slot; only .is-shown is visible, and
-   js/script.js advances it while the card is hovered. */
-@media (prefers-reduced-motion: no-preference) {
-  .rm:hover .rm__hover.is-shown,
-
-  .rm:focus-visible .rm__hover.is-shown {
-    opacity: 1;
-    transform: translateY(-50%) scale(1);
-  }
+/* Vertical type, reading bottom-to-top as a spine on a shelf does. */
+.spine__title,
+.spine__author {
+  writing-mode: vertical-rl;
+  transform: rotate(180deg);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-height: 0;
 }
-/* Without motion the first frame still shows on hover — just no cycling. */
+/* The title takes whatever the author leaves; min-height:0 is what lets a flex
+   item shrink below its content at all. */
+.spine__title {
+  flex: 0 1 auto;
+  font-size: var(--spine-fs, 12px);
+  font-weight: 500;
+  letter-spacing: 0.01em;
+}
+.spine__author {
+  flex: none;
+  max-height: 46%;
+  font-size: 9px;
+  letter-spacing: 0.04em;
+  opacity: 0.74;
+}
+
+/* Without :has() the slot cannot widen, so the cover would open over its
+   neighbours. Fall back to no turn at all: three spines and the caption is
+   still the section, just static. */
+@supports not selector(:has(*)) {
+  .book[aria-pressed='true'] { transform: none; }
+}
+
+/* The turn is the whole gesture, so under `reduce` it is dropped rather than
+   shortened — the cover swaps in without sweeping, and the slot still opens. */
 @media (prefers-reduced-motion: reduce) {
-  .rm:hover .rm__hover.is-shown,
+  .book,
+  .book-slot { transition: none; }
+}
 
-  .rm:focus-visible .rm__hover.is-shown { opacity: 1; }
+.shelf__caption {
+  margin: 16px 0 0;
+  min-height: 3em;
+  max-width: 62ch;
+  color: var(--ink-soft);
+  font-size: 14px;
+  line-height: 1.55;
 }
-/* The generic hover rule above rebuilds transform from scratch, which would
-   drop the hand-placed --hx/--hy. Re-assert them after it. */
-.rm:hover .rm__hover--bare.is-shown,
+.shelf__caption b { color: var(--ink); font-weight: 500; }
 
-.rm:focus-visible .rm__hover--bare.is-shown {
-  transform: translate(var(--hx), calc(-50% + var(--hy))) scale(1);
-}
-/* Hand-placed with the ?edit=1 placement editor (js/script.js, P to dump). */
-.rm__hover--bare[src$="habita-hover.webp"] {
-  --hx: 347px;
-  --hy: -118px;
-  height: 360px;
-}
-.rm__hover--bare[src$="habita-hover-2.webp"] {
-  --hx: 42px;
-  --hy: -116px;
-  height: 360px;
-}
-@media (max-width: 1099.98px) {
-  .rm__hover { display: none; }
+@media (max-width: 599.98px) {
+  .shelf__books { gap: 4px; }
+  .shelf__caption { font-size: 13.5px; }
 }
 
 /* --------------------------------------------------------------------------
@@ -1053,6 +915,11 @@ main:focus-visible { outline: none; }
   align-items: flex-start;
 }
 .about__body { flex: 1 1 420px; }
+.about__hello {
+  color: var(--ink) !important;
+  font-size: 22px !important;
+  letter-spacing: -0.02em;
+}
 .about__body p {
   color: var(--ink-soft);
   font-size: 18px;
@@ -1255,27 +1122,14 @@ main:focus-visible { outline: none; }
 
   .js .hero__headline,
 
-  .js .hero__cta,
-
-  .js .hero__actions,
-
-  .js .stage .prop,
-
-  .js .stage .obj {
+  .js .hero__actions {
     animation: appear 0.62s var(--ease) backwards;
   }
   .js .hero__name { animation-delay: 0.05s; }
   .js .hero__role { animation-delay: 0.14s; }
   .js .hero__sub { animation-delay: 0.20s; }
   .js .hero__headline { animation-delay: 0.26s; }
-  .js .hero__cta { animation-delay: 0.32s; }
-  .js .hero__actions { animation-delay: 0.40s; }
-
-  /* Props trail in from the outside of the composition inwards */
-  .js .stage .prop { animation-delay: 0.40s; }
-  .js .stage .prop:nth-of-type(2n) { animation-delay: 0.48s; }
-  .js .stage .prop:nth-of-type(3n) { animation-delay: 0.56s; }
-  .js .stage .obj { animation-delay: 0.62s; }
+  .js .hero__actions { animation-delay: 0.34s; }
 }
 
 @keyframes appear {
@@ -1283,22 +1137,6 @@ main:focus-visible { outline: none; }
   to { opacity: 1; }
 }
 
-/* --------------------------------------------------------------------------
-   12b. Idle / ambient motion (graph mode, motion-safe only)
-   The reference keeps small things gently alive — objects bob, the status
-   caret blinks, stickers rotate. All of it is decorative and gated.
-   -------------------------------------------------------------------------- */
-@media (prefers-reduced-motion: no-preference) {
-  /* The reference's only looping animation: the album art rotates 360° every
-     5s, linear (ease [0,0,1,1]), pausing when offscreen. */
-  .js .player__disc img {
-    animation: vinyl-spin 5s linear infinite;
-  }
-}
-
-@keyframes vinyl-spin {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
 }
 
 /* --------------------------------------------------------------------------
@@ -1326,6 +1164,7 @@ main:focus-visible { outline: none; }
   }
   .nav[hidden] { display: none; }
   .nav a { padding: 10px 12px; font-size: 14px; }
+  .nav a + a::before { content: none; }
   .nav-toggle { display: inline-block; }
 
   .hero { padding-top: 40px; }
@@ -1338,11 +1177,10 @@ main:focus-visible { outline: none; }
    Set as data-mode on <html> by js/modes.js; persisted to localStorage and
    applied by an inline <head> script before paint so there's no flash.
 
-     graph    — the default. The latent field: a 2-D projection of the work,
-                marquee, spinning vinyl. Closest to the reference.
-     notebook — same layout on warm paper; cards below the hero become dashed
-                taped-in notes. Reading mode.
-     clean    — no props, no rotation, no marquee. Just type and cards.
+     graph  — the default. The latent field: every page, project, image and
+              tool as a node, laid out by a force simulation.
+     mosaic — the same material as a pinboard: real artifacts at mixed sizes
+              under a left-aligned lockup.
    -------------------------------------------------------------------------- */
 
 /* Mode switcher control. Hidden without JS, where the buttons would do
@@ -1350,11 +1188,24 @@ main:focus-visible { outline: none; }
 .modes { display: none; }
 .js .modes {
   display: inline-flex;
+  align-items: center;
+  flex: none;
+  flex-wrap: nowrap;
+  white-space: nowrap;
   gap: 2px;
-  padding: 3px;
+  padding: 3px 3px 3px 10px;
   background: var(--bg-sunken);
   border: 1px solid var(--line);
   border-radius: var(--radius-pill);
+}
+/* Says what the three words are for. Decorative duplication of the group's
+   aria-label, so it is hidden from the accessibility tree in the markup. */
+.modes__label {
+  margin-right: 6px;
+  color: var(--ink-faint, var(--ink-muted));
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
 }
 .modes button {
   padding: 5px 11px;
@@ -1377,41 +1228,11 @@ main:focus-visible { outline: none; }
   box-shadow: inset 0 0 0 1px var(--line-strong);
 }
 
-/* ---------- Per-mode prop arrangements ----------
-   The three modes are three genuinely different arrangements of the same
-   objects, not one layout with different surfaces. Coordinates for all three
-   came from a live render of jackiehu.design at 1440x900.
-
-   Each prop carries its notebook coords in --x/--y/--w/--h, plus optional
-   cleaned-up (--cl*) and notebook (--nb*) overrides. Props with no override
-   for a mode are absent from that mode on the reference and are hidden. */
-
-/* clean: no ornament at all. The mode's whole promise is "skip the art, show
-   me the person", and it used to ship more props than notebook did — eight of
-   them, hand-placed, plus both lilies. One rule replaces ~85 lines of
-   coordinates. The lamp doubled as the theme switch; the header toggle covers
-   that, and is the discoverable control anyway. */
-[data-mode='clean'] .prop,
-[data-mode='clean'] .lily {
-  display: none !important;
-}
-
-/* notebook: every prop is visible. The old rule hid anything without an
-   --nb:1 flag, which silently dropped film and folder — a leftover from the
-   reference-derived layout, before the modes were hand-placed. */
-[data-mode='notebook'] .prop {
-  display: block;
-  left: var(--nbx, var(--x)) !important;
-  top: var(--nby, var(--y)) !important;
-  width: var(--nbw, var(--w)) !important;
-  height: var(--nbh, var(--h)) !important;
-}
-
-/* --- Lockup position per mode ---
-   graph + notebook sit centre-left; cleaned-up moves the block right.
-   The left offset is a percentage, so the block must also be told it can never
-   exceed the space remaining to its right — otherwise the headline runs off the
-   viewport on narrow screens. */
+/* --- Lockup position ---
+   Graph centres the name over the field. The left offset is a percentage, so
+   the block must also be told it can never exceed the space remaining to its
+   right — otherwise the headline runs off the viewport on narrow screens.
+   Mosaic overrides all of this further down. */
 .hero__lockup {
   left: 39.514%;
   top: 24.111%;
@@ -1419,135 +1240,26 @@ main:focus-visible { outline: none; }
   text-align: center;
   width: min(590px, calc(100vw - 39.514% - 24px));
 }
-[data-mode='clean'] .hero__lockup {
-  left: auto;
-  right: 4.444%;             /* block ends at x=1376 of 1440 */
-  top: 34.667%;              /* 312/900 */
-  text-align: right;
-}
-/* Shrink-wrap the name to its glyphs so its box (not just its text) sits flush
-   right, matching the reference's 302px-wide name element. */
-/* --- Cards, palette and label per mode ---
-   These all read left/top from --x/--y, so overrides must set the custom
-   properties; a plain `left:` loses to the inline style. */
-[data-mode='clean'] .obj--player { --x: 40.000% !important; --y: 5.778%  !important; }
-[data-mode='clean'] .obj--share { --x: 70.972% !important; --y: 68.444% !important; }
 
-[data-mode='notebook'] .obj--player { --x: 74.500% !important; --y: 6.500%  !important; }
-[data-mode='notebook'] .obj--share { --x: 23.958% !important; --y: 61.111% !important; }
+/* The mode toggle sits in the SAME place in both modes: it is a control, not
+   scenery, so it must not appear to jump when the arrangement changes. It is
+   centred on the stage at a fixed fraction of the VIEWPORT — the one measure
+   both modes share, because the graph's stage is exactly one screen while the
+   mosaic's grows with its tiles. It replaced the "See the work / Get in touch"
+   pair, so it is also the only thing to press above the fold.
 
-/* Surfaces: notebook warms the paper, clean keeps the default ground */
-:root[data-mode='notebook'] {
-  --bg: #fdfcf7;
-  --bg-raised: #fffef9;
-  --bg-sunken: #f3f0e6;
-  --surface: #fffef9;
-}
-[data-mode='notebook'] .about__aside {
-  box-shadow: none;
-  background: transparent;
-  border-style: dashed;
-}
-/* Lilies stay decorative in every mode */
-[data-mode='notebook'] .lily { --lily-o: 0.1; }
-
-/* The reference's name is a short two-word mark; ours is much wider and would
-   run under the vinyl card on the notebook's right page. Scale it to fit the
-   spread instead of overlapping. */
-[data-mode='notebook'] .hero__name { font-size: clamp(2.4rem, 4.6vw, 62px); }
-
-/* ---------- clean mode: cards and lockup ----------
-   Positioned by hand in the browser (js/layout-editor.js, ?edit=1) and pasted
-   back verbatim. Deliberate design decisions - do not "correct" them against
-   the other modes or any reference site. The prop and lily coordinates that
-   used to live here were deleted: clean hides both outright. */
-[data-mode='clean'] .obj--player {
-  --x: 42.313% !important; --y: 13.855% !important;
-  --w: 15.102% !important;
-  height: auto !important; transform: none !important; z-index: 6 !important;
-}
-/* height:auto rather than the dumped figure: the recorded box was taller than
-   the card's own content, which left a band of empty space under the buttons.
-   The width still comes from the dump, so the card lands where it was placed. */
-[data-mode='clean'] .obj--share {
-  --x: 80.068% !important; --y: 65.783% !important; --w: 16.395% !important;
-  height: auto !important; transform: none !important; z-index: 7 !important;
-}
-[data-mode='clean'] .hero__lockup {
-  left: 0 !important; right: auto !important; top: 0 !important;
-  width: 100% !important; max-width: none !important;
-  height: 100% !important; text-align: left !important;
-}
-[data-mode='clean'] .hero__name {
-  position: absolute !important;
-  left: 62.193% !important; top: 11.985% !important;
-  right: auto !important; bottom: auto !important; margin: 0 !important;
-  width: 35.559% !important;
-  max-width: none !important;
-  text-align: left !important;
-  transform: none !important;
-}
-[data-mode='clean'] .hero__role {
-  position: absolute !important;
-  /* Anchor the right edge to 97.616% — the headline's right edge below it
-     (left 60.831% + width 36.785%) — so both read as one right-aligned column. */
-  left: auto !important; right: 2.384% !important; top: 24.818% !important;
-  bottom: auto !important; margin: 0 !important;
-  width: max-content !important;
-  max-width: none !important;
-  text-align: right !important;
-  transform: none !important;
-}
-[data-mode='clean'] .hero__sub {
-  position: absolute !important;
-  /* Anchored to the right edge rather than left:92.507%. With a left anchor,
-     width:max-content and no right constraint, the text ran past the stage
-     between 900 and 1000px and was silently clipped by the hero's
-     overflow:hidden. Anchoring right keeps the same visual position at
-     1440px and cannot overflow at any narrower width. */
-  left: auto !important; right: 2.5% !important;
-  top: 28.208% !important; bottom: auto !important; margin: 0 !important;
-  width: max-content !important;
-  max-width: 45vw !important;
-  text-align: right !important;
-  transform: none !important;
-}
-[data-mode='clean'] .hero__headline {
-  position: absolute !important;
-  left: 60.831% !important; top: 32.809% !important;
-  right: auto !important; bottom: auto !important; margin: 0 !important;
-  width: 36.785% !important;
-  max-width: none !important;
-  text-align: right !important;
-  transform: none !important;
-}
-/* The dump gave this box a percentage width (13.624% = 196px at 1440), but the
-   button group inside it is a fixed ~201px. Below 1440 the box shrank while the
-   buttons did not, so they overflowed and their visual centre crept rightwards.
-   Sizing to content keeps the buttons' centre fixed at the authored point, so
-   the skills heading below can track it with one figure at every width. */
-/* The mode toggle sits in the SAME place in all three modes: it is a
-   control, not scenery, so it must not appear to jump when the mode
-   changes. graph and notebook both centre it at 50% / 71.307%, and clean
-   now matches them. The layout editor is not allowed to move it — see
-   the SEL list in js/layout-editor.js. */
-[data-mode='clean'] .hero__cta {
-  position: absolute !important;
-  left: 60.831% !important; top: 44.000% !important;
-  right: auto !important; bottom: auto !important; margin: 0 !important;
-  width: 36.785% !important; max-width: 92vw !important;
-  transform: none !important;
-}
-[data-mode='clean'] .hero__actions {
-  position: absolute !important;
-  left: 50.000% !important; top: 71.307% !important;
-  right: auto !important; bottom: auto !important; margin: 0 !important;
-  width: max-content !important;
-  max-width: none !important;
-  text-align: center !important;
-  transform: translateX(-50%) !important;
-  display: flex !important;
-  justify-content: center !important;
+   Directly under the header is the one strip both arrangements can keep clear:
+   the graph moves its legend down for it, and the mosaic starts its grid below
+   it. Anywhere lower and the mosaic would have to leave a hole in the middle
+   of itself. */
+.hero__actions {
+  position: absolute;
+  left: 50%;
+  top: calc(var(--header-h, 58px) + 16px);
+  width: max-content;
+  transform: translateX(-50%);
+  display: flex;
+  justify-content: center;
 }
 
 /* ---------- graph mode: the latent field ----------
@@ -1556,21 +1268,13 @@ main:focus-visible { outline: none; }
    the collage used — centred on the mode toggle's axis (x=734 of 1468),
    values as % of the stage — so it reads as the centroid of the field. */
 
-/* graph mode hides the whole desk. Every prop, lily and card belongs to
-   notebook's hand-placed arrangement; graph replaces the stage with the
-   latent field, so they are hidden outright rather than re-positioned —
-   the same single rule clean already uses. */
-[data-mode='graph'] .prop,
-[data-mode='graph'] .lily,
-[data-mode='graph'] .obj { display: none !important; }
-
 /* --- The graph ----------------------------------------------------------
    Every destination on the site as a node, every real relationship as an
    edge, laid out by a force simulation in js/field.js. Node labels are drawn
    onto the canvas rather than set as elements: ~90 of them as DOM nodes would
    mean 90 layout boxes moved every frame.
 
-   Hidden in notebook and clean, which keep their own arrangements. */
+   Hidden in mosaic, which uses the same stage for its tiles. */
 .field {
   position: absolute;
   inset: 0;
@@ -1601,9 +1305,14 @@ main:focus-visible { outline: none; }
    names it can already reach as links. */
 .field__legend {
   position: absolute;
-  left: 50%;
-  top: 8%;
-  transform: translateX(-50%);
+  /* The top strip belongs to the mode toggle in both modes. Bottom-centre is
+     where the Resources cluster sits, so the legend goes bottom-right,
+     opposite the read-me line in the other corner. */
+  left: auto;
+  right: 3%;
+  top: auto;
+  bottom: 7%;
+  transform: none;
   margin: 0;
   padding: 0;
   list-style: none;
@@ -1689,333 +1398,12 @@ main:focus-visible { outline: none; }
   text-align: center !important;
   transform: translateX(-50%) !important;
 }
-/* No CTA pair in graph mode: "See the work" and "Get in touch" are both
-   nodes you can click, sitting in the graph a few hundred pixels away, and a
-   button pair in the middle of the stage only crowds the name. Scoped to the
-   width where the graph actually renders — below that the field is hidden and
-   the buttons are the only way out of the hero. */
-@media (min-width: 900px) {
-  [data-mode='graph'] .hero__cta { display: none !important; }
-}
-[data-mode='graph'] .hero__actions {
-  position: absolute !important;
-  left: 50.000% !important; top: 70.000% !important;
-  right: auto !important; bottom: auto !important; margin: 0 !important;
-  width: max-content !important; text-align: center !important;
-  display: flex !important;
-  justify-content: center !important;
-  transform: translateX(-50%) !important;
-}/* ---------- notebook mode: hand-placed layout ----------
-   Positioned by hand in the browser (js/layout-editor.js, ?edit=1).
-   Rotated items have their CSS box solved back from the desired ON-SCREEN
-   box. The lockup text is centred on the mode toggle's axis.
-   palette and prop-label are absent from this arrangement, so hidden. */
-
-/* Above the notebook page (z 4) but below the lamp (z 27): the glow spills
-   onto the paper, while the shade still covers its own top edge. */
-[data-mode='notebook'] .prop--glow {
-  display: block !important;
-  left: 16.826% !important; top: 20.602% !important;
-  width: 15.736% !important; height: 20.482% !important;
-  transform: none !important; z-index: 3 !important;
-}
-[data-mode='notebook'] .prop[data-prop='lamp'] {
-  /* Near-upright: at -19deg the lamp read as toppled. A desk lamp beside an
-     open notebook should stand. */
-  display: block !important;
-  left: 13.090% !important; top: 19.335% !important;
-  width: 20.549% !important; height: 41.811% !important;
-  transform: rotate(13deg) !important;
-  z-index: 4 !important;
-  transform-origin: center center !important;
-}
-[data-mode='notebook'] .prop[data-prop='camera'] {
-  --rb: 17deg;
-  display: block !important;
-  left: 72.370% !important; top: 64.547% !important;
-  width: 12.958% !important; height: 16.931% !important;
-  transform: rotate(var(--rb));
-  transform-origin: center center;
-  z-index: 5 !important;
-}
-/* --- notebook mode: new props (hand-placed, ?edit=1 D dump) ---
-   Rotated items have their CSS box solved back from the dumped ON-SCREEN
-   bounding box, as with the props above: CSS sizes the element first and
-   rotates afterwards, so authoring the bbox directly would oversize them. */
-[data-mode='notebook'] .prop[data-prop='notebook-open'] {
-  /* The page the whole arrangement sits on. Its bounding box is larger than
-     the stage and object-fit letterboxes the artwork inside it, matching the
-     dumped placement. z-index 0 keeps it behind every other prop while
-     staying in the stage's own stacking context — the dumped z=-67 would
-     have dropped it behind the stage background entirely. */
-  display: block !important;
-  left: 24.105% !important; top: -38.043% !important;
-  width: 54.583% !important; height: 184.519% !important;
-  transform: rotate(-9deg) !important;
-  transform-origin: center center !important;
-  z-index: 0 !important;
-}
-[data-mode='notebook'] .prop[data-prop='glass-flower'] {
-  --rb: 0deg;
-  display: block !important;
-  left: 57.766% !important; top: 77.349% !important;
-  width: 13.556% !important; height: 17.711% !important;
-  transform: rotate(var(--rb));
-  z-index: 2 !important;
-}
-/* Absent from this arrangement. */
-[data-mode='notebook'] .prop[data-prop='paper-stack'] { display: none !important; }
-/* The page covers most of the stage; like the old notebook-page it must never
-   eat a hover or a click meant for what is drawn on top of it. */
-[data-mode='notebook'] .prop[data-prop='notebook-open'] {
-  pointer-events: none !important;
-}
-[data-mode='notebook'] .lily--bl {
-  left: -2.997% !important; top: 27.482% !important;
-  right: auto !important; bottom: auto !important;
-  width: 27.248% !important; height: 78.692% !important;
-  transform: none !important; z-index: 1 !important;
-}
-[data-mode='notebook'] .lily--tr {
-  left: 79.768% !important; top: -7.022% !important;
-  right: auto !important; bottom: auto !important;
-  width: 24.251% !important; height: 38.862% !important;
-  transform: none !important; z-index: 1 !important;
-}
-/* Sits on the page rather than under it, same band as the glow. */
-[data-mode='notebook'] .obj--player {
-  --x: 67.306% !important; --y: 10.329% !important;
-  --w: 15.934% !important; height: auto !important;
-  transform: rotate(-4deg) !important;
-  transform-origin: center center !important;
-  z-index: 6 !important;
-}
-[data-mode='notebook'] .obj--share {
-  --x: 22.578% !important; --y: 70.517% !important;
-  --w: 15.062% !important; height: auto !important;
-  transform: rotate(5deg) !important;
-  transform-origin: center center !important;
-  z-index: 7 !important;
-}
-[data-mode='notebook'] .hero__lockup {
-  left: 0 !important; right: auto !important; top: 0 !important;
-  width: 100% !important; max-width: none !important;
-  height: 100% !important;
-}
-[data-mode='notebook'] .hero__name {
-  position: absolute !important;
-  left: 50.000% !important; top: 39.831% !important;
-  right: auto !important; bottom: auto !important; margin: 0 !important;
-  width: max-content !important; max-width: 92vw !important;
-  white-space: nowrap !important; text-align: center !important;
-  transform: translateX(-50%) !important;
-}
-[data-mode='notebook'] .hero__role {
-  position: absolute !important;
-  left: 50.000% !important; top: 49.395% !important;
-  right: auto !important; bottom: auto !important; margin: 0 !important;
-  width: max-content !important; max-width: 92vw !important;
-  white-space: nowrap !important; text-align: center !important;
-  transform: translateX(-50%) !important;
-}
-[data-mode='notebook'] .hero__sub {
-  position: absolute !important;
-  left: 50.000% !important; top: 52.785% !important;
-  right: auto !important; bottom: auto !important; margin: 0 !important;
-  width: max-content !important; max-width: 92vw !important;
-  white-space: nowrap !important; text-align: center !important;
-  transform: translateX(-50%) !important;
-}
-[data-mode='notebook'] .hero__headline {
-  position: absolute !important;
-  left: 50.000% !important; top: 58.475% !important;
-  right: auto !important; bottom: auto !important; margin: 0 !important;
-  width: 36.785% !important; max-width: 92vw !important;
-  text-align: center !important; transform: translateX(-50%) !important;
-}
-[data-mode='notebook'] .hero__cta {
-  position: absolute !important;
-  left: 50.000% !important; top: 64.200% !important;
-  right: auto !important; bottom: auto !important; margin: 0 !important;
-  width: max-content !important; max-width: 92vw !important;
-  justify-content: center !important;
-  transform: translateX(-50%) !important;
-}
-[data-mode='notebook'] .hero__actions {
-  position: absolute !important;
-  left: 50.000% !important; top: 71.308% !important;
-  right: auto !important; bottom: auto !important; margin: 0 !important;
-  width: max-content !important;
-  display: flex !important; justify-content: center !important;
-  transform: translateX(-50%) !important;
-}
-
-
-/* --------------------------------------------------------------------------
-   Hover lift on hero objects
-   Every prop, card and the palette scales up slightly on hover and settles
-   back. js/hero-hover.js rebuilds the full transform on hover (rotation plus
-   scale) so a hovered object keeps its tilt; the rules here own the
-   transition and the props that opt in.
-
-   Props are pointer-events:none by default (they must not block drags), so
-   they opt in here. Gated on prefers-reduced-motion.
-   -------------------------------------------------------------------------- */
-@media (prefers-reduced-motion: no-preference) {
-  .js .stage .prop,
-
-  .js .stage .obj {
-    transition: transform 0.32s cubic-bezier(0.2, 0.7, 0.3, 1),
-                filter 0.32s cubic-bezier(0.2, 0.7, 0.3, 1);
-  }
-  .js .stage .prop { pointer-events: auto; }
-
-  /* .is-hovered is set by js/script.js, which recomposes the transform so the
-     item's authored rotation is preserved while it scales.
-
-     --prop-filter carries the theme's base treatment (the dark theme dims the
-     props), so the hover shadow composes with it instead of replacing it and
-     making the prop flash to full brightness. Its fallback is an empty value,
-     NOT `none`: `filter: none drop-shadow(...)` is invalid and would drop the
-     whole declaration, leaving hovered props with no shadow in either theme.
-
-     The [data-theme] variants match the dimming rule's specificity and come
-     later in the file, so a hovered prop keeps its dim treatment AND gains the
-     shadow rather than losing one to the other. */
-  :root[data-theme] .js .stage .prop.is-hovered,
-
-  .js .stage .prop.is-hovered {
-    filter: var(--prop-filter, ) drop-shadow(0 10px 20px var(--prop-shadow, rgba(28, 55, 90, 0.22)));
-  }
-  .js .stage .obj.is-hovered {
-    box-shadow: var(--shadow-card-hover);
-  }
-}
-
-/* A hovered card must never be trapped under a neighbour */
-.stage .obj.is-hovered,
-
-.stage .prop.is-hovered { z-index: 40 !important; }
-
-
-/* --------------------------------------------------------------------------
-   Lamp glow
-
-   A standalone prop, positioned independently of the lamp: it carries its own
-   --x/--y/--w/--h per mode and can be moved in the layout editor like anything
-   else on the stage. It is placed just below the lamp in the stacking order so
-   the shade covers its upper edge.
-
-   It stays dark until the lamp is hovered — js/hero-hover.js mirrors the lamp's
-   hover onto this element, since the two are no longer nested and a CSS :hover
-   on one cannot reach the other.
-   -------------------------------------------------------------------------- */
-/* !important on opacity: the base .prop rule sets opacity:var(--o,1) and the
-   per-mode layout blocks are themselves !important, so a plain declaration
-   here would be overridden and the glow would show unlit. */
-/* --------------------------------------------------------------------------
-   Lamp as the theme switch
-
-   It is a <button> so it works from the keyboard and reports its state, but it
-   must look and lay out exactly like the surrounding .prop images: no chrome,
-   no padding, and the artwork filling the same box object-fit:contain would
-   give an <img class="prop">.
-   -------------------------------------------------------------------------- */
-.prop--lamp-btn {
-  padding: 0;
-  border: 0;
-  background: none;
-  appearance: none;
-  -webkit-appearance: none;
-  cursor: pointer;
-  /* The base .prop rule turns pointer events off; a control needs them on. */
-  pointer-events: auto;
-}
-.prop--lamp-btn > img {
-  width: 100%;
-  height: 100%;
-  object-fit: contain;
-  object-position: center;
-  pointer-events: none;   /* the button owns the hit test */
-}
-.prop--lamp-btn:focus-visible {
-  outline: 2px solid var(--accent);
-  outline-offset: 4px;
-  border-radius: 6px;
-}
-
-.prop--glow {
-  opacity: 0 !important;
-  pointer-events: none !important;  /* never steals hover from the lamp */
-  transition: opacity 0.45s var(--ease), transform 0.45s var(--ease);
-  will-change: opacity;
-}
-/* Lit whenever the lamp is on (dark theme), or previewed on hover. */
-.prop--glow.is-lit,
-
-:root[data-theme='dark'] .prop--glow {
-  opacity: 1 !important;
-}
-@media (prefers-reduced-motion: reduce) {
-  /* Remove the transition rather than re-declaring it: the previous rule kept
-     a 0.45s opacity fade, so the glow still animated for users who asked for
-     no motion. The lamp now switches instantly. */
-  .prop--glow { transition: none; }
-}/* --------------------------------------------------------------------------
-   Hover-interaction exclusions
-
-   A rotated prop still has an axis-aligned bounding box, so a long thin object
-   like the pen claims a large invisible rectangle. The notebook page is the
-   worst offender: it covers most of the stage, so it opts out entirely.
-
-   The pen keeps its hover lift in every mode. In clean mode it is rotated -90
-   deg, so its bounding box lies right across the mode toggle — the toggle wins
-   anyway because .hero__actions is pinned to z-index 60 below, which turned out
-   to be enough and cheaper than trimming the pen's hit area.
-   -------------------------------------------------------------------------- */
-
 
 /* The mode toggle must always win the hit test, whatever is drawn over it. */
 .hero__actions { z-index: 60 !important; }
 .hero__actions .modes,
 
 .hero__actions button { pointer-events: auto !important; }
-
-/* --------------------------------------------------------------------------
-   Player: play / pause control
-   -------------------------------------------------------------------------- */
-.player__play {
-  display: block;
-  width: 30px;
-  height: 30px;
-  margin: 0 auto 6px;
-  padding: 0;
-  border: 1px solid var(--line-strong);
-  border-radius: 50%;
-  background: var(--bg-raised);
-  color: var(--ink);
-  cursor: pointer;
-  transition: background var(--dur) var(--ease), border-color var(--dur) var(--ease);
-}
-.player__play:hover {
-  background: var(--accent-deep);
-  border-color: var(--accent-deep);
-}
-
-/* The glyph itself is swapped by js/hero-hover.js: U+25B6 play, U+23F8 pause. */
-.player__icon {
-  display: grid;
-  place-items: center;
-  width: 100%;
-  height: 100%;
-  font-size: 12px;
-  line-height: 1;
-  /* Keep the two glyphs optically centred: the play triangle reads left-heavy */
-  padding-left: 1px;
-}
-.player__play[aria-pressed='true'] .player__icon { padding-left: 0; }
-/* The hover fill is --accent-deep, so the glyph follows the same pairing. */
-.player__play:hover .player__icon { color: var(--on-accent-deep, #fff); }
 
 @media print {
   .site-header,
@@ -2026,71 +1414,8 @@ main:focus-visible { outline: none; }
 
   .nav-toggle,
 
-  .prop,
-
   .modes { display: none !important; }
   body { background: #fff; color: #000; background-image: none; }
-}
-
-/* --------------------------------------------------------------------------
-   Prop hover animations
-
-   Each animated prop declares data-anim in the markup. js/hero-hover.js
-   stands down for those props: it writes an inline !important transform, and
-   an important declaration outranks a keyframe animation in the cascade, so
-   the animation would compute but never paint. CSS therefore owns their whole
-   hover, which is why every keyframe restates the 1.06 scale the other props
-   get from that JS.
-
-   Each prop also carries its authored per-mode angle in --rb rather than in a
-   literal, because the same keyframes run in all three modes: the dice sits at
-   0deg in notebook but 30deg in clean, so a hardcoded rotation would snap the
-   prop straight before it animated. calc() composes the animation on top.
-
-   All of it sits inside prefers-reduced-motion: no-preference, per the
-   project convention that no motion is unconditional.
-   -------------------------------------------------------------------------- */
-@media (prefers-reduced-motion: no-preference) {
-
-  /* Shared resting state for a hovered animated prop: the composed scale, and
-     a lift above its neighbours since these props no longer get the
-     .is-hovered z-index bump from JS. */
-  .js .stage .prop[data-anim]:hover {
-    transform: rotate(var(--rb, 0deg)) scale(1.06);
-    z-index: 41 !important;
-  }
-
-  /* Camera — shutter flash. Filter only, so the composed scale above is left
-     to stand. --prop-filter carries the dark theme dimming, so the flash
-     brightens from that base instead of overwriting it and blowing out. */
-  @keyframes prop-flash {
-    0% { filter: var(--prop-filter, ) brightness(1); }
-    7% { filter: var(--prop-filter, ) brightness(2.9) saturate(0.15)
-                   drop-shadow(0 0 26px rgba(255, 255, 255, 0.95)); }
-    17% { filter: var(--prop-filter, ) brightness(1.02); }
-    28% { filter: var(--prop-filter, ) brightness(2.1) saturate(0.3)
-                   drop-shadow(0 0 18px rgba(255, 255, 255, 0.8)); }
-    45% { filter: var(--prop-filter, ) brightness(1); }
-    100% { filter: var(--prop-filter, ) brightness(1); }
-  }
-  .js .stage .prop[data-anim="flash"]:hover {
-    animation: prop-flash 1s var(--ease) both;
-  }
-
-  /* Glass flower — spins about the blossom itself. 50%/54% is measured from
-     the artwork: the opaque centroid lands at 50.2%/52.0%, and the stamen
-     cluster it should turn on sits a little below that. Spinning about the box
-     centre instead made it wobble like a bad wheel. */
-  .js .stage .prop[data-anim="spin"] {
-    transform-origin: 50% 54%;
-  }
-  @keyframes prop-spin {
-    from { transform: rotate(var(--rb, 0deg)) scale(1.06); }
-    to { transform: rotate(calc(var(--rb, 0deg) + 360deg)) scale(1.06); }
-  }
-  .js .stage .prop[data-anim="spin"]:hover {
-    animation: prop-spin 2.6s linear infinite;
-  }
 }
 
 /* --------------------------------------------------------------------------
@@ -2212,17 +1537,6 @@ main:focus-visible { outline: none; }
   .hob-tri { grid-template-columns: 1fr; gap: 14px; }
 }
 
-
-/* --- Projects: theme-aware project icon ------------------------------
-   Some marks ship a second artwork drawn for a dark ground. Both <img> are in
-   the DOM and CSS picks one, because the theme lives on [data-theme] rather
-   than the OS preference a <picture> element would follow. */
-.rm__icon--dark { display: none; }
-/* :has() scopes the hide to cards that actually ship a dark variant, so a card
-   with only one icon keeps showing it in either theme. */
-:root[data-theme='dark'] .rm:has(.rm__icon--dark) .rm__icon:not(.rm__icon--dark) { display: none; }
-:root[data-theme='dark'] .rm .rm__icon--dark { display: block; }
-
 /* --------------------------------------------------------------------------
    16. Phone (<=599px)
 
@@ -2258,27 +1572,18 @@ main:focus-visible { outline: none; }
   }
   .nav-toggle { padding: 11px 16px; }
 
-  .player__play {
-    width: 44px;
-    height: 44px;
-  }
-
   .detail__back {
     display: inline-flex;
     align-items: center;
     min-height: 44px;
   }
   .btn { padding: 12px 18px; }
-  .share__btn { min-height: 44px; }
   .brand { padding: 11px 0; }
 
   /* --- legibility ------------------------------------------------------ */
   /* Nothing below 13px: iOS also zooms the page when tapped text is smaller. */
-  .share__sub { font-size: 13px; }
-  .share__title { font-size: 13px; }
-  .obj__title,
-
-  .obj__meta { font-size: 13px; }
+  .frag__label,
+  .frag__from { font-size: 12px; }
   .rm__desc { font-size: 13.5px; }
   .dd--table th,
 
@@ -2293,28 +1598,18 @@ main:focus-visible { outline: none; }
 
   /* Cards stack, so the icon can be larger and the text gets full width. */
   .rm { padding: 14px; gap: 12px; }
-  .rm__icon { width: 60px; height: 60px; }
 }
 
 /* --------------------------------------------------------------------------
    Hero: force natural flow on mobile, in EVERY view mode.
 
-   The [data-mode='graph'|'notebook'|'clean'] blocks pin the lockup text, the
-   two cards and the toggle with `position: absolute !important` and no media
-   guard, so below 900px they overlapped the base mobile reset (which had no
-   !important). This block wins by coming later with matching specificity plus
-   !important, so the hero stacks: name -> role -> headline -> cards -> toggle.
+   The [data-mode='graph'] block pins the lockup text with
+   `position: absolute !important` and no media guard, so below 900px it
+   overlapped the base mobile reset (which had no !important). This block wins
+   by coming later with matching specificity plus !important, so the hero
+   stacks: name -> role -> headline -> toggle.
    -------------------------------------------------------------------------- */
 @media (max-width: 899.98px) {
-  /* notebook mode re-shows every prop with `display:block !important` on
-     high-specificity selectors ([src*=], [data-prop=]). To out-specify those
-     and still beat the base, match the same attribute shapes with !important. */
-  [data-mode] .prop,
-
-  :root[data-mode] .prop[src],
-
-  :root[data-mode] .prop[data-prop] { display: none !important; }
-
   [data-mode] .hero__lockup {
     position: relative !important;
     left: auto !important; top: auto !important; right: auto !important;
@@ -2326,8 +1621,6 @@ main:focus-visible { outline: none; }
   [data-mode] .hero__role,
 
   [data-mode] .hero__sub,
-
-  [data-mode] .hero__cta,
 
   [data-mode] .hero__headline {
     position: static !important;
@@ -2349,25 +1642,6 @@ main:focus-visible { outline: none; }
   [data-mode] .hero__role { margin: 0 auto !important; }
   [data-mode] .hero__sub { margin: 0 auto 20px !important; }
   [data-mode] .hero__headline { margin: 0 auto 28px !important; }
-  /* The CTA row is positioned absolutely in graph mode like the rest of the
-     lockup, so it needs the same reset — without it the buttons sat at 68.5%
-     of a lockup that no longer has a height, on top of the headline. */
-  [data-mode] .hero__cta {
-    margin: 0 auto 28px !important;
-    justify-content: center !important;
-  }
-
-  [data-mode] .stage .obj {
-    position: relative !important;
-    left: auto !important; top: auto !important;
-    --w: auto !important;
-    width: min(258px, calc(100% - 72px)) !important;
-    height: auto !important;
-    margin: 0 auto var(--gap-lg) !important;
-    transform: none !important;
-  }
-  /* The player card sizes its disc off width, so drop the fixed --h too. */
-  [data-mode] .obj--player .player__disc { aspect-ratio: 1; height: auto; }
 
   [data-mode] .hero__actions {
     position: static !important;
@@ -2380,7 +1654,6 @@ main:focus-visible { outline: none; }
 
 /* Very narrow (<=360px): the smallest phone still in real use. */
 @media (max-width: 360px) {
-  .rm__icon { width: 52px; height: 52px; }
   .rm__title { font-size: 15px; }
   .modes button { padding: 10px 10px; font-size: 11.5px; }
   .hob-card__label { font-size: 22px; }
@@ -2431,30 +1704,11 @@ main:focus-visible { outline: none; }
 .notfound h1 { font-size: clamp(1.4rem, 4vw, 2rem); }
 .notfound p { color: var(--ink-soft); max-width: 420px; }
 
-/* --------------------------------------------------------------------------
-   Mobile hero atmosphere
+/* Mobile: the stage is stacked type, not a composition. */@media (max-width: 899.98px) {
+  :root[data-mode] .stage { position: relative; }
 
-   Every prop is hidden below 900px, which left phone visitors with plain
-   centred type and no trace of the desk-collage the site is built around.
-   Two of the lightest props come back as ambient decoration — the pen (4 KB)
-   and the dreams clipping (65 KB, already fetched for the collage) — placed
-   in the margins where they cannot collide with the type or the cards.
-
-   Deliberately excluded: the lamp (it is the theme switch and needs to be
-   hittable), the notebook page (covers the whole stage) and the toolbar
-   (unreadable at this size). Hidden entirely in clean mode, per convention.
-   -------------------------------------------------------------------------- */
-@media (max-width: 899.98px) {
-  :root[data-mode='graph'] .stage,
-
-  :root[data-mode='notebook'] .stage { position: relative; }
-
-  /* Keep the lilies as the ground wash they already are, just softer. */
-  :root[data-mode] .lily { opacity: 0.1 !important; }
-
-  /* The lockup must sit above the decoration. */
+  /* The lockup must sit above the graph. */
   [data-mode] .hero__lockup { position: relative !important; z-index: 2; }
-  [data-mode] .stage .obj { z-index: 2; }
 }
 
 /* ==========================================================================
@@ -2560,3 +1814,224 @@ main:focus-visible { outline: none; }
   .lightbox__frame { position: relative; }
   .lightbox__close { position: absolute; top: 8px; right: 8px; }
 }
+
+/* --------------------------------------------------------------------------
+   Fragments mode
+   The third view mode, in the slot `clean` used to hold. The stage stops
+   being a prop collage and becomes one grid: the name lockup is the first
+   cell, the artifacts from js/mosaic.js flow after it, and the mode
+   switcher closes the run. Everything is in normal flow, so none of the
+   per-prop --x/--y coordinates apply and the stage grows to its content.
+
+   The per-element hero coordinates clean used to carry were deleted rather
+   than overridden: this mode places nothing by hand, so nothing up there had
+   anything left to say.
+   -------------------------------------------------------------------------- */
+
+[data-mode='mosaic'] .stage {
+  /* The stage IS the mosaic: the name is a tile in it like everything else,
+     spanning enough cells to hold its own prose. (It used to be a block above
+     the grid; as a one-row grid item it printed over the tiles, which is why
+     the span below is explicit.) */
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  grid-auto-rows: 132px;
+  grid-auto-flow: row dense;
+  gap: 12px;
+  align-content: start;
+  /* The same container the site header uses, so the first tile's left edge and
+     the name both line up with the brand and the nav rather than with the
+     window. */
+  max-width: var(--measure);
+  margin-inline: auto;
+  /* Top padding clears the header plus the toggle's band. */
+  padding: calc(var(--header-h, 58px) + 78px) var(--gap-lg) var(--gap-lg);
+  overflow: visible;
+}
+
+/* The name, as a tile. Two columns and three rows is the smallest box that
+   holds the headline without the type having to shrink. */
+[data-mode='mosaic'] .hero__lockup {
+  position: static !important;
+  order: -1;
+  grid-column: span 2;
+  grid-row: span 3;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  width: auto;
+  max-width: none;
+  height: auto;
+  margin: 0;
+  padding: 18px 20px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--bg-raised);
+  transform: none !important;
+  text-align: left;
+  pointer-events: auto;
+}
+/* Inside a tile the name has to fit the tile, not the viewport. */
+[data-mode='mosaic'] .hero__name {
+  margin: 0 0 10px;
+  font-size: clamp(1.6rem, 2.2vw, 30px);
+  line-height: 1.05;
+}
+[data-mode='mosaic'] .hero__role { font-size: 13px; }
+[data-mode='mosaic'] .hero__sub { font-size: 11.5px; margin-bottom: 12px; }
+[data-mode='mosaic'] .hero__headline {
+  font-size: 12.5px;
+  line-height: 1.5;
+}
+/* The base styles centre these two inside the lockup; the mosaic lockup is
+   a left-aligned block, so they come back to the left edge with it. */
+[data-mode='mosaic'] .hero__role,
+[data-mode='mosaic'] .hero__sub,
+[data-mode='mosaic'] .hero__headline {
+  margin-left: 0;
+  margin-right: auto;
+  text-align: left;
+}
+
+/* The mosaic. A fixed row height, not minmax(...,auto): a row that grows to
+   its content makes every span mean something different and the tiles stop
+   interlocking. `dense` back-fills the holes a mixed-span run leaves, which is
+   the difference between a mosaic and a grid with gaps in it. */
+.mosaic {
+  display: none;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+/* A pass-through: the tiles are the stage grid's own items, so the lockup can
+   sit among them. */
+[data-mode='mosaic'] .mosaic { display: contents; }
+/* The <li> is a wrapper the grid should not see; its .frag is the tile. */
+.mosaic > li { display: contents; }
+
+.frag {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  gap: 6px;
+  overflow: hidden;
+  padding: 14px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--bg-raised);
+  color: var(--ink-soft);
+  font-size: 13px;
+  line-height: 1.4;
+  text-decoration: none;
+  transition: border-color var(--dur) var(--ease), background var(--dur) var(--ease),
+              transform var(--dur) var(--ease);
+}
+a.frag:hover,
+a.frag:focus-visible {
+  border-color: var(--line-strong);
+  background: var(--surface);
+}
+@media (prefers-reduced-motion: no-preference) {
+  a.frag:hover { transform: translateY(-2px); }
+}
+
+.frag__num {
+  color: var(--accent);
+  font-size: clamp(2rem, 4.4vw, 46px);
+  font-weight: 500;
+  line-height: 1;
+  letter-spacing: -0.03em;
+}
+.frag__label,
+.frag__from,
+.frag__kicker {
+  color: var(--ink-faint, var(--ink-soft));
+  font-size: 11.5px;
+  letter-spacing: 0.04em;
+}
+.frag__from,
+.frag__kicker { text-transform: uppercase; }
+
+/* A photograph fills its tile; the caption sits on a scrim so it stays
+   readable over any exposure, in either theme. */
+.frag--photo { padding: 0; }
+.frag--photo img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.frag__cap {
+  position: relative;
+  padding: 24px 12px 10px;
+  background: linear-gradient(to top, rgb(0 0 0 / 0.72), rgb(0 0 0 / 0));
+  color: #fff;
+  font-size: 11.5px;
+  line-height: 1.35;
+}
+
+.frag--note { justify-content: space-between; }
+.frag__note {
+  font-family: var(--font-note, var(--font-script));
+  font-size: 17px;
+  line-height: 1.3;
+  color: var(--ink);
+}
+
+/* Span comes from js/mosaic.js, per kind of artifact. */
+.frag {
+  grid-column: span var(--fc, 1);
+  grid-row: span var(--fr, 1);
+}
+.frag--code pre {
+  overflow: hidden;
+  margin: 0 0 8px;
+  font-size: 11px;
+  line-height: 1.5;
+}
+.frag--code code { color: var(--ink); white-space: pre; }
+
+.frag__tag {
+  color: var(--ink);
+  font-size: 16px;
+  line-height: 1.25;
+}
+
+/* Two columns at phone width, so nothing may span more than both of them. */
+@media (max-width: 599.98px) {
+  [data-mode='mosaic'] .stage {
+    grid-template-columns: repeat(2, 1fr);
+    grid-auto-rows: 116px;
+  }
+  .frag { --fc: 1; }
+  .frag--code { --fc: 2; }
+  .frag--code pre { font-size: 10px; }
+}
+
+/* --------------------------------------------------------------------------
+   Cursor cue (js/cursor.js)
+   A label that follows the pointer and names what is under it. The system
+   cursor is left alone; this sits beside it.
+   -------------------------------------------------------------------------- */
+.cue {
+  position: fixed;
+  left: 0;
+  top: 0;
+  z-index: 200;
+  padding: 5px 11px;
+  border-radius: var(--radius-pill);
+  background: var(--accent-deep);
+  color: var(--on-accent-deep, #fff);
+  font-size: 11.5px;
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+  opacity: 0;
+  pointer-events: none;   /* never intercepts the click it is describing */
+}
+.cue.is-on { opacity: 1; }
+/* Only the fade eases. The position is written every frame from the pointer,
+   so easing it as well would leave the label trailing behind the thing it
+   names. */
+.cue--eased { transition: opacity 120ms var(--ease); }

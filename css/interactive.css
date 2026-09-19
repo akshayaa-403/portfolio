@@ -1,0 +1,453 @@
+/* Interactive case-study figures (js/interactive.js).
+
+   Three widgets share one shell: a control strip on top, the thing being
+   controlled underneath, and a line of plain English below that. They sit in
+   the reading column and are sized to be read, not played with for their own
+   sake — a figure you can move, not a toy.
+
+   Every colour here is an existing token, so both themes are covered by the
+   tokens rather than by a second set of rules. */
+
+.dd--ix { margin: 0 0 32px; }
+.dd--ix h3 {
+  margin: 28px 0 8px;
+  color: var(--ink);
+  font-size: 17px;
+  font-weight: 600;
+}
+
+.ix {
+  margin-top: 14px;
+  padding: 16px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--bg-raised);
+}
+
+.ix-controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px 18px;
+  padding-bottom: 14px;
+  margin-bottom: 14px;
+  border-bottom: 1px solid var(--line);
+}
+
+/* ---------- sliders ---------- */
+
+.ix-slider {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  color: var(--ink-soft);
+}
+.ix-slider__name {
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  font-size: 10.5px;
+}
+.ix-slider input[type='range'] { width: 96px; accent-color: var(--accent); }
+.ix-slider output {
+  min-width: 3.2ch;
+  color: var(--accent-ink);
+  font-variant-numeric: tabular-nums;
+}
+
+.ix-reset,
+.ix-frame,
+.ix-play {
+  padding: 5px 11px;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius-pill);
+  background: transparent;
+  color: var(--ink-soft);
+  font: inherit;
+  font-size: 11.5px;
+  cursor: pointer;
+  transition: color var(--dur) var(--ease), background var(--dur) var(--ease),
+              border-color var(--dur) var(--ease);
+}
+.ix-reset:hover,
+.ix-frame:hover,
+.ix-play:hover { color: var(--accent-ink); border-color: var(--accent); }
+.ix-reset { margin-left: auto; }
+
+.ix-frame[aria-pressed='true'],
+.ix-play[aria-pressed='true'] {
+  background: var(--accent-deep);
+  border-color: var(--accent-deep);
+  color: var(--on-accent-deep, #fff);
+}
+.ix-play { margin-left: auto; }
+
+/* ---------- the ranked table ---------- */
+
+.ix-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+.ix-table th,
+.ix-table td {
+  padding: 7px 10px;
+  text-align: left;
+  white-space: nowrap;
+}
+.ix-table thead th {
+  color: var(--ink-faint, var(--ink-soft));
+  font-size: 10.5px;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.ix-table tbody th { color: var(--ink); font-weight: 500; }
+.ix-table tbody td { color: var(--ink-soft); }
+.ix-num { text-align: right !important; font-variant-numeric: tabular-nums; }
+.ix-rank {
+  width: 2.5ch;
+  color: var(--ink-faint, var(--ink-soft));
+  font-variant-numeric: tabular-nums;
+}
+.ix-score { color: var(--ink) !important; font-weight: 500; }
+
+/* A row can be mid-flight when the next change lands, so the transform is
+   owned by the script; only the tint is declared here. */
+.ix-table tbody tr {
+  background: transparent;
+  transition: background var(--dur) var(--ease);
+}
+.ix-table tbody tr.is-top { background: var(--accent-tint); }
+.ix-table tbody tr.is-top th,
+.ix-table tbody tr.is-top .ix-score { color: var(--accent-ink) !important; }
+
+/* ---------- the stepped list ---------- */
+
+.ix-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  counter-reset: none;
+}
+.ix-item {
+  display: flex;
+  gap: 10px;
+  padding: 7px 10px;
+  border-left: 2px solid transparent;
+  border-radius: 0 var(--radius-sm, 6px) var(--radius-sm, 6px) 0;
+  color: var(--ink-soft);
+  font-size: 13.5px;
+  line-height: 1.5;
+  transition: background var(--dur) var(--ease), color var(--dur) var(--ease),
+              border-color var(--dur) var(--ease);
+}
+.ix-item__n {
+  flex: none;
+  width: 2ch;
+  color: var(--ink-faint, var(--ink-soft));
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+  line-height: 1.8;
+}
+.ix-item.is-picked {
+  background: var(--accent-tint);
+  border-left-color: var(--accent);
+  color: var(--ink);
+}
+
+.ix-note {
+  margin: 12px 0 0;
+  min-height: 2.6em;
+  color: var(--ink-soft);
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+/* ---------- the wipe ---------- */
+
+.ix-wipe {
+  position: relative;
+  overflow: hidden;
+  aspect-ratio: 1;
+  max-width: 420px;
+  margin: 0 auto;
+  border-radius: var(--radius);
+  cursor: ew-resize;
+  touch-action: none;   /* the drag is the gesture; do not also scroll */
+  user-select: none;
+}
+.ix-wipe img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  -webkit-user-drag: none;
+}
+/* The cleaned frame is clipped to the divider, so the two are compared at the
+   same pixel rather than side by side. */
+.ix-wipe__b { clip-path: inset(0 0 0 var(--wipe, 50%)); }
+.ix-wipe__bar {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: var(--wipe, 50%);
+  width: 2px;
+  background: var(--on-accent-deep, #fff);
+  box-shadow: 0 0 0 1px rgb(0 0 0 / 0.35);
+}
+.ix-wipe__tag {
+  position: absolute;
+  bottom: 10px;
+  padding: 3px 9px;
+  border-radius: var(--radius-pill);
+  background: rgb(0 0 0 / 0.62);
+  color: #fff;
+  font-size: 10.5px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+.ix-wipe__tag--a { left: 10px; }
+.ix-wipe__tag--b { right: 10px; }
+
+.ix-wipe__control {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  max-width: 420px;
+  margin: 12px auto 0;
+  color: var(--ink-soft);
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+.ix-wipe__control input[type='range'] { flex: 1; accent-color: var(--accent); }
+
+@media (max-width: 599.98px) {
+  .ix { padding: 12px; }
+  .ix-slider input[type='range'] { width: 72px; }
+  .ix-reset,
+  .ix-play { margin-left: 0; }
+}
+
+/* --------------------------------------------------------------------------
+   Drawn diagrams (the `diagram` deep-dive kind, js/project-detail.js)
+
+   Four shapes, each earning its place: flow for a pipeline, cycle for a loop,
+   quadrant for a two-axis idea, bars for a measured comparison. Drawn in
+   markup rather than fetched as images, so they theme with the page, stay
+   sharp at any zoom and cost no request.
+   -------------------------------------------------------------------------- */
+
+.dd--dg { margin: 0 0 32px; }
+.dd--dg h3 {
+  margin: 28px 0 8px;
+  color: var(--ink);
+  font-size: 17px;
+  font-weight: 600;
+}
+.dg {
+  margin-top: 14px;
+  padding: 20px 18px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--bg-raised);
+}
+
+/* ---------- flow ---------- */
+
+.dg--flow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: stretch;
+  gap: 10px;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.dg-step {
+  position: relative;
+  flex: 1 1 130px;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  padding: 12px 13px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm, 6px);
+  background: var(--bg);
+}
+/* The arrow between two steps, drawn in the gap rather than as an element. */
+.dg-step + .dg-step::before {
+  content: '';
+  position: absolute;
+  left: -10px;
+  top: 50%;
+  width: 10px;
+  height: 1px;
+  background: var(--line-strong);
+}
+.dg-step + .dg-step::after {
+  content: '';
+  position: absolute;
+  left: -4px;
+  top: 50%;
+  width: 5px;
+  height: 5px;
+  border-top: 1px solid var(--line-strong);
+  border-right: 1px solid var(--line-strong);
+  transform: translateY(-50%) rotate(45deg);
+}
+.dg-step__n {
+  color: var(--accent);
+  font-size: 10px;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.08em;
+}
+.dg-step__t { color: var(--ink); font-size: 13.5px; font-weight: 500; line-height: 1.3; }
+.dg-step__d { color: var(--ink-soft); font-size: 11.5px; line-height: 1.45; }
+
+/* ---------- cycle ---------- */
+
+.dg--cycle {
+  position: relative;
+  width: 300px;
+  height: 300px;
+  margin-inline: auto;
+  padding: 0;
+  border: 0;
+  background: none;
+}
+.dg-ring { position: absolute; inset: 0; color: var(--line-strong); }
+.dg-nodes { list-style: none; margin: 0; padding: 0; }
+/* Each node is placed on the ring by its own coordinates, then pulled back by
+   half its own size so the point sits at its centre. */
+.dg-node {
+  position: absolute;
+  left: var(--nx);
+  top: var(--ny);
+  width: 118px;
+  transform: translate(-50%, -50%);
+  padding: 8px 10px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm, 6px);
+  background: var(--bg-raised);
+  text-align: center;
+}
+.dg-node__t { display: block; color: var(--ink); font-size: 12px; font-weight: 500; line-height: 1.25; }
+.dg-node__d { display: block; margin-top: 3px; color: var(--ink-soft); font-size: 10.5px; line-height: 1.35; }
+
+/* ---------- quadrant ---------- */
+
+.dg--quadrant {
+  display: grid;
+  grid-template-columns: 18px 1fr;
+  grid-template-rows: 1fr 18px;
+  gap: 8px;
+}
+.dg-cells {
+  grid-column: 2;
+  grid-row: 1;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.dg-cell {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  min-height: 92px;
+  padding: 12px 13px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm, 6px);
+  background: var(--bg);
+}
+.dg-cell__t { color: var(--ink); font-size: 13.5px; font-weight: 500; }
+.dg-cell__d { color: var(--ink-soft); font-size: 11.5px; line-height: 1.45; }
+.dg-axis {
+  color: var(--ink-faint, var(--ink-soft));
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+.dg-axis--y {
+  grid-column: 1;
+  grid-row: 1;
+  writing-mode: vertical-rl;
+  transform: rotate(180deg);
+  justify-self: center;
+  align-self: center;
+}
+.dg-axis--x { grid-column: 2; grid-row: 2; text-align: center; }
+
+/* ---------- bars ---------- */
+
+.dg--bars { position: relative; padding-top: 30px; }
+.dg-barlist { list-style: none; margin: 0; padding: 0; }
+.dg-bar {
+  display: grid;
+  grid-template-columns: 11ch 1fr 7ch;
+  align-items: center;
+  gap: 12px;
+  padding: 5px 0;
+  font-size: 12.5px;
+}
+.dg-bar__k { color: var(--ink-soft); }
+.dg-bar__track {
+  height: 14px;
+  border-radius: 3px;
+  background: var(--bg-sunken);
+  overflow: hidden;
+}
+.dg-bar__fill {
+  display: block;
+  height: 100%;
+  border-radius: 3px;
+  background: var(--line-strong);
+}
+.dg-bar.is-best .dg-bar__fill { background: var(--accent); }
+.dg-bar.is-best .dg-bar__k,
+.dg-bar.is-best .dg-bar__v { color: var(--accent-ink); }
+.dg-bar__v { color: var(--ink); font-variant-numeric: tabular-nums; text-align: right; }
+
+/* The benchmark or ceiling the bars are judged against, crossing every bar at
+   the same value. The box is inset to the track column and its inner span is
+   static, so the rule's percentage measures the track and not the figure. */
+.dg-rulebox {
+  position: absolute;
+  top: 26px;
+  bottom: 20px;
+  left: 0;
+  right: 0;
+  padding-left: calc(11ch + 12px);
+  padding-right: calc(7ch + 12px);
+  pointer-events: none;
+}
+.dg-ruletrack { position: relative; display: block; height: 100%; }
+.dg-rule {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  border-left: 1px dashed var(--accent);
+}
+.dg-rule span {
+  position: absolute;
+  top: -15px;
+  right: 2px;
+  color: var(--accent);
+  font-size: 10px;
+  letter-spacing: 0.06em;
+  white-space: nowrap;
+}
+
+@media (max-width: 599.98px) {
+  .dg--flow { flex-direction: column; }
+  .dg-step + .dg-step::before,
+  .dg-step + .dg-step::after { display: none; }
+  .dg-cells { grid-template-columns: 1fr; }
+  .dg-bar { grid-template-columns: 9ch 1fr 6ch; gap: 8px; font-size: 11.5px; }
+  .dg-rulebox { padding-left: calc(9ch + 8px); padding-right: calc(6ch + 8px); }
+}

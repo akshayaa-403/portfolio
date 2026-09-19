@@ -108,7 +108,7 @@
     host.innerHTML =
       '<div class="hob-tri">' +
         GROUPS.map(function (g) {
-          return '<a class="hob-card" href="hobby.html?id=' + esc(g.id) + '"' +
+          return '<a class="hob-card" data-cue="Open the gallery" href="hobby.html?id=' + esc(g.id) + '"' +
                     ' data-gallery="' + esc(g.id) + '">' +
             '<img src="public/assets/hobbies/' + esc(g.id) + '-1.webp" alt=""' +
                  ' aria-hidden="true" width="600" height="450" loading="lazy" decoding="async">' +

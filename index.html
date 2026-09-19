@@ -80,6 +80,7 @@
       <nav class="nav" id="primary-nav" aria-label="Primary">
         <a href="#work">Work</a>
         <a href="#hobbies">Hobbies</a>
+        <a href="#readings">Readings</a>
         <a href="#about">About</a>
         <a href="#contact">Contact</a>
         <a href="public/assets/resume.pdf" target="_blank" rel="noopener noreferrer">Resume ↗</a>
@@ -108,13 +109,11 @@
 <main id="main" tabindex="-1">
 
   <!-- ===================== Hero =====================
-       graph mode (the default) draws the latent field below; notebook and
-       clean keep the prop collage, whose layout mirrors jackiehu.design: a
-       full-viewport cream stage with props
-       clustered at the left and right edges, the name lockup centred between
-       them, and a scroll chevron at the bottom. Coordinates below were taken
-       from a live render of the reference at 1440x900 and expressed as
-       percentages of the stage so they scale.
+       Two arrangements of the same stage, chosen by data-mode on <html>:
+       `graph` (the default) draws the latent field behind a centred lockup,
+       `mosaic` sets the lockup top-left over a pinboard of real artifacts.
+       The prop collage that `notebook` used to hold is gone, and with it the
+       borrowed third-party photographs it was built from.
   -->
   <section class="hero" aria-labelledby="hero-name">
 
@@ -123,20 +122,20 @@
       <!-- ---------- The graph (graph mode) ----------
            Every destination on this site as a node, every real relationship
            as an edge, laid out by a force simulation in js/field.js: section
-           hubs, the seven case studies, each tool in their stacks, the three
-           galleries and every photograph in them, and the four off-site
-           links. Two projects sharing a tool are two hops apart, so the
-           clusters that form are the real ones. Hover lights a neighbourhood
-           and dims the rest; clicking a node goes there; nodes can be dragged.
+           hubs, the case studies, each tool in their stacks, the galleries and
+           every photograph in them, and the off-site links. Two projects
+           sharing a tool are two hops apart, so the clusters that form are the
+           real ones. Hover lights a neighbourhood and dims the rest; clicking
+           a node goes there; nodes can be dragged.
 
            Built from js/project-data.js and js/hobby-data.js, so it cannot
            claim more than the site holds.
 
            Decorative by contract — the canvas is aria-hidden and takes no
            keyboard focus, because every node's destination is also a real,
-           focusable link further down this page. notebook and clean keep the
-           desk instead; CSS hides this whole block in both. -->
-      <div class="field" aria-hidden="true">
+           focusable link further down this page. CSS hides this block in
+           mosaic mode. -->
+      <div class="field" aria-hidden="true" data-cue="Hover a node · click to go there">
         <canvas class="field__canvas" data-field></canvas>
         <!-- Both filled by js/field.js from the same category map the dots are
              drawn from, so neither can fall out of step with the graph. -->
@@ -144,59 +143,7 @@
         <p class="field__read" data-field-read>Every page, project, image and tool on this site — hover a node, click to go there</p>
       </div>
 
-      <!-- Decorative blue lilies: bottom-left and top-right. They fade up and
-           expand gently on load, standing in for the earlier animated SVG.
-           Behind everything (z-index 0) and never announced to assistive tech. -->
-      <img class="lily lily--bl" src="public/assets/props/lily-pair.webp"
-           alt="" aria-hidden="true" width="511" height="830"
-           loading="lazy" decoding="async" fetchpriority="low">
-      <img class="lily lily--tr" src="public/assets/props/lily-single.webp"
-           alt="" aria-hidden="true" width="465" height="420"
-           loading="lazy" decoding="async" fetchpriority="low">
-
-
-      <!-- ---------- LEFT CLUSTER ---------- -->
-
-      <!-- The glow is a prop in its own right, positioned independently of the
-           lamp. It is lit whenever the dark theme is on (and previewed on
-           hover), and sits just below the lamp in the stacking order so the
-           shade covers its top edge. Coordinates are per-mode like every
-           other prop. -->
-      <img class="prop prop--glow" data-prop="lamp-glow" src="public/assets/props/lamp-light.webp"
-           alt="" aria-hidden="true" width="600" height="599"
-           loading="lazy" decoding="async" fetchpriority="low"
-           style="--x:15.483%; --y:49.687%; --w:15.637%; --h:25.018%; --z:3; --cl:1; --clx:33.476%; --cly:66.942%; --clw:8.590%; --clh:13.745%; --nb:1; --nbx:73.297%; --nby:54.409%; --nbw:10.244%; --nbh:16.390%; --r:0deg;">
-      <!-- The lamp switches the colour theme: lit lamp = dark room. It is a
-           real <button> so it is reachable by keyboard and announces its
-           state; the artwork inside stays decorative. -->
-      <button class="prop prop--lamp-btn" data-prop="lamp" type="button"
-              aria-pressed="false" aria-label="Turn on the lamp (dark theme)"
-              style="--x:1.200%; --y:3.000%; --w:23.819%; --h:50.778%; --z:4; --cl:1; --clx:-1.458%; --cly:-1.111%; --clw:16.597%; --clh:35.444%; --nb:1; --nbx:37.431%; --nby:19.556%; --nbw:16.667%; --nbh:35.556%; --r:2deg;">
-        <img src="public/assets/props/lamp.webp" alt="" aria-hidden="true" width="354" height="743">
-      </button>
-      <img class="prop" data-prop="camera" data-anim="flash" src="public/assets/props/camera.webp" alt="" aria-hidden="true" width="420" height="429" decoding="async"
-           style="--x:2.000%; --y:57.000%; --w:14.931%; --h:23.556%; --z:5; --cl:1; --clx:12.153%; --cly:21.111%; --clw:9.583%; --clh:15.000%; --nb:0; --r:11deg;">
-
-      <!-- ---------- NEW PROPS (unplaced) ----------
-           Parked along the top and bottom edges, clear of the lockup, so
-           each one is visible and grabbable in ?edit=1. Coordinates here
-           are placeholders: they carry only notebook --x/--y/--w/--h, so all
-           three modes fall back to the same spot until per-mode --cl*/--nb*
-           values are dumped in. -->
-      <img class="prop" data-prop="glass-flower" data-anim="spin" src="public/assets/props/glass-flower.webp"
-           alt="" aria-hidden="true" width="454" height="453"
-           loading="lazy" decoding="async" fetchpriority="low"
-           style="--x:2.000%; --y:2.000%; --w:13.000%; --h:20.754%; --z:2; --r:0deg;">
-      <img class="prop" data-prop="notebook-open" src="public/assets/props/notebook-open.webp"
-           alt="" aria-hidden="true" width="486" height="363"
-           loading="lazy" decoding="async" fetchpriority="low"
-           style="--x:2.000%; --y:72.000%; --w:20.000%; --h:23.901%; --z:2; --r:0deg;">
-      <img class="prop" data-prop="paper-stack" src="public/assets/props/paper-stack.webp"
-           alt="" aria-hidden="true" width="280" height="341"
-           loading="lazy" decoding="async" fetchpriority="low"
-           style="--x:22.000%; --y:72.000%; --w:12.000%; --h:23.383%; --z:2; --r:0deg;">
-
-      <!-- ---------- CENTRE LOCKUP ---------- -->
+      <!-- ---------- The lockup ---------- -->
       <div class="hero__lockup">
         <h1 class="hero__name" id="hero-name">Akshayaa Kashyap</h1>
         <p class="hero__role">AI Engineer</p>
@@ -205,64 +152,26 @@
           I build data pipelines, LLM workflows and dashboards that turn
           messy data into clear decisions.
         </p>
-        <!-- The only call to action above the fold. It lives in the lockup
-             rather than in .hero__actions, which is pinned to the bottom of
-             the stage for the mode switcher. -->
-        <p class="hero__cta">
-          <a class="hero__cta-btn hero__cta-btn--primary" href="#work">See the work &rarr;</a>
-          <a class="hero__cta-btn" href="#contact">Get in touch</a>
-        </p>
       </div>
 
-      <!-- ---------- RIGHT CLUSTER ---------- -->
+      <!-- ---------- Mosaic (mosaic mode) ----------
+           A pinboard of real artifacts rather than a summary: a photograph out
+           of a gallery, a line of source out of a case study, a margin note,
+           a paper the work leans on, a count. Built by js/mosaic.js from
+           js/project-data.js and js/hobby-data.js, shuffled per load, at mixed
+           sizes. Real content, so unlike the graph's canvas it is not
+           aria-hidden: every tile is a real link. -->
+      <ul class="mosaic" role="list" data-mosaic aria-label="Mosaic"></ul>
 
-
-      <!-- Track for the music card, played only from its button. Drop an mp3
-           at public/assets/audio/track.mp3; until then the card simply stays
-           silent (play() rejects harmlessly). -->
-      <!-- preload="none": the file is ~2 MB, the largest asset on the site by
-           10x, and a passive hover must not pull it down. It is fetched only
-           when playback actually starts. -->
-      <audio id="hero-audio" preload="none" loop
-             src="public/assets/audio/track.mp3"></audio>
-      <!-- Music player: a real card, with the vinyl spinning inside it -->
-      <article class="obj obj--player"
-               style="--x:80.0%; --y:6.5%; --w:15.6%; --r:2deg; --z:6;">
-        <div class="player__disc" aria-hidden="true">
-          <img src="public/assets/props/vinyl.webp" alt="" aria-hidden="true" width="760" height="760"
-               loading="lazy" decoding="async">
-        </div>
-        <button class="player__play" type="button" id="player-play"
-                aria-label="Play track" aria-pressed="false">
-          <span class="player__icon" aria-hidden="true">▶</span>
-        </button>
-        <p class="obj__meta player__artist">Miles Davis Quartet</p>
-        <p class="obj__title player__track">Old Devil Moon</p>
-        <div class="player__bar" aria-hidden="true"><span></span></div>
-        <!-- The elapsed time is written live by js/hero-hover.js, so it is
-             announced politely rather than hidden; the "/ 3:31" total is
-             decorative duplication of the same information. -->
-        <div class="player__times"><span id="player-time" role="timer" aria-live="off">0:00</span><span aria-hidden="true">/ 3:31</span></div>
-      </article>
-
-      <!-- AirDrop-style share card: real markup, as on the reference -->
-      <article class="obj obj--share"
-               style="--x:73.5%; --y:56.0%; --w:13.1%; --r:-3deg; --z:7;">
-        <p class="share__title">Résumé</p>
-        <p class="share__sub">PDF · 1 page · updated Sept 2026</p>
-        <div class="share__thumb" aria-hidden="true"></div>
-        <div class="share__actions">
-          <a class="share__btn share__btn--go" href="public/assets/resume.pdf" target="_blank" rel="noopener noreferrer">Download ↗</a>
-        </div>
-      </article>
-
-      <!-- Mode switcher: bottom-centre of the stage, where the reference puts
-           its coffee/broom/pencil icon row -->
+      <!-- The one control above the fold, in the slot the call-to-action pair
+           used to hold. It is pinned to the same place in every mode: it
+           chooses the arrangement, so it must not move when the arrangement
+           does. -->
       <div class="hero__actions">
         <span class="modes" role="radiogroup" aria-label="View mode">
-          <button type="button" role="radio" data-mode-btn="graph"    aria-checked="true">graph</button>
-          <button type="button" role="radio" data-mode-btn="notebook" aria-checked="false">notebook</button>
-          <button type="button" role="radio" data-mode-btn="clean"    aria-checked="false">clean</button>
+          <span class="modes__label" aria-hidden="true">View</span>
+          <button type="button" role="radio" data-mode-btn="graph"  aria-checked="true">graph</button>
+          <button type="button" role="radio" data-mode-btn="mosaic" aria-checked="false">mosaic</button>
         </span>
       </div>
 
@@ -279,7 +188,7 @@
     <!-- The drag is decoration, not a control: the track is aria-hidden and
          the list is duplicated, so scrubbing it reveals nothing new. The same
          skills are stated in readable form below for anyone not dragging. -->
-    <div class="strip" data-marquee>
+    <div class="strip" data-marquee data-cue="Drag to scrub">
       <p class="visually-hidden">Skills: Python, SQL, PyTorch, LangChain, Streamlit,
         Pandas, OpenCV, Docker, TypeScript, Next.js, Azure, Power BI.</p>
       <div class="strip__track" aria-hidden="true">
@@ -334,6 +243,28 @@
     </div>
   </section>
 
+  <!-- ===================== Readings =====================
+       Built from js/readings-data.js: a short shelf of spines, with whichever
+       one is chosen held open above it. The spines are drawn from each book's
+       own cover colour; only the cover itself is an image.
+  -->
+  <section class="section" id="readings" aria-labelledby="readings-h">
+    <div class="wrap">
+      <div class="section-head reveal">
+        <h2 id="readings-h">Readings</h2>
+        <span class="glyph" aria-hidden="true">&#9635;</span>
+      </div>
+      <p class="readings__intro reveal">What I'm reading. Pick a spine to take it off the shelf.
+        <span class="readings__asof" data-readings-asof></span></p>
+
+      <div class="readings" id="readings-list">
+        <noscript>
+          <p>The reading list needs JavaScript to lay out.</p>
+        </noscript>
+      </div>
+    </div>
+  </section>
+
   <!-- ===================== About ===================== -->
   <section class="section" id="about" aria-labelledby="about-h">
     <div class="wrap">
@@ -345,12 +276,18 @@
 
       <div class="about">
         <div class="about__body reveal" data-word-reveal>
-          <p data-squiggle>I'm an AI engineer, working mostly where data
-            analysis meets model development. The through-line in my work is turning something
-            messy — a CRM export, a scraped lead list, a noisy microscopy image — into something
-            a person can read and act on.</p>
-          <p data-squiggle>Outside client work I build things to understand them. I also
-            <a href="https://akshayaakashyap.substack.com" target="_blank" rel="noopener noreferrer">write on Substack</a>.</p>
+          <p class="about__hello" data-squiggle>Hello. It's nice to meet you.</p>
+          <p data-squiggle>I'm Akshayaa Kashyap, an AI engineer who builds the unglamorous
+            middle of a system — the part between a messy source and a decision someone
+            actually has to make.</p>
+          <p data-squiggle>Most of my work begins with data nobody wants to open: a CRM export,
+            a scraped lead list, a noisy microscopy image. I build the pipeline, the model and
+            the interface that turn it into something a person can read, argue with and act on.
+            I care more about whether a number can be traced back to its input than about the
+            number itself, which is why every project here shows its working.</p>
+          <p data-squiggle>Outside client work I build things in order to understand them, and
+            then <a href="https://akshayaakashyap.substack.com" target="_blank" rel="noopener noreferrer">write about them on Substack</a>.
+            If any of it is useful to you, I'd like to hear about it.</p>
         </div>
 
         <aside class="about__aside reveal">
@@ -414,6 +351,7 @@
      deferred script (readyState is already "interactive"), so this has to
      sit after project-data.js AND hobby-data.js, not merely be deferred. -->
 <script src="js/field.js" defer></script>
+<script src="js/mosaic.js" defer></script>
 <script src="js/lightbox.js" defer></script>
 <script src="js/hobbies.js" defer></script>
 <!-- Dev-only tooling: fetched solely when ?edit=1 is in the URL, so real
@@ -428,6 +366,8 @@ if (/[?&]edit=1/.test(location.search)) {
   });
 }
 </script>
+<script src="js/readings-data.js" defer></script>
+<script src="js/cursor.js" defer></script>
 <script src="js/script.js" defer></script>
 </body>
 </html>

@@ -175,14 +175,9 @@ for (const p of sandbox.__out) {
       fail('project-data', p.id + '.' + field + ' is empty');
     }
   }
-  // Every project needs the images the cards and share pages reference —
-  // unless it declares thumb:false, which renders a text-only card rather
-  // than shipping a stand-in image.
-  const thumb = 'public/assets/work/' + p.id + (p.recent ? '-icon.webp' : '-thumb.webp');
-  checked++;
-  if (p.thumb !== false && !fs.existsSync(path.join(ROOT, thumb))) {
-    fail('project-data', p.id + ' missing image ' + thumb);
-  }
+  // The project list is text only now, so no per-project card art is
+  // required. Figures inside a case study are checked by §2 like any other
+  // asset reference.
 }
 
 /* ---------- 6b. live-demo embeds ---------- */

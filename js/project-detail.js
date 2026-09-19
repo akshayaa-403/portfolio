@@ -34,7 +34,8 @@
      escaping keeps a stray apostrophe or angle bracket from breaking markup. */
   var SECTION = {
     prose: function (s) {
-      return '<section class="dd dd--prose">' +
+      return '<section class="dd dd--prose"' +
+        (s.layer ? ' data-layer="' + esc(s.layer) + '"' : '') + '>' +
         (s.heading ? '<h3>' + esc(s.heading) + '</h3>' : '') +
         '<p>' + esc(s.body) + '</p>' +
       '</section>';
@@ -103,6 +104,235 @@
       '</figure>';
     },
 
+    /* ---------- diagram ----------
+       Drawn explanations, in the four shapes that actually earn their place in
+       these case studies: a `flow` for a pipeline, a `cycle` for a loop, a
+       `quadrant` for a two-axis idea, and `bars` for a measured comparison.
+       All four are built from data and drawn in markup — no chart library, no
+       image, so they theme with the page and stay sharp at any zoom.
+
+       Each carries a real caption saying where its numbers come from. */
+    diagram: function (s) {
+      var D = {
+        /* input -> stage -> stage -> output, with the arrow between. */
+        flow: function (s) {
+          return '<ol class="dg dg--flow">' + (s.steps || []).map(function (st, i) {
+            return '<li class="dg-step">' +
+                '<span class="dg-step__n" aria-hidden="true">' + (i + 1) + '</span>' +
+                '<span class="dg-step__t">' + esc(st.t) + '</span>' +
+                (st.d ? '<span class="dg-step__d">' + esc(st.d) + '</span>' : '') +
+              '</li>';
+          }).join('') + '</ol>';
+        },
+
+        /* The same steps, but the last one feeds the first. The ring is drawn
+           as one SVG behind the labels so the arrowhead lands on the path. */
+        cycle: function (s) {
+          var items = s.steps || [];
+          var n = items.length || 1;
+          var R = 116, C = 150;
+          var nodes = items.map(function (st, i) {
+            var a = (i / n) * 2 * Math.PI - Math.PI / 2;
+            return '<li class="dg-node" style="--nx:' + (C + R * Math.cos(a)).toFixed(1) +
+                'px;--ny:' + (C + R * Math.sin(a)).toFixed(1) + 'px">' +
+                '<span class="dg-node__t">' + esc(st.t) + '</span>' +
+                (st.d ? '<span class="dg-node__d">' + esc(st.d) + '</span>' : '') +
+              '</li>';
+          }).join('');
+          return '<div class="dg dg--cycle">' +
+              '<svg class="dg-ring" width="300" height="300" viewBox="0 0 300 300" aria-hidden="true">' +
+                '<defs><marker id="dg-ah" viewBox="0 0 10 10" refX="8" refY="5" ' +
+                  'markerWidth="6" markerHeight="6" orient="auto-start-reverse">' +
+                  '<path d="M0 0 L10 5 L0 10 z" fill="currentColor"/></marker></defs>' +
+                '<circle cx="150" cy="150" r="116" fill="none" stroke="currentColor" ' +
+                  'stroke-width="1.5" stroke-dasharray="4 7"/>' +
+                '<path d="M 150 34 A 116 116 0 0 1 226 62" fill="none" stroke="currentColor" ' +
+                  'stroke-width="1.5" marker-end="url(#dg-ah)"/>' +
+              '</svg>' +
+              '<ul class="dg-nodes">' + nodes + '</ul>' +
+            '</div>';
+        },
+
+        /* Two axes, four cells. The axis labels are the point: without them a
+           quadrant is just four boxes. */
+        quadrant: function (s) {
+          var cells = (s.cells || []).map(function (c) {
+            return '<li class="dg-cell">' +
+                '<span class="dg-cell__t">' + esc(c.t) + '</span>' +
+                (c.d ? '<span class="dg-cell__d">' + esc(c.d) + '</span>' : '') +
+              '</li>';
+          }).join('');
+          return '<div class="dg dg--quadrant">' +
+              '<span class="dg-axis dg-axis--y">' + esc(s.y || '') + '</span>' +
+              '<ul class="dg-cells">' + cells + '</ul>' +
+              '<span class="dg-axis dg-axis--x">' + esc(s.x || '') + '</span>' +
+            '</div>';
+        },
+
+        /* A measured comparison, with an optional rule for the benchmark or
+           ceiling the bars are being judged against. */
+        bars: function (s) {
+          var max = s.max != null ? s.max : Math.max.apply(null,
+            (s.rows || []).map(function (r) { return Math.abs(r.v); }).concat([s.rule || 0]));
+          var rows = (s.rows || []).map(function (r) {
+            var pct = max ? (Math.abs(r.v) / max) * 100 : 0;
+            return '<li class="dg-bar' + (r.best ? ' is-best' : '') + '">' +
+                '<span class="dg-bar__k">' + esc(r.k) + '</span>' +
+                '<span class="dg-bar__track"><span class="dg-bar__fill" ' +
+                  'style="width:' + pct.toFixed(1) + '%"></span></span>' +
+                '<span class="dg-bar__v">' + esc(r.label != null ? r.label : r.v) + '</span>' +
+              '</li>';
+          }).join('');
+          /* The rule has to cross the bars at the same value they are drawn
+             against, so it is measured inside a box that is exactly the track
+             column — a static inner span, because a percentage on an
+             absolutely positioned element resolves against the padding box of
+             its containing block, not against the column. */
+          var rule = '';
+          if (s.rule != null && max) {
+            rule = '<span class="dg-rulebox" aria-hidden="true">' +
+                '<span class="dg-ruletrack">' +
+                  '<span class="dg-rule" style="left:' +
+                    ((s.rule / max) * 100).toFixed(1) + '%">' +
+                    '<span>' + esc(s.ruleLabel || '') + '</span>' +
+                  '</span>' +
+                '</span>' +
+              '</span>';
+          }
+          return '<div class="dg dg--bars">' + rule +
+            '<ul class="dg-barlist">' + rows + '</ul></div>';
+        }
+      };
+
+      var draw = D[s.shape];
+      if (!draw) return '';
+      return '<figure class="dd dd--dg"' +
+          (s.layer ? ' data-layer="' + esc(s.layer) + '"' : '') + '>' +
+        (s.heading ? '<h3>' + esc(s.heading) + '</h3>' : '') +
+        (s.body ? '<p>' + esc(s.body) + '</p>' : '') +
+        draw(s) +
+        (s.caption ? '<figcaption>' + esc(s.caption) + '</figcaption>' : '') +
+      '</figure>';
+    },
+
+    /* ---------- interactive ----------
+       Three widgets, all built from data (see js/interactive.js for the
+       behaviour). The markup written here already holds every number, item
+       and image the widget will ever show, so with JavaScript off the section
+       still reads as a table, a list or a picture — the control is the only
+       thing lost. */
+    interactive: function (s) {
+      var W = {
+        /* Sliders over a small ranked table. The weights are the real default
+           weights; the rows are real measured values. */
+        weights: function (s) {
+          var sliders = (s.sliders || []).map(function (sl) {
+            return '<label class="ix-slider">' +
+                '<span class="ix-slider__name">' + esc(sl.label) + '</span>' +
+                '<input type="range" data-w-slider="' + esc(sl.key) + '" ' +
+                  'data-default="' + esc(sl.value) + '" value="' + esc(sl.value) + '" ' +
+                  'min="' + esc(sl.min != null ? sl.min : 0) + '" ' +
+                  'max="' + esc(sl.max != null ? sl.max : 1) + '" ' +
+                  'step="' + esc(sl.step != null ? sl.step : 0.05) + '" ' +
+                  'aria-label="' + esc(sl.label) + ' weight">' +
+                '<output data-w-out="' + esc(sl.key) + '">' + esc(sl.value) + '</output>' +
+              '</label>';
+          }).join('');
+
+          var rows = (s.rows || []).map(function (r, i) {
+            var cells = (s.sliders || []).map(function (sl) {
+              var v = r.values[sl.key];
+              return '<td class="ix-num">' + esc(v == null ? '—' : v) + '</td>';
+            }).join('');
+            // esc() turns the JSON's quotes into &quot;, so a double-quoted
+            // attribute holds it intact.
+            return '<tr data-w-row data-values="' +
+                esc(JSON.stringify(r.values)) + '">' +
+              '<td class="ix-rank" data-w-rank>' + (i + 1) + '</td>' +
+              '<th scope="row">' + esc(r.name) + '</th>' + cells +
+              '<td class="ix-num ix-score" data-w-score>0.00</td>' +
+            '</tr>';
+          }).join('');
+
+          var head = (s.sliders || []).map(function (sl) {
+            return '<th scope="col">' + esc(sl.short || sl.label) + '</th>';
+          }).join('');
+
+          return '<div class="ix" data-interactive="weights">' +
+            '<div class="ix-controls">' + sliders +
+              '<button class="ix-reset" type="button" data-w-reset>Reset</button>' +
+            '</div>' +
+            '<div class="table-scroll"><table class="ix-table">' +
+              '<thead><tr><th scope="col" class="ix-rank">#</th>' +
+                '<th scope="col">' + esc(s.rowLabel || 'Item') + '</th>' + head +
+                '<th scope="col">' + esc(s.scoreLabel || 'Score') + '</th></tr></thead>' +
+              '<tbody data-w-rows>' + rows + '</tbody>' +
+            '</table></div>' +
+          '</div>';
+        },
+
+        /* One list, several frames over it. Each frame lights the items it
+           picks, in order, and says what it was optimising for. */
+        steps: function (s) {
+          var frames = (s.frames || []).map(function (f, i) {
+            return '<button class="ix-frame" type="button" data-s-frame ' +
+              'data-picks="' + esc(JSON.stringify(f.picks || [])) + '" ' +
+              'data-note="' + esc(f.note || '') + '" ' +
+              'aria-pressed="' + (i === 0 ? 'true' : 'false') + '">' +
+              esc(f.label) + '</button>';
+          }).join('');
+
+          var items = (s.items || []).map(function (it, i) {
+            return '<li class="ix-item" data-s-item>' +
+              '<span class="ix-item__n" aria-hidden="true">' + (i + 1) + '</span>' +
+              esc(it) + '</li>';
+          }).join('');
+
+          return '<div class="ix" data-interactive="steps">' +
+            '<div class="ix-controls ix-controls--frames">' + frames +
+              '<button class="ix-play" type="button" data-s-play aria-pressed="false" ' +
+                'data-play-label="' + esc(s.playLabel || 'Play all') + '" ' +
+                'data-stop-label="' + esc(s.stopLabel || 'Stop') + '">' +
+                esc(s.playLabel || 'Play all') + '</button>' +
+            '</div>' +
+            '<ol class="ix-list">' + items + '</ol>' +
+            '<p class="ix-note" data-s-note aria-live="polite"></p>' +
+          '</div>';
+        },
+
+        /* Two images, one divider. The range input is the control; dragging
+           the picture drives the same input. */
+        wipe: function (s) {
+          return '<div class="ix" data-interactive="wipe">' +
+            '<div class="ix-wipe" data-wipe style="--wipe:50%">' +
+              '<img class="ix-wipe__a" src="' + safeUrl(s.a.src) + '" alt="' + esc(s.a.alt || '') + '" ' +
+                'loading="lazy" decoding="async">' +
+              '<img class="ix-wipe__b" src="' + safeUrl(s.b.src) + '" alt="' + esc(s.b.alt || '') + '" ' +
+                'loading="lazy" decoding="async">' +
+              '<span class="ix-wipe__bar" aria-hidden="true"></span>' +
+              '<span class="ix-wipe__tag ix-wipe__tag--a" aria-hidden="true">' + esc(s.a.label) + '</span>' +
+              '<span class="ix-wipe__tag ix-wipe__tag--b" aria-hidden="true">' + esc(s.b.label) + '</span>' +
+            '</div>' +
+            '<label class="ix-wipe__control">' +
+              '<span>' + esc(s.controlLabel || 'Wipe') + '</span>' +
+              '<input type="range" min="0" max="100" value="50" step="1" data-wipe-input ' +
+                'aria-label="' + esc(s.controlLabel || 'Wipe between the two images') + '">' +
+            '</label>' +
+          '</div>';
+        }
+      };
+
+      var build = W[s.widget];
+      if (!build) return '';
+      return '<figure class="dd dd--ix"' +
+          (s.layer ? ' data-layer="' + esc(s.layer) + '"' : '') + '>' +
+        (s.heading ? '<h3>' + esc(s.heading) + '</h3>' : '') +
+        (s.body ? '<p>' + esc(s.body) + '</p>' : '') +
+        build(s) +
+        (s.caption ? '<figcaption>' + esc(s.caption) + '</figcaption>' : '') +
+      '</figure>';
+    },
+
     steps: function (s) {
       var items = (s.items || []).map(function (it) {
         return '<li><strong>' + esc(it.t) + '</strong><span>' + esc(it.d) + '</span></li>';
@@ -114,7 +344,71 @@
     }
   };
 
-  function renderDeepDive(sections) {
+  /* ---------- the layer stack ----------
+     An exploded isometric diagram of the project, drawn in CSS from the
+     `layers` array: one slab per layer, top to bottom, each with the parts it
+     is made of. It sits in the margin beside the deep dive and stays there
+     while the prose scrolls; whichever section is in view lights its own
+     layer and fans that layer's parts out (see followLayers).
+
+     Drawn rather than photographed, so it costs no request, themes with the
+     rest of the page and stays sharp at any zoom. Hue per layer comes from
+     the data; lightness and contrast come from the theme's tokens.
+
+     aria-hidden: the diagram restates the headings and terms already in the
+     prose beside it, so announcing it a second time is noise, not content. */
+  function renderStack(layers) {
+    if (!layers || !layers.length) return '';
+    var slabs = layers.map(function (l) {
+      var parts = (l.parts || []).map(function (t) {
+        return '<span class="slab__part">' + esc(t) + '</span>';
+      }).join('');
+      return '<li class="slab" data-layer="' + esc(l.name) + '"' +
+          ' style="--lh:' + (parseInt(l.hue, 10) || 0) + '">' +
+          '<span class="slab__face"></span>' +
+          '<span class="slab__parts">' + parts + '</span>' +
+          '<span class="slab__name">' + esc(l.name) + '</span>' +
+        '</li>';
+    }).join('');
+    return '<aside class="stack" aria-hidden="true"><ol class="stack__list">' +
+      slabs + '</ol></aside>';
+  }
+
+  /* Whichever prose section is nearest the middle of the viewport owns the
+     stack. An observer per section rather than a scroll handler, and the
+     rootMargin keeps the band narrow so exactly one section wins at a time.
+     Falls back to lighting the first layer where IntersectionObserver is
+     missing — a static diagram is still a correct diagram. */
+  function followLayers(root) {
+    var slabs = root.querySelectorAll('.slab');
+    var marked = root.querySelectorAll('.dd[data-layer]');
+    if (!slabs.length || !marked.length) return;
+
+    function light(name) {
+      for (var i = 0; i < slabs.length; i++) {
+        slabs[i].classList.toggle('is-on',
+          slabs[i].getAttribute('data-layer') === name);
+      }
+    }
+
+    if (!('IntersectionObserver' in window)) {
+      light(marked[0].getAttribute('data-layer'));
+      return;
+    }
+
+    var io = new IntersectionObserver(function (entries) {
+      for (var i = 0; i < entries.length; i++) {
+        if (entries[i].isIntersecting) {
+          light(entries[i].target.getAttribute('data-layer'));
+        }
+      }
+    }, { rootMargin: '-45% 0px -45% 0px' });
+
+    for (var j = 0; j < marked.length; j++) io.observe(marked[j]);
+    light(marked[0].getAttribute('data-layer'));
+  }
+
+  function renderDeepDive(sections, layers) {
     if (!sections || !sections.length) return '';
     var body = sections.map(function (s) {
       var fn = SECTION[s.kind];
@@ -122,7 +416,8 @@
     }).join('');
     return '<div class="detail__deep">' +
       '<h2>How it works <span class="glyph" aria-hidden="true">◆</span></h2>' +
-      body +
+      renderStack(layers) +
+      '<div class="detail__deep-body">' + body + '</div>' +
     '</div>';
   }
 
@@ -492,7 +787,7 @@
 
         marginalia('The tricky part', '⌘', p.challenge, notes.challenge, 'challenge') +
 
-        renderDeepDive(p.deepDive) +
+        renderDeepDive(p.deepDive, p.layers) +
       '</div>' +
 
       '<nav class="detail__nav" aria-label="Project navigation">' + navPrev + navNext + '</nav>';
@@ -500,6 +795,8 @@
     initCopy(root);
     initLive(root);
     alignNotes(root);
+    followLayers(root);
+    if (typeof window.initInteractive === 'function') window.initInteractive(root);
   }
 
   window.onReady(render);

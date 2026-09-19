@@ -8,70 +8,157 @@
 
   /* ---------- helpers ---------- */
 
-  /* ---------- project cards ----------
-     One narrow column of rows: square icon tile, title, one-line description.
-     A larger preview image fades in on hover.
-
-     `recent` no longer splits the page into two sections; it now only says
-     which projects have purpose-drawn icon/hover art. The rest reuse their
-     one thumbnail for both slots. */
+  /* ---------- project list ----------
+     A numbered list and nothing else. The square icon tile and the preview
+     that faded in beside each row are gone: they were screenshots of a UI,
+     which tells a reader what a thing looked like and never what it does. The
+     case study carries a drawn diagram instead (see the `diagram` deep-dive
+     kind in js/project-detail.js). */
   function renderCards() {
     if (typeof projects === 'undefined') return;
 
     var host = document.getElementById('recent-cards');
     if (!host) return;
 
-    host.insertAdjacentHTML('afterbegin', projects.map(function (p) {
-      var base = 'public/assets/work/' + encodeURIComponent(p.id);
-      // A project may ship a second icon drawn for a dark ground. The swap is
-      // done in CSS off [data-theme] (see .rm__icon--dark), because the theme
-      // is an attribute on <html>, not the OS preference a <picture> would
-      // react to.
-      var icon =
-          '<img class="rm__icon" src="' + base + (p.recent ? '-icon.webp' : '-thumb.webp') + '" alt="" ' +
-            'width="320" height="320" loading="lazy">' +
-          (p.iconDark
-            ? '<img class="rm__icon rm__icon--dark" src="' + base +
-              '-icon-dark.webp" alt="" width="320" height="320" loading="lazy">'
-            : '');
+    host.insertAdjacentHTML('afterbegin', projects.map(function (p, i) {
+      var focus = (p.tech || []).slice(0, 4).map(esc)
+        .join(' <span aria-hidden="true">/</span> ');
+      var meta = [p.context || p.role, p.year].filter(Boolean).map(esc).join(' · ');
 
-      // hoverShots > 1 stacks extra frames. Opaque screenshots are
-      // cycled while hovered; bare cut-outs all show at once.
-      var hover = '';
-      if (p.recent) {
-        var n = p.hoverShots || 1;
-        // bareShots names the frames that are transparent cut-outs
-        // rather than opaque screenshots: they get no card shadow or
-        // radius, which would otherwise draw a box around empty space.
-        var bare = p.bareShots || [];
-        for (var s = 1; s <= n; s++) {
-          // Bare frames are one composition shown together, so
-          // every one is marked shown, not just the first;
-          // initHoverCycle() skips cards laid out this way.
-          var isBare = bare.indexOf(s) > -1;
-          hover += '<img class="rm__hover' +
-            (s === 1 || isBare ? ' is-shown' : '') +
-            (isBare ? ' rm__hover--bare' : '') + '"' +
-            ' src="' + base + (s === 1 ? '-hover.webp' : '-hover-' + s + '.webp') + '"' +
-            ' alt="" ' +
-            (isBare
-              ? 'width="346" height="432"'   // portrait phone cut-outs
-              : 'width="720" height="480"') +
-            ' loading="lazy" aria-hidden="true">';
-        }
-      } else if (p.thumb !== false) {
-        // No hover art drawn for this one: the thumbnail stands in.
-        hover = '<img class="rm__hover is-shown" src="' + base + '-thumb.webp" alt="" ' +
-          'width="720" height="480" loading="lazy" aria-hidden="true">';
-      }
-
-      return '<a class="rm reveal" href="project.html?id=' + encodeURIComponent(p.id) + '">' + icon +
+      return '<a class="rm reveal" href="project.html?id=' + encodeURIComponent(p.id) + '"' +
+          ' data-cue="Read the case study">' +
+          '<span class="rm__num" aria-hidden="true">' + (i < 9 ? '0' : '') + (i + 1) + '</span>' +
           '<span class="rm__text">' +
             '<span class="rm__title">' + esc(p.title) + '</span>' +
+            (meta ? '<span class="rm__meta">' + meta + '</span>' : '') +
             '<span class="rm__desc">' + esc(p.tagline) + '</span>' +
-          '</span>' + hover +
+            (focus ? '<span class="rm__focus"><span class="rm__focus-label">Focus</span>' + focus + '</span>' : '') +
+          '</span>' +
         '</a>';
     }).join(''));
+  }
+
+  /* ---------- reading list ----------
+     A shelf of spines rather than a list of titles. Each book is drawn from
+     its own cover colour (js/readings-data.js); nothing is downloaded, so the
+     section costs no image request and borrows no cover art.
+
+     Two things are computed here rather than authored. The spine's height
+     comes from the length of its title, which is what a real shelf looks like
+     and also guarantees the vertical type has room. The ink comes from the
+     colour's measured relative luminance — the same reason js/field.js
+     measures rather than eyeballs: a mid-yellow and a mid-navy have similar
+     HSL lightness and opposite contrast. */
+  function spineInk(hex) {
+    var m = /^#?([0-9a-f]{6})$/i.exec(String(hex || ''));
+    if (!m) return '#111';
+    var n = parseInt(m[1], 16);
+    var c = [(n >> 16) & 255, (n >> 8) & 255, n & 255].map(function (v) {
+      v /= 255;
+      return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4);
+    });
+    var L = 0.2126 * c[0] + 0.7152 * c[1] + 0.0722 * c[2];
+    // Contrast against white is (1.05)/(L+0.05); against black (L+0.05)/0.05.
+    // Whichever is larger wins, so every spine clears 4.5:1 by construction.
+    return (1.05 / (L + 0.05)) >= ((L + 0.05) / 0.05) ? '#fbfcfd' : '#10161d';
+  }
+
+  function renderReadings() {
+    if (typeof readings === 'undefined') return;
+
+    var host = document.getElementById('readings-list');
+    if (!host) return;
+
+    var asOf = document.querySelector('[data-readings-asof]');
+    if (asOf && readings.asOf) asOf.textContent = 'Updated ' + readings.asOf;
+
+    var books = [];
+    readings.groups.forEach(function (g) {
+      g.books.forEach(function (b) { books.push(b); });
+    });
+    if (!books.length) return;
+
+    /* Every book is drawn at its real size. PX_PER_MM is the one scale on the
+       shelf, so a taller book is taller here because it is taller in life, and
+       the spine's thickness comes from the page count rather than from a
+       number picked to look nice. A leaf of book paper is about 0.115mm, so a
+       page is half that, plus a few mm for the boards. */
+    var PX_PER_MM = 1.16;
+    var mm = function (v) { return Math.round(v * PX_PER_MM); };
+
+    var spines = books.map(function (b, i) {
+      var thickMm = (b.pages || 300) * 0.0575 + (b.hardback ? 5 : 2.5);
+      var t = Math.max(18, mm(thickMm));
+      var w = mm(b.widthMm || 135);
+      var h = mm(b.heightMm || 200);
+
+      // The spine has to hold its own type. The body face is monospaced, so a
+      // character is 0.68em of advance and the pixels the title and author
+      // need are known; the size is solved down until both fit rather than
+      // being clipped, because a spine reading "The Art of Creative Think…"
+      // has failed at the only job a spine has.
+      var CHAR = 0.68, title = b.title, author = b.author || '';
+      var room = h - 34 - author.length * 9 * CHAR;
+      var fs = Math.max(7.5, Math.min(12, room / (title.length * CHAR)));
+
+      return '<li class="book-slot" style="--bt:' + t + 'px;--bw:' + w +
+          'px;--bh:' + h + 'px">' +
+        '<button class="book" type="button" data-book="' + i + '"' +
+          ' aria-pressed="' + (i === 0 ? 'true' : 'false') + '"' +
+          ' data-cue="Turn it around"' +
+          ' style="--spine-bg:' + esc(b.colour || '#d9dde2') +
+            ';--spine-ink:' + spineInk(b.colour) +
+            ';--spine-fs:' + (Math.round(fs * 10) / 10) + 'px">' +
+          '<span class="book__spine">' +
+            '<span class="spine__title">' + esc(title) + '</span>' +
+            (author ? '<span class="spine__author">' + esc(author) + '</span>' : '') +
+          '</span>' +
+          // alt="": the button already announces the title and author, and the
+          // caption below announces the rest. The cover is a picture of
+          // information the page has already given.
+          '<span class="book__cover">' +
+            '<img src="' + safeUrl(b.cover) + '" alt="" loading="lazy" decoding="async">' +
+          '</span>' +
+        '</button>' +
+      '</li>';
+    }).join('');
+
+    host.insertAdjacentHTML('afterbegin',
+      '<ul class="shelf__books" role="list">' + spines + '</ul>' +
+      '<p class="shelf__caption" data-shelf-caption aria-live="polite"></p>');
+
+    var caption = host.querySelector('[data-shelf-caption]');
+    var buttons = host.querySelectorAll('.book');
+    var at = -1;
+
+    function show(i) {
+      if (i === at || !books[i]) return;
+      at = i;
+      var b = books[i];
+      caption.innerHTML =
+        '<b>' + esc(b.title) + '</b> · ' + esc(b.author || '') +
+        (b.note ? ' — ' + esc(b.note) : '');
+      for (var n = 0; n < buttons.length; n++) {
+        buttons[n].setAttribute('aria-pressed', n === i ? 'true' : 'false');
+      }
+    }
+
+    for (var i = 0; i < buttons.length; i++) {
+      // pointerenter rather than mouseover: it does not re-fire for every
+      // child the pointer crosses inside the book. focus covers the keyboard,
+      // click covers touch, where there is no hover at all.
+      buttons[i].addEventListener('pointerenter', function (e) {
+        show(+e.currentTarget.getAttribute('data-book'));
+      });
+      buttons[i].addEventListener('focus', function (e) {
+        show(+e.currentTarget.getAttribute('data-book'));
+      });
+      buttons[i].addEventListener('click', function (e) {
+        show(+e.currentTarget.getAttribute('data-book'));
+      });
+    }
+
+    show(0);
   }
 
   /* ---------- scroll reveal ----------
@@ -182,7 +269,7 @@
 
     // Only notebook keeps the desk-object arrangement, so only notebook is
     // draggable. graph replaces the stage with the latent field and hides
-    // every card; clean is deliberately static. Enabling drag in either would
+    // every card; mosaic is deliberately static. Enabling drag in either would
     // put tabindex on a display:none card.
     function draggableMode() {
       return document.documentElement.getAttribute('data-mode') === 'notebook';
@@ -390,54 +477,11 @@
     }, 5000);
   }
 
-  /* ---------- cycle the hover previews ----------
-     Cards with more than one screenshot advance through them while hovered.
-     The interval only runs during a hover, so idle cards cost nothing, and it
-     is skipped entirely under prefers-reduced-motion. */
-  function initHoverCycle() {
-    if (reduceMotion) return;
-
-    var cards = document.querySelectorAll('a.rm');
-    for (var i = 0; i < cards.length; i++) {
-      (function (card) {
-        var shots = card.querySelectorAll('.rm__hover');
-        if (shots.length < 2) return;
-        // Cards showing all their frames together are a fixed
-        // composition, not a sequence: cycling would hide the ones
-        // already placed.
-        if (card.querySelector('.rm__hover--bare')) return;
-        var at = 0, timer = null;
-
-        function show(n) {
-          for (var k = 0; k < shots.length; k++) {
-            shots[k].classList.toggle('is-shown', k === n);
-          }
-        }
-        function start() {
-          if (timer) return;
-          timer = setInterval(function () {
-            at = (at + 1) % shots.length;
-            show(at);
-          }, 1400);
-        }
-        function stop() {
-          clearInterval(timer);
-          timer = null;
-          at = 0;
-          show(0);
-        }
-        card.addEventListener('pointerenter', start);
-        card.addEventListener('pointerleave', stop);
-        card.addEventListener('focus', start);
-        card.addEventListener('blur', stop);
-      })(cards[i]);
-    }
-  }
-
+  
   /* ---------- boot ---------- */
   function init() {
     renderCards();
-    initHoverCycle();
+    renderReadings();
     initReveal();
     initActiveNav();
     initHeader();

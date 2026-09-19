@@ -59,7 +59,7 @@
         /* A real <button>, not a click handler on the <img>: the tile has to
            be reachable and operable from the keyboard, and the browser's own
            button semantics announce it as something that does a thing. */
-        '<button class="hob-shot__btn" type="button" data-shot="' + i + '" ' +
+        '<button class="hob-shot__btn" type="button" data-cue="View full size" data-shot="' + i + '" ' +
                 'aria-label="Open ' + esc(cap || (g.label + ' ' + i)) + ' full size">' +
         '<img src="' + base + '"' +
              (small
