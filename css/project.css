@@ -40,6 +40,41 @@
    stack, tags. It replaced a sticky sidebar card — as a row of label-over-
    value columns it costs a fifth of the space and stops competing with the
    prose for the reader's first look. The columns wrap to two, then one. */
+/* ---------- at a glance ----------
+   Four rows at the head of a long article: problem, what got built, what came
+   out of it, and the stack. The prose below is worth the ten minutes; this is
+   for deciding whether to spend them. */
+.detail__glance {
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  gap: 10px 22px;
+  margin: 0 0 var(--gap-xl, 48px);
+  padding: 20px 22px;
+  border: 1px solid var(--line);
+  border-left: 3px solid var(--accent);
+  border-radius: var(--radius);
+  background: var(--bg-sunken);
+}
+.detail__glance > div { display: contents; }
+.detail__glance dt {
+  color: var(--ink-muted);
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  line-height: 1.9;
+  white-space: nowrap;
+}
+.detail__glance dd {
+  margin: 0;
+  color: var(--ink-body);
+  font-size: 14.5px;
+  line-height: 1.6;
+}
+@media (max-width: 640px) {
+  .detail__glance { grid-template-columns: 1fr; gap: 4px; }
+  .detail__glance dt { margin-top: 12px; }
+}
+
 .detail__facts {
   display: flex;
   flex-wrap: wrap;
@@ -317,7 +352,20 @@
   font-weight: 600;
   letter-spacing: -0.01em;
 }
-.dd--prose p { margin: 0; color: var(--ink-body); }
+/* Body copy is several paragraphs now, not one block, so they need air
+   between them. The last one carries none: the section's own margin does
+   that job. */
+.dd--prose p {
+  margin: 0 0 1.05em;
+  color: var(--ink-body);
+}
+.dd--prose p:last-child { margin-bottom: 0; }
+
+/* A first paragraph that stands alone reads as the standfirst it is. */
+.dd--prose h3 + p {
+  color: var(--ink);
+  font-size: 1.04em;
+}
 
 /* --- figures --------------------------------------------------------------
    Screenshots are dark-UI captures, so they get a border rather than a
@@ -851,119 +899,50 @@
 }
 
 /* --------------------------------------------------------------------------
-   The layer stack (js/project-detail.js renderStack + followLayers)
+   The gutter instrument (js/instrument.js)
 
-   An exploded isometric diagram of the project, one slab per layer, drawn
-   entirely in CSS from the `layers` array in js/project-data.js. At wide
-   widths it breaks out into the right gutter and sticks while the prose
-   scrolls; the section in view lights its own slab and fans that slab's
-   parts out. Narrower than that it drops inline above the deep dive, where
-   it is still correct — just no longer following the scroll.
-
-   No SVG and no image: it costs no request, themes with the page through
-   --slab-fill / --slab-edge, and stays sharp at any zoom.
+   A live, working thing in the right gutter, sticky while the prose scrolls.
+   It replaced an exploded stack of isometric plates. Below 1400px it goes
+   inline above the deep dive at a wider, shorter shape, because a tall thin
+   panel only makes sense in a margin.
    -------------------------------------------------------------------------- */
 
-.stack { margin: 0 0 40px; }
-
-.stack__list {
-  list-style: none;
-  margin: 0 auto;
-  padding: 0;
-  width: 220px;
-  /* The whole stack shares one vanishing point, so the slabs read as one
-     object rather than five unrelated parallelograms. */
-  perspective: 1400px;
+.rig {
+  margin: 0 0 36px;
+  padding: 10px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--bg-raised);
 }
-
-.slab {
-  position: relative;
-  height: 78px;
-  transition: transform var(--dur) var(--ease);
-}
-
-/* The slab itself. The rotation is the isometric view; the stacked shadows
-   are its thickness — cheaper and crisper than a second element per edge. */
-.slab__face {
+.rig__canvas {
   display: block;
-  width: 150px;
-  height: 150px;
-  margin: -33px auto 0;
-  background: var(--slab-fill);
-  border: 1px solid var(--slab-edge);
-  transform: rotateX(58deg) rotateZ(-45deg) scaleY(0.92);
-  box-shadow:
-    -1px 1px 0 var(--slab-edge), -2px 2px 0 var(--slab-fill),
-    -3px 3px 0 var(--slab-fill), -4px 4px 0 var(--slab-fill),
-    -5px 5px 0 var(--slab-fill), -6px 6px 0 var(--slab-fill),
-    -7px 7px 0 var(--slab-edge);
-  transition: background var(--dur) var(--ease), filter var(--dur) var(--ease);
-  /* Off-state slabs are washed out so the lit one is unmistakable. */
-  filter: saturate(0.4) opacity(0.62);
+  width: 100%;
+  height: 220px;
+  /* The pointer IS the control, so the canvas takes the gesture rather than
+     letting the page scroll under the finger. */
+  touch-action: none;
+  cursor: crosshair;
 }
-.slab.is-on .slab__face { filter: none; }
-
-/* The name rides on the slab's near corner, upright so it stays readable. */
-.slab__name {
-  position: absolute;
-  right: 6px;
-  bottom: 16px;
-  padding: 3px 10px;
-  border-radius: var(--radius-pill);
-  background: var(--ink);
-  color: var(--bg);
+.rig__label {
+  margin: 8px 2px 0;
+  color: var(--ink-soft);
   font-size: 11px;
-  letter-spacing: 0.01em;
-  white-space: nowrap;
+  line-height: 1.45;
 }
 
-/* The parts of the lit layer, set along its far edge — the left half of the
-   slab, where the name pill (bottom right) is not. Hidden rather than removed
-   so nothing reflows as the highlight moves down the stack. */
-.slab__parts {
-  position: absolute;
-  left: 8px;
-  bottom: 30px;
-  /* Long part names wrap inside the gutter rather than running back over the
-     prose column beside it. */
-  max-width: 168px;
-  z-index: 1;   /* over the slab below it, never under the slab above */
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 2px;
-  opacity: 0;
-  pointer-events: none;
-  transition: opacity var(--dur) var(--ease);
-}
-.slab.is-on .slab__parts { opacity: 1; }
-.slab__part {
-  color: var(--slab-ink);
-  font-size: 10px;
-  letter-spacing: 0.08em;
-  line-height: 1.3;
-  text-transform: uppercase;
-}
-
-/* The lit slab lifts slightly out of the stack. Motion only where it is
-   wanted; the colour change alone carries the state otherwise. */
-@media (prefers-reduced-motion: no-preference) {
-  .slab.is-on { transform: translateY(-6px); }
-}
-
-/* Wide only: break out into the right gutter and stick. 1400px is the width
-   at which a 240px column plus its gap clears the 720px measure without
-   crowding the page edge — below it the diagram goes back inline. */
+/* Wide only: break out into the right gutter and stick. 1400px is the width at
+   which a 250px column plus its gap clears the 720px measure without crowding
+   the page edge. */
 @media (min-width: 1400px) {
   .detail__deep {
     display: grid;
-    grid-template-columns: 1fr 240px;
+    grid-template-columns: 1fr 250px;
     column-gap: 44px;
-    margin-right: -284px;
+    margin-right: -294px;
   }
   .detail__deep > h2,
   .detail__deep-body { grid-column: 1; }
-  .stack {
+  .rig {
     grid-column: 2;
     grid-row: 1 / span 2;
     position: sticky;
@@ -971,5 +950,112 @@
     align-self: start;
     margin: 0;
   }
-  .stack__list { width: 240px; }
+  .rig__canvas { height: 300px; }
+}
+
+/* --------------------------------------------------------------------------
+   The opener (js/opener.js)
+
+   The first screen of a case study, after altermag.com: a textured ground with
+   the project's own vocabulary strewn across it, one drawn figure in the
+   middle, and a chevron into the article. Scroll thins it out.
+
+   The ground is procedural — two layered repeating gradients at low opacity
+   over the theme's own paper, so it costs no image and inverts with the theme
+   instead of carrying a second texture for dark.
+   -------------------------------------------------------------------------- */
+
+.opener {
+  position: relative;
+  height: 100svh;
+  min-height: 520px;
+  margin-top: calc(-1 * var(--header-h, 58px));
+  overflow: hidden;
+  background: var(--bg);
+  /* The tooth of the paper. Three coarse gradients at different angles read as
+     fibre rather than as stripes; the eye cannot resolve the period. */
+  background-image:
+    repeating-linear-gradient(107deg, rgb(128 128 128 / 0.035) 0 2px, transparent 2px 5px),
+    repeating-linear-gradient(17deg,  rgb(128 128 128 / 0.03)  0 1px, transparent 1px 7px),
+    repeating-linear-gradient(61deg,  rgb(128 128 128 / 0.025) 0 3px, transparent 3px 11px);
+}
+
+.op-field {
+  position: absolute;
+  inset: 0;
+  --p: 0;
+}
+
+/* Each fragment sits where the seeded scatter put it and drifts at its own
+   depth as the page moves: --fd is how much of the scroll it takes, so the
+   near ones leave first and the field opens up rather than sliding as a
+   sheet. */
+.op-frag {
+  position: absolute;
+  left: var(--fx);
+  top: var(--fy);
+  color: var(--ink-soft);
+  font-family: var(--font-mono, ui-monospace, monospace);
+  font-size: 11px;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+  opacity: calc((1 - var(--p) * 1.35) * 0.62);
+  transform: translate3d(0, calc(var(--p) * var(--fd) * -180px), 0);
+  will-change: transform, opacity;
+  pointer-events: none;
+}
+/* Every third one is set in the accent, so the field has a pulse rather than
+   being one even grey. */
+.op-frag:nth-child(3n) { color: var(--accent); opacity: calc((1 - var(--p) * 1.35) * 0.5); }
+.op-frag:nth-child(7n) { font-size: 13px; letter-spacing: 0.01em; }
+
+@media (prefers-reduced-motion: no-preference) {
+  .js .op-frag {
+    animation: op-in 1.1s var(--ease, ease) backwards;
+    animation-delay: var(--fdelay, 0s);
+  }
+}
+@keyframes op-in {
+  from { opacity: 0; }
+}
+
+.op-figure {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate3d(-50%, calc(-50% + var(--p) * 90px), 0) scale(calc(1 + var(--p) * 0.25));
+  opacity: calc(1 - var(--p) * 1.1);
+  will-change: transform, opacity;
+}
+
+.op-more {
+  position: absolute;
+  left: 50%;
+  bottom: 42px;
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  color: var(--ink);
+  font-size: 13px;
+  letter-spacing: 0.02em;
+  text-decoration: none;
+}
+.op-more__t { font-family: var(--font-script, inherit); font-size: 26px; }
+.op-more__c { color: var(--ink-soft); font-size: 15px; line-height: 0.6; }
+@media (prefers-reduced-motion: no-preference) {
+  .js .op-more__c { animation: op-nudge 2.4s var(--ease, ease) infinite; }
+}
+@keyframes op-nudge {
+  0%, 100% { transform: translateY(0); opacity: 0.6; }
+  50%      { transform: translateY(5px); opacity: 1; }
+}
+
+/* A phone gets a shorter opener: one screen of scattered nouns is a charming
+   pause on a desktop and an obstacle on a commute. */
+@media (max-width: 599.98px) {
+  .opener { height: 62svh; min-height: 380px; }
+  .op-frag { font-size: 10px; }
+  .op-frag:nth-child(7n) { font-size: 11px; }
 }

@@ -560,6 +560,27 @@ main:focus-visible { outline: none; }
   letter-spacing: -0.01em;
 }
 
+/* The proof line. Small, plain, and every figure in it is stated again
+   further down the page — it exists so a five-second visit leaves with a
+   number rather than with a dot cloud. */
+.hero__proof {
+  max-width: min(540px, calc(100vw - 64px));
+  margin: 0 auto 18px;
+  color: var(--ink-soft);
+  font-size: 12.5px;
+  letter-spacing: 0.02em;
+}
+/* The pair the mode switch replaced. The switch chooses an arrangement; this
+   is what most visitors actually came to press, so it is back above the fold
+   and the switch is no longer the only thing to click. */
+.hero__cta {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 10px;
+  margin: 0 auto;
+}
+
 /* --- Narrow screens ----------------------------------------------------
    The graph needs width to read. Below 900px the lockup returns to normal
    flow so the hero stays readable rather than becoming a pile of overlaps. */
@@ -611,29 +632,117 @@ main:focus-visible { outline: none; }
   background: var(--bg-sunken);
   overflow: hidden;
 }
-/* Only advertise dragging once the JS that implements it is running. */
-.js .strip[data-marquee] {
-  cursor: grab;
-  touch-action: pan-y;      /* let vertical page scroll through; we take x */
-}
-.js .strip[data-marquee].is-dragging {
-  cursor: grabbing;
-}
+/* A list that wraps. It used to be one long duplicated row that drifted and
+   could be dragged sideways; the drag was an interaction over twelve words
+   that revealed nothing at either end of it. */
 .strip__track {
   display: flex;
-  gap: 40px;
-  width: max-content;
-  padding: 12px 0;
+  flex-wrap: wrap;
+  align-items: center;
+  /* The gap is the separator. A drawn glyph between items dangles at the
+     start of a wrapped row, and CSS cannot see where a row breaks. */
+  gap: 10px 34px;
+  list-style: none;
+  margin: 0;
+  padding: 14px var(--gap-lg);
   color: var(--ink-muted);
   font-size: 12px;
+}
+
+/* --------------------------------------------------------------------------
+   6b. Experience
+
+   Three roles, newest first, above the project list. Deliberately plainer
+   than anything else on this page: a recruiter reading it is scanning for a
+   company, a title and a date range, and every flourish between them is in
+   the way.
+   -------------------------------------------------------------------------- */
+.xp-list {
+  --xp-w: 760px;
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap-lg);
+  max-width: var(--xp-w);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  counter-reset: none;
+}
+.xp {
+  padding-left: 18px;
+  /* The spine down the left is the only decoration: it makes three entries
+     read as one run of time rather than three unrelated boxes. */
+  border-left: 2px solid var(--line-strong);
+}
+/* The current — or most recent — role gets the accent. */
+.xp:first-child { border-left-color: var(--accent); }
+
+.xp__head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 4px 18px;
+}
+.xp__role {
+  margin: 0;
+  color: var(--ink);
+  font-size: 17px;
+  font-weight: 500;
+  letter-spacing: -0.02em;
+}
+.xp__at { color: var(--ink-faint, var(--ink-soft)); font-weight: 400; }
+.xp__company { color: var(--accent-ink); }
+.xp__when {
+  margin: 0;
+  color: var(--ink-soft);
+  font-size: 12px;
+  letter-spacing: 0.04em;
+  font-variant-numeric: tabular-nums;
   white-space: nowrap;
-  user-select: none;
 }
-.strip__track span { display: inline-flex; align-items: center; gap: 40px; }
-.strip__track span::after {
-  content: '✳';
-  color: var(--accent-ink);
+.xp__blurb {
+  max-width: 62ch;
+  margin: 10px 0 0;
+  color: var(--ink-body);
+  font-size: 14.5px;
+  line-height: 1.55;
 }
+.xp__bullets {
+  max-width: 68ch;
+  margin: 12px 0 0;
+  padding-left: 18px;
+  color: var(--ink-soft);
+  font-size: 14px;
+  line-height: 1.6;
+}
+.xp__bullets li { margin-bottom: 7px; }
+.xp__bullets li::marker { color: var(--accent-mid, var(--accent)); }
+
+.xp__stack {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 14px 0 0;
+  padding: 0;
+  list-style: none;
+}
+.xp__stack li {
+  padding: 3px 9px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-pill);
+  background: var(--bg-raised);
+  color: var(--ink-soft);
+  font-size: 11.5px;
+  line-height: 1.5;
+}
+.xp__proof {
+  display: inline-block;
+  margin-top: 14px;
+  color: var(--accent);
+  font-size: 13px;
+}
+.xp__proof:hover { color: var(--accent-deep); text-decoration: underline; }
 
 /* --------------------------------------------------------------------------
    7. Work / project cards
@@ -710,6 +819,27 @@ main:focus-visible { outline: none; }
   letter-spacing: 0.04em;
   text-transform: uppercase;
 }
+
+/* The one measured figure the project has, if it has one. Three of the seven
+   do not, and the gap is the hierarchy: a row carrying a number is a row with
+   a result behind it. */
+.rm__metric {
+  align-self: flex-start;
+  margin-top: 4px;
+  padding: 2px 9px;
+  border: 1px solid var(--accent-mid, var(--line-strong));
+  border-radius: var(--radius-pill);
+  color: var(--accent-ink);
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.01em;
+}
+
+/* The lead row. Six near-identical rows gave a reader no way to tell which
+   project to open first, so the first one is bigger. */
+.rm--lead { padding: 20px 18px; }
+.rm--lead .rm__title { font-size: 21px; }
+.rm--lead .rm__desc { font-size: 15px; }
 
 /* The stack, as a labelled row rather than pills: four items at most, so the
    row stays one line and the list keeps its rhythm. */
@@ -1099,12 +1229,6 @@ main:focus-visible { outline: none; }
     opacity: 1;
     transform: none;
   }
-  .js .strip__track { animation: drift 38s linear infinite; }
-}
-
-@keyframes drift {
-  from { transform: translateX(0); }
-  to { transform: translateX(-50%); }
 }
 
 /* --------------------------------------------------------------------------
@@ -1122,6 +1246,10 @@ main:focus-visible { outline: none; }
 
   .js .hero__headline,
 
+  .js .hero__proof,
+
+  .js .hero__cta,
+
   .js .hero__actions {
     animation: appear 0.62s var(--ease) backwards;
   }
@@ -1129,6 +1257,8 @@ main:focus-visible { outline: none; }
   .js .hero__role { animation-delay: 0.14s; }
   .js .hero__sub { animation-delay: 0.20s; }
   .js .hero__headline { animation-delay: 0.26s; }
+  .js .hero__proof { animation-delay: 0.30s; }
+  .js .hero__cta { animation-delay: 0.34s; }
   .js .hero__actions { animation-delay: 0.34s; }
 }
 
@@ -1398,9 +1528,26 @@ main:focus-visible { outline: none; }
   text-align: center !important;
   transform: translateX(-50%) !important;
 }
+[data-mode='graph'] .hero__proof {
+  position: absolute !important;
+  left: 50.000% !important; top: 68.000% !important;
+  right: auto !important; bottom: auto !important; margin: 0 !important;
+  width: max-content !important; max-width: 92vw !important;
+  text-align: center !important;
+  transform: translateX(-50%) !important;
+}
+[data-mode='graph'] .hero__cta {
+  position: absolute !important;
+  left: 50.000% !important; top: 72.500% !important;
+  right: auto !important; bottom: auto !important; margin: 0 !important;
+  width: max-content !important; max-width: 92vw !important;
+  transform: translateX(-50%) !important;
+  z-index: 40;
+}
 
 /* The mode toggle must always win the hit test, whatever is drawn over it. */
 .hero__actions { z-index: 60 !important; }
+.hero__cta a { pointer-events: auto !important; }
 .hero__actions .modes,
 
 .hero__actions button { pointer-events: auto !important; }
@@ -1622,7 +1769,11 @@ main:focus-visible { outline: none; }
 
   [data-mode] .hero__sub,
 
-  [data-mode] .hero__headline {
+  [data-mode] .hero__headline,
+
+  [data-mode] .hero__proof,
+
+  [data-mode] .hero__cta {
     position: static !important;
     left: auto !important; top: auto !important; right: auto !important;
     width: auto !important; max-width: 100% !important;
@@ -1641,7 +1792,9 @@ main:focus-visible { outline: none; }
   [data-mode] .hero__name { margin: 0 auto 14px !important; }
   [data-mode] .hero__role { margin: 0 auto !important; }
   [data-mode] .hero__sub { margin: 0 auto 20px !important; }
-  [data-mode] .hero__headline { margin: 0 auto 28px !important; }
+  [data-mode] .hero__headline { margin: 0 auto 16px !important; }
+  [data-mode] .hero__proof { margin: 0 auto 20px !important; text-align: center !important; }
+  [data-mode] .hero__cta { margin: 0 auto 22px !important; justify-content: center !important; }
 
   [data-mode] .hero__actions {
     position: static !important;
@@ -1887,11 +2040,14 @@ main:focus-visible { outline: none; }
    a left-aligned block, so they come back to the left edge with it. */
 [data-mode='mosaic'] .hero__role,
 [data-mode='mosaic'] .hero__sub,
-[data-mode='mosaic'] .hero__headline {
+[data-mode='mosaic'] .hero__headline,
+[data-mode='mosaic'] .hero__proof {
   margin-left: 0;
   margin-right: auto;
   text-align: left;
 }
+[data-mode='mosaic'] .hero__proof { font-size: 11px; margin-bottom: 12px; }
+[data-mode='mosaic'] .hero__cta { justify-content: flex-start; }
 
 /* The mosaic. A fixed row height, not minmax(...,auto): a row that grows to
    its content makes every span mean something different and the tiles stop

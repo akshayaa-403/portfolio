@@ -77,10 +77,11 @@
               aria-pressed="false" aria-label="Switch to dark theme">☀</button>
       <button class="nav-toggle" type="button" data-nav-toggle aria-expanded="false" aria-controls="primary-nav">Menu</button>
       <nav class="nav" id="primary-nav" aria-label="Primary">
+        <a href="index.html#experience">Experience</a>
         <a href="index.html#work">Work</a>
-        <a href="index.html#hobbies">Hobbies</a>
         <a href="index.html#readings">Readings</a>
         <a href="index.html#about">About</a>
+        <a href="index.html#hobbies">Hobbies</a>
         <a href="index.html#contact">Contact</a>
         <a href="public/assets/resume.pdf" target="_blank" rel="noopener noreferrer">Resume ↗</a>
       </nav>
@@ -89,6 +90,12 @@
 </header>
 
 <main id="main" tabindex="-1">
+  <!-- The opener: one screen of the project's own vocabulary over a textured
+       ground, filled by js/opener.js. aria-hidden in its entirety — every word
+       on it appears again in the case study below. Empty until the script
+       runs, so a no-JS visitor drops straight into the article. -->
+  <section class="opener" data-opener></section>
+
   <div class="wrap detail" id="detail-root">
     <!-- Real heading for crawlers and no-JS visitors; js/project-detail.js
          replaces the whole container with the case study when it runs. -->
@@ -119,6 +126,8 @@
 <script src="js/nav.js" defer></script>
 <script src="js/tex.js" defer></script>
 <script src="js/interactive.js" defer></script>
+<script src="js/instrument.js" defer></script>
+<script src="js/opener.js" defer></script>
 <script src="js/project-detail.js" defer></script>
 </body>
 </html>

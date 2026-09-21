@@ -162,6 +162,57 @@ function writeAll() {
   return written;
 }
 
+/* ---------- static project list ----------
+   Everything on the home page is injected by JS, which means a crawler, a
+   corporate proxy that strips scripts, or anyone reading with JS off saw an
+   empty column where the work should be. The project list is the one block
+   that must survive that, so it is written into index.html here, between two
+   markers, and js/script.js replaces it with the enhanced version when it
+   runs. Same data, same order, same links — only the hover cues and the
+   reveal animation are missing from the static copy.
+
+   Re-run this tool after editing js/project-data.js and the block updates. */
+const LIST_BEGIN = '<!-- BEGIN generated:project-list — written by tools/build-share-pages.js, do not hand-edit -->';
+const LIST_END = '<!-- END generated:project-list -->';
+
+function projectListHtml(projects) {
+  return projects.map(function (p, i) {
+    const focus = (p.tech || []).slice(0, 4).map(esc)
+      .join(' <span aria-hidden="true">/</span> ');
+    // Same span rule as span() in js/script.js: the real years, not p.year.
+    const a = (p.created || '').slice(0, 4);
+    const b = (p.updated || '').slice(0, 4);
+    const years = a ? (a === b ? a : a + '–' + b) : (p.year || '');
+    const meta = [p.context || p.role, years].filter(Boolean).map(esc).join(' · ');
+
+    return '          <a class="rm' + (i === 0 ? ' rm--lead' : '') +
+        '" href="work/' + encodeURIComponent(p.id) + '.html">' +
+        '<span class="rm__num" aria-hidden="true">' + (i < 9 ? '0' : '') + (i + 1) + '</span>' +
+        '<span class="rm__text">' +
+          '<span class="rm__title">' + esc(p.title) + '</span>' +
+          (meta ? '<span class="rm__meta">' + meta + '</span>' : '') +
+          '<span class="rm__desc">' + esc(p.tagline) + '</span>' +
+          (p.metric ? '<span class="rm__metric">' + esc(p.metric) + '</span>' : '') +
+          (focus ? '<span class="rm__focus"><span class="rm__focus-label">Focus</span>' + focus + '</span>' : '') +
+        '</span>' +
+      '</a>';
+  }).join('\n');
+}
+
+function writeProjectList(projects) {
+  const file = path.join(ROOT, 'index.html');
+  const html = fs.readFileSync(file, 'utf8');
+  const i = html.indexOf(LIST_BEGIN);
+  const j = html.indexOf(LIST_END);
+  if (i === -1 || j === -1) {
+    console.warn('  ! index.html has no generated:project-list markers — skipped');
+    return false;
+  }
+  const block = LIST_BEGIN + '\n' + projectListHtml(projects) + '\n        ' + LIST_END;
+  fs.writeFileSync(file, html.slice(0, i) + block + html.slice(j + LIST_END.length));
+  return true;
+}
+
 /* ---------- sitemap ----------
    Points at the static pages rather than ten query-string variants of two
    documents, which is what search engines were previously asked to
@@ -255,6 +306,8 @@ function writeHobbyDims() {
 const pages = writeAll();
 writeSitemap(pages);
 const dims = writeHobbyDims();
+const listed = writeProjectList(loadProjects());
 console.log('Wrote ' + pages.length + ' share pages + sitemap.xml + '
-            + dims + ' gallery dimensions');
+            + dims + ' gallery dimensions'
+            + (listed ? " + index.html's static project list" : ''));
 pages.forEach(function (p) { console.log('  ' + p); });

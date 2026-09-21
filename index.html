@@ -57,10 +57,10 @@
   "email": "mailto:akshayaakashyap5@gmail.com",
   "address": { "@type": "PostalAddress", "addressCountry": "IN" },
   "alumniOf": "Symbiosis Institute of Technology",
+  "worksFor": { "@type": "Organization", "name": "InnovyQ" },
   "sameAs": [
     "https://github.com/akshayaa-403",
-    "https://linkedin.com/in/akshayaa-kashyap",
-    "https://akshayaakashyap.substack.com"
+    "https://linkedin.com/in/akshayaa-kashyap"
   ],
   "knowsAbout": ["Python", "SQL", "Machine Learning", "Large Language Models", "Data Analysis"]
 }
@@ -78,10 +78,11 @@
               aria-pressed="false" aria-label="Switch to dark theme">☀</button>
       <button class="nav-toggle" type="button" data-nav-toggle aria-expanded="false" aria-controls="primary-nav">Menu</button>
       <nav class="nav" id="primary-nav" aria-label="Primary">
+        <a href="#experience">Experience</a>
         <a href="#work">Work</a>
-        <a href="#hobbies">Hobbies</a>
         <a href="#readings">Readings</a>
         <a href="#about">About</a>
+        <a href="#hobbies">Hobbies</a>
         <a href="#contact">Contact</a>
         <a href="public/assets/resume.pdf" target="_blank" rel="noopener noreferrer">Resume ↗</a>
       </nav>
@@ -97,9 +98,6 @@
   </symbol>
   <symbol id="i-linkedin" viewBox="0 0 24 24">
     <path fill="currentColor" d="M20.45 20.45h-3.56v-5.57c0-1.33-.02-3.04-1.85-3.04-1.85 0-2.14 1.45-2.14 2.94v5.67H9.35V9h3.41v1.56h.05a3.74 3.74 0 0 1 3.37-1.85c3.6 0 4.27 2.37 4.27 5.46v6.28ZM5.34 7.43a2.06 2.06 0 1 1 0-4.13 2.06 2.06 0 0 1 0 4.13Zm1.78 13.02H3.55V9h3.57v11.45ZM22.22 0H1.77C.79 0 0 .77 0 1.72v20.56C0 23.23.79 24 1.77 24h20.45c.98 0 1.78-.77 1.78-1.72V1.72C24 .77 23.2 0 22.22 0Z"/>
-  </symbol>
-  <symbol id="i-substack" viewBox="0 0 24 24">
-    <path fill="currentColor" d="M22.539 8.242H1.46V5.406h21.08v2.836ZM1.46 10.812V24L12 18.11 22.54 24V10.812H1.46ZM22.539 0H1.46v2.836h21.08V0Z"/>
   </symbol>
   <symbol id="i-mail" viewBox="0 0 24 24">
     <path fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" d="M3 6.5h18v11a1.5 1.5 0 0 1-1.5 1.5h-15A1.5 1.5 0 0 1 3 17.5v-11Zm0 .5 9 6.5L21 7"/>
@@ -152,6 +150,20 @@
           I build data pipelines, LLM workflows and dashboards that turn
           messy data into clear decisions.
         </p>
+        <!-- The one line that has to survive a five-second visit. The graph
+             behind it is the most interesting thing on the page and the least
+             legible on arrival, so name, role and a proof point are stated
+             plainly over the top of it. Every figure here is on the page
+             below. -->
+        <p class="hero__proof">
+          3 roles since Jan 2025 &middot; 7 case studies &middot; Python, AWS, PyTorch, SQL
+        </p>
+        <!-- Restored primary action. The mode switch chooses an arrangement;
+             this is the thing most visitors came to press. -->
+        <p class="hero__cta">
+          <a class="btn btn--primary" href="#work">See the work</a>
+          <a class="btn btn--quiet" href="#contact">Get in touch</a>
+        </p>
       </div>
 
       <!-- ---------- Mosaic (mosaic mode) ----------
@@ -178,27 +190,54 @@
     </div>
   </section>
 
-  <!-- ===================== Skills marquee =====================
-       Drag horizontally to scrub through the list; it resumes drifting on
-       release. The heading sits outside the hero so it reads as a section
-       label rather than a floating scroll cue.
+  <!-- ===================== Skills =====================
+       A list, and now only a list. It used to drift sideways and could be
+       dragged to scrub, which was an interaction over a set of twelve words
+       that revealed nothing new at either end of the drag.
+
+       Every entry below has to be evidenced somewhere on this page — in a
+       role under Experience or in the stack of a case study. Azure, Power BI
+       and LangChain were listed here and appear nowhere in the work, so they
+       are gone rather than asserted.
   -->
   <section class="strip-section" aria-labelledby="skills-h">
     <h2 class="strip__heading" id="skills-h">Skills</h2>
-    <!-- The drag is decoration, not a control: the track is aria-hidden and
-         the list is duplicated, so scrubbing it reveals nothing new. The same
-         skills are stated in readable form below for anyone not dragging. -->
-    <div class="strip" data-marquee data-cue="Drag to scrub">
-      <p class="visually-hidden">Skills: Python, SQL, PyTorch, LangChain, Streamlit,
-        Pandas, OpenCV, Docker, TypeScript, Next.js, Azure, Power BI.</p>
-      <div class="strip__track" aria-hidden="true">
-        <span>Python</span><span>SQL</span><span>PyTorch</span><span>LangChain</span>
-        <span>Streamlit</span><span>Pandas</span><span>OpenCV</span><span>Docker</span>
-        <span>TypeScript</span><span>Next.js</span><span>Azure</span><span>Power BI</span>
-        <span>Python</span><span>SQL</span><span>PyTorch</span><span>LangChain</span>
-        <span>Streamlit</span><span>Pandas</span><span>OpenCV</span><span>Docker</span>
-        <span>TypeScript</span><span>Next.js</span><span>Azure</span><span>Power BI</span>
+    <div class="strip">
+      <ul class="strip__track" role="list">
+        <li>Python</li><li>SQL</li><li>PyTorch</li><li>Pandas</li>
+        <li>Streamlit</li><li>OpenCV</li><li>AWS Lambda</li><li>DynamoDB</li>
+        <li>Bedrock</li><li>Docker</li><li>TypeScript</li><li>React</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- ===================== Experience =====================
+       Above Projects, deliberately. The project list answers "can she build";
+       this answers "has she shipped inside a team, on a deadline, for someone
+       who paid" — which is the first thing anyone hiring wants to know and
+       the thing this page used not to say at all.
+
+       Rendered by renderExperience() in js/script.js from
+       js/experience-data.js.
+  -->
+  <section class="section" id="experience" aria-labelledby="experience-h">
+    <div class="wrap">
+      <div class="section-head reveal">
+        <h2 id="experience-h">Experience</h2>
+        <span class="glyph" aria-hidden="true">&#9632;</span>
       </div>
+
+      <ol class="xp-list" id="experience-list" role="list">
+        <noscript>
+          <li><b>AI Engineer, InnovyQ</b> — June 2026 to August 2026. Project IVY:
+            a Slack IT-support agent on AWS Lambda, Lex V2 and Bedrock.</li>
+          <li><b>Software Engineer, Artenos Network Pvt Ltd</b> — July 2025 to May 2026.
+            CRM dashboards, LLM benchmarking, internal full-stack tools.</li>
+          <li><b>AI Specialist, Sygnius Digital</b> — January 2025 to June 2025.
+            Lead scraping, an AI voice agent in the CRM, and the sales analysis
+            that changed the follow-up workflow.</li>
+        </noscript>
+      </ol>
     </div>
   </section>
 
@@ -212,32 +251,31 @@
         <span class="glyph" aria-hidden="true">&#9654;</span>
       </div>
 
+      <!-- The list below is REAL MARKUP, regenerated by
+           tools/build-share-pages.js, so this page says what the work is
+           without running a line of JavaScript. js/script.js replaces it with
+           the same list plus hover cues and the reveal animation. -->
       <div class="rm-list" id="recent-cards">
+        <!-- BEGIN generated:project-list — written by tools/build-share-pages.js, do not hand-edit -->
+          <a class="rm rm--lead" href="work/ivy-slack-agent.html"><span class="rm__num" aria-hidden="true">01</span><span class="rm__text"><span class="rm__title">Project IVY</span><span class="rm__meta">InnovyQ · 2026</span><span class="rm__desc">A Slack support agent that reads screenshots and files its own tickets.</span><span class="rm__metric">100% char OCR · 823 ms/image</span><span class="rm__focus"><span class="rm__focus-label">Focus</span>Python <span aria-hidden="true">/</span> AWS Lambda <span aria-hidden="true">/</span> SQS <span aria-hidden="true">/</span> DynamoDB</span></span></a>
+          <a class="rm" href="work/quantamental-screener.html"><span class="rm__num" aria-hidden="true">02</span><span class="rm__text"><span class="rm__title">Quantamental Screener</span><span class="rm__meta">Solo project · 2025–2026</span><span class="rm__desc">Multi-factor equity screening with news sentiment.</span><span class="rm__metric">Sharpe 1.20</span><span class="rm__focus"><span class="rm__focus-label">Focus</span>Python <span aria-hidden="true">/</span> Pandas <span aria-hidden="true">/</span> ta <span aria-hidden="true">/</span> Streamlit</span></span></a>
+          <a class="rm" href="work/arteza.html"><span class="rm__num" aria-hidden="true">03</span><span class="rm__text"><span class="rm__title">Arteza</span><span class="rm__meta">Client work · 2026</span><span class="rm__desc">An online gallery and shop for an original-art studio.</span><span class="rm__metric">90+ paintings, 5 collections</span><span class="rm__focus"><span class="rm__focus-label">Focus</span>React <span aria-hidden="true">/</span> Vite <span aria-hidden="true">/</span> TypeScript <span aria-hidden="true">/</span> Tailwind CSS</span></span></a>
+          <a class="rm" href="work/phase-contrast-denoising.html"><span class="rm__num" aria-hidden="true">04</span><span class="rm__text"><span class="rm__title">Phase-Contrast Clean-Up Pipeline</span><span class="rm__meta">Research tool · 2026</span><span class="rm__desc">Removing halo artifacts from microscopy images.</span><span class="rm__metric">PSNR 12.87 → 20.62 dB</span><span class="rm__focus"><span class="rm__focus-label">Focus</span>Python <span aria-hidden="true">/</span> PyTorch <span aria-hidden="true">/</span> OpenCV <span aria-hidden="true">/</span> Gradio</span></span></a>
+          <a class="rm" href="work/anttodo.html"><span class="rm__num" aria-hidden="true">05</span><span class="rm__text"><span class="rm__title">Ant Colony Task Scheduler</span><span class="rm__meta">Solo project · 2026</span><span class="rm__desc">Your to-do list as a routing problem, solved live.</span><span class="rm__focus"><span class="rm__focus-label">Focus</span>JavaScript <span aria-hidden="true">/</span> Ant Colony Optimization <span aria-hidden="true">/</span> SVG <span aria-hidden="true">/</span> HTML Canvas</span></span></a>
+          <a class="rm" href="work/habita.html"><span class="rm__num" aria-hidden="true">06</span><span class="rm__text"><span class="rm__title">Habita</span><span class="rm__meta">Solo project · 2026</span><span class="rm__desc">Eisenhower matrix that writes to your real calendar.</span><span class="rm__focus"><span class="rm__focus-label">Focus</span>JavaScript (ES6) <span aria-hidden="true">/</span> CSS Grid <span aria-hidden="true">/</span> SVG <span aria-hidden="true">/</span> Capacitor</span></span></a>
+          <a class="rm" href="work/wikipedia-summarizer.html"><span class="rm__num" aria-hidden="true">07</span><span class="rm__text"><span class="rm__title">Wikipedia Summarizer</span><span class="rm__meta">NLP · 2025–2026</span><span class="rm__desc">Four algorithms, one article, scored against the humans who wrote it.</span><span class="rm__metric">ROUGE-1 0.400 · 60 ms</span><span class="rm__focus"><span class="rm__focus-label">Focus</span>JavaScript (ES modules) <span aria-hidden="true">/</span> MediaWiki API <span aria-hidden="true">/</span> ROUGE <span aria-hidden="true">/</span> SVG</span></span></a>
+        <!-- END generated:project-list -->
         <noscript>
-          <p>Project cards need JavaScript. All source lives at
+          <p>Every case study also exists as a plain page:
+            <a href="work/ivy-slack-agent.html">Project IVY</a>,
+            <a href="work/quantamental-screener.html">Quantamental Screener</a>,
+            <a href="work/arteza.html">Arteza</a>,
+            <a href="work/phase-contrast-denoising.html">Phase-Contrast Clean-Up Pipeline</a>,
+            <a href="work/anttodo.html">Ant Colony Task Scheduler</a>,
+            <a href="work/habita.html">Habita</a>,
+            <a href="work/wikipedia-summarizer.html">Wikipedia Summarizer</a>.
+            All source lives at
             <a href="https://github.com/akshayaa-403" rel="noopener noreferrer">github.com/akshayaa-403</a>.</p>
-        </noscript>
-      </div>
-    </div>
-  </section>
-
-  <!-- ===================== Hobbies =====================
-       A justified photo gallery grouped by pursuit. Row heights are solved in
-       js/hobbies.js so every row fills the container edge to edge while each
-       photo keeps its own proportions.
-  -->
-  <section class="section" id="hobbies" aria-labelledby="hobbies-h">
-    <div class="wrap">
-      <div class="section-head reveal">
-        <h2 id="hobbies-h">Hobbies</h2>
-        <span class="glyph" aria-hidden="true">&#10059;</span>
-      </div>
-      <p class="hobbies__intro reveal">Things I make and go looking for when I'm not at a terminal.</p>
-
-      <div id="hobby-groups">
-        <noscript>
-          <p>The gallery needs JavaScript to lay out. Photographs of cooking,
-            drawing, trekking and places I've walked through.</p>
         </noscript>
       </div>
     </div>
@@ -285,18 +323,41 @@
             the interface that turn it into something a person can read, argue with and act on.
             I care more about whether a number can be traced back to its input than about the
             number itself, which is why every project here shows its working.</p>
-          <p data-squiggle>Outside client work I build things in order to understand them, and
-            then <a href="https://akshayaakashyap.substack.com" target="_blank" rel="noopener noreferrer">write about them on Substack</a>.
-            If any of it is useful to you, I'd like to hear about it.</p>
+          <p data-squiggle>Three of those systems were built on someone else's deadline —
+            the roles are <a href="#experience">listed above</a>, most recently three months
+            at InnovyQ building an AI support agent that lives in Slack. The rest I build in
+            order to understand them. If any of it is useful to you, I'd like to hear about it.</p>
         </div>
 
         <aside class="about__aside reveal">
           <dl>
             <dt>Based in</dt><dd>India</dd>
             <dt>Education</dt><dd>B.Tech Robotics &amp; Automation, Symbiosis Institute of Technology</dd>
-            <dt>Certifications</dt><dd>IBM SkillsBuild AI Literacy · HarvardX STAT110x Probability · UiPath RPA</dd>
+            <dt>Certification</dt><dd>HarvardX STAT110x, Introduction to Probability</dd>
           </dl>
         </aside>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== Hobbies =====================
+       A justified photo gallery grouped by pursuit. Row heights are solved in
+       js/hobbies.js so every row fills the container edge to edge while each
+       photo keeps its own proportions.
+  -->
+  <section class="section" id="hobbies" aria-labelledby="hobbies-h">
+    <div class="wrap">
+      <div class="section-head reveal">
+        <h2 id="hobbies-h">Hobbies</h2>
+        <span class="glyph" aria-hidden="true">&#10059;</span>
+      </div>
+      <p class="hobbies__intro reveal">Things I make and go looking for when I'm not at a terminal.</p>
+
+      <div id="hobby-groups">
+        <noscript>
+          <p>The gallery needs JavaScript to lay out. Three galleries:
+            photography, artwork and cooking.</p>
+        </noscript>
       </div>
     </div>
   </section>
@@ -313,8 +374,6 @@
           <svg class="icon" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" focusable="false"><use href="#i-github"></use></svg>GitHub</a>
         <a class="btn btn--icon" href="https://linkedin.com/in/akshayaa-kashyap" target="_blank" rel="noopener noreferrer">
           <svg class="icon" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" focusable="false"><use href="#i-linkedin"></use></svg>LinkedIn</a>
-        <a class="btn btn--icon" href="https://akshayaakashyap.substack.com" target="_blank" rel="noopener noreferrer">
-          <svg class="icon" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" focusable="false"><use href="#i-substack"></use></svg>Substack</a>
       </div>
     </div>
   </section>
@@ -328,8 +387,6 @@
         <svg class="icon" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" focusable="false"><use href="#i-github"></use></svg><span>GitHub</span></a>
       <a href="https://linkedin.com/in/akshayaa-kashyap" target="_blank" rel="noopener noreferrer" aria-label="LinkedIn">
         <svg class="icon" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" focusable="false"><use href="#i-linkedin"></use></svg><span>LinkedIn</span></a>
-      <a href="https://akshayaakashyap.substack.com" target="_blank" rel="noopener noreferrer" aria-label="Substack">
-        <svg class="icon" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" focusable="false"><use href="#i-substack"></use></svg><span>Substack</span></a>
       <a href="mailto:akshayaakashyap5@gmail.com" aria-label="Email">
         <svg class="icon" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" focusable="false"><use href="#i-mail"></use></svg><span>Email</span></a>
     </nav>
@@ -338,12 +395,12 @@
 
 <script src="js/util.js" defer></script>
 <script src="js/project-data.js" defer></script>
+<script src="js/experience-data.js" defer></script>
 <script src="js/theme.js" defer></script>
 <script src="js/nav.js" defer></script>
 <script src="js/modes.js" defer></script>
 <script src="js/squiggle.js" defer></script>
 <script src="js/hero-hover.js" defer></script>
-<script src="js/marquee.js" defer></script>
 <!-- Must load before script.js: it injects .reveal elements, and script.js
      registers the reveal observer over whatever is in the DOM at that point. -->
 <script src="js/hobby-data.js" defer></script>

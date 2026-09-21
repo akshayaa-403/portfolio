@@ -2,53 +2,211 @@
    (project.html). Copy is written from what each repo actually contains. */
 const projects = [
   {
-    "id": "quantamental-screener",
-    "layers": [
-      {
-        "name": "Dashboard",
-        "hue": 340,
-        "parts": [
-          "Streamlit",
-          "live weight sliders"
+    "id": "ivy-slack-agent",
+    "context": "InnovyQ",
+    "title": "Project IVY",
+    "tagline": "A Slack support agent that reads screenshots and files its own tickets.",
+    "year": "2026",
+    "role": "AI Engineer, InnovyQ",
+    "summary": "An AI IT-support agent living in Slack DMs: AWS Lex V2 for intent, Claude on Bedrock for everything Lex cannot answer, OCR over pasted screenshots, and a capacity-aware dispatcher that assigns the Jira ticket to whichever human is actually on shift and has room.",
+    "tech": [
+      "Python",
+      "AWS Lambda",
+      "SQS",
+      "DynamoDB",
+      "Lex V2",
+      "Bedrock (Claude)",
+      "Rekognition",
+      "PaddleOCR",
+      "Docker",
+      "Jira API"
+    ],
+    "repo": "https://github.com/akshayaa-403/o3_slack_bot",
+    "metric": "100% char OCR · 823 ms/image",
+    "glance": {
+      "problem": "An internal IT helpdesk where most tickets arrive as a Slack message and a screenshot, and a human has to read both before anything happens.",
+      "built": "An event-driven agent on AWS — API Gateway to Lambda to SQS to Lex V2 — with DynamoDB session state per issue, a Claude fallback on Bedrock, OCR over pasted screenshots, and automatic Jira ticket creation with capacity-aware assignment.",
+      "result": "Four OCR engines benchmarked against hand-written ground truth; the chosen one reads a support screenshot at 100% character accuracy in 823 ms. Eight test suites cover the locking and dispatch paths."
+    },
+    "overview": "IVY is an IT-support agent that lives where the support requests already are: a Slack DM. A message goes through API Gateway to a handler Lambda, which deduplicates it in DynamoDB and drops it on SQS; a worker pulls it, asks AWS Lex V2 what the person wants, and keeps the whole conversation as one session keyed to the Slack thread. When Lex has no useful answer — a fallback intent, an empty reply, a question nobody wrote an intent for — the worker calls Claude on Bedrock instead, behind a guardrail, with a system prompt that forbids it from claiming a ticket was created. If the request needs a human, IVY files the Jira ticket itself and hands it to whichever agent is on shift with capacity to spare.",
+    "highlights": [
+      "Nine Lambdas behind one Slack app: event handler, SQS worker, intent router, Jira ticket creator, Claude fallback, image recognition, log summariser, live-agent dispatcher and a timeout handler driven by EventBridge Scheduler.",
+      "Session state per issue rather than per user — the Slack root message timestamp is part of the session key, so two problems reported the same afternoon do not blur into one conversation.",
+      "Claude Haiku on Bedrock as the fallback, at temperature 0.2 behind a Bedrock guardrail, with a system prompt that bans it from asserting anything about ticket state.",
+      "Screenshots resolved in order: Rekognition text and labels first, then Lex on the extracted text, then a Bedrock knowledge base, then a Gemini fallback.",
+      "A PaddleOCR Lambda shipped as a container image, because paddlepaddle and opencv are several times the 250 MB zip limit, with the model weights baked in at build time — Lambda gives you a read-only filesystem and an empty /tmp on every cold start.",
+      "Duplicate work is prevented with DynamoDB conditional writes, not with hope: a retried SQS record or a twice-clicked button cannot open two Jira tickets or hand the same issue to two people.",
+      "The live-agent dispatcher reads shifts from DynamoDB or, optionally, from Jira Service Management on-call schedules; if nobody has room the ticket queues, and a terminal Jira status releases the slot and promotes the oldest queued ticket exactly once."
+    ],
+    "challenge": "The hard part was not the model, it was making a distributed system tell the truth about itself. SQS redelivers. Slack retries. A person clicks \"raise a ticket\" twice because the first click did not visibly do anything. Every one of those produces a second, identical request, and the naive version of this agent files two Jira tickets and pages two engineers. The fix is that nothing which touches the outside world is allowed to happen on optimism: the ticket write, the live-agent handoff and the capacity reservation each go through a DynamoDB conditional update that fails loudly if the work was already claimed. The second problem was the screenshots. Most of the incoming tickets are a picture of an error dialog, and picking an OCR engine by reputation is how you end up with a 12-second cold start in a Lambda. So I benchmarked four of them — EasyOCR, PaddleOCR, Textract and Mistral OCR — against transcriptions I wrote by hand, and reported latency and model-load cost next to accuracy, because on Lambda the load time is the thing that hurts.",
+    "created": "2026-07-16",
+    "updated": "2026-08-10",
+    "tags": [
+      [
+        "AWS Lex V2",
+        "https://docs.aws.amazon.com/lexv2/latest/dg/what-is.html"
+      ],
+      [
+        "Amazon Bedrock",
+        "https://docs.aws.amazon.com/bedrock/latest/userguide/what-is-bedrock.html"
+      ],
+      [
+        "DynamoDB conditional writes",
+        "https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/WorkingWithItems.html#WorkingWithItems.ConditionalUpdate"
+      ],
+      [
+        "Slack Events API",
+        "https://api.slack.com/apis/events-api"
+      ]
+    ],
+    "notes": {
+      "overview": [
+        [
+          "lives where the support requests already are",
+          "no new tool for anyone to remember to open"
+        ],
+        [
+          "forbids it from claiming a ticket was created",
+          "the one thing a support bot must never get wrong"
         ]
+      ],
+      "challenge": [
+        [
+          "because the first click did not visibly do anything",
+          "always. every time. design for it"
+        ],
+        [
+          "the load time is the thing that hurts",
+          "a cold Lambda pays it on every scale-out, not once"
+        ]
+      ]
+    },
+    "fragments": [
+      "Slack",
+      "Lex V2",
+      "Bedrock",
+      "Claude",
+      "Lambda",
+      "SQS",
+      "DynamoDB",
+      "Jira",
+      "intent",
+      "slot",
+      "session",
+      "fallback",
+      "guardrail",
+      "OCR",
+      "PaddleOCR",
+      "Textract",
+      "Rekognition",
+      "conditional write",
+      "idempotent",
+      "on-call",
+      "capacity",
+      "queue",
+      "cold start",
+      "container image",
+      "ap-southeast-2",
+      "thread_ts",
+      "event_id",
+      "dedupe",
+      "batchItemFailures",
+      "EventBridge",
+      "escalation",
+      "ground truth"
+    ],
+    "deepDive": [
+      {
+        "kind": "prose",
+        "heading": "Why an intent model and a language model, instead of one or the other",
+        "body": "A pure LLM support bot is easy to demo and hard to trust. It will happily tell someone their VPN ticket has been raised when nothing has been written anywhere.\n\nA pure intent model is the opposite: every route is explicit and auditable, and it falls over the moment somebody phrases a request in a way nobody anticipated.\n\nSo IVY runs both. Lex V2 owns the twenty-odd intents that map to a real action — request AWS access, get into Opsgenie, raise a ticket — and those paths are deterministic. Claude picks up everything else, with a system prompt that lets it ask one clarifying question and explicitly forbids it from claiming a ticket exists. The model is allowed to be helpful; it is not allowed to be authoritative about state."
       },
       {
-        "name": "Ranking",
-        "hue": 28,
-        "parts": [
-          "z-scores",
-          "weighted composite",
-          "backtest"
-        ]
+        "kind": "diagram",
+        "shape": "flow",
+        "heading": "One Slack message, end to end",
+        "body": "Nothing here is synchronous with the person typing. Slack wants an acknowledgement in three seconds, and Lex, Bedrock and Jira between them take longer than that, so the handler does the minimum and hands off.",
+        "steps": [
+          {
+            "t": "Slack DM",
+            "d": "Events API, through API Gateway"
+          },
+          {
+            "t": "Handler",
+            "d": "verify, dedupe by event_id in DynamoDB, enqueue"
+          },
+          {
+            "t": "SQS",
+            "d": "the buffer that makes the rest allowed to be slow"
+          },
+          {
+            "t": "Worker",
+            "d": "Lex V2 for intent; Claude on Bedrock when Lex has nothing"
+          },
+          {
+            "t": "Action",
+            "d": "reply, or Jira ticket, or handoff to a human"
+          }
+        ],
+        "caption": "The dedupe step is not optional: Slack retries a delivery it thinks failed, and without event_id in DynamoDB a slow reply becomes two tickets."
       },
       {
-        "name": "Factors",
-        "hue": 100,
-        "parts": [
-          "momentum",
-          "volume",
-          "volatility",
-          "sentiment"
-        ]
+        "kind": "diagram",
+        "shape": "bars",
+        "heading": "Four OCR engines, one hand-written ground truth",
+        "body": "Most support tickets arrive as a screenshot of an error. Reading them automatically means choosing an engine, and reputation is not a measurement — so all four ran over the same five support screenshots and were scored against transcriptions I typed out myself.",
+        "rows": [
+          {
+            "k": "Mistral OCR",
+            "v": 100,
+            "label": "100.0%",
+            "best": true
+          },
+          {
+            "k": "Textract",
+            "v": 99.9,
+            "label": "99.9%"
+          },
+          {
+            "k": "PaddleOCR",
+            "v": 98.9,
+            "label": "98.9%"
+          },
+          {
+            "k": "EasyOCR",
+            "v": 97.4,
+            "label": "97.4%"
+          }
+        ],
+        "max": 100,
+        "caption": "Character accuracy, mean over five screenshots, from ocr/results/benchmark_results.md in the repository. Accuracy was not the deciding number: per-image latency ran 823 ms (Mistral), 1,551 ms (Textract), 1,075 ms (PaddleOCR) and 2,184 ms (EasyOCR), and the two local engines also pay a 10–12 second model load on every cold start."
       },
       {
-        "name": "Data",
-        "hue": 190,
-        "parts": [
-          "yfinance",
-          "NewsAPI",
-          "Redis cache"
-        ]
+        "kind": "prose",
+        "heading": "The expensive lesson was packaging, not accuracy",
+        "body": "PaddleOCR scores well and costs nothing per call, which made it the obvious choice until I tried to deploy it. `paddlepaddle` and `opencv` together are several times Lambda's 250 MB zip limit, so it had to ship as a container image instead.\n\nThat solved the size problem and exposed the next one. Lambda's filesystem is read-only apart from `/tmp`, and `/tmp` is empty on every cold start — so an engine that downloads its own model weights on first use downloads them again, and again, and again. The weights get baked into the image at build time by running the constructor once during `docker build`.\n\nThe cloud engines have none of this problem and a per-call bill instead. That is the actual trade, and it is not visible in an accuracy table."
       },
       {
-        "name": "Constraint",
-        "hue": 265,
-        "parts": [
-          "1 GB of memory",
-          "an app that hibernates"
-        ]
+        "kind": "code",
+        "lang": "python",
+        "code": "CLAUDE_SYSTEM_PROMPT = os.environ.get(\n    \"CLAUDE_SYSTEM_PROMPT\",\n    (\n        \"You are IVY, a concise IT and support assistant. \"\n        \"Use only the current user request and session context. \"\n        \"If the request is ambiguous, ask one clear clarifying question. \"\n        \"Do not claim that a ticket was created.\"\n    )\n)",
+        "caption": "The fallback's system prompt, from lambda_o3_claude_fallback.py. The last line is the whole safety argument: the model may answer, but only the deterministic path is allowed to say anything happened."
+      },
+      {
+        "kind": "prose",
+        "heading": "Assigning a ticket is a concurrency problem",
+        "body": "When IVY decides a human is needed, something has to choose which human. The naive version reads the agent table, picks whoever has the fewest open issues, and writes the assignment. Two requests arriving at the same moment both read the same \"fewest\", and both assign to the same person.\n\nSo the reservation is a conditional update: increment `active_count` only if it is still below `max_capacity` and the row still looks the way it did when we read it. If the condition fails, the dispatcher re-reads and tries the next agent. If nobody has room, the ticket stays unassigned with `assignment_status=QUEUED` rather than being forced onto someone.\n\nReleasing is the same problem backwards. A Jira status change fires a callback, and that callback can arrive more than once — so the release is also conditional, and it promotes exactly one queued ticket."
+      },
+      {
+        "kind": "prose",
+        "heading": "What I'd do differently",
+        "body": "I would put an evaluation harness on the conversation itself, not only on the OCR. I measured the piece that was easy to measure — character accuracy against a transcription I wrote — and left the part that actually decides whether IVY is useful, which is whether Lex routed a request to the right intent, to spot checks in Slack. A fixed set of a hundred real requests with the intent each one should produce would have caught routing regressions that I only found by noticing them.\n\nI would also separate the sessions table from the locks. Right now the session record carries conversation state and the conditional-write flags that prevent duplicate tickets, which means every contended write contends with a write that had no reason to be contended.\n\nAnd I would stop treating the Gemini and Claude fallbacks as interchangeable last resorts. They were added at different times for different failures and the ordering between them is historical rather than reasoned."
       }
     ],
+    "thumb": false
+  },
+  {
+    "id": "quantamental-screener",
     "context": "Solo project",
     "title": "Quantamental Screener",
     "tagline": "Multi-factor equity screening with news sentiment.",
@@ -122,14 +280,12 @@ const projects = [
     "deepDive": [
       {
         "kind": "prose",
-        "heading": "Four numbers that refuse to agree",
-        "layer": "Ranking",
-        "body": "A screener that only reads price will buy a stock that is rising for a reason you would not like if you knew it. A screener that only reads headlines will buy a story. This one asks four separate questions of every name in the universe on the same day — how hard has it been moving, how much of it has been changing hands, how violently, and what is being written about it — and only lets a name to the top when the answers point the same way. Momentum is the 21-day rate of change. The other three are computed the same way: one number per ticker per day, nothing smoothed, nothing borrowed from tomorrow."
+        "heading": "Why I made it ask four questions instead of one",
+        "body": "Most screeners I tried did one thing well and the other thing not at all. The technical ones would hand me a stock that was ripping upwards for a reason I'd have hated if I'd known it. The news-driven ones would hand me a story.\n\nSo this one asks four separate questions of every name in the universe on the same day. How hard has it been moving? How much of it has been changing hands? How violently? And what is being written about it?\n\nA name only reaches the top when the answers agree. That's the whole idea, and everything else in the project is plumbing for it."
       },
       {
         "kind": "diagram",
         "shape": "flow",
-        "layer": "Ranking",
         "heading": "One day, end to end",
         "body": "Nothing in the pipeline looks at a stock on its own. Every step is cross-sectional — a name is judged against the rest of the universe on the same day, which is what makes the four factors comparable at the end.",
         "steps": [
@@ -164,7 +320,6 @@ const projects = [
       {
         "kind": "interactive",
         "widget": "weights",
-        "layer": "Ranking",
         "heading": "Move a weight, watch the list disagree with you",
         "body": "The composite is a weighted sum of four z-scores, and the weights are a judgement, not a discovery. Drag one and the ranking re-sorts underneath you. Push sentiment to zero and the screener becomes a momentum model; push volatility up and the calm names climb.",
         "rowLabel": "Ticker",
@@ -264,9 +419,8 @@ const projects = [
       },
       {
         "kind": "prose",
-        "heading": "Reading the room as well as the tape",
-        "layer": "Factors",
-        "body": "Sentiment is an ensemble rather than one model, because the cheap scorers disagree in ways that are useful. VADER handles negation and intensifiers — it knows that “not great” is not great. TextBlob is steadier across long, flat prose, where VADER finds drama that is not there. FinBERT is materially better than either on financial text, because it was trained on it; it is also the single reason this application cannot simply be deployed and forgotten."
+        "heading": "The sentiment score is three models, not one",
+        "body": "I didn't expect to need an ensemble here. I expected to pick the best scorer and move on.\n\nWhat changed my mind was watching them disagree in useful ways. VADER understands negation and intensifiers — it knows “not great” is not great. TextBlob is steadier on long, flat prose, where VADER keeps finding drama that isn't there. FinBERT is better than either on financial text, because that's what it was trained on.\n\nFinBERT is also the reason I couldn't just deploy this and forget about it, which is the next section."
       },
       {
         "kind": "code",
@@ -282,9 +436,8 @@ const projects = [
       },
       {
         "kind": "prose",
-        "heading": "A ranking is a claim until it is tested",
-        "layer": "Ranking",
-        "body": "Any model can produce a list. The question is whether the list would have made money, and at what cost in sleep. The backtest rebalances weekly into the top-ranked names and reports the result beside the S&P 500 — not just the return, but Sharpe, maximum drawdown, volatility and hit rate, on one panel, benchmark included. The run in the screenshot below returns 19.70% against the benchmark's 21.99%. That is a loss, and it is reported as one."
+        "heading": "I wanted to know if the list would actually have made money",
+        "body": "Any model can produce a list. The interesting question is whether following it would have worked, and what it would have cost you in sleep.\n\nSo there's a backtest: weekly rebalance into the top-ranked names, reported next to the S&P 500. Not just the return — Sharpe, maximum drawdown, volatility and hit rate, all on one panel with the benchmark sitting right there.\n\nThe run in the screenshot below returns 19.70% against the benchmark's 21.99%. That is a loss. I left it on the page because a portfolio piece that only shows the runs that won isn't a portfolio piece, it's an advert."
       },
       {
         "kind": "figure",
@@ -300,57 +453,64 @@ const projects = [
       },
       {
         "kind": "prose",
-        "heading": "One gigabyte, and everything that follows from it",
-        "layer": "Constraint",
-        "body": "Streamlit Community Cloud allows roughly 1 GB of memory. FinBERT does not fit comfortably inside it alongside the data layer, and the honest options were to drop sentiment, ship something that dies under load, or make the model tier a setting. It became a setting: lexicon scorers by default so the hosted app stays inside budget, FinBERT one environment variable away for anyone running it locally. The second free-tier problem was sleep — Community Cloud hibernates an idle app — so a scheduled workflow drives headless Chrome at it every ten hours. Neither decision is interesting. Both are the difference between a link that opens and a link that embarrasses you."
+        "heading": "The constraint that shaped everything: 1 GB",
+        "body": "Streamlit Community Cloud gives you roughly a gigabyte of memory. FinBERT does not fit comfortably inside that alongside the data layer.\n\nI had three options. Drop sentiment. Ship something that dies under load. Or make the model tier a setting.\n\nIt became a setting. Lexicon scorers by default so the hosted app stays inside budget, FinBERT one environment variable away for anyone running it locally. The second free-tier problem was that Community Cloud puts an idle app to sleep, so a scheduled workflow drives headless Chrome at it every ten hours to keep it awake.\n\nNeither decision is clever. Both are the difference between a link that opens and a link that embarrasses you six months later."
+      },
+      {
+        "kind": "prose",
+        "heading": "What I'd do differently",
+        "body": "The honest headline on this project is that the backtest lost: 19.70% against the benchmark's 21.99%. It is worth being precise about what that does and does not mean.\n\nIt is not evidence that the factors are worthless. Sharpe 1.20 with a −10.07% maximum drawdown is a smoother ride than the index had over the same window, which is what you would expect from a screen that down-weights volatility. What it underperformed on was raw return, in a period when the index was carried by a handful of very large names that a cross-sectional momentum screen keeps trimming back to average weight.\n\nSo the next thing I would test is not a different factor, it is a different weighting scheme. The 0.40 / 0.30 / 0.20 / 0.10 weights are a judgement I made once and never revisited, and the obvious experiment is to fit them on a rolling window instead of fixing them — then check whether the fitted weights are stable, because if they move every quarter the model is reading noise.\n\nThe second thing is the sentiment factor. It is the weakest-evidenced of the four: lexicon scorers over headline text, which is what fits inside the hosted app's memory budget. I would run the whole backtest again with FinBERT scoring locally and see whether the 0.30 weight survives contact with a better signal.\n\nAnd I would report the backtest over more than one window. One run over one period is an anecdote, however carefully it is measured."
       }
-    ]
+    ],
+    "instrument": {
+      "kind": "rank",
+      "label": "Five names, and the weight between momentum and sentiment. Drag up and down: the ladder re-sorts, and the name at the top changes. The arithmetic is the real composite; the five rows are the worked example from the table below."
+    },
+    "fragments": [
+      "momentum",
+      "21-day ROC",
+      "z-score",
+      "clipped to ±3",
+      "cross-sectional",
+      "composite",
+      "sentiment",
+      "VADER",
+      "TextBlob",
+      "FinBERT",
+      "ensemble",
+      "Sharpe 1.20",
+      "max drawdown",
+      "weekly rebalance",
+      "S&P 500",
+      "universe",
+      "yfinance",
+      "NewsAPI",
+      "Redis",
+      "TTL 4h",
+      "pydantic-settings",
+      "Streamlit",
+      "one gigabyte",
+      "hibernation",
+      "headless Chrome",
+      "factor weights",
+      "the narrative agrees",
+      "volatility",
+      "volume",
+      "backtest",
+      "benchmark",
+      "ranked",
+      "a claim until tested"
+    ],
+    "metric": "Sharpe 1.20",
+    "demo": "https://quantamental-screener.streamlit.app",
+    "glance": {
+      "problem": "Stock screeners look at price action or at headlines, never at both on the same day.",
+      "built": "A cross-sectional four-factor model — momentum, volume, volatility and ensemble news sentiment — z-scored daily and blended into one rank, with a weekly-rebalance backtest and a Streamlit dashboard.",
+      "result": "The backtest returns 19.70% against the S&P 500’s 21.99%, at Sharpe 1.20 and −10.07% maximum drawdown. The strategy lost to its benchmark, and the panel that says so is on the page."
+    }
   },
   {
     "id": "arteza",
-    "layers": [
-      {
-        "name": "Storefront",
-        "hue": 340,
-        "parts": [
-          "React",
-          "Vite",
-          "shadcn/ui"
-        ]
-      },
-      {
-        "name": "Discovery",
-        "hue": 28,
-        "parts": [
-          "five collections",
-          "style-matching quiz"
-        ]
-      },
-      {
-        "name": "Checkout",
-        "hue": 100,
-        "parts": [
-          "WhatsApp hand-off",
-          "class booking"
-        ]
-      },
-      {
-        "name": "Catalogue",
-        "hue": 190,
-        "parts": [
-          "Supabase",
-          "90+ original works"
-        ]
-      },
-      {
-        "name": "Constraint",
-        "hue": 265,
-        "parts": [
-          "one artist",
-          "no payment stack"
-        ]
-      }
-    ],
     "context": "Client work",
     "title": "Arteza",
     "tagline": "An online gallery and shop for an original-art studio.",
@@ -422,9 +582,8 @@ const projects = [
       },
       {
         "kind": "prose",
-        "heading": "Five worlds, not one long grid",
-        "layer": "Discovery",
-        "body": "The five collections could have been a dropdown. Instead they are arranged as orbiting bubbles around a central label, each showing a representative work, connected by dotted lines. It rewards exploration in a way a menu does not — and for a gallery, browsing is the product."
+        "heading": "Five collections instead of one long grid",
+        "body": "The default move for an art site is a grid of everything, sorted by date. It's also the worst way to look at paintings: they flatten into thumbnails and you stop seeing any of them.\n\nSo the work is split into five collections, presented as a constellation rather than a list — each one previewing itself, connected by dotted lines. You pick a world, then look inside it.\n\nThe style quiz exists for people who don't know which world is theirs. It's three preferences, scored against the five collections, and it drops you into the closest one."
       },
       {
         "kind": "figure",
@@ -435,7 +594,6 @@ const projects = [
       {
         "kind": "interactive",
         "widget": "weights",
-        "layer": "Discovery",
         "heading": "The quiz, as arithmetic",
         "body": "The style quiz is not a personality test. It is three preferences turned into weights over five collections, and the collection with the highest score is the one you are shown first. Move a slider and the answer changes in front of you, which is the honest version of what the quiz does behind a sequence of screens.",
         "rowLabel": "Collection",
@@ -515,14 +673,12 @@ const projects = [
       },
       {
         "kind": "prose",
-        "heading": "The checkout is a conversation",
-        "layer": "Checkout",
-        "body": "Each painting is one-of-one. A buyer typically wants to ask something — how the colour reads in daylight, whether it ships framed — before committing. Routing the cart into WhatsApp with the selection pre-filled keeps that conversation where the studio already works, and sidesteps a payment integration that would have served the site's architecture more than its customers. There is an offline fallback: if the server cannot be reached, the message is still composed locally so the lead is not lost."
+        "heading": "Why there's no cart",
+        "body": "There's no cart and no card form on this site, and that was the right call.\n\nEvery work is one of one. The studio already sells by talking to people — that's how the questions get answered, how the commissions start, how someone asks whether it'll suit their wall. A checkout flow would have replaced that conversation with a form.\n\nSo each listing carries medium, dimensions and price, and the last step hands you to WhatsApp. Sold work leaves the shop rather than sitting there greyed out.\n\nIf you'd asked me at the start I'd have built the cart. The artist was right and I was wrong."
       },
       {
         "kind": "diagram",
         "shape": "flow",
-        "layer": "Checkout",
         "heading": "How a painting is actually bought",
         "body": "There is no cart and no card form. Every work is one of one, and the studio already sells the way the last step describes — so the site hands the buyer over rather than pretending to be a shop.",
         "steps": [
@@ -581,56 +737,53 @@ const projects = [
             "Static edge delivery, Mumbai region — close to the audience"
           ]
         ]
+      },
+      {
+        "kind": "prose",
+        "heading": "What I'd do differently",
+        "body": "I would have instrumented it. The site went live without analytics, which means I can tell you what I built and not whether it worked — how many people finished the quiz, whether the collection pages or the shop grid sent more enquiries to WhatsApp, which paintings people opened and did not ask about. All of that is cheap to collect and I did not collect it, so the case study above is a description rather than a result.\n\nI would also revisit the WhatsApp checkout. It was the right call — it matched how the studio already sold, and a cart would have been a worse fit — but it puts the handoff at exactly the point where I stop being able to see anything. At minimum the outgoing message should carry a reference the studio can match back to a painting and a session.\n\nAnd I would push harder on image weight. A gallery is almost entirely photographs of paintings, and the original files were bigger than they needed to be."
       }
-    ]
+    ],
+    "instrument": {
+      "kind": "orbit",
+      "label": "Five collections circling. Drag to pull one in — the quiz is this, with three preferences doing the pulling instead of your pointer."
+    },
+    "fragments": [
+      "five collections",
+      "one of one",
+      "style quiz",
+      "constellation",
+      "WhatsApp",
+      "the checkout is a conversation",
+      "Supabase",
+      "React",
+      "Vite",
+      "TypeScript",
+      "Tailwind",
+      "shadcn/ui",
+      "Vercel",
+      "90+ works",
+      "medium",
+      "dimensions",
+      "sold work leaves",
+      "class booking",
+      "Cormorant Garamond",
+      "rotating headline",
+      "a muted painting",
+      "the studio already sells this way",
+      "no cart",
+      "no card form",
+      "an artist, not a shop"
+    ],
+    "metric": "90+ paintings, 5 collections",
+    "glance": {
+      "problem": "A working painter with a catalogue spread across Instagram posts and WhatsApp threads, and no single place a buyer could see the work.",
+      "built": "A React and Supabase storefront for 90+ originals across five curated collections, with a style-matching quiz, class booking, and checkout that hands off to WhatsApp — where the sales were already happening.",
+      "result": "A live site the studio sells from. Commercial figures belong to the client and are not mine to publish."
+    }
   },
   {
     "id": "phase-contrast-denoising",
-    "layers": [
-      {
-        "name": "Interface",
-        "hue": 340,
-        "parts": [
-          "Gradio app",
-          "browser port"
-        ]
-      },
-      {
-        "name": "Model",
-        "hue": 28,
-        "parts": [
-          "U-Net",
-          "residual prediction",
-          "fp16 weights"
-        ]
-      },
-      {
-        "name": "Classical path",
-        "hue": 100,
-        "parts": [
-          "background estimate",
-          "halo subtraction",
-          "CLAHE"
-        ]
-      },
-      {
-        "name": "Images",
-        "hue": 190,
-        "parts": [
-          "phase-contrast microscopy",
-          "halo artifact"
-        ]
-      },
-      {
-        "name": "Measure",
-        "hue": 265,
-        "parts": [
-          "PSNR",
-          "SSIM",
-          "parity against Python"
-        ]
-      }
-    ],
     "context": "Research tool",
     "title": "Phase-Contrast Clean-Up Pipeline",
     "tagline": "Removing halo artifacts from microscopy images.",
@@ -706,14 +859,12 @@ const projects = [
     "deepDive": [
       {
         "kind": "prose",
-        "heading": "The bright lie around every cell",
-        "layer": "Images",
-        "body": "Phase-contrast microscopy makes transparent cells visible by turning differences in optical path into differences in brightness. The price is a bright ring that traces every edge — the halo — and the halo is not decoration. It sits exactly where a segmentation algorithm is looking for a boundary, so it is read as cell, and every count and area measured afterwards is wrong by however much of the ring got included. The artifact is invisible to the person looking down the eyepiece and fatal to the software downstream."
+        "heading": "The microscope adds something that isn't there",
+        "body": "Phase-contrast microscopy makes transparent cells visible by turning differences in optical path into differences in brightness. It's a beautiful trick and it has a price: a bright ring around every edge.\n\nThat ring is called the halo, and it is not just cosmetic. It sits exactly where a segmentation algorithm goes looking for a boundary, so the software reads it as cell. Every count and every area you measure afterwards is wrong by however much of the collar got included.\n\nThe part that bothered me is that it's invisible to the person at the eyepiece and fatal to everything downstream."
       },
       {
         "kind": "interactive",
         "widget": "wipe",
-        "layer": "Classical path",
         "heading": "Drag the line across a cell",
         "body": "Left of the divider is what the microscope produced. Right of it is what came out of hybrid mode. Look at the edges rather than the middle: the halo is the bright collar, and the thing to check is whether the collar went away without taking the boundary with it.",
         "a": {
@@ -731,8 +882,7 @@ const projects = [
       },
       {
         "kind": "steps",
-        "heading": "Two routes, one exit",
-        "layer": "Classical path",
+        "heading": "Two modes, because not everyone has a GPU",
         "items": [
           {
             "t": "Classical (fast)",
@@ -742,12 +892,12 @@ const projects = [
             "t": "Hybrid (better)",
             "d": "The same classical front-end, then a residual U-Net predicts what artifact remains and subtracts it."
           }
-        ]
+        ],
+        "body": "The pipeline runs in either of two modes and they share a front end.\n\n`cv_only` is OpenCV alone: a difference-of-Gaussians estimate of the halo as a background field, subtracted, then CLAHE to lift what's left. Fast, no model, runs anywhere.\n\n`hybrid` adds a residual U-Net on top of that. It's better, and it needs weights — which ship in the repository at fp16, so hybrid mode works on a fresh clone with no download step."
       },
       {
         "kind": "diagram",
         "shape": "flow",
-        "layer": "Classical path",
         "heading": "What happens to a frame",
         "body": "Hybrid mode is two passes, not one model. The classical front-end removes what can be described in closed form, and the network is only asked for what is left.",
         "steps": [
@@ -781,21 +931,18 @@ const projects = [
       },
       {
         "kind": "prose",
-        "heading": "Learn the mistake, not the picture",
-        "layer": "Model",
-        "body": "The network is never asked to draw a cell. It is asked for the residual — what is left over after the classical front-end has done what it can — and the cleaned image is the input minus that prediction. This matters because the residual is small, sparse and structured, while a cell is large and varied. A model that has to reproduce the whole image spends its capacity relearning things the input already contains; a model that only has to describe the error starts from a much easier problem, and its failure mode is leaving some halo behind rather than inventing a cell that was never there."
+        "heading": "The network never draws a cell",
+        "body": "This is the design decision I'm most pleased with, and it took me a while to get to.\n\nThe obvious approach is to train a model that takes a haloed image and outputs a clean one. I tried that. The problem is that you're asking the network to reproduce the entire image, most of which the input already contains, and it spends its capacity relearning things it was handed.\n\nSo the network is never asked for a cell. It's asked for the residual — what's left over after the classical front end has done what it can — and the cleaned image is the input minus that prediction.\n\nThe residual is small, sparse and structured. A cell is large and varied. That's a much easier problem, and it fails in a much better way: it leaves some halo behind rather than inventing a cell that was never there."
       },
       {
         "kind": "prose",
-        "heading": "It has to run on the first try",
-        "layer": "Interface",
-        "body": "A pre-trained fp16 checkpoint ships with the repo, so hybrid inference works with no training step. Half precision was what kept the weights small enough to commit. PSNR, SSIM and FLOPs are reported per run into an auto-generated Markdown report, and a Gradio app gives an interactive before-and-after view."
+        "heading": "If it doesn't run on clone, it doesn't exist",
+        "body": "I've lost hours to research code that needs a checkpoint from a dead Dropbox link.\n\nSo the weights are in the repo, at fp16 to keep them small. There's a synthetic dataset generator so you don't need real microscopy to see it work. `python main.py --mode hybrid` produces cleaned images and a report, on CPU, on a laptop."
       },
       {
         "kind": "prose",
-        "heading": "The same arithmetic, moved into a tab",
-        "layer": "Interface",
-        "body": "The interactive demo is not a video. docs/cv.js is a hand port of the Python preprocessor to JavaScript — OpenCV's Gaussian kernel sizing, BORDER_REFLECT_101 edge handling, and the tile-histogram CLAHE from OpenCV's own clahe.cpp. Drag any parameter and the halo suppression recomputes live on the image, in about 100 ms at 256x256."
+        "heading": "Porting the classical half to the browser",
+        "body": "The classical front end is all arithmetic — Gaussians, a subtraction, a histogram equalisation. None of it needs Python.\n\nSo `docs/` is a static page that runs exactly those steps in JavaScript on an image you drop in. No server, no upload, nothing leaves your machine. It's the demo I'd want to try before cloning someone's repo."
       },
       {
         "kind": "figure",
@@ -805,21 +952,18 @@ const projects = [
       },
       {
         "kind": "prose",
-        "heading": "The port is checked, not promised",
-        "layer": "Measure",
-        "body": "A JavaScript reimplementation of an OpenCV pipeline is only worth anything if it actually matches. scripts/verify_web_pipeline.py runs both implementations over the same images and fails on divergence: they agree to roughly 50 dB PSNR, with a maximum per-pixel difference of about 0.016 of full scale from tile-boundary interpolation, and the JavaScript PSNR and SSIM match scikit-image exactly to five decimals."
+        "heading": "How I know the port didn't drift",
+        "body": "Two implementations of the same maths will diverge quietly, and you won't notice until someone's numbers don't reproduce.\n\nSo the browser version isn't asserted to match, it's measured against the Python one on the same inputs. That check is the only reason I'm willing to claim they're the same pipeline."
       },
       {
         "kind": "prose",
-        "heading": "What the browser cannot be asked to do",
-        "layer": "Model",
-        "body": "At 31M parameters the model is a ~124 MB float32 download and far too slow for WebAssembly, so its output is precomputed and served as an image, labelled as precomputed rather than passed off as live. Uploads get no-reference metrics instead — edge energy from a Sobel gradient for membrane detail, and background variance over the flattest quarter of an 8x8 tiling for empty space. Read together they answer “did the halo go”, which is a weaker claim than fidelity to a target, and the page says that too."
+        "heading": "What the browser version can't do",
+        "body": "It can't run the U-Net. That's not a limitation I'm working around, it's the honest boundary: the browser demo is the classical half, and it says so on the page rather than quietly producing worse results and letting you assume you saw the real thing."
       },
       {
         "kind": "prose",
-        "heading": "What a good number does not prove",
-        "layer": "Measure",
-        "body": "PSNR is a log of mean squared error, so it rewards being close everywhere and says nothing about being right where it matters. A pipeline that blurs an image slightly will often score well, because blur is small error spread thin. That is the opposite of what this is for. So the report carries SSIM beside it, and the images are shown rather than summarised: the wipe above is the real evidence, and the numbers are the corroboration."
+        "heading": "PSNR is a worse metric than it looks",
+        "body": "PSNR is a log of mean squared error, so it rewards being close everywhere and says nothing about being right where it matters.\n\nHere's the trap: a pipeline that just blurs the image slightly will often score well, because blur is small error spread thin. That is the exact opposite of what this is for.\n\nSo the report carries SSIM next to it, and the images are shown rather than summarised. The wipe above is the real evidence. The numbers are corroboration."
       },
       {
         "kind": "table",
@@ -851,56 +995,58 @@ const projects = [
         "kind": "formula",
         "tex": "\\text{dog} = G_{\\sigma_1}(x) - G_{\\sigma_2}(x) \\qquad \\text{enhanced} = x - \\alpha \\cdot \\text{dog}, \\quad \\sigma_2 > \\sigma_1",
         "caption": "The halo is a broad low-frequency ring while the cell body carries the high-frequency detail, so blurring at two scales separates them. sigma1 = 1.0 keeps the cell, sigma2 = 8.0 is wide enough to straddle the halo, and subtracting alpha = 0.6 of their difference removes the ring without hollowing the cell out."
+      },
+      {
+        "kind": "prose",
+        "heading": "What I'd do differently",
+        "body": "Six samples is not an evaluation, it is a sanity check. The PSNR and SSIM numbers in the table above are the mean over six images, and I would not draw a conclusion about a denoiser from six images if someone else showed them to me. A proper version measures over a held-out set in the tens or hundreds, and reports the spread rather than only the mean.\n\nI would also stop leaning on PSNR at all. I say in the case study that it is a worse metric than it looks, and then report it anyway because it is what the literature reports. The thing anyone actually wants to know is whether segmentation gets better downstream — so the right measurement is to run a standard segmentation on the raw and the cleaned frames and compare the masks against hand-drawn ones. That is a harder experiment and it is the one that means something.\n\nAnd I would train on real paired data rather than a synthetic halo model. The network learns the halo I simulated, which is a defensible approximation of the optics, and exactly as good as that approximation is."
       }
-    ]
+    ],
+    "instrument": {
+      "kind": "halo",
+      "label": "A drawn phase-contrast field. Drag across it to wipe the halo off the cells and back on — the collar is what the pipeline removes, and the boundary underneath is what it has to leave intact."
+    },
+    "fragments": [
+      "the halo",
+      "phase contrast",
+      "optical path",
+      "bright collar",
+      "difference of Gaussians",
+      "CLAHE",
+      "residual",
+      "U-Net",
+      "fp16",
+      "cleaned = input − residual",
+      "segmentation",
+      "boundary",
+      "PSNR",
+      "SSIM",
+      "mean squared error",
+      "blur scores well",
+      "cv_only",
+      "hybrid",
+      "Gradio",
+      "runs on a clone",
+      "synthetic ground truth",
+      "microscopy",
+      "artifact",
+      "invisible to the eye",
+      "fatal downstream",
+      "OpenCV",
+      "PyTorch",
+      "the mistake, not the picture",
+      "parity",
+      "ported to the browser"
+    ],
+    "metric": "PSNR 12.87 → 20.62 dB",
+    "glance": {
+      "problem": "Phase-contrast microscopy puts a bright halo around every cell — an artifact of the optics, not a feature of the sample — and it defeats the thresholding that segmentation depends on.",
+      "built": "A hybrid pipeline: classical difference-of-Gaussians and CLAHE, plus a residual U-Net that predicts the halo rather than the cell, shipped with fp16 weights so inference needs no setup, and a browser port of the classical half.",
+      "result": "Mean PSNR over six samples rises from 12.87 dB raw to 20.62 dB hybrid, SSIM from 0.206 to 0.360. The classical-only stage scores worse on PSNR than the raw input, which is the metric behaving correctly rather than the stage failing."
+    }
   },
   {
     "id": "anttodo",
-    "layers": [
-      {
-        "name": "Canvas",
-        "hue": 340,
-        "parts": [
-          "SVG",
-          "live redraw"
-        ]
-      },
-      {
-        "name": "Colony",
-        "hue": 28,
-        "parts": [
-          "ants",
-          "pheromone",
-          "evaporation"
-        ]
-      },
-      {
-        "name": "Formulation",
-        "hue": 100,
-        "parts": [
-          "routing problem",
-          "dependency constraints"
-        ]
-      },
-      {
-        "name": "Tasks",
-        "hue": 190,
-        "parts": [
-          "durations",
-          "an ordinary day"
-        ]
-      },
-      {
-        "name": "Knobs",
-        "hue": 265,
-        "parts": [
-          "alpha",
-          "beta",
-          "rho",
-          "iterations"
-        ]
-      }
-    ],
     "context": "Solo project",
     "title": "Ant Colony Task Scheduler",
     "tagline": "Your to-do list as a routing problem, solved live.",
@@ -967,9 +1113,8 @@ const projects = [
     "deepDive": [
       {
         "kind": "prose",
-        "heading": "The day, drawn as a map",
-        "layer": "Formulation",
-        "body": "A to-do list is usually treated as a set of independent things, each with a checkbox. It is not. Doing the shopping after the bank means a different walk than doing it before; answering email between two blocks of deep work costs more than answering it at the end. Once the cost of a task depends on what came before it, an ordering problem has become a routing problem, and routing problems have a literature. This one uses ant colony optimisation, and it does so in two honest forms: Errand Mode, where tasks are real places and distance is genuine haversine kilometres on a closed tour, and Focus Mode, where the colony orders a workday against a cost function made of things that actually hurt."
+        "heading": "A to-do list is secretly a routing problem",
+        "body": "We treat a to-do list as a set of independent things with checkboxes. It isn't.\n\nDoing the shopping after the bank is a different walk than doing it before. Answering email between two blocks of deep work costs more than answering it at the end. Once the cost of a task depends on what came before it, you no longer have a list — you have a routing problem, and routing problems have decades of literature behind them.\n\nThis one uses ant colony optimisation, in two forms that are honest about what they're claiming. Errand Mode treats tasks as real places with real coordinates, so distance is genuine haversine kilometres on a closed tour and a shorter route really is shorter. Focus Mode orders a workday against a cost function built from things that actually hurt."
       },
       {
         "kind": "figure",
@@ -984,8 +1129,7 @@ const projects = [
       },
       {
         "kind": "steps",
-        "heading": "What one ant does",
-        "layer": "Colony",
+        "heading": "What a single ant actually does",
         "items": [
           {
             "t": "Construct",
@@ -1008,12 +1152,11 @@ const projects = [
             "d": "Pheromone is bounded to [tau_min, tau_max] — the Max-Min Ant System rule, and the thing that prevents premature convergence."
           }
         ],
-        "body": "One ant starts somewhere and repeatedly chooses the next task, weighing how much pheromone has been laid on that step against how attractive the step looks on its own — alpha and beta are exactly those two weights. It finishes a full order, the order is costed, and every step it took receives pheromone in proportion to how good the whole tour was. Nothing is planned. The route that keeps turning up in good tours simply accumulates more signal than the ones that do not, until the colony agrees."
+        "body": "One ant starts somewhere and repeatedly picks its next task, weighing two things: how much pheromone is on that step, and how good the step looks on its own. Alpha and beta are exactly those two weights.\n\nIt finishes a complete order. The order gets costed. Every step it took receives pheromone in proportion to how good the whole tour was.\n\nNothing is planned. No ant sees the global picture. The route that keeps appearing in good tours simply accumulates more signal than the ones that don't, until the colony agrees."
       },
       {
         "kind": "diagram",
         "shape": "cycle",
-        "layer": "Colony",
         "heading": "The loop the colony runs",
         "body": "No ant plans anything. Each one builds a whole order, that order is costed, and every step it took is reinforced in proportion to how good the finished tour was. Evaporation is what lets the colony change its mind.",
         "steps": [
@@ -1044,9 +1187,8 @@ const projects = [
       },
       {
         "kind": "prose",
-        "heading": "The trail has to forget",
-        "layer": "Colony",
-        "body": "Without evaporation the first decent route found becomes the only route ever found: every ant reinforces it, which makes it more attractive, which makes more ants take it. Rho is the fraction of pheromone that decays each iteration, and it is the whole reason the colony can change its mind. Bounding the trail from above and below does the rest — a ceiling stops one edge from becoming irresistible, a floor stops an edge from becoming invisible and unreachable."
+        "heading": "Why the trails have to fade",
+        "body": "Without evaporation, the first decent route the colony finds becomes the only route it will ever find. Every ant reinforces it, which makes it more attractive, which sends more ants down it.\n\nRho is the fraction of pheromone that decays each iteration, and it's the only reason the colony can change its mind. Bounding the trail above and below does the rest: a ceiling stops one edge becoming irresistible, a floor stops an edge becoming invisible.\n\nDrag the instrument in the margin to the right and watch this fail on purpose."
       },
       {
         "kind": "table",
@@ -1081,14 +1223,12 @@ const projects = [
       },
       {
         "kind": "prose",
-        "heading": "You decide what better means",
-        "layer": "Knobs",
-        "body": "Alpha, beta, rho, q0, ants per iteration, 2-opt on or off, and the four objective weights are all exposed rather than tuned and hidden. This is partly honesty — these parameters change the answer, and a demo that hides them is claiming an objectivity it does not have — and partly the point: set context-switching to zero and watch the schedule fragment, and you have learned more about your own day than any recommended ordering would have told you."
+        "heading": "I exposed every knob, deliberately",
+        "body": "Alpha, beta, rho, q₀, ants per iteration, 2-opt on or off, and the four objective weights are all on sliders instead of tuned and hidden.\n\nPartly that's honesty. These parameters change the answer, and a demo that hides them is claiming an objectivity it doesn't have.\n\nBut mostly it's the actual point of the project. Set context-switching to zero and watch your schedule fragment into a dozen pieces. You've just learned something about your own day that no recommended ordering would have told you."
       },
       {
         "kind": "interactive",
         "widget": "weights",
-        "layer": "Knobs",
         "heading": "Decide what a bad day costs",
         "body": "Focus Mode does not have an objectively correct answer, because “better day” is not a measurable quantity. What it has is four penalties with sliders. Set one to zero and it stops mattering. The ordering below is the colony's, re-sorted against whatever you decide to care about.",
         "rowLabel": "Task",
@@ -1179,53 +1319,57 @@ const projects = [
           }
         ],
         "caption": "The four terms are the repository's own objective; the day is an illustrative one. Higher is more expensive to leave late, so the top row is what the colony would schedule first."
+      },
+      {
+        "kind": "prose",
+        "heading": "What I'd do differently",
+        "body": "I would give it something to be measured against. The visualiser shows a colony converging, and converging is not the same as being right — ACO is a heuristic, and on seven stops the optimal route can be found exactly by brute force in microseconds. Drawing the exact optimum on the same chart would turn \"the line flattens\" into \"the line flattens 4% above the best possible answer\", which is a far more interesting thing to watch.\n\nI would also be more careful about what the demo claims. It is a genuinely nice piece of teaching about ant colony optimisation, and it is a fairly poor task scheduler, because the cost matrix between two tasks is invented. Either I make the costs real — actual context-switch cost, actual travel between locations — or I stop framing it as a to-do app and present it as what it is, which is an interactive explanation of a metaheuristic.\n\nAnd the parameter panel exposes every knob without saying which ones matter. Alpha and rho change the answer; colony size mostly changes how long you wait."
       }
-    ]
+    ],
+    "instrument": {
+      "kind": "colony",
+      "label": "A colony on a seven-stop route, pheromone thickening where the ants agree. Drag right to cut evaporation: the trails stop forgetting, the first decent answer locks in, and the colony stops improving."
+    },
+    "fragments": [
+      "ant colony optimisation",
+      "pheromone",
+      "τ",
+      "α",
+      "β",
+      "ρ",
+      "q₀",
+      "evaporation",
+      "the trail forgets",
+      "closed tour",
+      "haversine",
+      "Errand Mode",
+      "Focus Mode",
+      "deadline pressure",
+      "priority inversion",
+      "context switching",
+      "cognitive load",
+      "2-opt",
+      "convergence",
+      "Max-Min Ant System",
+      "τ_min",
+      "τ_max",
+      "dependencies",
+      "a day as a map",
+      "no ant sees the whole",
+      "iteration",
+      "cost function",
+      "you decide what better means",
+      "zero dependencies",
+      "one file"
+    ],
+    "glance": {
+      "problem": "A to-do list is drawn as a list, but a day is really a route: the cost of doing something depends on what you did before it.",
+      "built": "A browser visualiser that reframes a day as a travelling-salesman problem and runs ant colony optimisation over it live, with two formulations, dependency constraints, every parameter exposed, and a convergence chart.",
+      "result": "Runs entirely in the tab — no backend, no build step. The honest finding is the one the parameters show: push evaporation down and the colony stops improving."
+    }
   },
   {
     "id": "habita",
-    "layers": [
-      {
-        "name": "Screen",
-        "hue": 340,
-        "parts": [
-          "CSS Grid",
-          "SVG progress rings"
-        ]
-      },
-      {
-        "name": "Matrix",
-        "hue": 28,
-        "parts": [
-          "urgent / important",
-          "four quadrants"
-        ]
-      },
-      {
-        "name": "Timeline",
-        "hue": 100,
-        "parts": [
-          "drag onto a day",
-          "real durations"
-        ]
-      },
-      {
-        "name": "Calendar",
-        "hue": 190,
-        "parts": [
-          "Android Calendar API",
-          "Capacitor"
-        ]
-      },
-      {
-        "name": "Storage",
-        "hue": 265,
-        "parts": [
-          "localStorage",
-          "schema migrations"
-        ]
-      }
-    ],
     "context": "Solo project",
     "title": "Habita",
     "tagline": "Eisenhower matrix that writes to your real calendar.",
@@ -1293,14 +1437,12 @@ const projects = [
     "deepDive": [
       {
         "kind": "prose",
-        "heading": "Where a task sits is what it is",
-        "layer": "Matrix",
-        "body": "Most task apps store priority as a field: a number, a flag, a colour you pick from a menu. Habita stores it as a position. A task lives in one of four quadrants — Focus, Backburner, Fit In, Goals — and moving it is the only way to change what it means. The consequence is that you cannot mark everything important, because the grid has two axes and a thing that is urgent and not important has somewhere specific to go. The decision is made once, when the task is placed, and the layout is what remembers it."
+        "heading": "Priority as a place, not a number",
+        "body": "Every task app I've used stores priority as a field: a number, a flag, a colour from a dropdown. And every one of them ends up with everything marked high.\n\nHabita stores priority as a position. A task lives in one of four quadrants, and the only way to change what it means is to physically move it.\n\nThe consequence is that you can't mark everything important, because the grid has two axes and a thing that's urgent but not important has somewhere specific to go. You make the decision once, when you place it, and the layout is what remembers."
       },
       {
         "kind": "diagram",
         "shape": "quadrant",
-        "layer": "Matrix",
         "heading": "The grid a task lands in",
         "body": "Priority is a position here, not a field. A task lives in one of four quadrants and the only way to change what it means is to move it — which is why you cannot mark everything important.",
         "x": "Urgency →",
@@ -1328,7 +1470,6 @@ const projects = [
       {
         "kind": "interactive",
         "widget": "steps",
-        "layer": "Matrix",
         "heading": "Put a Tuesday through the grid",
         "body": "Here is an unsorted day. Step through the four quadrants and watch which tasks each one claims. The point is not that the sorting is clever — it is that once a task is in a quadrant there is nowhere left to hide it.",
         "playLabel": "Play all four",
@@ -1408,9 +1549,8 @@ const projects = [
       },
       {
         "kind": "prose",
-        "heading": "A ring drawn from one number",
-        "layer": "Screen",
-        "body": "Each quadrant carries a ring that fills as its tasks complete. It is a single SVG circle animated through stroke-dasharray — the dash pattern is set to the circumference, and the offset moves from full circumference (empty) to zero (complete). No dependency, no canvas, and it scales cleanly at any size."
+        "heading": "Progress rings without a chart library",
+        "body": "Each quadrant shows a ring that fills as its tasks get done. It's one SVG circle with `stroke-dasharray` set to the circumference and `stroke-dashoffset` driven by the completion ratio.\n\nThat's the whole implementation. No dependency, no canvas, and it scales cleanly because it's a vector. I mention it because “add a chart library” would have been the default move and it would have cost more than it returned."
       },
       {
         "kind": "formula",
@@ -1419,69 +1559,67 @@ const projects = [
       },
       {
         "kind": "prose",
-        "heading": "The calendar you already look at",
-        "layer": "Timeline",
-        "body": "A planner that only knows about itself is a second place to check, and a second place to check is a place you stop checking. Dragging a task onto the day timeline writes a real event into the phone's own calendar through a local Capacitor plugin over Android's CalendarContract — no third-party service, no sync account. Move the block and the event moves. Delete the event in your calendar app and the block notices it has gone and recreates it rather than failing quietly. The day view also reads what is already in the calendar and draws it in its own lane, so you can see what a slot would collide with before you take it."
+        "heading": "The feature that made it worth building",
+        "body": "A planner that only knows about itself is a second place to check. A second place to check is a place you stop checking.\n\nSo dragging a task onto the day timeline writes a real event into the phone's own calendar, through a local Capacitor plugin over Android's CalendarContract. No third-party service, no sync account. Move the block and the event moves.\n\nThe details that took the longest are the ones nobody sees. Colours go through the account's own palette because several providers ignore a raw colour value. Events Habita created carry a marker in their description so the timeline can tell its own blocks from yours. Updates are partial, so a description you edited elsewhere survives. And if you delete the event in your calendar app, the block notices it's gone and recreates it rather than failing silently.\n\nThe day view also reads what's already in your calendar and draws it in its own lane, so you can see what a slot would collide with before you take it."
       },
       {
         "kind": "prose",
-        "heading": "A web app that stops feeling like one",
-        "layer": "Calendar",
-        "body": "The goal was something that feels native on a phone while staying a plain web project. The JavaScript is split into single-responsibility ES6 modules — theming, storage, tasks, UI, progress, calendar — served as-is with no bundler, then wrapped for Android with Capacitor. Capacitor Haptics gives real vibration on device; the Web Vibration API covers browsers."
+        "heading": "Making a web app stop feeling like one",
+        "body": "It's ES6 modules, CSS Grid and SVG, wrapped with Capacitor. No build step, no bundler, no framework.\n\nWhat makes it feel native isn't the wrapper, it's the small things: haptics on completion, 15-minute snapping so drags land somewhere sensible, keyboard nudging on a focused block, and a web Vibration fallback for when the Capacitor plugin isn't there."
       },
       {
         "kind": "prose",
-        "heading": "Yesterday's data, today's app",
-        "layer": "Storage",
-        "body": "State persists to localStorage, so a user can return weeks later carrying a shape the current code no longer expects. Habita validates the stored object on load and migrates older shapes forward rather than trusting it — a stale save degrades into a correct one instead of a crash."
+        "heading": "Never let old data break a new build",
+        "body": "Everything lives in localStorage, which means every install has data from whatever version the user last ran.\n\nSo stored objects get validated and migrated on load. A stale or partial object degrades into a correct one rather than throwing. It is unglamorous and it's the difference between shipping an update and shipping an update that wipes someone's week."
+      },
+      {
+        "kind": "prose",
+        "heading": "What I'd do differently",
+        "body": "I would ship an APK. There is a working Android app here and no way for anyone to run it without cloning the repository and building it themselves, which means the only people who will ever see it are people who already believe me. A signed release build attached to a GitHub release costs almost nothing and is the difference between a claim and a demonstration.\n\nI would also make the calendar write two-way. Right now Habita writes events out and never reads them back, so a block you move in Google Calendar and the block Habita thinks exists drift apart silently. Reading the calendar back is more work than writing to it, and it is the difference between a feature and a sync.\n\nAnd the quadrant model needs a way out. The Eisenhower matrix is a good forcing function and a bad description of a real week — most tasks are not clearly urgent or clearly not — so the app should let a task sit on a boundary instead of pretending the decision was clean."
       }
-    ]
+    ],
+    "instrument": {
+      "kind": "grid",
+      "label": "A day of tasks against the two axes. Drag the crosshair: everything re-sorts against wherever you just put the line, which is what deciding actually is."
+    },
+    "fragments": [
+      "Eisenhower",
+      "urgent",
+      "important",
+      "Focus",
+      "Backburner",
+      "Fit In",
+      "Goals",
+      "position, not a field",
+      "quadrant",
+      "day timeline",
+      "15-minute snapping",
+      "CalendarContract",
+      "Capacitor",
+      "READ_CALENDAR",
+      "Instances table",
+      "recurring events",
+      "EVENT_COLOR_KEY",
+      "partial update",
+      "progress ring",
+      "SVG",
+      "localStorage",
+      "schema migration",
+      "the calendar you already look at",
+      "haptics",
+      "auto-place",
+      "collision",
+      "Android",
+      "no third-party sync"
+    ],
+    "glance": {
+      "problem": "Every task app invents its own idea of priority, and the time you set aside inside one is invisible everywhere you actually look.",
+      "built": "An Android task manager on the Eisenhower matrix — four urgency/importance quadrants — with a drag-to-schedule day timeline that writes real events into the phone's own calendar.",
+      "result": "Working app, no published build. What it demonstrates is the calendar write: time blocked in Habita shows up in the calendar the rest of the phone already reads."
+    }
   },
   {
     "id": "wikipedia-summarizer",
-    "layers": [
-      {
-        "name": "Page",
-        "hue": 340,
-        "parts": [
-          "static",
-          "no build, no server"
-        ]
-      },
-      {
-        "name": "Strategies",
-        "hue": 28,
-        "parts": [
-          "frequency",
-          "TextRank",
-          "position",
-          "hybrid"
-        ]
-      },
-      {
-        "name": "Scoring",
-        "hue": 100,
-        "parts": [
-          "ROUGE-1",
-          "ROUGE-2",
-          "ROUGE-L"
-        ]
-      },
-      {
-        "name": "Reference",
-        "hue": 190,
-        "parts": [
-          "the lead section editors wrote"
-        ]
-      },
-      {
-        "name": "Source",
-        "hue": 265,
-        "parts": [
-          "MediaWiki API"
-        ]
-      }
-    ],
     "context": "NLP",
     "title": "Wikipedia Summarizer",
     "tagline": "Four algorithms, one article, scored against the humans who wrote it.",
@@ -1553,14 +1691,12 @@ const projects = [
     "deepDive": [
       {
         "kind": "prose",
-        "heading": "Marked against the people who wrote it",
-        "layer": "Scoring",
-        "body": "Every extractive summariser can be scored against another summariser, which tells you which of two guesses is closer to a third guess. This one is scored against the article's own lead section — the summary Wikipedia's editors wrote and then argued about for years. There is one catch, and it is the interesting part: scoring against the full lead would hand a perfect 1.000 to anything that copied it, so the lead is trimmed to the same word budget the algorithms get. What comes out is a human ceiling. The best algorithm reaches 56 to 67% of it."
+        "heading": "Scoring against humans, not against each other",
+        "body": "You can score one extractive summariser against another, but all that tells you is which of two guesses is closer to a third guess.\n\nThis one is scored against the article's own lead section — the summary Wikipedia's editors wrote and then argued about for years. It's the closest thing to a ground truth that exists for this task, and it's sitting right there in the document.\n\nThere's one catch, and it's the interesting part. Scoring against the full lead would hand a perfect 1.000 to anything that copied it. So the lead gets trimmed to the same word budget the algorithms get.\n\nWhat comes out is a human ceiling. The best algorithm reaches 56 to 67% of it."
       },
       {
         "kind": "diagram",
         "shape": "bars",
-        "layer": "Scoring",
         "heading": "Measured against the people who wrote it",
         "body": "ROUGE-1 F-measure on the Penguin article, against the lead section trimmed to the same word budget the algorithms get. The dashed rule is what a human achieved writing to that brief.",
         "rows": [
@@ -1610,14 +1746,12 @@ const projects = [
       },
       {
         "kind": "prose",
-        "heading": "Four ways of being wrong",
-        "layer": "Strategies",
-        "body": "All four are extractive: they select existing sentences rather than generating new ones. What differs is how each decides what matters — and because they share one TF-IDF pass, a difference in output is a difference in strategy rather than in tokenisation."
+        "heading": "I picked four algorithms that fail differently",
+        "body": "TextRank runs PageRank over a graph of sentence similarities, so it favours the sentences the article keeps circling back to. LSA finds latent topics by SVD and takes one sentence per topic, which sends it further down the document than the others. Luhn, from 1958, finds the densest window of frequent terms, which in practice means the opening.\n\nMMR is the odd one out, and it shows. It's the only one that looks backward: at every step it subtracts a redundancy penalty against what it has already chosen. The other three score each sentence independently, which means all three can cheerfully return four sentences that say the same thing."
       },
       {
         "kind": "interactive",
         "widget": "steps",
-        "layer": "Strategies",
         "heading": "Four algorithms, one article, four different answers",
         "body": "Below is an eight-sentence article. Each algorithm gets the same preprocessing and the same budget, and picks four sentences. Step through them, or play all four, and watch how little they agree.",
         "playLabel": "Play all four",
@@ -1714,9 +1848,8 @@ const projects = [
       },
       {
         "kind": "prose",
-        "heading": "The winner changes with the article",
-        "layer": "Scoring",
-        "body": "Across three articles, MMR takes two and TextRank takes one — and MMR goes from best on Penguin (0.400) to worst on Roman Empire (0.188). That instability is not noise to be averaged away; it is the finding. An extractive summariser is a bet on what kind of document it is reading, and a single headline number hides which bet was made. Six charts are recomputed on every search for the same reason: positional density shows where a method looked, sentence overlap shows when two methods are agreeing, and the coverage-against-self-repetition quadrant is the chart that justifies MMR existing at all."
+        "heading": "No algorithm wins, and that's the finding",
+        "body": "Across three articles, MMR takes two and TextRank takes one. MMR goes from best on Penguin (0.400) to worst on Roman Empire (0.188).\n\nI spent a while trying to work out which one was “really” best before accepting that the instability *is* the result. An extractive summariser is a bet on what kind of document it's reading, and a single headline number hides which bet got made.\n\nThat's why there are six charts instead of one score. Positional density shows where a method looked. Sentence overlap shows when two methods are agreeing. The coverage-against-self-repetition quadrant is the chart that justifies MMR existing at all."
       },
       {
         "kind": "table",
@@ -1758,11 +1891,57 @@ const projects = [
       },
       {
         "kind": "prose",
-        "heading": "Sixty milliseconds, and no server at all",
-        "layer": "Page",
-        "body": "Everything happens in the tab. Type Kakapo and the article is fetched from the MediaWiki API, split, tokenised once, run through four selectors and six charts in about 60 ms for a 4,300-word article. There is no backend to keep alive, no key to leak and no cost per visitor, which is the only reason a link like this still works two years after anyone stopped paying attention to it. ES modules served as static files, hand-rolled SVG charts, zero dependencies."
+        "heading": "Everything runs in your tab",
+        "body": "Type Kakapo and the article is fetched from the MediaWiki API, split, tokenised once, run through four selectors and six charts — in about 60 ms for a 4,300-word article.\n\nThere's no backend to keep alive, no key to leak, and no cost per visitor. That's the only reason a link like this still works two years after everyone stops paying attention to it.\n\nES modules served as static files, hand-rolled SVG charts, zero dependencies."
+      },
+      {
+        "kind": "prose",
+        "heading": "What I'd do differently",
+        "body": "Three articles is too few to say anything about which algorithm wins, and the case study is careful to say the winner changes with the article — but with a sample of three, \"changes with the article\" and \"is noise\" are indistinguishable. The benchmark should run over a few hundred articles sampled across lengths and subject areas, and report the distribution rather than a table of three.\n\nI would also add an abstractive baseline. Everything here is extractive, which caps the score at whatever the best available sentences happen to be, and part of the reason the human ceiling sits so far above all four methods is that a person writing a lead does not have to use sentences from the body. Running one small abstractive model over the same articles would say how much of the remaining gap is a limitation of extraction rather than of these four algorithms.\n\nAnd the browser's ROUGE is a Porter approximation of the Python one, which I flag in the caption. Approximately-right scoring in the place people actually see the numbers is the wrong way round; the in-browser scorer should match the benchmark, even if that costs a few milliseconds."
       }
-    ]
+    ],
+    "instrument": {
+      "kind": "pick",
+      "label": "One article as a column of sentences, four selectors taking turns. Drag down the panel to hold one. Watch how little they agree — and that only one of them ever looks back at what it already took."
+    },
+    "fragments": [
+      "extractive",
+      "TextRank",
+      "PageRank",
+      "LSA",
+      "SVD",
+      "Luhn 1958",
+      "MMR",
+      "redundancy penalty",
+      "TF-IDF",
+      "ROUGE-1",
+      "ROUGE-2",
+      "ROUGE-L",
+      "human ceiling",
+      "the lead section",
+      "trimmed to budget",
+      "0.709",
+      "MediaWiki API",
+      "origin=*",
+      "60 ms",
+      "4,300 words",
+      "six charts",
+      "positional density",
+      "lead bias",
+      "sentence overlap",
+      "Jaccard",
+      "no algorithm wins",
+      "ES modules",
+      "no build",
+      "static files",
+      "dangling referents"
+    ],
+    "metric": "ROUGE-1 0.400 · 60 ms",
+    "glance": {
+      "problem": "Summarisation demos show one algorithm's output and leave you to guess whether it is any good.",
+      "built": "A static, dependency-free browser app that runs four extractive summarisers over any Wikipedia article at once and scores each with ROUGE against the article's own lead section, trimmed to the same word budget.",
+      "result": "MMR reaches ROUGE-1 0.400 on Penguin against a human ceiling of 0.709 — 56% of it. The winner changes with the article, which is the finding. Around 60 ms for a 4,300-word article, entirely in the tab."
+    }
   }
 ];
 

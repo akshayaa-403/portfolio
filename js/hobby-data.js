@@ -48,7 +48,7 @@ var hobbies = {
     "label": "Artwork",
     "note": "graphite, ink, and color",
     "n": 6,
-    "blurb": "Drawing is the one thing I do that has no undo.Doodles I have made in the margins of notebooks, and sketches I have made to understand a subject, ",
+    "blurb": "Drawing is the one thing I do that has no undo. Doodles from the margins of notebooks, and sketches made to understand a subject.",
     "captions": [
       "Unravelling Blue Lotus",
       "Vessel of Dualities",

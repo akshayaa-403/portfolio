@@ -226,7 +226,7 @@
         var pn = add({
           id: 'project:' + p.id,
           label: p.title,
-          href: 'project.html?id=' + encodeURIComponent(p.id),
+          href: 'work/' + encodeURIComponent(p.id) + '.html',
           kind: 'project'
         });
         link(pn, hubs.projects);
@@ -269,12 +269,13 @@
       }
     }
 
-    /* Centre: where the work and the person actually live. Four real
-       destinations, all off-site except the PDF. */
+    /* Centre: where the work and the person actually live. Three real
+       destinations, all off-site except the PDF. The Substack node is gone
+       with the Substack links: the publication has no posts, and a node
+       promising writing that leads to an empty page is worse than no node. */
     [
       ['github',   'GitHub',   'https://github.com/akshayaa-403'],
       ['linkedin', 'LinkedIn', 'https://linkedin.com/in/akshayaa-kashyap'],
-      ['substack', 'Writing',  'https://akshayaakashyap.substack.com'],
       ['resume',   'Résumé',   'public/assets/resume.pdf']
     ].forEach(function (r) {
       link(add({ id: 'res:' + r[0], label: r[1], href: r[2], kind: 'resource' }), hubs.resources);
@@ -466,7 +467,14 @@
        keeps the harmony (which lives in the hues) and drops only the part
        that was never going to survive the screen. */
     var C = {};
-    var PALETTE = WADA[Math.floor(Math.random() * WADA.length)];
+    /* One combination per DAY, not one per reload. Drawing at random meant
+       the site never looked the same twice: lovely as craft, useless as a
+       thing anyone remembers or screenshots, and it made the legend's colours
+       unquotable. The day number indexes the list, so the field still moves
+       through all 105 combinations over a few months, and everyone who visits
+       on the same day sees the same one. */
+    var DAY = Math.floor(Date.now() / 864e5);
+    var PALETTE = WADA[DAY % WADA.length];
 
     var RR = (function () {
       var a = [], k;

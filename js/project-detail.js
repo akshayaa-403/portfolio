@@ -32,12 +32,24 @@
      Each section in a project's deepDive array is one of a small set of kinds.
      Everything interpolated goes through esc() — the data file is trusted, but
      escaping keeps a stray apostrophe or angle bracket from breaking markup. */
+  /* Body copy is written with blank lines between paragraphs and backticks
+     around identifiers, the way it would be written anywhere else. Split on
+     the blank lines; turn `foo` into <code>foo</code>.
+
+     Order matters: esc() runs FIRST, so what reaches the backtick pass is
+     already inert. The only markup this function introduces is its own <p> and
+     <code>, and neither can be produced from the source text. */
+  function paras(body) {
+    return String(body || '').split(/\n\s*\n/).map(function (part) {
+      return '<p>' + esc(part.trim()).replace(/`([^`]+)`/g, '<code>$1</code>') + '</p>';
+    }).join('');
+  }
+
   var SECTION = {
     prose: function (s) {
-      return '<section class="dd dd--prose"' +
-        (s.layer ? ' data-layer="' + esc(s.layer) + '"' : '') + '>' +
+      return '<section class="dd dd--prose">' +
         (s.heading ? '<h3>' + esc(s.heading) + '</h3>' : '') +
-        '<p>' + esc(s.body) + '</p>' +
+        paras(s.body) +
       '</section>';
     },
 
@@ -344,71 +356,30 @@
     }
   };
 
-  /* ---------- the layer stack ----------
-     An exploded isometric diagram of the project, drawn in CSS from the
-     `layers` array: one slab per layer, top to bottom, each with the parts it
-     is made of. It sits in the margin beside the deep dive and stays there
-     while the prose scrolls; whichever section is in view lights its own
-     layer and fans that layer's parts out (see followLayers).
+  /* ---------- the gutter instrument ----------
+     One live, working thing per case study, sitting in the right gutter and
+     staying there while the prose scrolls. It replaced an exploded stack of
+     isometric plates: the plates were a diagram OF the project, and this is a
+     small piece of the project itself, running — a colony converging, a halo
+     dissolving, a day falling into quadrants.
 
-     Drawn rather than photographed, so it costs no request, themes with the
-     rest of the page and stays sharp at any zoom. Hue per layer comes from
-     the data; lightness and contrast come from the theme's tokens.
+     Which one a project gets is `instrument` in js/project-data.js; the
+     behaviour lives in js/instrument.js.
 
-     aria-hidden: the diagram restates the headings and terms already in the
-     prose beside it, so announcing it a second time is noise, not content. */
-  function renderStack(layers) {
-    if (!layers || !layers.length) return '';
-    var slabs = layers.map(function (l) {
-      var parts = (l.parts || []).map(function (t) {
-        return '<span class="slab__part">' + esc(t) + '</span>';
-      }).join('');
-      return '<li class="slab" data-layer="' + esc(l.name) + '"' +
-          ' style="--lh:' + (parseInt(l.hue, 10) || 0) + '">' +
-          '<span class="slab__face"></span>' +
-          '<span class="slab__parts">' + parts + '</span>' +
-          '<span class="slab__name">' + esc(l.name) + '</span>' +
-        '</li>';
-    }).join('');
-    return '<aside class="stack" aria-hidden="true"><ol class="stack__list">' +
-      slabs + '</ol></aside>';
+     aria-hidden and unfocusable on purpose: everything it shows is stated in
+     the prose beside it, and nothing in it is measured data — the figures
+     with real numbers are the `diagram` and `interactive` sections in the
+     reading column, which say where those numbers came from. */
+  function renderInstrument(p) {
+    if (!p.instrument) return '';
+    return '<aside class="rig" data-instrument="' + esc(p.instrument.kind) + '"' +
+        ' aria-hidden="true">' +
+        '<canvas class="rig__canvas"></canvas>' +
+        '<p class="rig__label">' + esc(p.instrument.label || '') + '</p>' +
+      '</aside>';
   }
 
-  /* Whichever prose section is nearest the middle of the viewport owns the
-     stack. An observer per section rather than a scroll handler, and the
-     rootMargin keeps the band narrow so exactly one section wins at a time.
-     Falls back to lighting the first layer where IntersectionObserver is
-     missing — a static diagram is still a correct diagram. */
-  function followLayers(root) {
-    var slabs = root.querySelectorAll('.slab');
-    var marked = root.querySelectorAll('.dd[data-layer]');
-    if (!slabs.length || !marked.length) return;
-
-    function light(name) {
-      for (var i = 0; i < slabs.length; i++) {
-        slabs[i].classList.toggle('is-on',
-          slabs[i].getAttribute('data-layer') === name);
-      }
-    }
-
-    if (!('IntersectionObserver' in window)) {
-      light(marked[0].getAttribute('data-layer'));
-      return;
-    }
-
-    var io = new IntersectionObserver(function (entries) {
-      for (var i = 0; i < entries.length; i++) {
-        if (entries[i].isIntersecting) {
-          light(entries[i].target.getAttribute('data-layer'));
-        }
-      }
-    }, { rootMargin: '-45% 0px -45% 0px' });
-
-    for (var j = 0; j < marked.length; j++) io.observe(marked[j]);
-    light(marked[0].getAttribute('data-layer'));
-  }
-
-  function renderDeepDive(sections, layers) {
+  function renderDeepDive(sections, project) {
     if (!sections || !sections.length) return '';
     var body = sections.map(function (s) {
       var fn = SECTION[s.kind];
@@ -416,7 +387,7 @@
     }).join('');
     return '<div class="detail__deep">' +
       '<h2>How it works <span class="glyph" aria-hidden="true">◆</span></h2>' +
-      renderStack(layers) +
+      renderInstrument(project) +
       '<div class="detail__deep-body">' + body + '</div>' +
     '</div>';
   }
@@ -624,6 +595,27 @@
     return rows ? '<dl class="detail__facts">' + rows + '</dl>' : '';
   }
 
+  /* ---------- at a glance ----------
+     Four lines at the top of a long page. The prose below is worth reading and
+     takes ten minutes; this is for the reader who has twenty seconds and needs
+     to know what the problem was, what got built, what came out of it and what
+     it was built with before deciding whether to spend the ten minutes.
+
+     Stack is not authored — it is the same `tech` array the header row uses,
+     so the two can never disagree. */
+  function glance(p) {
+    if (!p.glance) return '';
+    var rows = [
+      ['Problem', p.glance.problem],
+      ['What I built', p.glance.built],
+      ['Result', p.glance.result],
+      ['Stack', (p.tech || []).join(', ')]
+    ].filter(function (r) { return r[1]; }).map(function (r) {
+      return '<div><dt>' + esc(r[0]) + '</dt><dd>' + esc(r[1]) + '</dd></div>';
+    }).join('');
+    return rows ? '<dl class="detail__glance">' + rows + '</dl>' : '';
+  }
+
   /* "2025-04-04" -> "4 April 2025". Built from the parts rather than
      toLocaleDateString(new Date(s)): parsing a bare date string gives UTC
      midnight, which renders as the previous day for anyone west of London. */
@@ -648,6 +640,7 @@
      rather than rendering an aside pointing at nothing. tools/check.js
      fails on that case, so it is caught before it ships. */
   function marginalia(heading, glyph, text, notes, key) {
+    // The opener's chevron links to this heading, so it needs an id.
     var body = esc(text || '');
     var asides = '';
 
@@ -667,7 +660,8 @@
 
     return '<section class="mg">' +
       '<div class="mg__col">' +
-        '<h2>' + esc(heading) + ' <span class="glyph" aria-hidden="true">' + glyph + '</span></h2>' +
+        '<h2 id="' + esc(key) + '-h">' + esc(heading) +
+          ' <span class="glyph" aria-hidden="true">' + glyph + '</span></h2>' +
         '<p class="mg__para">' + body + '</p>' +
       '</div>' +
       asides +
@@ -748,8 +742,13 @@
 
     /* Both links carry the same weight — neither the repo nor the running
        demo is the "primary" thing to do with a case study, and styling one as
-       the loud one was an arbitrary call. */
-    var actions = '<a class="btn btn--quiet" href="' + safeUrl(p.repo) + '" target="_blank" rel="noopener noreferrer">Source ↗</a>' +
+       the loud one was an arbitrary call.
+
+       The label has to match where the link goes. Arteza's `repo` is
+       arteza.site — the client owns the code — and labelling that "Source"
+       promised a repository and delivered a shop. */
+    var repoLabel = /(^|\.)github\.com\//.test(String(p.repo || '')) ? 'Source ↗' : 'Visit the site ↗';
+    var actions = '<a class="btn btn--quiet" href="' + safeUrl(p.repo) + '" target="_blank" rel="noopener noreferrer">' + repoLabel + '</a>' +
       (p.demo ? '<a class="btn btn--quiet" href="' + safeUrl(p.demo) + '" target="_blank" rel="noopener noreferrer">Live demo ↗</a>' : '');
 
     var navPrev = prev
@@ -778,6 +777,8 @@
       '</header>' +
 
       '<div class="detail__body">' +
+        glance(p) +
+
         marginalia('Overview', '▶', p.overview, notes.overview, 'overview') +
 
         '<h2>What it does <span class="glyph" aria-hidden="true">⁕</span></h2>' +
@@ -787,7 +788,7 @@
 
         marginalia('The tricky part', '⌘', p.challenge, notes.challenge, 'challenge') +
 
-        renderDeepDive(p.deepDive, p.layers) +
+        renderDeepDive(p.deepDive, p) +
       '</div>' +
 
       '<nav class="detail__nav" aria-label="Project navigation">' + navPrev + navNext + '</nav>';
@@ -795,7 +796,8 @@
     initCopy(root);
     initLive(root);
     alignNotes(root);
-    followLayers(root);
+    if (typeof window.initInstrument === 'function') window.initInstrument(root);
+    if (typeof window.initOpener === 'function') window.initOpener(p);
     if (typeof window.initInteractive === 'function') window.initInteractive(root);
   }
 

@@ -14,27 +14,97 @@
      which tells a reader what a thing looked like and never what it does. The
      case study carries a drawn diagram instead (see the `diagram` deep-dive
      kind in js/project-detail.js). */
+  /* The real span, not one year. Every card used to read "2026" off p.year,
+     which made six projects spanning Jan 2025 to Aug 2026 look like a single
+     weekend of portfolio-building. created/updated are already on the data for
+     the detail page's header row; this is the same two dates, collapsed.
+     Arteza has no public repo and therefore no dates, so it falls back. */
+  function span(p) {
+    var a = (p.created || '').slice(0, 4);
+    var b = (p.updated || '').slice(0, 4);
+    if (!a) return p.year || '';
+    return a === b ? a : a + '–' + b;
+  }
+
   function renderCards() {
     if (typeof projects === 'undefined') return;
 
     var host = document.getElementById('recent-cards');
     if (!host) return;
 
-    host.insertAdjacentHTML('afterbegin', projects.map(function (p, i) {
+    /* Replace, not prepend: index.html now ships a real static copy of this
+       list (written by tools/build-share-pages.js) so a crawler, a proxy or a
+       reader with JS off sees the work rather than an empty column. When JS is
+       running, this is the enhanced version of the same thing. */
+    host.innerHTML = projects.map(function (p, i) {
       var focus = (p.tech || []).slice(0, 4).map(esc)
         .join(' <span aria-hidden="true">/</span> ');
-      var meta = [p.context || p.role, p.year].filter(Boolean).map(esc).join(' · ');
+      var meta = [p.context || p.role, span(p)].filter(Boolean).map(esc).join(' · ');
 
-      return '<a class="rm reveal" href="project.html?id=' + encodeURIComponent(p.id) + '"' +
+      /* Link to the generated share page rather than project.html?id=. Both
+         land in the same place — work/<id>.html redirects — but the generated
+         one is a real document with its own <title> and og: tags, so a crawler,
+         a chat unfurl or a reader with JS off gets the project's name instead
+         of "Project — Akshayaa Kashyap". */
+      return '<a class="rm reveal' + (i === 0 ? ' rm--lead' : '') +
+          '" href="work/' + encodeURIComponent(p.id) + '.html"' +
           ' data-cue="Read the case study">' +
           '<span class="rm__num" aria-hidden="true">' + (i < 9 ? '0' : '') + (i + 1) + '</span>' +
           '<span class="rm__text">' +
             '<span class="rm__title">' + esc(p.title) + '</span>' +
             (meta ? '<span class="rm__meta">' + meta + '</span>' : '') +
             '<span class="rm__desc">' + esc(p.tagline) + '</span>' +
+            // One measured number per row, where there is one. Three of the
+            // seven have nothing honest to put here, and an empty slot is the
+            // hierarchy: the rows that carry a figure are the strong ones.
+            (p.metric ? '<span class="rm__metric">' + esc(p.metric) + '</span>' : '') +
             (focus ? '<span class="rm__focus"><span class="rm__focus-label">Focus</span>' + focus + '</span>' : '') +
           '</span>' +
         '</a>';
+    }).join('');
+  }
+
+  /* ---------- experience ----------
+     Above the project list, because it answers the question the project list
+     cannot: whether any of this has been built for someone else, to a date.
+     Data in js/experience-data.js. */
+  function renderExperience() {
+    if (typeof experience === 'undefined') return;
+
+    var host = document.getElementById('experience-list');
+    if (!host) return;
+
+    host.insertAdjacentHTML('afterbegin', experience.map(function (x) {
+      var bullets = (x.bullets || []).map(function (b) {
+        return '<li>' + esc(b) + '</li>';
+      }).join('');
+
+      var stack = (x.stack || []).map(function (t) {
+        return '<li>' + esc(t) + '</li>';
+      }).join('');
+
+      // A role that produced a case study on this site links to it, so the
+      // claim and the evidence are one click apart.
+      var proof = x.project
+        ? '<a class="xp__proof" href="work/' + encodeURIComponent(x.project) +
+            '.html">Read the case study →</a>'
+        : '';
+
+      return '<li class="xp reveal">' +
+          '<div class="xp__head">' +
+            '<h3 class="xp__role">' + esc(x.role) +
+              ' <span class="xp__at">at</span> ' +
+              '<span class="xp__company">' + esc(x.company) + '</span></h3>' +
+            '<p class="xp__when">' +
+              '<time datetime="' + esc(x.start || '') + '">' + esc(x.dates) + '</time>' +
+              (x.place ? ' · ' + esc(x.place) : '') +
+            '</p>' +
+          '</div>' +
+          (x.blurb ? '<p class="xp__blurb">' + esc(x.blurb) + '</p>' : '') +
+          '<ul class="xp__bullets">' + bullets + '</ul>' +
+          (stack ? '<ul class="xp__stack" aria-label="Stack">' + stack + '</ul>' : '') +
+          proof +
+        '</li>';
     }).join(''));
   }
 
@@ -480,6 +550,7 @@
   
   /* ---------- boot ---------- */
   function init() {
+    renderExperience();
     renderCards();
     renderReadings();
     initReveal();

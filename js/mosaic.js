@@ -70,7 +70,7 @@
 
     for (i = 0; i < projects.length; i++) {
       var p = projects[i];
-      var href = 'project.html?id=' + encodeURIComponent(p.id);
+      var href = 'work/' + encodeURIComponent(p.id) + '.html';
 
       /* --- a margin note, in the hand it is set in on the detail page --- */
       var notes = (p.notes && (p.notes.overview || []).concat(p.notes.challenge || [])) || [];
