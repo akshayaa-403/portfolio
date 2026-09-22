@@ -47,6 +47,14 @@
 <!-- No-FOUC: mark JS available and apply the saved view mode + theme
      before first paint. Not deferred, on purpose. -->
 <script src="js/boot.js"></script>
+<!-- The palette, before first paint like boot.js and for the same reason: it
+     rewrites every accent token on <html>, and doing that after paint would
+     flash the navy first. Both are tiny and static. wada.js is the data, and
+     the classic <script> after the stylesheet is guaranteed to run with the
+     tokens already parsed, which palette.js needs in order to measure the
+     ground it is contrasting against. -->
+<script src="js/wada.js"></script>
+<script src="js/palette.js"></script>
 </head>
 <body>
 
@@ -126,7 +134,11 @@
 <script src="js/nav.js" defer></script>
 <script src="js/tex.js" defer></script>
 <script src="js/interactive.js" defer></script>
-<script src="js/instrument.js" defer></script>
+<!-- Geometry traced out of this repo's own screenshots by
+     tools/trace-figures.py (OpenCV). Must load before figures.js, which
+     draws from it. -->
+<script src="js/traced-data.js" defer></script>
+<script src="js/figures.js" defer></script>
 <script src="js/opener.js" defer></script>
 <script src="js/project-detail.js" defer></script>
 </body>

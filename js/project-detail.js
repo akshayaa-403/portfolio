@@ -356,38 +356,64 @@
     }
   };
 
-  /* ---------- the gutter instrument ----------
-     One live, working thing per case study, sitting in the right gutter and
-     staying there while the prose scrolls. It replaced an exploded stack of
-     isometric plates: the plates were a diagram OF the project, and this is a
-     small piece of the project itself, running — a colony converging, a halo
-     dissolving, a day falling into quadrants.
+  /* ---------- the gutter figures ----------
+     Live drawings down BOTH margins of a case study, each anchored beside the
+     section it belongs to. They replaced the single sticky instrument that
+     used to sit in the right gutter, which was the same idea with one of it
+     and nowhere for the argument to develop.
 
-     Which one a project gets is `instrument` in js/project-data.js; the
-     behaviour lives in js/instrument.js.
+     Each one is a small piece of the project's real mechanism, running, and
+     operated by the pointer — a beam tipping until two factors agree, the
+     real backtest curves racing, a halo coming off her own traced cells. A
+     project's figures are `figures` in js/project-data.js; the drawing lives
+     in js/figures.js.
 
-     aria-hidden and unfocusable on purpose: everything it shows is stated in
-     the prose beside it, and nothing in it is measured data — the figures
-     with real numbers are the `diagram` and `interactive` sections in the
-     reading column, which say where those numbers came from. */
-  function renderInstrument(p) {
-    if (!p.instrument) return '';
-    return '<aside class="rig" data-instrument="' + esc(p.instrument.kind) + '"' +
-        ' aria-hidden="true">' +
-        '<canvas class="rig__canvas"></canvas>' +
-        '<p class="rig__label">' + esc(p.instrument.label || '') + '</p>' +
+     The canvas is aria-hidden and unfocusable on purpose: the title and the
+     note beside it are not, so everything the drawing claims is also in
+     words. Nothing here invents a measurement — where a figure uses real
+     numbers (the backtest curves, the cell outlines) they were traced out of
+     this repository's own screenshots by tools/trace-figures.py, and the note
+     says so.
+
+     One figure. `side` puts it in the left or the right margin; `at` is the
+     index of the deep-dive section it belongs beside, so it arrives with the
+     paragraph it illustrates rather than floating somewhere near it.
+
+     The title and the note are the Napkin half of this: a drawing with no
+     claim attached is decoration, and the note is where the claim goes. The
+     canvas is aria-hidden and the note is not — everything the drawing says
+     is also said in words, which is what lets the canvas be decorative. */
+  function figure(f) {
+    return '<aside class="fig fig--' + (f.side === 'l' ? 'l' : 'r') + '"' +
+        ' data-figure="' + esc(f.kind) + '">' +
+        (f.title ? '<h4 class="fig__title">' + esc(f.title) + '</h4>' : '') +
+        '<canvas class="fig__canvas" aria-hidden="true"></canvas>' +
+        (f.note ? '<p class="fig__note">' + esc(f.note) + '</p>' : '') +
       '</aside>';
   }
 
   function renderDeepDive(sections, project) {
     if (!sections || !sections.length) return '';
-    var body = sections.map(function (s) {
+
+    /* Group the figures by the section they are anchored to, so a section
+       with two of them gets both and the order in the data is the order down
+       the page. */
+    var anchored = {};
+    (project.figures || []).forEach(function (f) {
+      var k = Math.max(0, Math.min(sections.length - 1, f.at || 0));
+      (anchored[k] = anchored[k] || []).push(figure(f));
+    });
+
+    var body = sections.map(function (s, i) {
       var fn = SECTION[s.kind];
-      return fn ? fn(s) : '';
+      // The figure is emitted BEFORE its section: it floats into the margin,
+      // and a float has to be declared before the text it sits beside or it
+      // starts a line lower than the paragraph it belongs to.
+      return (anchored[i] ? anchored[i].join('') : '') + (fn ? fn(s) : '');
     }).join('');
+
     return '<div class="detail__deep">' +
       '<h2>How it works <span class="glyph" aria-hidden="true">◆</span></h2>' +
-      renderInstrument(project) +
       '<div class="detail__deep-body">' + body + '</div>' +
     '</div>';
   }
@@ -796,7 +822,7 @@
     initCopy(root);
     initLive(root);
     alignNotes(root);
-    if (typeof window.initInstrument === 'function') window.initInstrument(root);
+    if (typeof window.initFigures === 'function') window.initFigures(root);
     if (typeof window.initOpener === 'function') window.initOpener(p);
     if (typeof window.initInteractive === 'function') window.initInteractive(root);
   }

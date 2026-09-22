@@ -28,124 +28,15 @@
 
   /* ---------- the palette ----------
 
-     Sanzo Wada's *A Dictionary of Color Combinations*, the 1933-34 study of
-     colour harmony: 348 combinations, of which 120 are exactly three colours
-     wide. The 105 below are those 120 minus the ones whose three colours stop
-     being told apart once lightness is bent to the theme (see `shade`) — a
-     combination is only useful here if all three of its colours can carry a
-     category at a glance.
+     The three colours are no longer chosen here. js/palette.js picks one
+     Sanzo Wada combination per session, derives the site's whole accent
+     family from it, and writes --graph-projects / --graph-hobbies /
+     --graph-resources onto <html>. This file reads those three and ramps
+     each one by node size; the legend's swatches read the same tokens, so
+     the dots and the swatches cannot disagree.
 
-     One combination is drawn at random on every reload and handed out in
-     CAT_ORDER, so the graph is the same picture in a different set of
-     historically-harmonious colours each visit. Hue and saturation are Wada's
-     and are never touched. */
-  var WADA = [
-    ['#6c2b11','#d99e73','#405416'],
-    ['#d60036','#ffb852','#00d973'],
-    ['#ff7399','#f2ff26','#6b2e63'],
-    ['#730f1f','#e0b81f','#99b333'],
-    ['#d1b0b3','#29bdad','#202d85'],
-    ['#ffbf6e','#56aa69','#4d52de'],
-    ['#ffa6d9','#6bffb3','#9161f2'],
-    ['#ffe600','#b68400','#96bfe6'],
-    ['#b85e00','#a10b2b','#2619d1'],
-    ['#b85e00','#de4500','#00cf91'],
-    ['#f5f5b8','#fa9442','#000000'],
-    ['#ff5ec4','#9161f2','#3400a3'],
-    ['#f5f5b8','#328e13','#96bfe6'],
-    ['#d50c42','#19cc33','#3400a3'],
-    ['#c9303e','#ffbf6e','#56aa69'],
-    ['#fa9442','#f2ff26','#6bffb3'],
-    ['#ff5200','#a6ff47','#0d2b52'],
-    ['#9e194d','#baa600','#96bfe6'],
-    ['#0d75ff','#b875eb','#9cb29e'],
-    ['#b319ab','#ff5200','#000000'],
-    ['#6c2b11','#a6d40d','#06004f'],
-    ['#b68400','#505423','#1b8e13'],
-    ['#ff4dc9','#740909','#b5ffc2'],
-    ['#d1bd19','#ff5200','#0f261f'],
-    ['#ffcfc4','#a6d40d','#b3e8c2'],
-    ['#f5f5b8','#ff8c00','#003e83'],
-    ['#c9303e','#681916','#a6e6db'],
-    ['#ff5ec4','#ffab00','#a6d40d'],
-    ['#d60036','#ffff00','#0d75ff'],
-    ['#fa2b00','#00d973','#000831'],
-    ['#d1bd19','#94ff94','#2619d1'],
-    ['#6f0043','#d1bd19','#4f8fe6'],
-    ['#f2ff26','#c2612c','#7aff00'],
-    ['#b68400','#80ffcc','#b8b8ff'],
-    ['#baa600','#5e4017','#417777'],
-    ['#6c2b11','#f2ad78','#0057ba'],
-    ['#d94d99','#85b857','#b875eb'],
-    ['#ffe600','#b5ffc2','#008aa1'],
-    ['#e81900','#ffab00','#2619d1'],
-    ['#ff616b','#faed8f','#0f261f'],
-    ['#c0b490','#abf5ed','#003e83'],
-    ['#f2ff26','#003e83','#7e3075'],
-    ['#ffa6d9','#fff59e','#9cb29e'],
-    ['#b319ab','#ffab00','#3400a3'],
-    ['#730f1f','#ff8c00','#b3e8c2'],
-    ['#c2612c','#008aa1','#3400a3'],
-    ['#f2ff26','#651300','#b5ffc2'],
-    ['#ffa6d9','#bfabcc','#6b2e63'],
-    ['#f2ad78','#bcd382','#4733ff'],
-    ['#ffb3f0','#ffcfc4','#80ffcc'],
-    ['#730f1f','#888d2a','#b8b8ff'],
-    ['#ebd999','#a6e6db','#2dbc94'],
-    ['#e81900','#fa9442','#0024cc'],
-    ['#ffbf6e','#9161f2','#b5d1cc'],
-    ['#a10b2b','#2619d1','#340059'],
-    ['#b85e00','#362304','#000831'],
-    ['#5c7287','#7e3075','#3400a3'],
-    ['#ff4dc9','#ebd999','#76844e'],
-    ['#681916','#d99e73','#0d75ff'],
-    ['#85b857','#96bfe6','#94ff94'],
-    ['#f2ff26','#172713','#6bffb3'],
-    ['#ebd999','#de4500','#000000'],
-    ['#b08699','#e0b81f','#0d75ff'],
-    ['#ffb852','#362304','#5c7287'],
-    ['#ff616b','#faed8f','#23c17c'],
-    ['#fa2b00','#ffcfc4','#4f8fe6'],
-    ['#ff4dc9','#fff59e','#b5d1cc'],
-    ['#a6d40d','#abf5ed','#4733ff'],
-    ['#ff5ec4','#4d52de','#b5d1cc'],
-    ['#a93400','#ffe600','#40c945'],
-    ['#a7374b','#706934','#0024cc'],
-    ['#a10b2b','#bcd382','#66ab56'],
-    ['#ff616b','#718600','#94ff94'],
-    ['#fff59e','#f59994','#405416'],
-    ['#b319ab','#c2612c','#a6e6db'],
-    ['#730f1f','#f59994','#2619d1'],
-    ['#9b5348','#b3e8c2','#000000'],
-    ['#f5f5b8','#2dbc94','#008aa1'],
-    ['#ebd999','#ff8c00','#96bfe6'],
-    ['#ffbf6e','#f2ff26','#405416'],
-    ['#ff7340','#99b333','#000831'],
-    ['#a90636','#8c6510','#96bfe6'],
-    ['#f59994','#ffe600','#abf5ed'],
-    ['#ebd999','#9b5348','#2619d1'],
-    ['#ffb852','#0d75ff','#bf36e0'],
-    ['#fa2b00','#40c945','#000000'],
-    ['#730f1f','#d99e73','#1b8e13'],
-    ['#fa2b00','#00592e','#66ab56'],
-    ['#b90078','#d99e73','#9c52f2'],
-    ['#a10b2b','#b5d1cc','#000000'],
-    ['#ff4dc9','#417777','#6b2e63'],
-    ['#d60036','#00592e','#53225c'],
-    ['#5c2c45','#ffb852','#2619d1'],
-    ['#ffb3f0','#a6e6db','#29bdad'],
-    ['#a10b2b','#fff59e','#b5d1cc'],
-    ['#fa9442','#172713','#b5d1cc'],
-    ['#e6adcf','#681916','#4f8fe6'],
-    ['#d60036','#f2ad78','#000831'],
-    ['#a10b2b','#888d2a','#202d85'],
-    ['#ffbf6e','#5e4017','#abf5ed'],
-    ['#ebd999','#ff8c00','#bfabcc'],
-    ['#b68400','#0024cc','#754260'],
-    ['#a10b2b','#651300','#96bfe6'],
-    ['#b08699','#c4bf33','#b3e8c2'],
-    ['#ff788c','#ffff00','#29bdad']
-  ];
+     See js/palette.js for why every colour is stepped by measured contrast
+     rather than by HSL lightness. */
 
   /* ---------- categories ---------- */
 
@@ -219,10 +110,14 @@
       resources: add({ id: 'hub:resources', label: 'Resources', href: '#contact', kind: 'hub', cat: 'resources' })
     };
 
-    // Left: the seven case studies, bridged by the tools they share.
+    /* Left: the case studies, bridged by the tools they share. Archived ones
+       are left out — their pages are still live and still linked from the
+       "Also built" line, but the graph is a map of what this page shows, and
+       a map that includes what the page deliberately demoted is not one. */
     if (typeof projects !== 'undefined') {
-      for (var i = 0; i < projects.length; i++) {
-        var p = projects[i];
+      var shown = projects.filter(function (x) { return !x.archived; });
+      for (var i = 0; i < shown.length; i++) {
+        var p = shown[i];
         var pn = add({
           id: 'project:' + p.id,
           label: p.title,
@@ -467,14 +362,8 @@
        keeps the harmony (which lives in the hues) and drops only the part
        that was never going to survive the screen. */
     var C = {};
-    /* One combination per DAY, not one per reload. Drawing at random meant
-       the site never looked the same twice: lovely as craft, useless as a
-       thing anyone remembers or screenshots, and it made the legend's colours
-       unquotable. The day number indexes the list, so the field still moves
-       through all 105 combinations over a few months, and everyone who visits
-       on the same day sees the same one. */
-    var DAY = Math.floor(Date.now() / 864e5);
-    var PALETTE = WADA[DAY % WADA.length];
+    var P = window.portfolioPalette;
+    var PALETTE = P ? P.trio() : ['#094e94', '#00317a', '#80b1d7'];
 
     var RR = (function () {
       var a = [], k;
@@ -482,43 +371,9 @@
       return { hi: Math.max.apply(null, a), lo: Math.min.apply(null, a) };
     })();
 
-    function toHsl(css) {
-      var m = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(css.trim());
-      if (!m) return null;
-      var r = parseInt(m[1], 16) / 255, g2 = parseInt(m[2], 16) / 255, b2 = parseInt(m[3], 16) / 255;
-      var mx = Math.max(r, g2, b2), mn = Math.min(r, g2, b2), d = mx - mn;
-      var l = (mx + mn) / 2, h = 0, sat = 0;
-      if (d) {
-        sat = l > 0.5 ? d / (2 - mx - mn) : d / (mx + mn);
-        if (mx === r) h = ((g2 - b2) / d + (g2 < b2 ? 6 : 0));
-        else if (mx === g2) h = (b2 - r) / d + 2;
-        else h = (r - g2) / d + 4;
-        h *= 60;
-      }
-      return { h: h, s: sat * 100, l: l * 100 };
-    }
-
-    function hslRgb(h, sa, l) {
-      h /= 360; sa /= 100; l /= 100;
-      var c = function (t) {
-        t = (t % 1 + 1) % 1;
-        var q = l < 0.5 ? l * (1 + sa) : l + sa - l * sa, pp = 2 * l - q;
-        if (t < 1 / 6) return pp + (q - pp) * 6 * t;
-        if (t < 1 / 2) return q;
-        if (t < 2 / 3) return pp + (q - pp) * (2 / 3 - t) * 6;
-        return pp;
-      };
-      return [c(h + 1 / 3), c(h), c(h - 1 / 3)];
-    }
-    function lum(rgb) {
-      var a = rgb.map(function (v) {
-        return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4);
-      });
-      return 0.2126 * a[0] + 0.7152 * a[1] + 0.0722 * a[2];
-    }
-    function ratio(a, b) {
-      return (Math.max(a, b) + 0.05) / (Math.min(a, b) + 0.05);
-    }
+    /* One copy of the colour maths, in js/palette.js — this file used to
+       carry a second, identical set, which is how two files drift. */
+    var toHsl = P.toHsl, hslRgb = P.hslRgb, lum = P.lum, ratio = P.ratio;
 
     /* Every node in a category is its hub's colour, lighter the smaller it is
        — and then dragged back until it actually reads against the ground.
@@ -561,7 +416,6 @@
       CAT_ORDER.forEach(function (k, idx) {
         var base = toHsl(PALETTE[idx]);
         C[k] = shade(base, RR.hi, dark, gl);
-        host.style.setProperty(CATS[k].token, C[k]);
         nodes.forEach(function (n) {
           if (n.cat === k) n.color = shade(base, n.rad, dark, gl);
         });
@@ -570,6 +424,9 @@
     readTokens();
     new MutationObserver(function () { readTokens(); tick(); })
       .observe(root, { attributes: true, attributeFilter: ['data-theme'] });
+    // js/palette.js re-derives every accent when the theme or the mode
+    // changes; the dots have to be re-ramped from the new three.
+    if (P && P.on) P.on(function () { readTokens(); tick(); });
 
     /* ---------- sizing ---------- */
     var w = 0, h = 0;

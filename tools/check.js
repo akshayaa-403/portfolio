@@ -154,13 +154,9 @@ for (const [page, nav] of navs) {
 /* ---------- 6. project data is renderable ---------- */
 
 console.log('6. project data');
-const vm = require('vm');
-const sandbox = {};
-vm.createContext(sandbox);
-new vm.Script(read('js/project-data.js') + '\nthis.__out = projects;')
-  .runInContext(sandbox);
+const PROJECTS = require('./data').loadProjects();
 
-for (const p of sandbox.__out) {
+for (const p of PROJECTS) {
   for (const field of ['id', 'title', 'tagline', 'year', 'role', 'summary',
                        'overview', 'challenge', 'repo']) {
     checked++;
@@ -189,7 +185,7 @@ console.log('6b. live demo embeds');
   const csp = (read('project.html').match(/Content-Security-Policy"\s+content="([^"]+)"/) || [, ''])[1];
   const frameSrc = (csp.match(/frame-src ([^;]+)/) || [, ''])[1].split(/\s+/).filter(Boolean);
 
-  for (const p of sandbox.__out) {
+  for (const p of PROJECTS) {
     if (!p.demo) continue;
     checked++;
     let origin;
@@ -211,7 +207,7 @@ console.log('6b. live demo embeds');
 /* ---------- 7. generated share pages are current ---------- */
 
 console.log('7. generated pages');
-for (const p of sandbox.__out) {
+for (const p of PROJECTS) {
   checked++;
   const f = path.join(ROOT, 'work', p.id + '.html');
   if (!fs.existsSync(f)) {
@@ -230,7 +226,7 @@ for (const p of sandbox.__out) {
    quietly, so it is worth a check. */
 
 console.log('8. margin notes');
-for (const p of sandbox.__out) {
+for (const p of PROJECTS) {
   if (!p.notes) continue;
   for (const key of Object.keys(p.notes)) {
     const text = p[key];
@@ -266,7 +262,7 @@ for (const p of sandbox.__out) {
 
 console.log('9. header facts');
 const ISO = /^\d{4}-\d{2}-\d{2}$/;
-for (const p of sandbox.__out) {
+for (const p of PROJECTS) {
   checked++;
   if ((p.created && !p.updated) || (p.updated && !p.created)) {
     fail('facts', p.id + ' has one of created/updated but not the other');

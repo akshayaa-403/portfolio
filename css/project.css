@@ -899,58 +899,104 @@
 }
 
 /* --------------------------------------------------------------------------
-   The gutter instrument (js/instrument.js)
+   The gutter figures (js/figures.js)
 
-   A live, working thing in the right gutter, sticky while the prose scrolls.
-   It replaced an exploded stack of isometric plates. Below 1400px it goes
-   inline above the deep dive at a wider, shorter shape, because a tall thin
-   panel only makes sense in a margin.
+   Live drawings down both margins of a case study, each one anchored beside
+   the section it belongs to rather than parked at the top of the page. Built
+   after a set of Napkin diagrams: a title that makes a claim, one drawing,
+   and a note underneath saying what the drawing is evidence of. The drawing
+   is the only part that is not words.
+
+   Below the breakpoint they fall back into the reading column as ordinary
+   figures, full width, in document order — which is where they already are in
+   the markup, so nothing has to move.
+
+   The colours are not in this file. Every figure reads --accent, --accent-mid
+   and --ink off the page at run time, and js/palette.js rebuilds those from
+   the session's Sanzo Wada combination — so the figures wear the same three
+   colours as the graph on the home page, and follow a theme flip with it.
    -------------------------------------------------------------------------- */
-
-.rig {
-  margin: 0 0 36px;
-  padding: 10px;
+.fig {
+  margin: 0 0 32px;
+  padding: 12px 12px 14px;
   border: 1px solid var(--line);
   border-radius: var(--radius);
   background: var(--bg-raised);
 }
-.rig__canvas {
+/* The claim. It is an h4 because it sits under the h3 of the section it
+   annotates, and the outline should say so. */
+.fig__title {
+  margin: 0 0 9px;
+  color: var(--ink);
+  font-size: 12.5px;
+  font-weight: 600;
+  line-height: 1.35;
+  letter-spacing: -0.01em;
+}
+.fig__canvas {
   display: block;
   width: 100%;
-  height: 220px;
+  height: 232px;
+  border-radius: calc(var(--radius) - 4px);
   /* The pointer IS the control, so the canvas takes the gesture rather than
      letting the page scroll under the finger. */
   touch-action: none;
   cursor: crosshair;
 }
-.rig__label {
-  margin: 8px 2px 0;
+/* .detail__body p sets 16px and outranks a single class, so the note has to
+   be addressed through its parent to win. */
+.fig .fig__note {
+  margin: 9px 1px 0;
   color: var(--ink-soft);
-  font-size: 11px;
-  line-height: 1.45;
+  font-size: 11.5px;
+  line-height: 1.55;
 }
 
-/* Wide only: break out into the right gutter and stick. 1400px is the width at
-   which a 250px column plus its gap clears the 720px measure without crowding
-   the page edge. */
-@media (min-width: 1400px) {
-  .detail__deep {
-    display: grid;
-    grid-template-columns: 1fr 250px;
-    column-gap: 44px;
-    margin-right: -294px;
+/* Wide: out into the margins. Both of them.
+
+   The figures are floated rather than placed in a grid because they live
+   inside the prose in document order — a figure is emitted immediately before
+   the section it belongs to — and a float keeps that relationship without
+   anyone having to compute a grid row. The negative margin is larger than the
+   column, so the text is never indented around them; they sit entirely
+   outside the measure.
+
+   1560px is the width at which two 236px columns and their gutters clear the
+   720px measure without touching the viewport edge. */
+@media (min-width: 1560px) {
+  .detail__deep-body { position: relative; }
+  .fig {
+    width: 236px;
+    margin-bottom: 26px;
   }
-  .detail__deep > h2,
-  .detail__deep-body { grid-column: 1; }
-  .rig {
-    grid-column: 2;
-    grid-row: 1 / span 2;
-    position: sticky;
-    top: calc(var(--header-h, 58px) + 32px);
-    align-self: start;
-    margin: 0;
+  .fig--l {
+    float: left;
+    margin-left: -282px;
+    /* A figure that starts a section should line up with its heading, not
+       with the paragraph under it. */
+    margin-top: 6px;
   }
-  .rig__canvas { height: 300px; }
+  .fig--r {
+    float: right;
+    margin-right: -282px;
+    margin-top: 6px;
+  }
+  /* A section must not slide up beside a figure it has nothing to do with. */
+  .dd { clear: none; }
+  .detail__deep h2 { clear: both; }
+}
+
+/* Between the one-column and the two-margin layouts there is room for one
+   side only. The right gutter is the one that was always there. */
+@media (min-width: 1180px) and (max-width: 1559.98px) {
+  .detail__deep-body { position: relative; }
+  .fig {
+    float: right;
+    clear: right;
+    width: 212px;
+    margin: 6px -250px 22px 0;
+  }
+  .fig__canvas { height: 190px; }
 }
 
 /* --------------------------------------------------------------------------

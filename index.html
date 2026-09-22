@@ -46,6 +46,14 @@
 <!-- No-FOUC: mark JS available and apply the saved view mode + theme
      before first paint. Not deferred, on purpose. -->
 <script src="js/boot.js"></script>
+<!-- The palette, before first paint like boot.js and for the same reason: it
+     rewrites every accent token on <html>, and doing that after paint would
+     flash the navy first. Both are tiny and static. wada.js is the data, and
+     the classic <script> after the stylesheet is guaranteed to run with the
+     tokens already parsed, which palette.js needs in order to measure the
+     ground it is contrasting against. -->
+<script src="js/wada.js"></script>
+<script src="js/palette.js"></script>
 
 <script type="application/ld+json">
 {
@@ -257,26 +265,16 @@
            the same list plus hover cues and the reveal animation. -->
       <div class="rm-list" id="recent-cards">
         <!-- BEGIN generated:project-list — written by tools/build-share-pages.js, do not hand-edit -->
-          <a class="rm rm--lead" href="work/ivy-slack-agent.html"><span class="rm__num" aria-hidden="true">01</span><span class="rm__text"><span class="rm__title">Project IVY</span><span class="rm__meta">InnovyQ · 2026</span><span class="rm__desc">A Slack support agent that reads screenshots and files its own tickets.</span><span class="rm__metric">100% char OCR · 823 ms/image</span><span class="rm__focus"><span class="rm__focus-label">Focus</span>Python <span aria-hidden="true">/</span> AWS Lambda <span aria-hidden="true">/</span> SQS <span aria-hidden="true">/</span> DynamoDB</span></span></a>
-          <a class="rm" href="work/quantamental-screener.html"><span class="rm__num" aria-hidden="true">02</span><span class="rm__text"><span class="rm__title">Quantamental Screener</span><span class="rm__meta">Solo project · 2025–2026</span><span class="rm__desc">Multi-factor equity screening with news sentiment.</span><span class="rm__metric">Sharpe 1.20</span><span class="rm__focus"><span class="rm__focus-label">Focus</span>Python <span aria-hidden="true">/</span> Pandas <span aria-hidden="true">/</span> ta <span aria-hidden="true">/</span> Streamlit</span></span></a>
+          <div class="rm-group"><h3 class="rm-group__title">Research</h3><p class="rm-group__note">Systems that measure something and report the number, including when the number is bad.</p></div>
+          <a class="rm rm--lead" href="work/quantamental-screener.html"><span class="rm__num" aria-hidden="true">01</span><span class="rm__text"><span class="rm__title">Quantamental Screener</span><span class="rm__meta">Solo project · 2025–2026</span><span class="rm__desc">Multi-factor equity screening with news sentiment.</span><span class="rm__metric">Sharpe 1.20</span><span class="rm__focus"><span class="rm__focus-label">Focus</span>Python <span aria-hidden="true">/</span> Pandas <span aria-hidden="true">/</span> ta <span aria-hidden="true">/</span> Streamlit</span></span></a>
+          <a class="rm" href="work/phase-contrast-denoising.html"><span class="rm__num" aria-hidden="true">02</span><span class="rm__text"><span class="rm__title">Phase-Contrast Clean-Up Pipeline</span><span class="rm__meta">Research tool · 2026</span><span class="rm__desc">Removing halo artifacts from microscopy images.</span><span class="rm__metric">PSNR 12.87 → 20.62 dB</span><span class="rm__focus"><span class="rm__focus-label">Focus</span>Python <span aria-hidden="true">/</span> PyTorch <span aria-hidden="true">/</span> OpenCV <span aria-hidden="true">/</span> Gradio</span></span></a>
+          <div class="rm-group"><h3 class="rm-group__title">Products</h3><p class="rm-group__note">Things built for someone else to open — a shop and a phone app.</p></div>
           <a class="rm" href="work/arteza.html"><span class="rm__num" aria-hidden="true">03</span><span class="rm__text"><span class="rm__title">Arteza</span><span class="rm__meta">Client work · 2026</span><span class="rm__desc">An online gallery and shop for an original-art studio.</span><span class="rm__metric">90+ paintings, 5 collections</span><span class="rm__focus"><span class="rm__focus-label">Focus</span>React <span aria-hidden="true">/</span> Vite <span aria-hidden="true">/</span> TypeScript <span aria-hidden="true">/</span> Tailwind CSS</span></span></a>
-          <a class="rm" href="work/phase-contrast-denoising.html"><span class="rm__num" aria-hidden="true">04</span><span class="rm__text"><span class="rm__title">Phase-Contrast Clean-Up Pipeline</span><span class="rm__meta">Research tool · 2026</span><span class="rm__desc">Removing halo artifacts from microscopy images.</span><span class="rm__metric">PSNR 12.87 → 20.62 dB</span><span class="rm__focus"><span class="rm__focus-label">Focus</span>Python <span aria-hidden="true">/</span> PyTorch <span aria-hidden="true">/</span> OpenCV <span aria-hidden="true">/</span> Gradio</span></span></a>
-          <a class="rm" href="work/anttodo.html"><span class="rm__num" aria-hidden="true">05</span><span class="rm__text"><span class="rm__title">Ant Colony Task Scheduler</span><span class="rm__meta">Solo project · 2026</span><span class="rm__desc">Your to-do list as a routing problem, solved live.</span><span class="rm__focus"><span class="rm__focus-label">Focus</span>JavaScript <span aria-hidden="true">/</span> Ant Colony Optimization <span aria-hidden="true">/</span> SVG <span aria-hidden="true">/</span> HTML Canvas</span></span></a>
-          <a class="rm" href="work/habita.html"><span class="rm__num" aria-hidden="true">06</span><span class="rm__text"><span class="rm__title">Habita</span><span class="rm__meta">Solo project · 2026</span><span class="rm__desc">Eisenhower matrix that writes to your real calendar.</span><span class="rm__focus"><span class="rm__focus-label">Focus</span>JavaScript (ES6) <span aria-hidden="true">/</span> CSS Grid <span aria-hidden="true">/</span> SVG <span aria-hidden="true">/</span> Capacitor</span></span></a>
-          <a class="rm" href="work/wikipedia-summarizer.html"><span class="rm__num" aria-hidden="true">07</span><span class="rm__text"><span class="rm__title">Wikipedia Summarizer</span><span class="rm__meta">NLP · 2025–2026</span><span class="rm__desc">Four algorithms, one article, scored against the humans who wrote it.</span><span class="rm__metric">ROUGE-1 0.400 · 60 ms</span><span class="rm__focus"><span class="rm__focus-label">Focus</span>JavaScript (ES modules) <span aria-hidden="true">/</span> MediaWiki API <span aria-hidden="true">/</span> ROUGE <span aria-hidden="true">/</span> SVG</span></span></a>
+          <a class="rm" href="work/habita.html"><span class="rm__num" aria-hidden="true">04</span><span class="rm__text"><span class="rm__title">Habita</span><span class="rm__meta">Solo project · 2026</span><span class="rm__desc">Eisenhower matrix that writes to your real calendar.</span><span class="rm__focus"><span class="rm__focus-label">Focus</span>JavaScript (ES6) <span aria-hidden="true">/</span> CSS Grid <span aria-hidden="true">/</span> SVG <span aria-hidden="true">/</span> Capacitor</span></span></a>
+          <p class="rm-archive"><span class="rm-archive__label">Also built</span> <a href="work/ivy-slack-agent.html">Project IVY</a><span aria-hidden="true"> · </span><a href="work/anttodo.html">Ant Colony Task Scheduler</a><span aria-hidden="true"> · </span><a href="work/wikipedia-summarizer.html">Wikipedia Summarizer</a></p>
         <!-- END generated:project-list -->
-        <noscript>
-          <p>Every case study also exists as a plain page:
-            <a href="work/ivy-slack-agent.html">Project IVY</a>,
-            <a href="work/quantamental-screener.html">Quantamental Screener</a>,
-            <a href="work/arteza.html">Arteza</a>,
-            <a href="work/phase-contrast-denoising.html">Phase-Contrast Clean-Up Pipeline</a>,
-            <a href="work/anttodo.html">Ant Colony Task Scheduler</a>,
-            <a href="work/habita.html">Habita</a>,
-            <a href="work/wikipedia-summarizer.html">Wikipedia Summarizer</a>.
-            All source lives at
-            <a href="https://github.com/akshayaa-403" rel="noopener noreferrer">github.com/akshayaa-403</a>.</p>
-        </noscript>
+        <!-- No <noscript> here any more: the list above IS the no-JS
+             experience. -->
       </div>
     </div>
   </section>
@@ -400,7 +398,6 @@
 <script src="js/nav.js" defer></script>
 <script src="js/modes.js" defer></script>
 <script src="js/squiggle.js" defer></script>
-<script src="js/hero-hover.js" defer></script>
 <!-- Must load before script.js: it injects .reveal elements, and script.js
      registers the reveal observer over whatever is in the DOM at that point. -->
 <script src="js/hobby-data.js" defer></script>
@@ -411,16 +408,14 @@
 <script src="js/mosaic.js" defer></script>
 <script src="js/lightbox.js" defer></script>
 <script src="js/hobbies.js" defer></script>
-<!-- Dev-only tooling: fetched solely when ?edit=1 is in the URL, so real
-     visitors never download or run it. Both files self-gate on the same
-     param as a second line of defence. -->
+<!-- Dev-only: fetched solely when ?edit=1 is in the URL, so real visitors
+     never download or run it. annotate.js self-gates on the same param as a
+     second line of defence. -->
 <script>
 if (/[?&]edit=1/.test(location.search)) {
-  ['js/layout-editor.js', 'js/annotate.js'].forEach(function (src) {
-    var el = document.createElement('script');
-    el.src = src;
-    document.head.appendChild(el);
-  });
+  var el = document.createElement('script');
+  el.src = 'js/annotate.js';
+  document.head.appendChild(el);
 }
 </script>
 <script src="js/readings-data.js" defer></script>

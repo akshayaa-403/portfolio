@@ -27,8 +27,9 @@ var experience = [
       'Benchmarked four OCR engines against hand-written ground truth so screenshotted tickets could be read automatically: Mistral OCR came out at 100% character accuracy and 823 ms per image, against Textract at 99.9% and 1,551 ms.',
       'Wrote the live-agent dispatcher: least-loaded on-shift agent picked from DynamoDB or Jira Service Management on-call, with a conditional update reserving the slot so a double-click cannot double-assign a ticket.'
     ],
-    stack: ['Python', 'AWS Lambda', 'SQS', 'DynamoDB', 'Lex V2', 'Bedrock', 'Rekognition', 'Docker', 'Jira API'],
-    project: 'ivy-slack-agent'
+    stack: ['Python', 'AWS Lambda', 'SQS', 'DynamoDB', 'Lex V2', 'Bedrock', 'Rekognition', 'Docker', 'Jira API']
+    // No `project` link: the Project IVY case study is archived, so the role
+    // stands on its bullets. Add it back if IVY returns to the list.
   },
   {
     company: 'Artenos Network Pvt Ltd',

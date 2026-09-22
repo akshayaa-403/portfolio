@@ -16,6 +16,14 @@
 
   var COUNT = 14;
 
+  /* The mosaic shows what the page shows. Archived case studies keep their
+     pages and their link in the "Also built" line, but they do not get a tile
+     here or a node in the graph — the hero would otherwise still be claiming
+     work the list below it has deliberately stepped back from. */
+  function live() {
+    return projects.filter(function (p) { return !p.archived; });
+  }
+
   /* How many cells of the mosaic each kind of artifact takes, as
      [columns, rows]. A grid where every tile is the same size is a table; the
      point of a mosaic is that the big things are big. A photograph wants to be
@@ -50,7 +58,7 @@
     var galleries = Object.keys(typeof hobbies === 'undefined' ? {} : hobbies);
     var photos = galleries.reduce(function (n, id) { return n + hobbies[id].n; }, 0);
     out.push(tile('stat', '#work', 'See the work',
-      '<span class="frag__num">' + projects.length + '</span>' +
+      '<span class="frag__num">' + live().length + '</span>' +
       '<span class="frag__label">case studies, each one shown working</span>'));
     out.push(tile('stat', '#hobbies', 'See the galleries',
       '<span class="frag__num">' + photos + '</span>' +
@@ -68,8 +76,9 @@
         i === 0));
     }
 
-    for (i = 0; i < projects.length; i++) {
-      var p = projects[i];
+    var shown = live();
+    for (i = 0; i < shown.length; i++) {
+      var p = shown[i];
       var href = 'work/' + encodeURIComponent(p.id) + '.html';
 
       /* --- a margin note, in the hand it is set in on the detail page --- */

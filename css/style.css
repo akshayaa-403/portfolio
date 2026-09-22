@@ -608,19 +608,12 @@ main:focus-visible { outline: none; }
 .strip-section {
   padding: 34px 0 0;
 }
-/* Sits directly under the hero's mode toggle, vertically in line with it.
-   --skills-cx is the toggle's measured centre, written by js/marquee.js on load,
-   mode change and resize; the 50% fallback is correct in both modes, where
-   the toggle is centred, and is what no-JS visitors get. The word is
-   centred on that point rather than on its own box. */
-.strip-section {
-  --skills-cx: 50%;
-}
-/* Type matches .hero__role so the label reads as part of the hero's voice. */
+/* Type matches .hero__role so the label reads as part of the hero's voice.
+   It used to be offset to a --skills-cx the marquee measured at run time;
+   the marquee is gone and that value was always 50%, so it just centres. */
 .strip__heading {
   width: max-content;
-  margin: 0 0 12px var(--skills-cx);
-  transform: translateX(-50%);
+  margin: 0 auto 12px;
   color: var(--ink-body);
   font-size: 18px;
   font-weight: 400;
@@ -818,6 +811,63 @@ main:focus-visible { outline: none; }
   font-size: 12px;
   letter-spacing: 0.04em;
   text-transform: uppercase;
+}
+
+/* --- Section headings inside the project list ------------------------
+   Four projects, two kinds. The heading is a label on a run of rows, not a
+   section of its own: it sits in the list's own column and carries a rule
+   rather than a box, so the list still reads as one list. */
+.rm-group {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin-top: 14px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--line);
+}
+.rm-group:first-child { margin-top: 0; }
+.rm-group__title {
+  margin: 0;
+  color: var(--accent-ink);
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+.rm-group__note {
+  margin: 0;
+  max-width: 56ch;
+  color: var(--ink-soft);
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+/* --- The archive ----------------------------------------------------
+   Three case studies that are still written and still live, one click away,
+   but no longer what the work is. A line, not a list: the difference in
+   weight IS the information. */
+.rm-archive {
+  margin: 20px 0 0;
+  color: var(--ink-soft);
+  font-size: 13px;
+  line-height: 1.9;
+}
+.rm-archive__label {
+  margin-right: 10px;
+  color: var(--ink-faint, var(--ink-muted));
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+.rm-archive a {
+  color: var(--ink-soft);
+  text-decoration: underline;
+  text-decoration-color: var(--line-strong);
+  text-underline-offset: 3px;
+}
+.rm-archive a:hover {
+  color: var(--accent);
+  text-decoration-color: currentColor;
 }
 
 /* The one measured figure the project has, if it has one. Three of the seven

@@ -20,37 +20,11 @@
 
 const fs = require('fs');
 const path = require('path');
-const vm = require('vm');
 
-const ROOT = path.join(__dirname, '..');
+const { ROOT, esc, loadProjects, loadHobbies } = require('./data');
+
 const BASE = 'https://akshayaa-403.github.io/portfolio/';
 const OG_FALLBACK = BASE + 'public/assets/og-card.png';
-
-/* ---------- read the data files without importing a bundler ---------- */
-
-function loadProjects() {
-  const src = fs.readFileSync(path.join(ROOT, 'js/project-data.js'), 'utf8');
-  const sandbox = {};
-  vm.createContext(sandbox);
-  new vm.Script(src + '\nthis.__out = projects;').runInContext(sandbox);
-  return sandbox.__out;
-}
-
-function loadHobbies() {
-  const src = fs.readFileSync(path.join(ROOT, 'js/hobby-data.js'), 'utf8');
-  const sandbox = {};
-  vm.createContext(sandbox);
-  new vm.Script(src + ';this.__out = hobbies;').runInContext(sandbox);
-  return sandbox.__out;
-}
-
-/* ---------- page template ---------- */
-
-function esc(v) {
-  return String(v == null ? '' : v)
-    .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
-}
 
 /* Assets are referenced one level up, since these live in work/ and hobbies/. */
 function page(o) {
@@ -175,28 +149,64 @@ function writeAll() {
 const LIST_BEGIN = '<!-- BEGIN generated:project-list — written by tools/build-share-pages.js, do not hand-edit -->';
 const LIST_END = '<!-- END generated:project-list -->';
 
-function projectListHtml(projects) {
-  return projects.map(function (p, i) {
-    const focus = (p.tech || []).slice(0, 4).map(esc)
-      .join(' <span aria-hidden="true">/</span> ');
-    // Same span rule as span() in js/script.js: the real years, not p.year.
-    const a = (p.created || '').slice(0, 4);
-    const b = (p.updated || '').slice(0, 4);
-    const years = a ? (a === b ? a : a + '–' + b) : (p.year || '');
-    const meta = [p.context || p.role, years].filter(Boolean).map(esc).join(' · ');
+/* Must stay in step with GROUPS and renderCards() in js/script.js — this is
+   the same list rendered twice, and the whole point is that a reader with no
+   JavaScript sees what a reader with JavaScript sees. */
+const GROUPS = [
+  { key: 'research', title: 'Research',
+    note: 'Systems that measure something and report the number, including when the number is bad.' },
+  { key: 'products', title: 'Products',
+    note: 'Things built for someone else to open — a shop and a phone app.' }
+];
 
-    return '          <a class="rm' + (i === 0 ? ' rm--lead' : '') +
-        '" href="work/' + encodeURIComponent(p.id) + '.html">' +
-        '<span class="rm__num" aria-hidden="true">' + (i < 9 ? '0' : '') + (i + 1) + '</span>' +
-        '<span class="rm__text">' +
-          '<span class="rm__title">' + esc(p.title) + '</span>' +
-          (meta ? '<span class="rm__meta">' + meta + '</span>' : '') +
-          '<span class="rm__desc">' + esc(p.tagline) + '</span>' +
-          (p.metric ? '<span class="rm__metric">' + esc(p.metric) + '</span>' : '') +
-          (focus ? '<span class="rm__focus"><span class="rm__focus-label">Focus</span>' + focus + '</span>' : '') +
-        '</span>' +
-      '</a>';
-  }).join('\n');
+function rowHtml(p, n, lead) {
+  const focus = (p.tech || []).slice(0, 4).map(esc)
+    .join(' <span aria-hidden="true">/</span> ');
+  // Same span rule as span() in js/script.js: the real years, not p.year.
+  const a = (p.created || '').slice(0, 4);
+  const b = (p.updated || '').slice(0, 4);
+  const years = a ? (a === b ? a : a + '–' + b) : (p.year || '');
+  const meta = [p.context || p.role, years].filter(Boolean).map(esc).join(' · ');
+
+  return '          <a class="rm' + (lead ? ' rm--lead' : '') +
+      '" href="work/' + encodeURIComponent(p.id) + '.html">' +
+      '<span class="rm__num" aria-hidden="true">' + (n < 10 ? '0' : '') + n + '</span>' +
+      '<span class="rm__text">' +
+        '<span class="rm__title">' + esc(p.title) + '</span>' +
+        (meta ? '<span class="rm__meta">' + meta + '</span>' : '') +
+        '<span class="rm__desc">' + esc(p.tagline) + '</span>' +
+        (p.metric ? '<span class="rm__metric">' + esc(p.metric) + '</span>' : '') +
+        (focus ? '<span class="rm__focus"><span class="rm__focus-label">Focus</span>' + focus + '</span>' : '') +
+      '</span>' +
+    '</a>';
+}
+
+function projectListHtml(projects) {
+  const shown = projects.filter((p) => !p.archived);
+  const gone = projects.filter((p) => p.archived);
+  const out = [];
+  let n = 0;
+
+  for (const g of GROUPS) {
+    const rows = shown.filter((p) => p.group === g.key);
+    if (!rows.length) continue;
+    out.push('          <div class="rm-group">' +
+      '<h3 class="rm-group__title">' + esc(g.title) + '</h3>' +
+      '<p class="rm-group__note">' + esc(g.note) + '</p></div>');
+    for (const p of rows) { n++; out.push(rowHtml(p, n, n === 1)); }
+  }
+
+  /* The archive: still written, still live, still linked — just not what the
+     work is now. One quiet line rather than a second list. */
+  if (gone.length) {
+    out.push('          <p class="rm-archive">' +
+      '<span class="rm-archive__label">Also built</span> ' +
+      gone.map((p) => '<a href="work/' + encodeURIComponent(p.id) + '.html">' +
+        esc(p.title) + '</a>').join('<span aria-hidden="true"> · </span>') +
+      '</p>');
+  }
+
+  return out.join('\n');
 }
 
 function writeProjectList(projects) {

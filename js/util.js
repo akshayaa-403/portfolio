@@ -31,20 +31,6 @@
   /* Degrees of rotation currently applied to an element, read back from the
      computed matrix. Used wherever a hover or drag has to rebuild a transform
      without discarding the authored rotate(). */
-  w.rotationOf = function rotationOf(el) {
-    var t = getComputedStyle(el).transform;
-    if (!t || t === 'none') return 0;
-    // matrix3d() reports 16 values; the 2D rotation still lives in the first
-    // two of column one. Handle both rather than returning 0 for a 3D matrix,
-    // which is what a bare matrix() test did whenever will-change promoted an
-    // element to its own layer.
-    var m = t.match(/matrix(3d)?\(([^)]+)\)/);
-    if (!m) return 0;
-    var p = m[2].split(',').map(parseFloat);
-    return Math.atan2(p[1], p[0]) * 180 / Math.PI;
-  };
-
-  /* True when the dev layout editor has been requested for this page load. */
   w.isEditing = function isEditing() {
     return /[?&]edit=1/.test(location.search);
   };

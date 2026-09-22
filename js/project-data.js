@@ -2,210 +2,6 @@
    (project.html). Copy is written from what each repo actually contains. */
 const projects = [
   {
-    "id": "ivy-slack-agent",
-    "context": "InnovyQ",
-    "title": "Project IVY",
-    "tagline": "A Slack support agent that reads screenshots and files its own tickets.",
-    "year": "2026",
-    "role": "AI Engineer, InnovyQ",
-    "summary": "An AI IT-support agent living in Slack DMs: AWS Lex V2 for intent, Claude on Bedrock for everything Lex cannot answer, OCR over pasted screenshots, and a capacity-aware dispatcher that assigns the Jira ticket to whichever human is actually on shift and has room.",
-    "tech": [
-      "Python",
-      "AWS Lambda",
-      "SQS",
-      "DynamoDB",
-      "Lex V2",
-      "Bedrock (Claude)",
-      "Rekognition",
-      "PaddleOCR",
-      "Docker",
-      "Jira API"
-    ],
-    "repo": "https://github.com/akshayaa-403/o3_slack_bot",
-    "metric": "100% char OCR · 823 ms/image",
-    "glance": {
-      "problem": "An internal IT helpdesk where most tickets arrive as a Slack message and a screenshot, and a human has to read both before anything happens.",
-      "built": "An event-driven agent on AWS — API Gateway to Lambda to SQS to Lex V2 — with DynamoDB session state per issue, a Claude fallback on Bedrock, OCR over pasted screenshots, and automatic Jira ticket creation with capacity-aware assignment.",
-      "result": "Four OCR engines benchmarked against hand-written ground truth; the chosen one reads a support screenshot at 100% character accuracy in 823 ms. Eight test suites cover the locking and dispatch paths."
-    },
-    "overview": "IVY is an IT-support agent that lives where the support requests already are: a Slack DM. A message goes through API Gateway to a handler Lambda, which deduplicates it in DynamoDB and drops it on SQS; a worker pulls it, asks AWS Lex V2 what the person wants, and keeps the whole conversation as one session keyed to the Slack thread. When Lex has no useful answer — a fallback intent, an empty reply, a question nobody wrote an intent for — the worker calls Claude on Bedrock instead, behind a guardrail, with a system prompt that forbids it from claiming a ticket was created. If the request needs a human, IVY files the Jira ticket itself and hands it to whichever agent is on shift with capacity to spare.",
-    "highlights": [
-      "Nine Lambdas behind one Slack app: event handler, SQS worker, intent router, Jira ticket creator, Claude fallback, image recognition, log summariser, live-agent dispatcher and a timeout handler driven by EventBridge Scheduler.",
-      "Session state per issue rather than per user — the Slack root message timestamp is part of the session key, so two problems reported the same afternoon do not blur into one conversation.",
-      "Claude Haiku on Bedrock as the fallback, at temperature 0.2 behind a Bedrock guardrail, with a system prompt that bans it from asserting anything about ticket state.",
-      "Screenshots resolved in order: Rekognition text and labels first, then Lex on the extracted text, then a Bedrock knowledge base, then a Gemini fallback.",
-      "A PaddleOCR Lambda shipped as a container image, because paddlepaddle and opencv are several times the 250 MB zip limit, with the model weights baked in at build time — Lambda gives you a read-only filesystem and an empty /tmp on every cold start.",
-      "Duplicate work is prevented with DynamoDB conditional writes, not with hope: a retried SQS record or a twice-clicked button cannot open two Jira tickets or hand the same issue to two people.",
-      "The live-agent dispatcher reads shifts from DynamoDB or, optionally, from Jira Service Management on-call schedules; if nobody has room the ticket queues, and a terminal Jira status releases the slot and promotes the oldest queued ticket exactly once."
-    ],
-    "challenge": "The hard part was not the model, it was making a distributed system tell the truth about itself. SQS redelivers. Slack retries. A person clicks \"raise a ticket\" twice because the first click did not visibly do anything. Every one of those produces a second, identical request, and the naive version of this agent files two Jira tickets and pages two engineers. The fix is that nothing which touches the outside world is allowed to happen on optimism: the ticket write, the live-agent handoff and the capacity reservation each go through a DynamoDB conditional update that fails loudly if the work was already claimed. The second problem was the screenshots. Most of the incoming tickets are a picture of an error dialog, and picking an OCR engine by reputation is how you end up with a 12-second cold start in a Lambda. So I benchmarked four of them — EasyOCR, PaddleOCR, Textract and Mistral OCR — against transcriptions I wrote by hand, and reported latency and model-load cost next to accuracy, because on Lambda the load time is the thing that hurts.",
-    "created": "2026-07-16",
-    "updated": "2026-08-10",
-    "tags": [
-      [
-        "AWS Lex V2",
-        "https://docs.aws.amazon.com/lexv2/latest/dg/what-is.html"
-      ],
-      [
-        "Amazon Bedrock",
-        "https://docs.aws.amazon.com/bedrock/latest/userguide/what-is-bedrock.html"
-      ],
-      [
-        "DynamoDB conditional writes",
-        "https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/WorkingWithItems.html#WorkingWithItems.ConditionalUpdate"
-      ],
-      [
-        "Slack Events API",
-        "https://api.slack.com/apis/events-api"
-      ]
-    ],
-    "notes": {
-      "overview": [
-        [
-          "lives where the support requests already are",
-          "no new tool for anyone to remember to open"
-        ],
-        [
-          "forbids it from claiming a ticket was created",
-          "the one thing a support bot must never get wrong"
-        ]
-      ],
-      "challenge": [
-        [
-          "because the first click did not visibly do anything",
-          "always. every time. design for it"
-        ],
-        [
-          "the load time is the thing that hurts",
-          "a cold Lambda pays it on every scale-out, not once"
-        ]
-      ]
-    },
-    "fragments": [
-      "Slack",
-      "Lex V2",
-      "Bedrock",
-      "Claude",
-      "Lambda",
-      "SQS",
-      "DynamoDB",
-      "Jira",
-      "intent",
-      "slot",
-      "session",
-      "fallback",
-      "guardrail",
-      "OCR",
-      "PaddleOCR",
-      "Textract",
-      "Rekognition",
-      "conditional write",
-      "idempotent",
-      "on-call",
-      "capacity",
-      "queue",
-      "cold start",
-      "container image",
-      "ap-southeast-2",
-      "thread_ts",
-      "event_id",
-      "dedupe",
-      "batchItemFailures",
-      "EventBridge",
-      "escalation",
-      "ground truth"
-    ],
-    "deepDive": [
-      {
-        "kind": "prose",
-        "heading": "Why an intent model and a language model, instead of one or the other",
-        "body": "A pure LLM support bot is easy to demo and hard to trust. It will happily tell someone their VPN ticket has been raised when nothing has been written anywhere.\n\nA pure intent model is the opposite: every route is explicit and auditable, and it falls over the moment somebody phrases a request in a way nobody anticipated.\n\nSo IVY runs both. Lex V2 owns the twenty-odd intents that map to a real action — request AWS access, get into Opsgenie, raise a ticket — and those paths are deterministic. Claude picks up everything else, with a system prompt that lets it ask one clarifying question and explicitly forbids it from claiming a ticket exists. The model is allowed to be helpful; it is not allowed to be authoritative about state."
-      },
-      {
-        "kind": "diagram",
-        "shape": "flow",
-        "heading": "One Slack message, end to end",
-        "body": "Nothing here is synchronous with the person typing. Slack wants an acknowledgement in three seconds, and Lex, Bedrock and Jira between them take longer than that, so the handler does the minimum and hands off.",
-        "steps": [
-          {
-            "t": "Slack DM",
-            "d": "Events API, through API Gateway"
-          },
-          {
-            "t": "Handler",
-            "d": "verify, dedupe by event_id in DynamoDB, enqueue"
-          },
-          {
-            "t": "SQS",
-            "d": "the buffer that makes the rest allowed to be slow"
-          },
-          {
-            "t": "Worker",
-            "d": "Lex V2 for intent; Claude on Bedrock when Lex has nothing"
-          },
-          {
-            "t": "Action",
-            "d": "reply, or Jira ticket, or handoff to a human"
-          }
-        ],
-        "caption": "The dedupe step is not optional: Slack retries a delivery it thinks failed, and without event_id in DynamoDB a slow reply becomes two tickets."
-      },
-      {
-        "kind": "diagram",
-        "shape": "bars",
-        "heading": "Four OCR engines, one hand-written ground truth",
-        "body": "Most support tickets arrive as a screenshot of an error. Reading them automatically means choosing an engine, and reputation is not a measurement — so all four ran over the same five support screenshots and were scored against transcriptions I typed out myself.",
-        "rows": [
-          {
-            "k": "Mistral OCR",
-            "v": 100,
-            "label": "100.0%",
-            "best": true
-          },
-          {
-            "k": "Textract",
-            "v": 99.9,
-            "label": "99.9%"
-          },
-          {
-            "k": "PaddleOCR",
-            "v": 98.9,
-            "label": "98.9%"
-          },
-          {
-            "k": "EasyOCR",
-            "v": 97.4,
-            "label": "97.4%"
-          }
-        ],
-        "max": 100,
-        "caption": "Character accuracy, mean over five screenshots, from ocr/results/benchmark_results.md in the repository. Accuracy was not the deciding number: per-image latency ran 823 ms (Mistral), 1,551 ms (Textract), 1,075 ms (PaddleOCR) and 2,184 ms (EasyOCR), and the two local engines also pay a 10–12 second model load on every cold start."
-      },
-      {
-        "kind": "prose",
-        "heading": "The expensive lesson was packaging, not accuracy",
-        "body": "PaddleOCR scores well and costs nothing per call, which made it the obvious choice until I tried to deploy it. `paddlepaddle` and `opencv` together are several times Lambda's 250 MB zip limit, so it had to ship as a container image instead.\n\nThat solved the size problem and exposed the next one. Lambda's filesystem is read-only apart from `/tmp`, and `/tmp` is empty on every cold start — so an engine that downloads its own model weights on first use downloads them again, and again, and again. The weights get baked into the image at build time by running the constructor once during `docker build`.\n\nThe cloud engines have none of this problem and a per-call bill instead. That is the actual trade, and it is not visible in an accuracy table."
-      },
-      {
-        "kind": "code",
-        "lang": "python",
-        "code": "CLAUDE_SYSTEM_PROMPT = os.environ.get(\n    \"CLAUDE_SYSTEM_PROMPT\",\n    (\n        \"You are IVY, a concise IT and support assistant. \"\n        \"Use only the current user request and session context. \"\n        \"If the request is ambiguous, ask one clear clarifying question. \"\n        \"Do not claim that a ticket was created.\"\n    )\n)",
-        "caption": "The fallback's system prompt, from lambda_o3_claude_fallback.py. The last line is the whole safety argument: the model may answer, but only the deterministic path is allowed to say anything happened."
-      },
-      {
-        "kind": "prose",
-        "heading": "Assigning a ticket is a concurrency problem",
-        "body": "When IVY decides a human is needed, something has to choose which human. The naive version reads the agent table, picks whoever has the fewest open issues, and writes the assignment. Two requests arriving at the same moment both read the same \"fewest\", and both assign to the same person.\n\nSo the reservation is a conditional update: increment `active_count` only if it is still below `max_capacity` and the row still looks the way it did when we read it. If the condition fails, the dispatcher re-reads and tries the next agent. If nobody has room, the ticket stays unassigned with `assignment_status=QUEUED` rather than being forced onto someone.\n\nReleasing is the same problem backwards. A Jira status change fires a callback, and that callback can arrive more than once — so the release is also conditional, and it promotes exactly one queued ticket."
-      },
-      {
-        "kind": "prose",
-        "heading": "What I'd do differently",
-        "body": "I would put an evaluation harness on the conversation itself, not only on the OCR. I measured the piece that was easy to measure — character accuracy against a transcription I wrote — and left the part that actually decides whether IVY is useful, which is whether Lex routed a request to the right intent, to spot checks in Slack. A fixed set of a hundred real requests with the intent each one should produce would have caught routing regressions that I only found by noticing them.\n\nI would also separate the sessions table from the locks. Right now the session record carries conversation state and the conditional-write flags that prevent duplicate tickets, which means every contended write contends with a write that had no reason to be contended.\n\nAnd I would stop treating the Gemini and Claude fallbacks as interchangeable last resorts. They were added at different times for different failures and the ordering between them is historical rather than reasoned."
-      }
-    ],
-    "thumb": false
-  },
-  {
     "id": "quantamental-screener",
     "context": "Solo project",
     "title": "Quantamental Screener",
@@ -462,10 +258,6 @@ const projects = [
         "body": "The honest headline on this project is that the backtest lost: 19.70% against the benchmark's 21.99%. It is worth being precise about what that does and does not mean.\n\nIt is not evidence that the factors are worthless. Sharpe 1.20 with a −10.07% maximum drawdown is a smoother ride than the index had over the same window, which is what you would expect from a screen that down-weights volatility. What it underperformed on was raw return, in a period when the index was carried by a handful of very large names that a cross-sectional momentum screen keeps trimming back to average weight.\n\nSo the next thing I would test is not a different factor, it is a different weighting scheme. The 0.40 / 0.30 / 0.20 / 0.10 weights are a judgement I made once and never revisited, and the obvious experiment is to fit them on a rolling window instead of fixing them — then check whether the fitted weights are stable, because if they move every quarter the model is reading noise.\n\nThe second thing is the sentiment factor. It is the weakest-evidenced of the four: lexicon scorers over headline text, which is what fits inside the hosted app's memory budget. I would run the whole backtest again with FinBERT scoring locally and see whether the 0.30 weight survives contact with a better signal.\n\nAnd I would report the backtest over more than one window. One run over one period is an anecdote, however carefully it is measured."
       }
     ],
-    "instrument": {
-      "kind": "rank",
-      "label": "Five names, and the weight between momentum and sentiment. Drag up and down: the ladder re-sorts, and the name at the top changes. The arithmetic is the real composite; the five rows are the worked example from the table below."
-    },
     "fragments": [
       "momentum",
       "21-day ROC",
@@ -507,7 +299,307 @@ const projects = [
       "problem": "Stock screeners look at price action or at headlines, never at both on the same day.",
       "built": "A cross-sectional four-factor model — momentum, volume, volatility and ensemble news sentiment — z-scored daily and blended into one rank, with a weekly-rebalance backtest and a Streamlit dashboard.",
       "result": "The backtest returns 19.70% against the S&P 500’s 21.99%, at Sharpe 1.20 and −10.07% maximum drawdown. The strategy lost to its benchmark, and the panel that says so is on the page."
-    }
+    },
+    "group": "research",
+    "figures": [
+      {
+        "kind": "balance",
+        "side": "l",
+        "at": 0,
+        "title": "Technicals against narrative",
+        "note": "The beam is level only when the two factors agree, and agreement is the one condition this screener exists to find. The five names are the worked cross-section from the table below."
+      },
+      {
+        "kind": "rank",
+        "side": "r",
+        "at": 3,
+        "title": "Move the weight, lose the ranking",
+        "note": "One weight, sliding between momentum and sentiment, and the ladder re-sorts under it. The arithmetic is the real composite."
+      },
+      {
+        "kind": "race",
+        "side": "l",
+        "at": 8,
+        "title": "The run that actually happened",
+        "note": "Both curves were read back out of the backtest screenshot pixel by pixel with OpenCV and calibrated against the chart’s own gridlines — so this is the real run, not a redrawing of it. The strategy leads for seven months and still finishes behind."
+      }
+    ]
+  },
+  {
+    "id": "phase-contrast-denoising",
+    "context": "Research tool",
+    "title": "Phase-Contrast Clean-Up Pipeline",
+    "tagline": "Removing halo artifacts from microscopy images.",
+    "year": "2026",
+    "role": "Solo project",
+    "summary": "A hybrid classical-CV and deep-learning pipeline that suppresses the halo artifact in phase-contrast microscopy and lifts cell contrast, shipping a pre-trained fp16 model so inference works with zero setup.",
+    "tech": [
+      "Python",
+      "PyTorch",
+      "OpenCV",
+      "Gradio",
+      "JavaScript",
+      "TensorBoard"
+    ],
+    "repo": "https://github.com/akshayaa-403/phase-contrast-denoising",
+    "demo": "https://akshayaa-403.github.io/phase-contrast-denoising/docs/",
+    "overview": "Phase-contrast microscopy makes transparent cells visible, but it introduces a bright halo around every object that confuses downstream segmentation. This pipeline offers two modes. A fast classical path uses Difference-of-Gaussians to suppress the halo and CLAHE to restore local contrast, with no model required. A hybrid path runs that same front-end and then applies a residual U-Net that predicts the leftover artifact and subtracts it, so the cleaned image is the input minus the predicted residual.",
+    "highlights": [
+      "Two selectable modes: classical CV only for speed, or CV plus residual U-Net for quality.",
+      "Ships a pre-trained fp16 checkpoint, so hybrid inference runs without any training step.",
+      "Synthetic data generator produces paired clean and haloed images for supervised training.",
+      "PSNR, SSIM and FLOPs reported per run, with an auto-generated Markdown report and figures.",
+      "Gradio app for interactive before-and-after comparison.",
+      "YAML-driven configuration and unit plus integration tests; runs on CPU, uses CUDA when present."
+    ],
+    "challenge": "Learning the cleaned image directly made the network fight to reproduce detail it had already been given. Predicting the residual instead — just the artifact to remove — meant the model only had to learn the error term, which trained faster and preserved cell structure far better. Shipping fp16 weights kept the checkpoint small enough to commit, so the project is runnable the moment it is cloned.",
+    "created": "2026-07-23",
+    "updated": "2026-08-13",
+    "tags": [
+      [
+        "Phase-contrast microscopy",
+        "https://en.wikipedia.org/wiki/Phase-contrast_microscopy"
+      ],
+      [
+        "U-Net",
+        "https://arxiv.org/abs/1505.04597"
+      ],
+      [
+        "Residual learning",
+        "https://arxiv.org/abs/1512.03385"
+      ],
+      [
+        "CLAHE",
+        "https://en.wikipedia.org/wiki/Adaptive_histogram_equalization"
+      ],
+      [
+        "Difference of Gaussians",
+        "https://en.wikipedia.org/wiki/Difference_of_Gaussians"
+      ]
+    ],
+    "notes": {
+      "overview": [
+        [
+          "bright halo around every object",
+          "invisible to you. fatal to the segmentation downstream"
+        ],
+        [
+          "the input minus the predicted residual",
+          "one subtraction. that is the whole trick"
+        ]
+      ],
+      "challenge": [
+        [
+          "Predicting the residual instead",
+          "the single decision that made this work"
+        ],
+        [
+          "Shipping fp16 weights",
+          "clone it and run it. no download step, no setup"
+        ]
+      ]
+    },
+    "deepDive": [
+      {
+        "kind": "prose",
+        "heading": "The microscope adds something that isn't there",
+        "body": "Phase-contrast microscopy makes transparent cells visible by turning differences in optical path into differences in brightness. It's a beautiful trick and it has a price: a bright ring around every edge.\n\nThat ring is called the halo, and it is not just cosmetic. It sits exactly where a segmentation algorithm goes looking for a boundary, so the software reads it as cell. Every count and every area you measure afterwards is wrong by however much of the collar got included.\n\nThe part that bothered me is that it's invisible to the person at the eyepiece and fatal to everything downstream."
+      },
+      {
+        "kind": "interactive",
+        "widget": "wipe",
+        "heading": "Drag the line across a cell",
+        "body": "Left of the divider is what the microscope produced. Right of it is what came out of hybrid mode. Look at the edges rather than the middle: the halo is the bright collar, and the thing to check is whether the collar went away without taking the boundary with it.",
+        "a": {
+          "src": "public/assets/projects/phase-wipe-noisy.webp",
+          "alt": "Phase-contrast frame before processing, with bright halos around every cell",
+          "label": "As captured"
+        },
+        "b": {
+          "src": "public/assets/projects/phase-wipe-clean.webp",
+          "alt": "The same frame after hybrid processing, halos suppressed and cell edges intact",
+          "label": "Hybrid mode"
+        },
+        "controlLabel": "Wipe",
+        "caption": "Sample img_0002 from the repository, before and after hybrid mode (classical front-end plus the residual U-Net). Both frames are the project's own output, not a re-render for this page."
+      },
+      {
+        "kind": "steps",
+        "heading": "Two modes, because not everyone has a GPU",
+        "items": [
+          {
+            "t": "Classical (fast)",
+            "d": "Difference-of-Gaussians suppresses the halo's spatial frequency band, then CLAHE restores local contrast. No model, no GPU, runs anywhere."
+          },
+          {
+            "t": "Hybrid (better)",
+            "d": "The same classical front-end, then a residual U-Net predicts what artifact remains and subtracts it."
+          }
+        ],
+        "body": "The pipeline runs in either of two modes and they share a front end.\n\n`cv_only` is OpenCV alone: a difference-of-Gaussians estimate of the halo as a background field, subtracted, then CLAHE to lift what's left. Fast, no model, runs anywhere.\n\n`hybrid` adds a residual U-Net on top of that. It's better, and it needs weights — which ship in the repository at fp16, so hybrid mode works on a fresh clone with no download step."
+      },
+      {
+        "kind": "diagram",
+        "shape": "flow",
+        "heading": "What happens to a frame",
+        "body": "Hybrid mode is two passes, not one model. The classical front-end removes what can be described in closed form, and the network is only asked for what is left.",
+        "steps": [
+          {
+            "t": "As captured",
+            "d": "phase-contrast frame, halo at every edge"
+          },
+          {
+            "t": "Difference of Gaussians",
+            "d": "estimates the halo as a background field"
+          },
+          {
+            "t": "CLAHE",
+            "d": "lifts local cell contrast"
+          },
+          {
+            "t": "U-Net",
+            "d": "predicts the residual that is still wrong"
+          },
+          {
+            "t": "Subtract",
+            "d": "cleaned = input − residual"
+          }
+        ],
+        "caption": "Modes share the first three steps; cv_only stops after CLAHE. The fp16 weights ship in the repository, so hybrid runs on a clone."
+      },
+      {
+        "kind": "formula",
+        "tex": "\\hat{y} \\;=\\; x \\;-\\; f_{\\theta}(x)",
+        "caption": "The residual formulation. The network predicts the artifact f(x), not the clean image — the output is the input minus that prediction. This is the single decision that made the model work."
+      },
+      {
+        "kind": "prose",
+        "heading": "The network never draws a cell",
+        "body": "This is the design decision I'm most pleased with, and it took me a while to get to.\n\nThe obvious approach is to train a model that takes a haloed image and outputs a clean one. I tried that. The problem is that you're asking the network to reproduce the entire image, most of which the input already contains, and it spends its capacity relearning things it was handed.\n\nSo the network is never asked for a cell. It's asked for the residual — what's left over after the classical front end has done what it can — and the cleaned image is the input minus that prediction.\n\nThe residual is small, sparse and structured. A cell is large and varied. That's a much easier problem, and it fails in a much better way: it leaves some halo behind rather than inventing a cell that was never there."
+      },
+      {
+        "kind": "prose",
+        "heading": "If it doesn't run on clone, it doesn't exist",
+        "body": "I've lost hours to research code that needs a checkpoint from a dead Dropbox link.\n\nSo the weights are in the repo, at fp16 to keep them small. There's a synthetic dataset generator so you don't need real microscopy to see it work. `python main.py --mode hybrid` produces cleaned images and a report, on CPU, on a laptop."
+      },
+      {
+        "kind": "prose",
+        "heading": "Porting the classical half to the browser",
+        "body": "The classical front end is all arithmetic — Gaussians, a subtraction, a histogram equalisation. None of it needs Python.\n\nSo `docs/` is a static page that runs exactly those steps in JavaScript on an image you drop in. No server, no upload, nothing leaves your machine. It's the demo I'd want to try before cloning someone's repo."
+      },
+      {
+        "kind": "figure",
+        "src": "public/assets/projects/phase-demo-metrics.webp",
+        "alt": "Interactive demo showing five panels from input through DoG and CLAHE to hybrid U-Net and ground truth, a measured PSNR/SSIM table, and five parameter sliders",
+        "caption": "Five stages side by side, measured. The three left panels compute live as you drag; the U-Net column is precomputed, and the page says so."
+      },
+      {
+        "kind": "prose",
+        "heading": "How I know the port didn't drift",
+        "body": "Two implementations of the same maths will diverge quietly, and you won't notice until someone's numbers don't reproduce.\n\nSo the browser version isn't asserted to match, it's measured against the Python one on the same inputs. That check is the only reason I'm willing to claim they're the same pipeline."
+      },
+      {
+        "kind": "prose",
+        "heading": "What the browser version can't do",
+        "body": "It can't run the U-Net. That's not a limitation I'm working around, it's the honest boundary: the browser demo is the classical half, and it says so on the page rather than quietly producing worse results and letting you assume you saw the real thing."
+      },
+      {
+        "kind": "prose",
+        "heading": "PSNR is a worse metric than it looks",
+        "body": "PSNR is a log of mean squared error, so it rewards being close everywhere and says nothing about being right where it matters.\n\nHere's the trap: a pipeline that just blurs the image slightly will often score well, because blur is small error spread thin. That is the exact opposite of what this is for.\n\nSo the report carries SSIM next to it, and the images are shown rather than summarised. The wipe above is the real evidence. The numbers are corroboration."
+      },
+      {
+        "kind": "table",
+        "caption": "Mean over six samples. The classical and hybrid stages optimise for different things, which is exactly what the two metrics show.",
+        "head": [
+          "Stage",
+          "PSNR (dB)",
+          "SSIM"
+        ],
+        "rows": [
+          [
+            "Raw noisy input",
+            "12.87",
+            "0.2062"
+          ],
+          [
+            "Classical (DoG + CLAHE)",
+            "7.71",
+            "0.1029"
+          ],
+          [
+            "Hybrid (residual U-Net)",
+            "20.62",
+            "0.3599"
+          ]
+        ]
+      },
+      {
+        "kind": "formula",
+        "tex": "\\text{dog} = G_{\\sigma_1}(x) - G_{\\sigma_2}(x) \\qquad \\text{enhanced} = x - \\alpha \\cdot \\text{dog}, \\quad \\sigma_2 > \\sigma_1",
+        "caption": "The halo is a broad low-frequency ring while the cell body carries the high-frequency detail, so blurring at two scales separates them. sigma1 = 1.0 keeps the cell, sigma2 = 8.0 is wide enough to straddle the halo, and subtracting alpha = 0.6 of their difference removes the ring without hollowing the cell out."
+      },
+      {
+        "kind": "prose",
+        "heading": "What I'd do differently",
+        "body": "Six samples is not an evaluation, it is a sanity check. The PSNR and SSIM numbers in the table above are the mean over six images, and I would not draw a conclusion about a denoiser from six images if someone else showed them to me. A proper version measures over a held-out set in the tens or hundreds, and reports the spread rather than only the mean.\n\nI would also stop leaning on PSNR at all. I say in the case study that it is a worse metric than it looks, and then report it anyway because it is what the literature reports. The thing anyone actually wants to know is whether segmentation gets better downstream — so the right measurement is to run a standard segmentation on the raw and the cleaned frames and compare the masks against hand-drawn ones. That is a harder experiment and it is the one that means something.\n\nAnd I would train on real paired data rather than a synthetic halo model. The network learns the halo I simulated, which is a defensible approximation of the optics, and exactly as good as that approximation is."
+      }
+    ],
+    "fragments": [
+      "the halo",
+      "phase contrast",
+      "optical path",
+      "bright collar",
+      "difference of Gaussians",
+      "CLAHE",
+      "residual",
+      "U-Net",
+      "fp16",
+      "cleaned = input − residual",
+      "segmentation",
+      "boundary",
+      "PSNR",
+      "SSIM",
+      "mean squared error",
+      "blur scores well",
+      "cv_only",
+      "hybrid",
+      "Gradio",
+      "runs on a clone",
+      "synthetic ground truth",
+      "microscopy",
+      "artifact",
+      "invisible to the eye",
+      "fatal downstream",
+      "OpenCV",
+      "PyTorch",
+      "the mistake, not the picture",
+      "parity",
+      "ported to the browser"
+    ],
+    "metric": "PSNR 12.87 → 20.62 dB",
+    "glance": {
+      "problem": "Phase-contrast microscopy puts a bright halo around every cell — an artifact of the optics, not a feature of the sample — and it defeats the thresholding that segmentation depends on.",
+      "built": "A hybrid pipeline: classical difference-of-Gaussians and CLAHE, plus a residual U-Net that predicts the halo rather than the cell, shipped with fp16 weights so inference needs no setup, and a browser port of the classical half.",
+      "result": "Mean PSNR over six samples rises from 12.87 dB raw to 20.62 dB hybrid, SSIM from 0.206 to 0.360. The classical-only stage scores worse on PSNR than the raw input, which is the metric behaving correctly rather than the stage failing."
+    },
+    "group": "research",
+    "figures": [
+      {
+        "kind": "halo",
+        "side": "l",
+        "at": 0,
+        "title": "Her own cells, losing the collar",
+        "note": "Not drawn cells: these are the real boundaries traced out of the noisy frame with OpenCV. Drag to take the halo off and put it back."
+      },
+      {
+        "kind": "residual",
+        "side": "r",
+        "at": 5,
+        "title": "One scan line, three profiles",
+        "note": "What the microscope recorded, what the network predicts, and the difference between them. The network is asked for the artifact, never for the cell."
+      }
+    ]
   },
   {
     "id": "arteza",
@@ -744,10 +836,6 @@ const projects = [
         "body": "I would have instrumented it. The site went live without analytics, which means I can tell you what I built and not whether it worked — how many people finished the quiz, whether the collection pages or the shop grid sent more enquiries to WhatsApp, which paintings people opened and did not ask about. All of that is cheap to collect and I did not collect it, so the case study above is a description rather than a result.\n\nI would also revisit the WhatsApp checkout. It was the right call — it matched how the studio already sold, and a cart would have been a worse fit — but it puts the handoff at exactly the point where I stop being able to see anything. At minimum the outgoing message should carry a reference the studio can match back to a painting and a session.\n\nAnd I would push harder on image weight. A gallery is almost entirely photographs of paintings, and the original files were bigger than they needed to be."
       }
     ],
-    "instrument": {
-      "kind": "orbit",
-      "label": "Five collections circling. Drag to pull one in — the quiz is this, with three preferences doing the pulling instead of your pointer."
-    },
     "fragments": [
       "five collections",
       "one of one",
@@ -780,270 +868,492 @@ const projects = [
       "problem": "A working painter with a catalogue spread across Instagram posts and WhatsApp threads, and no single place a buyer could see the work.",
       "built": "A React and Supabase storefront for 90+ originals across five curated collections, with a style-matching quiz, class booking, and checkout that hands off to WhatsApp — where the sales were already happening.",
       "result": "A live site the studio sells from. Commercial figures belong to the client and are not mine to publish."
-    }
+    },
+    "group": "products",
+    "figures": [
+      {
+        "kind": "orbit",
+        "side": "l",
+        "at": 1,
+        "title": "Five collections, three preferences",
+        "note": "The quiz is this: three answers weighing five collections until one is pulled in. Drag to pull one yourself."
+      },
+      {
+        "kind": "handoff",
+        "side": "r",
+        "at": 4,
+        "title": "It does not end in a cart",
+        "note": "Ninety paintings narrow to one, and then the buyer leaves for WhatsApp and talks to a person. The last step being off the site is the decision, not an omission."
+      }
+    ]
   },
   {
-    "id": "phase-contrast-denoising",
-    "context": "Research tool",
-    "title": "Phase-Contrast Clean-Up Pipeline",
-    "tagline": "Removing halo artifacts from microscopy images.",
+    "id": "habita",
+    "context": "Solo project",
+    "title": "Habita",
+    "tagline": "Eisenhower matrix that writes to your real calendar.",
     "year": "2026",
     "role": "Solo project",
-    "summary": "A hybrid classical-CV and deep-learning pipeline that suppresses the halo artifact in phase-contrast microscopy and lifts cell contrast, shipping a pre-trained fp16 model so inference works with zero setup.",
+    "summary": "An Android task manager built on the Eisenhower Matrix. Sort tasks into four urgency-importance quadrants, then drag them onto a day timeline that writes real events into the phone’s own calendar — so time you set aside shows up wherever you already look, not only inside the app.",
     "tech": [
-      "Python",
-      "PyTorch",
-      "OpenCV",
-      "Gradio",
-      "JavaScript",
-      "TensorBoard"
+      "JavaScript (ES6)",
+      "CSS Grid",
+      "SVG",
+      "Capacitor",
+      "Android Calendar API",
+      "localStorage"
     ],
-    "repo": "https://github.com/akshayaa-403/phase-contrast-denoising",
-    "demo": "https://akshayaa-403.github.io/phase-contrast-denoising/docs/",
-    "overview": "Phase-contrast microscopy makes transparent cells visible, but it introduces a bright halo around every object that confuses downstream segmentation. This pipeline offers two modes. A fast classical path uses Difference-of-Gaussians to suppress the halo and CLAHE to restore local contrast, with no model required. A hybrid path runs that same front-end and then applies a residual U-Net that predicts the leftover artifact and subtracts it, so the cleaned image is the input minus the predicted residual.",
+    "repo": "https://github.com/akshayaa-403/Habita",
+    "overview": "A flat to-do list treats a tax deadline and a hobby idea as equals. Habita sorts every task into one of the Eisenhower Matrix quadrants — urgent and important, important but not urgent, urgent but not important, neither — so priority is a property of where a task sits rather than something you have to hold in your head. Each quadrant carries an SVG progress ring that fills as you complete work inside it.",
     "highlights": [
-      "Two selectable modes: classical CV only for speed, or CV plus residual U-Net for quality.",
-      "Ships a pre-trained fp16 checkpoint, so hybrid inference runs without any training step.",
-      "Synthetic data generator produces paired clean and haloed images for supervised training.",
-      "PSNR, SSIM and FLOPs reported per run, with an auto-generated Markdown report and figures.",
-      "Gradio app for interactive before-and-after comparison.",
-      "YAML-driven configuration and unit plus integration tests; runs on CPU, uses CUDA when present."
+      "Four colour-coded quadrants — Focus, Backburner, Fit In, Goals — each with a live SVG progress ring.",
+      "Day timeline: a 24-hour grid with 15-minute snapping; drag a waiting task onto an hour to block out time for it.",
+      "Calendar sync both ways — every scheduled task becomes a real tinted event, and the day view reads existing events back so you can see what a slot would collide with.",
+      "Tap to auto-place: drops a task into the earliest slot that clears both your other blocks and your existing calendar.",
+      "Drag to move a block, pull its bottom edge to change how long it takes; the calendar event follows.",
+      "Haptics through native Capacitor on Android, falling back to the Web Vibration API in browsers.",
+      "State persisted to localStorage with shape validation and migration, so an old save can never crash a newer build."
     ],
-    "challenge": "Learning the cleaned image directly made the network fight to reproduce detail it had already been given. Predicting the residual instead — just the artifact to remove — meant the model only had to learn the error term, which trained faster and preserved cell structure far better. Shipping fp16 weights kept the checkpoint small enough to commit, so the project is runnable the moment it is cloned.",
-    "created": "2026-07-23",
-    "updated": "2026-08-13",
+    "challenge": "A to-do app that only knows about itself is another place to check. The hard part was making Habita write into the calendar the user already lives in — and read it back, so scheduling a task can account for the meeting already sitting in that slot. That meant a real Android calendar integration through Capacitor rather than a self-contained store, and it changes what the app is: not a list that tracks intentions, but a tool that commits them to time. The browser build degrades honestly, labelling itself “device calendar unavailable” instead of pretending to sync.",
+    "created": "2026-04-19",
+    "updated": "2026-08-25",
     "tags": [
       [
-        "Phase-contrast microscopy",
-        "https://en.wikipedia.org/wiki/Phase-contrast_microscopy"
+        "Eisenhower Matrix",
+        "https://en.wikipedia.org/wiki/Time_management"
       ],
       [
-        "U-Net",
-        "https://arxiv.org/abs/1505.04597"
+        "Capacitor",
+        "https://capacitorjs.com/docs"
       ],
       [
-        "Residual learning",
-        "https://arxiv.org/abs/1512.03385"
-      ],
-      [
-        "CLAHE",
-        "https://en.wikipedia.org/wiki/Adaptive_histogram_equalization"
-      ],
-      [
-        "Difference of Gaussians",
-        "https://en.wikipedia.org/wiki/Difference_of_Gaussians"
+        "Calendar Provider",
+        "https://developer.android.com/guide/topics/providers/calendar-provider"
       ]
     ],
     "notes": {
       "overview": [
         [
-          "bright halo around every object",
-          "invisible to you. fatal to the segmentation downstream"
+          "one of the Eisenhower Matrix quadrants",
+          "the matrix does the deciding so you don't redo it every morning"
         ],
         [
-          "the input minus the predicted residual",
-          "one subtraction. that is the whole trick"
+          "an SVG progress ring",
+          "no library. it's one stroke-dasharray"
         ]
       ],
       "challenge": [
         [
-          "Predicting the residual instead",
-          "the single decision that made this work"
+          "making Habita write into the calendar the user already lives in",
+          "the whole reason this isn't another to-do app"
         ],
         [
-          "Shipping fp16 weights",
-          "clone it and run it. no download step, no setup"
+          "degrades honestly",
+          "it says what it can't do rather than faking a sync"
         ]
       ]
     },
     "deepDive": [
       {
         "kind": "prose",
-        "heading": "The microscope adds something that isn't there",
-        "body": "Phase-contrast microscopy makes transparent cells visible by turning differences in optical path into differences in brightness. It's a beautiful trick and it has a price: a bright ring around every edge.\n\nThat ring is called the halo, and it is not just cosmetic. It sits exactly where a segmentation algorithm goes looking for a boundary, so the software reads it as cell. Every count and every area you measure afterwards is wrong by however much of the collar got included.\n\nThe part that bothered me is that it's invisible to the person at the eyepiece and fatal to everything downstream."
-      },
-      {
-        "kind": "interactive",
-        "widget": "wipe",
-        "heading": "Drag the line across a cell",
-        "body": "Left of the divider is what the microscope produced. Right of it is what came out of hybrid mode. Look at the edges rather than the middle: the halo is the bright collar, and the thing to check is whether the collar went away without taking the boundary with it.",
-        "a": {
-          "src": "public/assets/projects/phase-wipe-noisy.webp",
-          "alt": "Phase-contrast frame before processing, with bright halos around every cell",
-          "label": "As captured"
-        },
-        "b": {
-          "src": "public/assets/projects/phase-wipe-clean.webp",
-          "alt": "The same frame after hybrid processing, halos suppressed and cell edges intact",
-          "label": "Hybrid mode"
-        },
-        "controlLabel": "Wipe",
-        "caption": "Sample img_0002 from the repository, before and after hybrid mode (classical front-end plus the residual U-Net). Both frames are the project's own output, not a re-render for this page."
-      },
-      {
-        "kind": "steps",
-        "heading": "Two modes, because not everyone has a GPU",
-        "items": [
-          {
-            "t": "Classical (fast)",
-            "d": "Difference-of-Gaussians suppresses the halo's spatial frequency band, then CLAHE restores local contrast. No model, no GPU, runs anywhere."
-          },
-          {
-            "t": "Hybrid (better)",
-            "d": "The same classical front-end, then a residual U-Net predicts what artifact remains and subtracts it."
-          }
-        ],
-        "body": "The pipeline runs in either of two modes and they share a front end.\n\n`cv_only` is OpenCV alone: a difference-of-Gaussians estimate of the halo as a background field, subtracted, then CLAHE to lift what's left. Fast, no model, runs anywhere.\n\n`hybrid` adds a residual U-Net on top of that. It's better, and it needs weights — which ship in the repository at fp16, so hybrid mode works on a fresh clone with no download step."
+        "heading": "Priority as a place, not a number",
+        "body": "Every task app I've used stores priority as a field: a number, a flag, a colour from a dropdown. And every one of them ends up with everything marked high.\n\nHabita stores priority as a position. A task lives in one of four quadrants, and the only way to change what it means is to physically move it.\n\nThe consequence is that you can't mark everything important, because the grid has two axes and a thing that's urgent but not important has somewhere specific to go. You make the decision once, when you place it, and the layout is what remembers."
       },
       {
         "kind": "diagram",
-        "shape": "flow",
-        "heading": "What happens to a frame",
-        "body": "Hybrid mode is two passes, not one model. The classical front-end removes what can be described in closed form, and the network is only asked for what is left.",
-        "steps": [
+        "shape": "quadrant",
+        "heading": "The grid a task lands in",
+        "body": "Priority is a position here, not a field. A task lives in one of four quadrants and the only way to change what it means is to move it — which is why you cannot mark everything important.",
+        "x": "Urgency →",
+        "y": "Importance →",
+        "cells": [
           {
-            "t": "As captured",
-            "d": "phase-contrast frame, halo at every edge"
+            "t": "Goals",
+            "d": "Important, not urgent. Decides what next year looks like; loses every argument with Focus."
           },
           {
-            "t": "Difference of Gaussians",
-            "d": "estimates the halo as a background field"
+            "t": "Focus",
+            "d": "Urgent and important. Two items is a day; six is a planning failure that already happened."
           },
           {
-            "t": "CLAHE",
-            "d": "lifts local cell contrast"
+            "t": "Backburner",
+            "d": "Neither. Naming it turns guilt into a decision."
           },
           {
-            "t": "U-Net",
-            "d": "predicts the residual that is still wrong"
-          },
-          {
-            "t": "Subtract",
-            "d": "cleaned = input − residual"
+            "t": "Fit In",
+            "d": "Urgent, not important. Real deadlines on work that moves nothing. Batch it or do it badly on purpose."
           }
         ],
-        "caption": "Modes share the first three steps; cv_only stops after CLAHE. The fp16 weights ship in the repository, so hybrid runs on a clone."
+        "caption": "The four boards in the app, in the positions they occupy. Each carries an SVG progress ring that counts down as its tasks are checked off."
       },
       {
-        "kind": "formula",
-        "tex": "\\hat{y} \\;=\\; x \\;-\\; f_{\\theta}(x)",
-        "caption": "The residual formulation. The network predicts the artifact f(x), not the clean image — the output is the input minus that prediction. This is the single decision that made the model work."
-      },
-      {
-        "kind": "prose",
-        "heading": "The network never draws a cell",
-        "body": "This is the design decision I'm most pleased with, and it took me a while to get to.\n\nThe obvious approach is to train a model that takes a haloed image and outputs a clean one. I tried that. The problem is that you're asking the network to reproduce the entire image, most of which the input already contains, and it spends its capacity relearning things it was handed.\n\nSo the network is never asked for a cell. It's asked for the residual — what's left over after the classical front end has done what it can — and the cleaned image is the input minus that prediction.\n\nThe residual is small, sparse and structured. A cell is large and varied. That's a much easier problem, and it fails in a much better way: it leaves some halo behind rather than inventing a cell that was never there."
-      },
-      {
-        "kind": "prose",
-        "heading": "If it doesn't run on clone, it doesn't exist",
-        "body": "I've lost hours to research code that needs a checkpoint from a dead Dropbox link.\n\nSo the weights are in the repo, at fp16 to keep them small. There's a synthetic dataset generator so you don't need real microscopy to see it work. `python main.py --mode hybrid` produces cleaned images and a report, on CPU, on a laptop."
-      },
-      {
-        "kind": "prose",
-        "heading": "Porting the classical half to the browser",
-        "body": "The classical front end is all arithmetic — Gaussians, a subtraction, a histogram equalisation. None of it needs Python.\n\nSo `docs/` is a static page that runs exactly those steps in JavaScript on an image you drop in. No server, no upload, nothing leaves your machine. It's the demo I'd want to try before cloning someone's repo."
-      },
-      {
-        "kind": "figure",
-        "src": "public/assets/projects/phase-demo-metrics.webp",
-        "alt": "Interactive demo showing five panels from input through DoG and CLAHE to hybrid U-Net and ground truth, a measured PSNR/SSIM table, and five parameter sliders",
-        "caption": "Five stages side by side, measured. The three left panels compute live as you drag; the U-Net column is precomputed, and the page says so."
-      },
-      {
-        "kind": "prose",
-        "heading": "How I know the port didn't drift",
-        "body": "Two implementations of the same maths will diverge quietly, and you won't notice until someone's numbers don't reproduce.\n\nSo the browser version isn't asserted to match, it's measured against the Python one on the same inputs. That check is the only reason I'm willing to claim they're the same pipeline."
-      },
-      {
-        "kind": "prose",
-        "heading": "What the browser version can't do",
-        "body": "It can't run the U-Net. That's not a limitation I'm working around, it's the honest boundary: the browser demo is the classical half, and it says so on the page rather than quietly producing worse results and letting you assume you saw the real thing."
-      },
-      {
-        "kind": "prose",
-        "heading": "PSNR is a worse metric than it looks",
-        "body": "PSNR is a log of mean squared error, so it rewards being close everywhere and says nothing about being right where it matters.\n\nHere's the trap: a pipeline that just blurs the image slightly will often score well, because blur is small error spread thin. That is the exact opposite of what this is for.\n\nSo the report carries SSIM next to it, and the images are shown rather than summarised. The wipe above is the real evidence. The numbers are corroboration."
+        "kind": "interactive",
+        "widget": "steps",
+        "heading": "Put a Tuesday through the grid",
+        "body": "Here is an unsorted day. Step through the four quadrants and watch which tasks each one claims. The point is not that the sorting is clever — it is that once a task is in a quadrant there is nowhere left to hide it.",
+        "playLabel": "Play all four",
+        "stopLabel": "Stop",
+        "items": [
+          "Renew the passport, appointment closes Friday",
+          "Draft the quarterly plan",
+          "Someone else's status meeting",
+          "Learn enough Rust to read the codebase",
+          "Fix the failing test blocking the release",
+          "Answer the group chat",
+          "Book a dentist appointment, eventually",
+          "Scroll the news"
+        ],
+        "frames": [
+          {
+            "label": "Focus",
+            "picks": [
+              0,
+              4
+            ],
+            "note": "Urgent and important. Two things, and they are the only two things. A day with six items in this quadrant is not a busy day, it is a planning failure that already happened."
+          },
+          {
+            "label": "Goals",
+            "picks": [
+              1,
+              3,
+              6
+            ],
+            "note": "Important, not urgent. This is the quadrant that decides what next year looks like, and the one that quietly loses every argument with the one above it."
+          },
+          {
+            "label": "Fit In",
+            "picks": [
+              2,
+              5
+            ],
+            "note": "Urgent, not important. Real deadlines attached to work that does not move anything. These are the tasks worth batching, delegating or doing badly on purpose."
+          },
+          {
+            "label": "Backburner",
+            "picks": [
+              7
+            ],
+            "note": "Neither. Naming it is the useful part: it stops being something you feel bad about not doing and becomes something you decided not to do."
+          }
+        ],
+        "caption": "An illustrative Tuesday. In the app the quadrant is set by dragging, and each one carries an SVG progress ring that counts down as tasks are checked off."
       },
       {
         "kind": "table",
-        "caption": "Mean over six samples. The classical and hybrid stages optimise for different things, which is exactly what the two metrics show.",
+        "caption": "The four quadrants, and the name each one gets in the app.",
         "head": [
-          "Stage",
-          "PSNR (dB)",
-          "SSIM"
+          "",
+          "Urgent",
+          "Not urgent"
         ],
         "rows": [
           [
-            "Raw noisy input",
-            "12.87",
-            "0.2062"
+            "Important",
+            "Focus — do it now",
+            "Goals — schedule it"
           ],
           [
-            "Classical (DoG + CLAHE)",
-            "7.71",
-            "0.1029"
-          ],
-          [
-            "Hybrid (residual U-Net)",
-            "20.62",
-            "0.3599"
+            "Not important",
+            "Fit In — squeeze it in",
+            "Backburner — let it wait"
           ]
         ]
       },
       {
+        "kind": "figure",
+        "src": "public/assets/projects/habita-views.webp",
+        "alt": "Two phone screens side by side: the four-quadrant matrix with progress rings, and the day timeline with hour rows and a current-time marker",
+        "caption": "Two views, one model. The matrix decides what matters; the day view decides when it happens. The red line is now."
+      },
+      {
+        "kind": "prose",
+        "heading": "Progress rings without a chart library",
+        "body": "Each quadrant shows a ring that fills as its tasks get done. It's one SVG circle with `stroke-dasharray` set to the circumference and `stroke-dashoffset` driven by the completion ratio.\n\nThat's the whole implementation. No dependency, no canvas, and it scales cleanly because it's a vector. I mention it because “add a chart library” would have been the default move and it would have cost more than it returned."
+      },
+      {
         "kind": "formula",
-        "tex": "\\text{dog} = G_{\\sigma_1}(x) - G_{\\sigma_2}(x) \\qquad \\text{enhanced} = x - \\alpha \\cdot \\text{dog}, \\quad \\sigma_2 > \\sigma_1",
-        "caption": "The halo is a broad low-frequency ring while the cell body carries the high-frequency detail, so blurring at two scales separates them. sigma1 = 1.0 keeps the cell, sigma2 = 8.0 is wide enough to straddle the halo, and subtracting alpha = 0.6 of their difference removes the ring without hollowing the cell out."
+        "tex": "C = 2\\pi r \\qquad \\text{offset} = C \\times \\left(1 - \\frac{\\text{done}}{\\text{total}}\\right)",
+        "caption": "Circumference sets the dash length; the offset is driven by completion ratio. Animating stroke-dashoffset gives a smooth fill for free."
+      },
+      {
+        "kind": "prose",
+        "heading": "The feature that made it worth building",
+        "body": "A planner that only knows about itself is a second place to check. A second place to check is a place you stop checking.\n\nSo dragging a task onto the day timeline writes a real event into the phone's own calendar, through a local Capacitor plugin over Android's CalendarContract. No third-party service, no sync account. Move the block and the event moves.\n\nThe details that took the longest are the ones nobody sees. Colours go through the account's own palette because several providers ignore a raw colour value. Events Habita created carry a marker in their description so the timeline can tell its own blocks from yours. Updates are partial, so a description you edited elsewhere survives. And if you delete the event in your calendar app, the block notices it's gone and recreates it rather than failing silently.\n\nThe day view also reads what's already in your calendar and draws it in its own lane, so you can see what a slot would collide with before you take it."
+      },
+      {
+        "kind": "prose",
+        "heading": "Making a web app stop feeling like one",
+        "body": "It's ES6 modules, CSS Grid and SVG, wrapped with Capacitor. No build step, no bundler, no framework.\n\nWhat makes it feel native isn't the wrapper, it's the small things: haptics on completion, 15-minute snapping so drags land somewhere sensible, keyboard nudging on a focused block, and a web Vibration fallback for when the Capacitor plugin isn't there."
+      },
+      {
+        "kind": "prose",
+        "heading": "Never let old data break a new build",
+        "body": "Everything lives in localStorage, which means every install has data from whatever version the user last ran.\n\nSo stored objects get validated and migrated on load. A stale or partial object degrades into a correct one rather than throwing. It is unglamorous and it's the difference between shipping an update and shipping an update that wipes someone's week."
       },
       {
         "kind": "prose",
         "heading": "What I'd do differently",
-        "body": "Six samples is not an evaluation, it is a sanity check. The PSNR and SSIM numbers in the table above are the mean over six images, and I would not draw a conclusion about a denoiser from six images if someone else showed them to me. A proper version measures over a held-out set in the tens or hundreds, and reports the spread rather than only the mean.\n\nI would also stop leaning on PSNR at all. I say in the case study that it is a worse metric than it looks, and then report it anyway because it is what the literature reports. The thing anyone actually wants to know is whether segmentation gets better downstream — so the right measurement is to run a standard segmentation on the raw and the cleaned frames and compare the masks against hand-drawn ones. That is a harder experiment and it is the one that means something.\n\nAnd I would train on real paired data rather than a synthetic halo model. The network learns the halo I simulated, which is a defensible approximation of the optics, and exactly as good as that approximation is."
+        "body": "I would ship an APK. There is a working Android app here and no way for anyone to run it without cloning the repository and building it themselves, which means the only people who will ever see it are people who already believe me. A signed release build attached to a GitHub release costs almost nothing and is the difference between a claim and a demonstration.\n\nI would also make the calendar write two-way. Right now Habita writes events out and never reads them back, so a block you move in Google Calendar and the block Habita thinks exists drift apart silently. Reading the calendar back is more work than writing to it, and it is the difference between a feature and a sync.\n\nAnd the quadrant model needs a way out. The Eisenhower matrix is a good forcing function and a bad description of a real week — most tasks are not clearly urgent or clearly not — so the app should let a task sit on a boundary instead of pretending the decision was clean."
       }
     ],
-    "instrument": {
-      "kind": "halo",
-      "label": "A drawn phase-contrast field. Drag across it to wipe the halo off the cells and back on — the collar is what the pipeline removes, and the boundary underneath is what it has to leave intact."
+    "fragments": [
+      "Eisenhower",
+      "urgent",
+      "important",
+      "Focus",
+      "Backburner",
+      "Fit In",
+      "Goals",
+      "position, not a field",
+      "quadrant",
+      "day timeline",
+      "15-minute snapping",
+      "CalendarContract",
+      "Capacitor",
+      "READ_CALENDAR",
+      "Instances table",
+      "recurring events",
+      "EVENT_COLOR_KEY",
+      "partial update",
+      "progress ring",
+      "SVG",
+      "localStorage",
+      "schema migration",
+      "the calendar you already look at",
+      "haptics",
+      "auto-place",
+      "collision",
+      "Android",
+      "no third-party sync"
+    ],
+    "glance": {
+      "problem": "Every task app invents its own idea of priority, and the time you set aside inside one is invisible everywhere you actually look.",
+      "built": "An Android task manager on the Eisenhower matrix — four urgency/importance quadrants — with a drag-to-schedule day timeline that writes real events into the phone's own calendar.",
+      "result": "Working app, no published build. What it demonstrates is the calendar write: time blocked in Habita shows up in the calendar the rest of the phone already reads."
+    },
+    "group": "products",
+    "figures": [
+      {
+        "kind": "grid",
+        "side": "l",
+        "at": 0,
+        "title": "Priority as a place",
+        "note": "A day of tasks against two axes. Drag the crosshair: everything re-sorts against wherever you just put the line, which is what deciding actually is."
+      },
+      {
+        "kind": "calendar",
+        "side": "r",
+        "at": 7,
+        "title": "Written through to the phone",
+        "note": "Time blocked in Habita becomes a real event in the calendar every other app already reads. Drag the block and watch the second one follow."
+      }
+    ]
+  },
+  {
+    "id": "ivy-slack-agent",
+    "context": "InnovyQ",
+    "title": "Project IVY",
+    "tagline": "A Slack support agent that reads screenshots and files its own tickets.",
+    "year": "2026",
+    "role": "AI Engineer, InnovyQ",
+    "summary": "An AI IT-support agent living in Slack DMs: AWS Lex V2 for intent, Claude on Bedrock for everything Lex cannot answer, OCR over pasted screenshots, and a capacity-aware dispatcher that assigns the Jira ticket to whichever human is actually on shift and has room.",
+    "tech": [
+      "Python",
+      "AWS Lambda",
+      "SQS",
+      "DynamoDB",
+      "Lex V2",
+      "Bedrock (Claude)",
+      "Rekognition",
+      "PaddleOCR",
+      "Docker",
+      "Jira API"
+    ],
+    "repo": "https://github.com/akshayaa-403/o3_slack_bot",
+    "metric": "100% char OCR · 823 ms/image",
+    "glance": {
+      "problem": "An internal IT helpdesk where most tickets arrive as a Slack message and a screenshot, and a human has to read both before anything happens.",
+      "built": "An event-driven agent on AWS — API Gateway to Lambda to SQS to Lex V2 — with DynamoDB session state per issue, a Claude fallback on Bedrock, OCR over pasted screenshots, and automatic Jira ticket creation with capacity-aware assignment.",
+      "result": "Four OCR engines benchmarked against hand-written ground truth; the chosen one reads a support screenshot at 100% character accuracy in 823 ms. Eight test suites cover the locking and dispatch paths."
+    },
+    "overview": "IVY is an IT-support agent that lives where the support requests already are: a Slack DM. A message goes through API Gateway to a handler Lambda, which deduplicates it in DynamoDB and drops it on SQS; a worker pulls it, asks AWS Lex V2 what the person wants, and keeps the whole conversation as one session keyed to the Slack thread. When Lex has no useful answer — a fallback intent, an empty reply, a question nobody wrote an intent for — the worker calls Claude on Bedrock instead, behind a guardrail, with a system prompt that forbids it from claiming a ticket was created. If the request needs a human, IVY files the Jira ticket itself and hands it to whichever agent is on shift with capacity to spare.",
+    "highlights": [
+      "Nine Lambdas behind one Slack app: event handler, SQS worker, intent router, Jira ticket creator, Claude fallback, image recognition, log summariser, live-agent dispatcher and a timeout handler driven by EventBridge Scheduler.",
+      "Session state per issue rather than per user — the Slack root message timestamp is part of the session key, so two problems reported the same afternoon do not blur into one conversation.",
+      "Claude Haiku on Bedrock as the fallback, at temperature 0.2 behind a Bedrock guardrail, with a system prompt that bans it from asserting anything about ticket state.",
+      "Screenshots resolved in order: Rekognition text and labels first, then Lex on the extracted text, then a Bedrock knowledge base, then a Gemini fallback.",
+      "A PaddleOCR Lambda shipped as a container image, because paddlepaddle and opencv are several times the 250 MB zip limit, with the model weights baked in at build time — Lambda gives you a read-only filesystem and an empty /tmp on every cold start.",
+      "Duplicate work is prevented with DynamoDB conditional writes, not with hope: a retried SQS record or a twice-clicked button cannot open two Jira tickets or hand the same issue to two people.",
+      "The live-agent dispatcher reads shifts from DynamoDB or, optionally, from Jira Service Management on-call schedules; if nobody has room the ticket queues, and a terminal Jira status releases the slot and promotes the oldest queued ticket exactly once."
+    ],
+    "challenge": "The hard part was not the model, it was making a distributed system tell the truth about itself. SQS redelivers. Slack retries. A person clicks \"raise a ticket\" twice because the first click did not visibly do anything. Every one of those produces a second, identical request, and the naive version of this agent files two Jira tickets and pages two engineers. The fix is that nothing which touches the outside world is allowed to happen on optimism: the ticket write, the live-agent handoff and the capacity reservation each go through a DynamoDB conditional update that fails loudly if the work was already claimed. The second problem was the screenshots. Most of the incoming tickets are a picture of an error dialog, and picking an OCR engine by reputation is how you end up with a 12-second cold start in a Lambda. So I benchmarked four of them — EasyOCR, PaddleOCR, Textract and Mistral OCR — against transcriptions I wrote by hand, and reported latency and model-load cost next to accuracy, because on Lambda the load time is the thing that hurts.",
+    "created": "2026-07-16",
+    "updated": "2026-08-10",
+    "tags": [
+      [
+        "AWS Lex V2",
+        "https://docs.aws.amazon.com/lexv2/latest/dg/what-is.html"
+      ],
+      [
+        "Amazon Bedrock",
+        "https://docs.aws.amazon.com/bedrock/latest/userguide/what-is-bedrock.html"
+      ],
+      [
+        "DynamoDB conditional writes",
+        "https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/WorkingWithItems.html#WorkingWithItems.ConditionalUpdate"
+      ],
+      [
+        "Slack Events API",
+        "https://api.slack.com/apis/events-api"
+      ]
+    ],
+    "notes": {
+      "overview": [
+        [
+          "lives where the support requests already are",
+          "no new tool for anyone to remember to open"
+        ],
+        [
+          "forbids it from claiming a ticket was created",
+          "the one thing a support bot must never get wrong"
+        ]
+      ],
+      "challenge": [
+        [
+          "because the first click did not visibly do anything",
+          "always. every time. design for it"
+        ],
+        [
+          "the load time is the thing that hurts",
+          "a cold Lambda pays it on every scale-out, not once"
+        ]
+      ]
     },
     "fragments": [
-      "the halo",
-      "phase contrast",
-      "optical path",
-      "bright collar",
-      "difference of Gaussians",
-      "CLAHE",
-      "residual",
-      "U-Net",
-      "fp16",
-      "cleaned = input − residual",
-      "segmentation",
-      "boundary",
-      "PSNR",
-      "SSIM",
-      "mean squared error",
-      "blur scores well",
-      "cv_only",
-      "hybrid",
-      "Gradio",
-      "runs on a clone",
-      "synthetic ground truth",
-      "microscopy",
-      "artifact",
-      "invisible to the eye",
-      "fatal downstream",
-      "OpenCV",
-      "PyTorch",
-      "the mistake, not the picture",
-      "parity",
-      "ported to the browser"
+      "Slack",
+      "Lex V2",
+      "Bedrock",
+      "Claude",
+      "Lambda",
+      "SQS",
+      "DynamoDB",
+      "Jira",
+      "intent",
+      "slot",
+      "session",
+      "fallback",
+      "guardrail",
+      "OCR",
+      "PaddleOCR",
+      "Textract",
+      "Rekognition",
+      "conditional write",
+      "idempotent",
+      "on-call",
+      "capacity",
+      "queue",
+      "cold start",
+      "container image",
+      "ap-southeast-2",
+      "thread_ts",
+      "event_id",
+      "dedupe",
+      "batchItemFailures",
+      "EventBridge",
+      "escalation",
+      "ground truth"
     ],
-    "metric": "PSNR 12.87 → 20.62 dB",
-    "glance": {
-      "problem": "Phase-contrast microscopy puts a bright halo around every cell — an artifact of the optics, not a feature of the sample — and it defeats the thresholding that segmentation depends on.",
-      "built": "A hybrid pipeline: classical difference-of-Gaussians and CLAHE, plus a residual U-Net that predicts the halo rather than the cell, shipped with fp16 weights so inference needs no setup, and a browser port of the classical half.",
-      "result": "Mean PSNR over six samples rises from 12.87 dB raw to 20.62 dB hybrid, SSIM from 0.206 to 0.360. The classical-only stage scores worse on PSNR than the raw input, which is the metric behaving correctly rather than the stage failing."
-    }
+    "deepDive": [
+      {
+        "kind": "prose",
+        "heading": "Why an intent model and a language model, instead of one or the other",
+        "body": "A pure LLM support bot is easy to demo and hard to trust. It will happily tell someone their VPN ticket has been raised when nothing has been written anywhere.\n\nA pure intent model is the opposite: every route is explicit and auditable, and it falls over the moment somebody phrases a request in a way nobody anticipated.\n\nSo IVY runs both. Lex V2 owns the twenty-odd intents that map to a real action — request AWS access, get into Opsgenie, raise a ticket — and those paths are deterministic. Claude picks up everything else, with a system prompt that lets it ask one clarifying question and explicitly forbids it from claiming a ticket exists. The model is allowed to be helpful; it is not allowed to be authoritative about state."
+      },
+      {
+        "kind": "diagram",
+        "shape": "flow",
+        "heading": "One Slack message, end to end",
+        "body": "Nothing here is synchronous with the person typing. Slack wants an acknowledgement in three seconds, and Lex, Bedrock and Jira between them take longer than that, so the handler does the minimum and hands off.",
+        "steps": [
+          {
+            "t": "Slack DM",
+            "d": "Events API, through API Gateway"
+          },
+          {
+            "t": "Handler",
+            "d": "verify, dedupe by event_id in DynamoDB, enqueue"
+          },
+          {
+            "t": "SQS",
+            "d": "the buffer that makes the rest allowed to be slow"
+          },
+          {
+            "t": "Worker",
+            "d": "Lex V2 for intent; Claude on Bedrock when Lex has nothing"
+          },
+          {
+            "t": "Action",
+            "d": "reply, or Jira ticket, or handoff to a human"
+          }
+        ],
+        "caption": "The dedupe step is not optional: Slack retries a delivery it thinks failed, and without event_id in DynamoDB a slow reply becomes two tickets."
+      },
+      {
+        "kind": "diagram",
+        "shape": "bars",
+        "heading": "Four OCR engines, one hand-written ground truth",
+        "body": "Most support tickets arrive as a screenshot of an error. Reading them automatically means choosing an engine, and reputation is not a measurement — so all four ran over the same five support screenshots and were scored against transcriptions I typed out myself.",
+        "rows": [
+          {
+            "k": "Mistral OCR",
+            "v": 100,
+            "label": "100.0%",
+            "best": true
+          },
+          {
+            "k": "Textract",
+            "v": 99.9,
+            "label": "99.9%"
+          },
+          {
+            "k": "PaddleOCR",
+            "v": 98.9,
+            "label": "98.9%"
+          },
+          {
+            "k": "EasyOCR",
+            "v": 97.4,
+            "label": "97.4%"
+          }
+        ],
+        "max": 100,
+        "caption": "Character accuracy, mean over five screenshots, from ocr/results/benchmark_results.md in the repository. Accuracy was not the deciding number: per-image latency ran 823 ms (Mistral), 1,551 ms (Textract), 1,075 ms (PaddleOCR) and 2,184 ms (EasyOCR), and the two local engines also pay a 10–12 second model load on every cold start."
+      },
+      {
+        "kind": "prose",
+        "heading": "The expensive lesson was packaging, not accuracy",
+        "body": "PaddleOCR scores well and costs nothing per call, which made it the obvious choice until I tried to deploy it. `paddlepaddle` and `opencv` together are several times Lambda's 250 MB zip limit, so it had to ship as a container image instead.\n\nThat solved the size problem and exposed the next one. Lambda's filesystem is read-only apart from `/tmp`, and `/tmp` is empty on every cold start — so an engine that downloads its own model weights on first use downloads them again, and again, and again. The weights get baked into the image at build time by running the constructor once during `docker build`.\n\nThe cloud engines have none of this problem and a per-call bill instead. That is the actual trade, and it is not visible in an accuracy table."
+      },
+      {
+        "kind": "code",
+        "lang": "python",
+        "code": "CLAUDE_SYSTEM_PROMPT = os.environ.get(\n    \"CLAUDE_SYSTEM_PROMPT\",\n    (\n        \"You are IVY, a concise IT and support assistant. \"\n        \"Use only the current user request and session context. \"\n        \"If the request is ambiguous, ask one clear clarifying question. \"\n        \"Do not claim that a ticket was created.\"\n    )\n)",
+        "caption": "The fallback's system prompt, from lambda_o3_claude_fallback.py. The last line is the whole safety argument: the model may answer, but only the deterministic path is allowed to say anything happened."
+      },
+      {
+        "kind": "prose",
+        "heading": "Assigning a ticket is a concurrency problem",
+        "body": "When IVY decides a human is needed, something has to choose which human. The naive version reads the agent table, picks whoever has the fewest open issues, and writes the assignment. Two requests arriving at the same moment both read the same \"fewest\", and both assign to the same person.\n\nSo the reservation is a conditional update: increment `active_count` only if it is still below `max_capacity` and the row still looks the way it did when we read it. If the condition fails, the dispatcher re-reads and tries the next agent. If nobody has room, the ticket stays unassigned with `assignment_status=QUEUED` rather than being forced onto someone.\n\nReleasing is the same problem backwards. A Jira status change fires a callback, and that callback can arrive more than once — so the release is also conditional, and it promotes exactly one queued ticket."
+      },
+      {
+        "kind": "prose",
+        "heading": "What I'd do differently",
+        "body": "I would put an evaluation harness on the conversation itself, not only on the OCR. I measured the piece that was easy to measure — character accuracy against a transcription I wrote — and left the part that actually decides whether IVY is useful, which is whether Lex routed a request to the right intent, to spot checks in Slack. A fixed set of a hundred real requests with the intent each one should produce would have caught routing regressions that I only found by noticing them.\n\nI would also separate the sessions table from the locks. Right now the session record carries conversation state and the conditional-write flags that prevent duplicate tickets, which means every contended write contends with a write that had no reason to be contended.\n\nAnd I would stop treating the Gemini and Claude fallbacks as interchangeable last resorts. They were added at different times for different failures and the ordering between them is historical rather than reasoned."
+      }
+    ],
+    "thumb": false,
+    "archived": true
   },
   {
     "id": "anttodo",
@@ -1326,10 +1636,6 @@ const projects = [
         "body": "I would give it something to be measured against. The visualiser shows a colony converging, and converging is not the same as being right — ACO is a heuristic, and on seven stops the optimal route can be found exactly by brute force in microseconds. Drawing the exact optimum on the same chart would turn \"the line flattens\" into \"the line flattens 4% above the best possible answer\", which is a far more interesting thing to watch.\n\nI would also be more careful about what the demo claims. It is a genuinely nice piece of teaching about ant colony optimisation, and it is a fairly poor task scheduler, because the cost matrix between two tasks is invented. Either I make the costs real — actual context-switch cost, actual travel between locations — or I stop framing it as a to-do app and present it as what it is, which is an interactive explanation of a metaheuristic.\n\nAnd the parameter panel exposes every knob without saying which ones matter. Alpha and rho change the answer; colony size mostly changes how long you wait."
       }
     ],
-    "instrument": {
-      "kind": "colony",
-      "label": "A colony on a seven-stop route, pheromone thickening where the ants agree. Drag right to cut evaporation: the trails stop forgetting, the first decent answer locks in, and the colony stops improving."
-    },
     "fragments": [
       "ant colony optimisation",
       "pheromone",
@@ -1366,257 +1672,17 @@ const projects = [
       "problem": "A to-do list is drawn as a list, but a day is really a route: the cost of doing something depends on what you did before it.",
       "built": "A browser visualiser that reframes a day as a travelling-salesman problem and runs ant colony optimisation over it live, with two formulations, dependency constraints, every parameter exposed, and a convergence chart.",
       "result": "Runs entirely in the tab — no backend, no build step. The honest finding is the one the parameters show: push evaporation down and the colony stops improving."
-    }
-  },
-  {
-    "id": "habita",
-    "context": "Solo project",
-    "title": "Habita",
-    "tagline": "Eisenhower matrix that writes to your real calendar.",
-    "year": "2026",
-    "role": "Solo project",
-    "summary": "An Android task manager built on the Eisenhower Matrix. Sort tasks into four urgency-importance quadrants, then drag them onto a day timeline that writes real events into the phone’s own calendar — so time you set aside shows up wherever you already look, not only inside the app.",
-    "tech": [
-      "JavaScript (ES6)",
-      "CSS Grid",
-      "SVG",
-      "Capacitor",
-      "Android Calendar API",
-      "localStorage"
-    ],
-    "repo": "https://github.com/akshayaa-403/Habita",
-    "overview": "A flat to-do list treats a tax deadline and a hobby idea as equals. Habita sorts every task into one of the Eisenhower Matrix quadrants — urgent and important, important but not urgent, urgent but not important, neither — so priority is a property of where a task sits rather than something you have to hold in your head. Each quadrant carries an SVG progress ring that fills as you complete work inside it.",
-    "highlights": [
-      "Four colour-coded quadrants — Focus, Backburner, Fit In, Goals — each with a live SVG progress ring.",
-      "Day timeline: a 24-hour grid with 15-minute snapping; drag a waiting task onto an hour to block out time for it.",
-      "Calendar sync both ways — every scheduled task becomes a real tinted event, and the day view reads existing events back so you can see what a slot would collide with.",
-      "Tap to auto-place: drops a task into the earliest slot that clears both your other blocks and your existing calendar.",
-      "Drag to move a block, pull its bottom edge to change how long it takes; the calendar event follows.",
-      "Haptics through native Capacitor on Android, falling back to the Web Vibration API in browsers.",
-      "State persisted to localStorage with shape validation and migration, so an old save can never crash a newer build."
-    ],
-    "challenge": "A to-do app that only knows about itself is another place to check. The hard part was making Habita write into the calendar the user already lives in — and read it back, so scheduling a task can account for the meeting already sitting in that slot. That meant a real Android calendar integration through Capacitor rather than a self-contained store, and it changes what the app is: not a list that tracks intentions, but a tool that commits them to time. The browser build degrades honestly, labelling itself “device calendar unavailable” instead of pretending to sync.",
-    "created": "2026-04-19",
-    "updated": "2026-08-25",
-    "tags": [
-      [
-        "Eisenhower Matrix",
-        "https://en.wikipedia.org/wiki/Time_management"
-      ],
-      [
-        "Capacitor",
-        "https://capacitorjs.com/docs"
-      ],
-      [
-        "Calendar Provider",
-        "https://developer.android.com/guide/topics/providers/calendar-provider"
-      ]
-    ],
-    "notes": {
-      "overview": [
-        [
-          "one of the Eisenhower Matrix quadrants",
-          "the matrix does the deciding so you don't redo it every morning"
-        ],
-        [
-          "an SVG progress ring",
-          "no library. it's one stroke-dasharray"
-        ]
-      ],
-      "challenge": [
-        [
-          "making Habita write into the calendar the user already lives in",
-          "the whole reason this isn't another to-do app"
-        ],
-        [
-          "degrades honestly",
-          "it says what it can't do rather than faking a sync"
-        ]
-      ]
     },
-    "deepDive": [
+    "archived": true,
+    "figures": [
       {
-        "kind": "prose",
-        "heading": "Priority as a place, not a number",
-        "body": "Every task app I've used stores priority as a field: a number, a flag, a colour from a dropdown. And every one of them ends up with everything marked high.\n\nHabita stores priority as a position. A task lives in one of four quadrants, and the only way to change what it means is to physically move it.\n\nThe consequence is that you can't mark everything important, because the grid has two axes and a thing that's urgent but not important has somewhere specific to go. You make the decision once, when you place it, and the layout is what remembers."
-      },
-      {
-        "kind": "diagram",
-        "shape": "quadrant",
-        "heading": "The grid a task lands in",
-        "body": "Priority is a position here, not a field. A task lives in one of four quadrants and the only way to change what it means is to move it — which is why you cannot mark everything important.",
-        "x": "Urgency →",
-        "y": "Importance →",
-        "cells": [
-          {
-            "t": "Goals",
-            "d": "Important, not urgent. Decides what next year looks like; loses every argument with Focus."
-          },
-          {
-            "t": "Focus",
-            "d": "Urgent and important. Two items is a day; six is a planning failure that already happened."
-          },
-          {
-            "t": "Backburner",
-            "d": "Neither. Naming it turns guilt into a decision."
-          },
-          {
-            "t": "Fit In",
-            "d": "Urgent, not important. Real deadlines on work that moves nothing. Batch it or do it badly on purpose."
-          }
-        ],
-        "caption": "The four boards in the app, in the positions they occupy. Each carries an SVG progress ring that counts down as its tasks are checked off."
-      },
-      {
-        "kind": "interactive",
-        "widget": "steps",
-        "heading": "Put a Tuesday through the grid",
-        "body": "Here is an unsorted day. Step through the four quadrants and watch which tasks each one claims. The point is not that the sorting is clever — it is that once a task is in a quadrant there is nowhere left to hide it.",
-        "playLabel": "Play all four",
-        "stopLabel": "Stop",
-        "items": [
-          "Renew the passport, appointment closes Friday",
-          "Draft the quarterly plan",
-          "Someone else's status meeting",
-          "Learn enough Rust to read the codebase",
-          "Fix the failing test blocking the release",
-          "Answer the group chat",
-          "Book a dentist appointment, eventually",
-          "Scroll the news"
-        ],
-        "frames": [
-          {
-            "label": "Focus",
-            "picks": [
-              0,
-              4
-            ],
-            "note": "Urgent and important. Two things, and they are the only two things. A day with six items in this quadrant is not a busy day, it is a planning failure that already happened."
-          },
-          {
-            "label": "Goals",
-            "picks": [
-              1,
-              3,
-              6
-            ],
-            "note": "Important, not urgent. This is the quadrant that decides what next year looks like, and the one that quietly loses every argument with the one above it."
-          },
-          {
-            "label": "Fit In",
-            "picks": [
-              2,
-              5
-            ],
-            "note": "Urgent, not important. Real deadlines attached to work that does not move anything. These are the tasks worth batching, delegating or doing badly on purpose."
-          },
-          {
-            "label": "Backburner",
-            "picks": [
-              7
-            ],
-            "note": "Neither. Naming it is the useful part: it stops being something you feel bad about not doing and becomes something you decided not to do."
-          }
-        ],
-        "caption": "An illustrative Tuesday. In the app the quadrant is set by dragging, and each one carries an SVG progress ring that counts down as tasks are checked off."
-      },
-      {
-        "kind": "table",
-        "caption": "The four quadrants, and the name each one gets in the app.",
-        "head": [
-          "",
-          "Urgent",
-          "Not urgent"
-        ],
-        "rows": [
-          [
-            "Important",
-            "Focus — do it now",
-            "Goals — schedule it"
-          ],
-          [
-            "Not important",
-            "Fit In — squeeze it in",
-            "Backburner — let it wait"
-          ]
-        ]
-      },
-      {
-        "kind": "figure",
-        "src": "public/assets/projects/habita-views.webp",
-        "alt": "Two phone screens side by side: the four-quadrant matrix with progress rings, and the day timeline with hour rows and a current-time marker",
-        "caption": "Two views, one model. The matrix decides what matters; the day view decides when it happens. The red line is now."
-      },
-      {
-        "kind": "prose",
-        "heading": "Progress rings without a chart library",
-        "body": "Each quadrant shows a ring that fills as its tasks get done. It's one SVG circle with `stroke-dasharray` set to the circumference and `stroke-dashoffset` driven by the completion ratio.\n\nThat's the whole implementation. No dependency, no canvas, and it scales cleanly because it's a vector. I mention it because “add a chart library” would have been the default move and it would have cost more than it returned."
-      },
-      {
-        "kind": "formula",
-        "tex": "C = 2\\pi r \\qquad \\text{offset} = C \\times \\left(1 - \\frac{\\text{done}}{\\text{total}}\\right)",
-        "caption": "Circumference sets the dash length; the offset is driven by completion ratio. Animating stroke-dashoffset gives a smooth fill for free."
-      },
-      {
-        "kind": "prose",
-        "heading": "The feature that made it worth building",
-        "body": "A planner that only knows about itself is a second place to check. A second place to check is a place you stop checking.\n\nSo dragging a task onto the day timeline writes a real event into the phone's own calendar, through a local Capacitor plugin over Android's CalendarContract. No third-party service, no sync account. Move the block and the event moves.\n\nThe details that took the longest are the ones nobody sees. Colours go through the account's own palette because several providers ignore a raw colour value. Events Habita created carry a marker in their description so the timeline can tell its own blocks from yours. Updates are partial, so a description you edited elsewhere survives. And if you delete the event in your calendar app, the block notices it's gone and recreates it rather than failing silently.\n\nThe day view also reads what's already in your calendar and draws it in its own lane, so you can see what a slot would collide with before you take it."
-      },
-      {
-        "kind": "prose",
-        "heading": "Making a web app stop feeling like one",
-        "body": "It's ES6 modules, CSS Grid and SVG, wrapped with Capacitor. No build step, no bundler, no framework.\n\nWhat makes it feel native isn't the wrapper, it's the small things: haptics on completion, 15-minute snapping so drags land somewhere sensible, keyboard nudging on a focused block, and a web Vibration fallback for when the Capacitor plugin isn't there."
-      },
-      {
-        "kind": "prose",
-        "heading": "Never let old data break a new build",
-        "body": "Everything lives in localStorage, which means every install has data from whatever version the user last ran.\n\nSo stored objects get validated and migrated on load. A stale or partial object degrades into a correct one rather than throwing. It is unglamorous and it's the difference between shipping an update and shipping an update that wipes someone's week."
-      },
-      {
-        "kind": "prose",
-        "heading": "What I'd do differently",
-        "body": "I would ship an APK. There is a working Android app here and no way for anyone to run it without cloning the repository and building it themselves, which means the only people who will ever see it are people who already believe me. A signed release build attached to a GitHub release costs almost nothing and is the difference between a claim and a demonstration.\n\nI would also make the calendar write two-way. Right now Habita writes events out and never reads them back, so a block you move in Google Calendar and the block Habita thinks exists drift apart silently. Reading the calendar back is more work than writing to it, and it is the difference between a feature and a sync.\n\nAnd the quadrant model needs a way out. The Eisenhower matrix is a good forcing function and a bad description of a real week — most tasks are not clearly urgent or clearly not — so the app should let a task sit on a boundary instead of pretending the decision was clean."
+        "kind": "colony",
+        "side": "r",
+        "at": 4,
+        "title": "Pheromone, and forgetting",
+        "note": "Drag right to cut evaporation: the trails stop forgetting, the first decent answer locks in, and the colony stops improving."
       }
-    ],
-    "instrument": {
-      "kind": "grid",
-      "label": "A day of tasks against the two axes. Drag the crosshair: everything re-sorts against wherever you just put the line, which is what deciding actually is."
-    },
-    "fragments": [
-      "Eisenhower",
-      "urgent",
-      "important",
-      "Focus",
-      "Backburner",
-      "Fit In",
-      "Goals",
-      "position, not a field",
-      "quadrant",
-      "day timeline",
-      "15-minute snapping",
-      "CalendarContract",
-      "Capacitor",
-      "READ_CALENDAR",
-      "Instances table",
-      "recurring events",
-      "EVENT_COLOR_KEY",
-      "partial update",
-      "progress ring",
-      "SVG",
-      "localStorage",
-      "schema migration",
-      "the calendar you already look at",
-      "haptics",
-      "auto-place",
-      "collision",
-      "Android",
-      "no third-party sync"
-    ],
-    "glance": {
-      "problem": "Every task app invents its own idea of priority, and the time you set aside inside one is invisible everywhere you actually look.",
-      "built": "An Android task manager on the Eisenhower matrix — four urgency/importance quadrants — with a drag-to-schedule day timeline that writes real events into the phone's own calendar.",
-      "result": "Working app, no published build. What it demonstrates is the calendar write: time blocked in Habita shows up in the calendar the rest of the phone already reads."
-    }
+    ]
   },
   {
     "id": "wikipedia-summarizer",
@@ -1900,10 +1966,6 @@ const projects = [
         "body": "Three articles is too few to say anything about which algorithm wins, and the case study is careful to say the winner changes with the article — but with a sample of three, \"changes with the article\" and \"is noise\" are indistinguishable. The benchmark should run over a few hundred articles sampled across lengths and subject areas, and report the distribution rather than a table of three.\n\nI would also add an abstractive baseline. Everything here is extractive, which caps the score at whatever the best available sentences happen to be, and part of the reason the human ceiling sits so far above all four methods is that a person writing a lead does not have to use sentences from the body. Running one small abstractive model over the same articles would say how much of the remaining gap is a limitation of extraction rather than of these four algorithms.\n\nAnd the browser's ROUGE is a Porter approximation of the Python one, which I flag in the caption. Approximately-right scoring in the place people actually see the numbers is the wrong way round; the in-browser scorer should match the benchmark, even if that costs a few milliseconds."
       }
     ],
-    "instrument": {
-      "kind": "pick",
-      "label": "One article as a column of sentences, four selectors taking turns. Drag down the panel to hold one. Watch how little they agree — and that only one of them ever looks back at what it already took."
-    },
     "fragments": [
       "extractive",
       "TextRank",
@@ -1941,7 +2003,17 @@ const projects = [
       "problem": "Summarisation demos show one algorithm's output and leave you to guess whether it is any good.",
       "built": "A static, dependency-free browser app that runs four extractive summarisers over any Wikipedia article at once and scores each with ROUGE against the article's own lead section, trimmed to the same word budget.",
       "result": "MMR reaches ROUGE-1 0.400 on Penguin against a human ceiling of 0.709 — 56% of it. The winner changes with the article, which is the finding. Around 60 ms for a 4,300-word article, entirely in the tab."
-    }
+    },
+    "archived": true,
+    "figures": [
+      {
+        "kind": "pick",
+        "side": "r",
+        "at": 5,
+        "title": "Four selectors, one article",
+        "note": "Watch how little they agree — and that only one of them ever looks back at what it already took."
+      }
+    ]
   }
 ];
 

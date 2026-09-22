@@ -42,7 +42,7 @@
     window.dispatchEvent(new CustomEvent('themechange', { detail: { theme: theme } }));
   }
 
-  // Exposed so js/hero-hover.js can drive it from the lamp.
+  // Exposed so anything else on the page can drive the theme.
   window.portfolioTheme = {
     get: current,
     set: function (t) { apply(t, true); },

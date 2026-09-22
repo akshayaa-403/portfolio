@@ -1,5 +1,5 @@
-/* Homepage behaviour: card rendering, scroll reveals, active-nav tracking,
-   mobile menu, and the draggable hero collage (notebook mode).
+/* Homepage behaviour: experience, the project list, the reading shelf, scroll
+   reveals and active-nav tracking.
    No dependencies. All motion is gated on prefers-reduced-motion. */
 (function () {
   'use strict';
@@ -26,42 +26,82 @@
     return a === b ? a : a + '–' + b;
   }
 
+  /* The two groups the shown work falls into, in render order. A project's
+     `group` in js/project-data.js picks one; anything with `archived: true`
+     is in neither and drops to the archive list at the foot of the section. */
+  var GROUPS = [
+    { key: 'research', title: 'Research',
+      note: 'Systems that measure something and report the number, including when the number is bad.' },
+    { key: 'products', title: 'Products',
+      note: 'Things built for someone else to open — a shop and a phone app.' }
+  ];
+
+  function row(p, n, lead) {
+    var focus = (p.tech || []).slice(0, 4).map(esc)
+      .join(' <span aria-hidden="true">/</span> ');
+    var meta = [p.context || p.role, span(p)].filter(Boolean).map(esc).join(' · ');
+
+    /* Link to the generated share page rather than project.html?id=. Both
+       land in the same place — work/<id>.html redirects — but the generated
+       one is a real document with its own <title> and og: tags, so a crawler,
+       a chat unfurl or a reader with JS off gets the project's name instead
+       of "Project — Akshayaa Kashyap". */
+    return '<a class="rm reveal' + (lead ? ' rm--lead' : '') +
+        '" href="work/' + encodeURIComponent(p.id) + '.html"' +
+        ' data-cue="Read the case study">' +
+        '<span class="rm__num" aria-hidden="true">' + (n < 10 ? '0' : '') + n + '</span>' +
+        '<span class="rm__text">' +
+          '<span class="rm__title">' + esc(p.title) + '</span>' +
+          (meta ? '<span class="rm__meta">' + meta + '</span>' : '') +
+          '<span class="rm__desc">' + esc(p.tagline) + '</span>' +
+          // One measured number per row, where there is one. Some projects
+          // have nothing honest to put here, and the empty slot is the
+          // hierarchy: a row carrying a figure is a row with a result.
+          (p.metric ? '<span class="rm__metric">' + esc(p.metric) + '</span>' : '') +
+          (focus ? '<span class="rm__focus"><span class="rm__focus-label">Focus</span>' + focus + '</span>' : '') +
+        '</span>' +
+      '</a>';
+  }
+
   function renderCards() {
     if (typeof projects === 'undefined') return;
 
     var host = document.getElementById('recent-cards');
     if (!host) return;
 
-    /* Replace, not prepend: index.html now ships a real static copy of this
-       list (written by tools/build-share-pages.js) so a crawler, a proxy or a
-       reader with JS off sees the work rather than an empty column. When JS is
-       running, this is the enhanced version of the same thing. */
-    host.innerHTML = projects.map(function (p, i) {
-      var focus = (p.tech || []).slice(0, 4).map(esc)
-        .join(' <span aria-hidden="true">/</span> ');
-      var meta = [p.context || p.role, span(p)].filter(Boolean).map(esc).join(' · ');
+    var shown = projects.filter(function (p) { return !p.archived; });
+    var gone = projects.filter(function (p) { return p.archived; });
+    var n = 0;
 
-      /* Link to the generated share page rather than project.html?id=. Both
-         land in the same place — work/<id>.html redirects — but the generated
-         one is a real document with its own <title> and og: tags, so a crawler,
-         a chat unfurl or a reader with JS off gets the project's name instead
-         of "Project — Akshayaa Kashyap". */
-      return '<a class="rm reveal' + (i === 0 ? ' rm--lead' : '') +
-          '" href="work/' + encodeURIComponent(p.id) + '.html"' +
-          ' data-cue="Read the case study">' +
-          '<span class="rm__num" aria-hidden="true">' + (i < 9 ? '0' : '') + (i + 1) + '</span>' +
-          '<span class="rm__text">' +
-            '<span class="rm__title">' + esc(p.title) + '</span>' +
-            (meta ? '<span class="rm__meta">' + meta + '</span>' : '') +
-            '<span class="rm__desc">' + esc(p.tagline) + '</span>' +
-            // One measured number per row, where there is one. Three of the
-            // seven have nothing honest to put here, and an empty slot is the
-            // hierarchy: the rows that carry a figure are the strong ones.
-            (p.metric ? '<span class="rm__metric">' + esc(p.metric) + '</span>' : '') +
-            (focus ? '<span class="rm__focus"><span class="rm__focus-label">Focus</span>' + focus + '</span>' : '') +
-          '</span>' +
-        '</a>';
+    var html = GROUPS.map(function (g) {
+      var rows = shown.filter(function (p) { return p.group === g.key; });
+      if (!rows.length) return '';
+      return '<div class="rm-group reveal">' +
+          '<h3 class="rm-group__title">' + esc(g.title) + '</h3>' +
+          '<p class="rm-group__note">' + esc(g.note) + '</p>' +
+        '</div>' +
+        rows.map(function (p) { n++; return row(p, n, n === 1); }).join('');
     }).join('');
+
+    /* The archive. These case studies are still written, still live and still
+       linked — they are simply not what the work is now, and a list that
+       shows everything ever built weights the old the same as the current.
+       Kept as one quiet line rather than a second list. */
+    if (gone.length) {
+      html += '<p class="rm-archive reveal">' +
+        '<span class="rm-archive__label">Also built</span> ' +
+        gone.map(function (p) {
+          return '<a href="work/' + encodeURIComponent(p.id) + '.html">' +
+            esc(p.title) + '</a>';
+        }).join('<span aria-hidden="true"> · </span>') +
+      '</p>';
+    }
+
+    /* Replace, not prepend: index.html ships a real static copy of this list
+       (written by tools/build-share-pages.js) so a crawler, a proxy or a
+       reader with JS off sees the work rather than an empty column. When JS
+       is running, this is the enhanced version of the same thing. */
+    host.innerHTML = html;
   }
 
   /* ---------- experience ----------
@@ -120,17 +160,14 @@
      measures rather than eyeballs: a mid-yellow and a mid-navy have similar
      HSL lightness and opposite contrast. */
   function spineInk(hex) {
-    var m = /^#?([0-9a-f]{6})$/i.exec(String(hex || ''));
-    if (!m) return '#111';
-    var n = parseInt(m[1], 16);
-    var c = [(n >> 16) & 255, (n >> 8) & 255, n & 255].map(function (v) {
-      v /= 255;
-      return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4);
-    });
-    var L = 0.2126 * c[0] + 0.7152 * c[1] + 0.0722 * c[2];
-    // Contrast against white is (1.05)/(L+0.05); against black (L+0.05)/0.05.
-    // Whichever is larger wins, so every spine clears 4.5:1 by construction.
-    return (1.05 / (L + 0.05)) >= ((L + 0.05) / 0.05) ? '#fbfcfd' : '#10161d';
+    // The same measurement js/palette.js already does, so it is borrowed
+    // rather than written again: whichever of white or near-black contrasts
+    // harder against the spine wins, so every spine clears 4.5:1 by
+    // construction.
+    var P = window.portfolioPalette, c = P && P.toHsl(hex);
+    if (!c) return '#10161d';
+    var L = P.lum(P.hslRgb(c.h, c.s, c.l));
+    return P.ratio(L, 1) >= P.ratio(L, 0) ? '#fbfcfd' : '#10161d';
   }
 
   function renderReadings() {
@@ -306,161 +343,6 @@
     update();
   }
 
-  /* ---------- draggable collage ----------
-     Pointer-based dragging, enabled only on wide screens where the cards are
-     absolutely positioned. Cards stay keyboard-focusable and can be nudged
-     with arrow keys, and the whole thing is skipped under reduced motion. */
-  function initCollage() {
-    var stage = document.querySelector('[data-collage]');
-    if (!stage) return;
-
-    var cards = stage.querySelectorAll('.obj');
-    var wide = window.matchMedia('(min-width: 900px)');
-    var STEP = 12;
-    var Z_BASE = 10, Z_MAX = 400;
-    var z = Z_BASE;
-
-    /* Bring a card to the front. z was previously incremented without bound,
-       so a long session could climb past the header (100) and the skip link
-       (200). Renumber from the base once it gets near the ceiling. */
-    function toFront(card) {
-      if (z >= Z_MAX) {
-        var order = Array.prototype.slice.call(cards).sort(function (a, b) {
-          return (parseInt(a.style.zIndex, 10) || 0) -
-                 (parseInt(b.style.zIndex, 10) || 0);
-        });
-        z = Z_BASE;
-        for (var i = 0; i < order.length; i++) {
-          if (order[i].style.zIndex) order[i].style.zIndex = ++z;
-        }
-      }
-      card.style.zIndex = ++z;
-    }
-
-    // Only notebook keeps the desk-object arrangement, so only notebook is
-    // draggable. graph replaces the stage with the latent field and hides
-    // every card; mosaic is deliberately static. Enabling drag in either would
-    // put tabindex on a display:none card.
-    function draggableMode() {
-      return document.documentElement.getAttribute('data-mode') === 'notebook';
-    }
-
-    function enable(on) {
-      for (var i = 0; i < cards.length; i++) {
-        cards[i].classList.toggle('is-draggable', on);
-        if (on) {
-          cards[i].setAttribute('aria-describedby', 'collage-help');
-          // The help text promises an arrow-key path, so the card has to be
-          // reachable by keyboard for that promise to hold.
-          cards[i].setAttribute('tabindex', '0');
-        } else {
-          cards[i].removeAttribute('aria-describedby');
-          cards[i].removeAttribute('tabindex');
-          delete cards[i].dataset.rot;
-          cards[i].style.transform = '';
-          cards[i].style.zIndex = '';
-          delete cards[i].dataset.dx;
-          delete cards[i].dataset.dy;
-        }
-      }
-    }
-
-    if (reduceMotion) { enable(false); return; }
-
-    function offsets(card) {
-      return {
-        x: parseFloat(card.dataset.dx || '0'),
-        y: parseFloat(card.dataset.dy || '0')
-      };
-    }
-
-    /* --r is authored per card and never changes, but reading it through
-       getComputedStyle forces a style recalc — and this ran on every
-       pointermove. Resolve it once per card and cache it. */
-    function authoredRotation(card) {
-      if (card.dataset.rot === undefined) {
-        card.dataset.rot =
-          (getComputedStyle(card).getPropertyValue('--r') || '0deg').trim();
-      }
-      return card.dataset.rot;
-    }
-
-    function place(card, dx, dy) {
-      card.dataset.dx = dx;
-      card.dataset.dy = dy;
-      card.style.transform =
-        'translate(' + dx + 'px,' + dy + 'px) rotate(' + authoredRotation(card) + ')';
-    }
-
-    for (var i = 0; i < cards.length; i++) {
-      (function (card) {
-        var startX = 0, startY = 0, baseX = 0, baseY = 0, dragging = false, pid = null;
-
-        card.addEventListener('pointerdown', function (e) {
-          if (!wide.matches || !draggableMode() || e.button !== 0) return;
-          // let links and buttons inside the card behave normally
-          if (e.target.closest('a, button')) return;
-          dragging = true;
-          pid = e.pointerId;
-          startX = e.clientX;
-          startY = e.clientY;
-          var o = offsets(card);
-          baseX = o.x; baseY = o.y;
-          card.classList.add('is-dragging');
-          toFront(card);
-          card.setPointerCapture(pid);
-        });
-
-        card.addEventListener('pointermove', function (e) {
-          if (!dragging || e.pointerId !== pid) return;
-          e.preventDefault();
-          place(card, baseX + (e.clientX - startX), baseY + (e.clientY - startY));
-        });
-
-        function end(e) {
-          if (!dragging || (e && e.pointerId !== pid)) return;
-          dragging = false;
-          card.classList.remove('is-dragging');
-          if (pid !== null) {
-            try { card.releasePointerCapture(pid); } catch (err) { /* already released */ }
-          }
-          pid = null;
-        }
-        card.addEventListener('pointerup', end);
-        card.addEventListener('pointercancel', end);
-
-        // Keyboard equivalent so the interaction isn't mouse-only
-        card.addEventListener('keydown', function (e) {
-          if (!wide.matches || !draggableMode()) return;
-          var o = offsets(card), moved = true;
-          switch (e.key) {
-            case 'ArrowLeft':  place(card, o.x - STEP, o.y); break;
-            case 'ArrowRight': place(card, o.x + STEP, o.y); break;
-            case 'ArrowUp':    place(card, o.x, o.y - STEP); break;
-            case 'ArrowDown':  place(card, o.x, o.y + STEP); break;
-            case 'Home':       place(card, 0, 0); break;
-            default: moved = false;
-          }
-          if (moved) {
-            e.preventDefault();
-            toFront(card);
-          }
-        });
-      })(cards[i]);
-    }
-
-    function sync() { enable(wide.matches && draggableMode()); }
-    wide.addEventListener('change', sync);
-    window.addEventListener('modechange', sync);
-    sync();
-
-    var help = document.createElement('p');
-    help.id = 'collage-help';
-    help.className = 'visually-hidden';
-    help.textContent = 'Draggable card. Use the arrow keys to move it, or Home to reset its position.';
-    stage.appendChild(help);
-  }
-
   /* ---------- per-word mount reveal (About section) ----------
      Splits each target paragraph into per-word spans and staggers them in with
      blur(10px) + opacity 0.001 + y:10 → clear, 0.05s apart. These are the
@@ -556,7 +438,6 @@
     initReveal();
     initActiveNav();
     initHeader();
-    initCollage();
     initWordReveal();
   }
 
