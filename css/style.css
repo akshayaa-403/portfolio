@@ -118,6 +118,16 @@
   --slab-edge: hsl(var(--lh, 210) 52% 64%);
   --slab-ink: hsl(var(--lh, 210) 55% 26%);
 
+  /* The nav's three tiers, after emilycampbell.co, which carries the same
+     three as --nav-color / -hover / -active on its header. The reference is
+     dark-only and can use white at 50%; this site has a light theme too, and
+     an ink at 50% on paper measures 3.0:1, which is below the bar for text.
+     So the light theme uses the measured ink ramp and the dark theme uses the
+     reference's own rgba whites, which come out at 4.8:1 on this ground. */
+  --nav-color: var(--ink-muted);
+  --nav-color-hover: var(--ink-body);
+  --nav-color-active: var(--ink);
+
   --measure: 1120px;
   --measure-narrow: 720px;
 
@@ -188,6 +198,9 @@
   --shadow-sticker: 5.32px 5.32px 10px rgba(0, 0, 0, 0.42);
 
   --header-bg: rgba(12, 22, 32, 0.85);
+  --nav-color: rgba(255, 255, 255, 0.5);
+  --nav-color-hover: rgba(255, 255, 255, 0.9);
+  --nav-color-active: rgba(255, 255, 255, 0.95);
   /* Text drawn ON --accent-deep, which is a pale blue here — so it must be
      dark, not the white the light theme uses. 11.4:1 on #b2d5e7. */
   --on-accent-deep: #0c1620;
@@ -289,7 +302,7 @@ button { font: inherit; }
 /* The focus ring follows whatever radius the element already has. This used
    to force border-radius: 4px on every focused element, which squared off
    pill buttons the moment they were focused. */
-:focus-visible:not([class*="btn"]):not(.nav a):not(.nav-toggle) {
+:focus-visible:not([class*="btn"]):not(.nav a):not(.nav-burger) {
   border-radius: 4px;
 }
 
@@ -364,120 +377,174 @@ main:focus-visible { outline: none; }
 
 /* --------------------------------------------------------------------------
    4. Header / nav
+
+   Rebuilt after emilycampbell.co: a fixed, completely transparent bar 80px
+   tall, the mark and the links pushed left, the clock and the lamp pushed
+   right, and the whole thing sliding up out of the way on a downward scroll
+   and back on an upward one. No ground, no blur, no rule under it — the page
+   simply runs beneath it.
    -------------------------------------------------------------------------- */
 .site-header {
-  position: sticky;
+  position: fixed;
   top: 0;
+  left: 0;
+  right: 0;
   z-index: 100;
-  /* Translucent copy of the page ground, so it tracks the theme. */
-  background: var(--header-bg, rgba(244, 247, 250, 0.85));
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  border-bottom: 1px solid transparent;
-  transition: border-color var(--dur) var(--ease);
+  background: none;
+  /* A stacking context of its own, so the links never blend with whatever the
+     hero is drawing underneath them. */
+  isolation: isolate;
+  transform: translateY(0);
+  transition: transform 0.4s var(--ease);
 }
-.site-header.is-scrolled { border-bottom-color: var(--line); }
+/* Out of the way on the way down, back on the way up. Driven by js/nav.js. */
+.site-header[data-nav-state='hidden'] { transform: translateY(-100%); }
 
-/* The hero is pulled up beneath this bar so the stage starts at y=0, which puts
-   draggable cards under the header's empty middle. Let clicks fall through that
-   dead space; the brand, nav links and buttons opt back in. */
+/* The bar is a row of controls over a page that scrolls under it, so its own
+   empty middle must not swallow clicks meant for the page. */
 .site-header { pointer-events: none; }
 .site-header a,
+.site-header button { pointer-events: auto; }
 
-.site-header button,
-
-.site-header .modes { pointer-events: auto; }
-
-/* Brand left, everything else right. The right-hand group is one flex item
-   pushed over by margin-left:auto, so the nav lands in the same place on every
-   page whether or not a theme toggle is present. `justify-content:
-   space-between` plus a separately auto-margined toggle used to move the nav
-   539px between index and the sub-pages. */
 .site-header__inner {
   display: flex;
   align-items: center;
-  gap: var(--gap);
+  justify-content: space-between;
+  gap: 24px;
+  height: var(--header-h, 80px);
   max-width: var(--measure);
   margin: 0 auto;
-  padding: 12px var(--gap-lg);
+  padding: 0 24px;
 }
+.site-header__start,
 .site-header__end {
   display: flex;
   align-items: center;
-  gap: 10px;
-  margin-left: auto;
+  gap: 24px;
+  min-width: 0;
 }
+.site-header__end { gap: 20px; }
 
+/* The mark alone, no wordmark — the reference carries only its logo, and the
+   name is the first thing the page itself says. */
 .brand {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
-  font-size: 14px;
-  font-weight: 500;
-  color: var(--ink);
+  color: var(--nav-color-active);
 }
-/* The lotus from the favicon, background keyed out. Replaces the plain dot
-   the brand used to carry. */
 .brand__mark {
-  width: 28px;
-  height: 28px;
+  width: 26px;
+  height: 26px;
   flex: none;
   object-fit: contain;
 }
 
-.nav { display: flex; align-items: center; gap: 4px; }
+.nav {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+/* 12.8px, 1px of tracking, uppercase, and only the colour changes — over
+   0.6s, which is slow enough to read as a fade rather than a flick. */
+/* The reference sets its nav in the system UI face rather than in its own
+   body type, and this bar is a copy of that bar. It is the one place on the
+   site that is not in IBM Plex Mono. */
+.nav a,
+.nav-clock {
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+               "Helvetica Neue", Arial, ui-sans-serif, sans-serif;
+}
 
 .nav a {
-  padding: 6px 10px;
-  border-radius: var(--radius-pill);
-  color: var(--ink-soft);
-  font-size: 13px;
-  transition: color var(--dur) var(--ease), background var(--dur) var(--ease);
+  display: grid;
+  color: var(--nav-color);
+  font-size: 12.8px;
+  font-weight: 400;
+  letter-spacing: 1px;
+  line-height: 1.5;
+  text-transform: uppercase;
+  transition: color 0.6s var(--ease);
 }
-/* Slash separators between the links, after emilycampbell.co. Decorative
-   only: it is a pseudo-element, so it never lands in the accessible name,
-   and it is dropped in the stacked mobile drawer below. */
-.nav a + a::before {
-  content: '/';
-  margin-right: 10px;
-  margin-left: -4px;
-  color: var(--line-strong);
-}
-
-.nav a:hover,
-
+.nav a:hover { color: var(--nav-color-hover); }
 .nav a.is-active {
-  color: var(--accent-ink);
-  background: var(--accent-tint);
+  color: var(--nav-color-active);
+  font-weight: 600;
 }
 
-/* Theme switch for pages without the hero lamp (project, hobby, 404).
-   Sits between the brand and the nav, and stays visible at every width. */
-.theme-toggle {
-  /* Sits inside .site-header__end; no auto margin of its own, or it would
-     steal the space that keeps the nav aligned. */
-  padding: 6px 10px;
-  background: transparent;
-  border: 1px solid var(--line-strong);
-  border-radius: var(--radius-pill);
-  color: var(--ink);
-  font-size: 14px;
-  line-height: 1;
+/* Both labels sit in the same grid cell. The second is the bold state, kept
+   in the layout but never painted, so the link is already as wide as it will
+   ever be and going active cannot shove the rest of the row sideways. */
+.nav__label {
+  grid-area: 1 / 1;
+}
+.nav__label--measure {
+  font-weight: 600;
+  visibility: hidden;
+  height: 0;
+}
+
+/* --- the clock --- */
+.nav-clock {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  color: var(--nav-color);
+  font-size: 12.8px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+/* Tabular, so the minute ticking over does not shuffle the greeting beside it. */
+.nav-clock__time { font-variant-numeric: tabular-nums; }
+
+/* --- the lamp --- */
+.lightpull {
+  display: inline-flex;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--nav-color);
   cursor: pointer;
-  transition: color var(--dur) var(--ease), border-color var(--dur) var(--ease);
+  transition: color 0.6s var(--ease);
 }
-.theme-toggle:hover { color: var(--accent); border-color: var(--accent); }
+.lightpull:hover { color: var(--nav-color-hover); }
+/* Lit means the light is on, which is the light theme. The rays are drawn
+   only then, so the icon states what it did rather than what it will do. */
+.lightpull__rays { opacity: 0; transition: opacity 0.4s var(--ease); }
+:root:not([data-theme='dark']) .lightpull__rays { opacity: 1; }
 
-.nav-toggle {
+/* --- the burger, for the narrow layout --- */
+.nav-burger {
   display: none;
-  padding: 6px 12px;
-  background: transparent;
-  border: 1px solid var(--line-strong);
-  border-radius: var(--radius-pill);
-  color: var(--ink);
-  font-size: 13px;
+  flex-direction: column;
+  justify-content: center;
+  gap: 4px;
+  width: 30px;
+  height: 30px;
+  padding: 0;
+  border: 0;
+  background: none;
   cursor: pointer;
 }
+.nav-burger span {
+  display: block;
+  height: 1.4px;
+  background: currentColor;
+  color: var(--nav-color-active);
+  transition: transform 0.28s var(--ease), opacity 0.28s var(--ease);
+}
+.nav-burger span:nth-child(1) { width: 20px; }
+.nav-burger span:nth-child(2) { width: 14px; }
+.nav-burger span:nth-child(3) { width: 20px; }
+.nav-burger[aria-expanded='true'] span:nth-child(1) { transform: translateY(5.4px) rotate(45deg); }
+.nav-burger[aria-expanded='true'] span:nth-child(2) { opacity: 0; }
+.nav-burger[aria-expanded='true'] span:nth-child(3) { transform: translateY(-5.4px) rotate(-45deg); }
+
+/* The bar is out of the flow, so every page needs the height back. The hero
+   cancels it again below, which is what puts the graph under the bar. */
+body { padding-top: var(--header-h, 80px); }
 
 /* --------------------------------------------------------------------------
    5. Hero — full-viewport prop stage
@@ -495,7 +562,7 @@ main:focus-visible { outline: none; }
      whole stage down, shifting every prop off the reference's coordinates.
      Pulling the hero up under the translucent header restores a true
      full-viewport stage anchored at y=0, as on the reference. */
-  margin-top: calc(-1 * var(--header-h, 58px));
+  margin-top: calc(-1 * var(--header-h, 80px));
 }
 
 .stage {
@@ -570,16 +637,6 @@ main:focus-visible { outline: none; }
   font-size: 12.5px;
   letter-spacing: 0.02em;
 }
-/* The pair the mode switch replaced. The switch chooses an arrangement; this
-   is what most visitors actually came to press, so it is back above the fold
-   and the switch is no longer the only thing to click. */
-.hero__cta {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: 10px;
-  margin: 0 auto;
-}
 
 /* --- Narrow screens ----------------------------------------------------
    The graph needs width to read. Below 900px the lockup returns to normal
@@ -625,21 +682,44 @@ main:focus-visible { outline: none; }
   background: var(--bg-sunken);
   overflow: hidden;
 }
-/* A list that wraps. It used to be one long duplicated row that drifted and
-   could be dragged sideways; the drag was an interaction over twelve words
-   that revealed nothing at either end of it. */
+/* The marquee. One set of words and an aria-hidden copy of it, side by side
+   inside a track twice the width of the strip; translating the track by
+   exactly -50% lands the copy where the original started, so the loop has no
+   seam and no JavaScript measures anything. */
 .strip__track {
   display: flex;
-  flex-wrap: wrap;
+  width: max-content;
+  animation: strip-drift 38s linear infinite;
+}
+.strip:hover .strip__track,
+.strip:focus-within .strip__track { animation-play-state: paused; }
+
+.strip__set {
+  display: flex;
   align-items: center;
-  /* The gap is the separator. A drawn glyph between items dangles at the
-     start of a wrapped row, and CSS cannot see where a row breaks. */
-  gap: 10px 34px;
+  flex: none;
+  /* The gap is the separator. A drawn glyph between items dangles at the end
+     of the set, and the loop would show it. */
+  gap: 34px;
   list-style: none;
   margin: 0;
-  padding: 14px var(--gap-lg);
+  padding: 14px 17px;
   color: var(--ink-muted);
   font-size: 12px;
+  white-space: nowrap;
+}
+
+@keyframes strip-drift {
+  from { transform: translateX(0); }
+  to   { transform: translateX(-50%); }
+}
+
+/* Under `reduce` the drift is dropped rather than slowed, and the duplicate
+   set is taken out of the flow so the twelve words simply wrap. */
+@media (prefers-reduced-motion: reduce) {
+  .strip__track { width: auto; animation: none; }
+  .strip__set { flex-wrap: wrap; gap: 10px 34px; }
+  .strip__set[aria-hidden="true"] { display: none; }
 }
 
 /* --------------------------------------------------------------------------
@@ -907,8 +987,6 @@ main:focus-visible { outline: none; }
   text-transform: uppercase;
 }
 
-}
-
 /* --- Readings ------------------------------------------------------
    A shelf of books that turn. Each one stands as a spine and, when it is the
    chosen one, rotates a quarter turn in place to face you — the spine going
@@ -968,23 +1046,33 @@ main:focus-visible { outline: none; }
   width: var(--bt, 22px);
   transition: width 0.55s cubic-bezier(0.2, 0.7, 0.2, 1);
 }
-.book-slot:has(.book[aria-pressed='true']) { width: var(--bw, 160px); }
 
+/* The button fills whatever the slot currently is, and does NOT turn. Putting
+   the rotation on the button made its own box edge-on at 90 degrees, so the
+   pointer left the element it was hovering, the slot closed, the pointer was
+   back over it, and the book flickered instead of staying open long enough to
+   be clicked. The box inside it turns; the hit target never moves. */
 .book {
   position: relative;
   display: block;
-  width: var(--bt, 22px);
+  width: 100%;
   height: var(--bh, 240px);
   padding: 0;
   border: 0;
   background: none;
   font: inherit;
   cursor: pointer;
+}
+.book__turn {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: var(--bt, 22px);
+  height: 100%;
   transform-style: preserve-3d;
   transform-origin: left center;
   transition: transform 0.55s cubic-bezier(0.2, 0.7, 0.2, 1);
 }
-.book[aria-pressed='true'] { transform: rotateY(-90deg); }
 
 /* Both faces are hinged on the same left edge. backface-visibility keeps each
    from showing through the other as they pass. */
@@ -1060,13 +1148,13 @@ main:focus-visible { outline: none; }
    neighbours. Fall back to no turn at all: three spines and the caption is
    still the section, just static. */
 @supports not selector(:has(*)) {
-  .book[aria-pressed='true'] { transform: none; }
+  .book__turn { transform: none !important; }
 }
 
 /* The turn is the whole gesture, so under `reduce` it is dropped rather than
    shortened — the cover swaps in without sweeping, and the slot still opens. */
 @media (prefers-reduced-motion: reduce) {
-  .book,
+  .book__turn,
   .book-slot { transition: none; }
 }
 
@@ -1142,28 +1230,6 @@ main:focus-visible { outline: none; }
       transform 0.4s cubic-bezier(0.16, 0.84, 0.28, 1) var(--wd, 0s);
   }
 }
-.about__aside {
-  flex: 1 1 240px;
-  padding: 18px;
-  background: var(--bg-raised);
-  border: 1px solid var(--line);
-  border-radius: var(--radius);
-  box-shadow: var(--shadow-sticker);
-}
-.about__aside dt {
-  color: var(--ink-muted);
-  font-size: 11px;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  margin-bottom: 3px;
-}
-.about__aside dd {
-  margin: 0 0 var(--gap);
-  color: var(--ink-body);
-  font-size: 14px;
-}
-.about__aside dd:last-child { margin-bottom: 0; }
-
 .contact { text-align: center; }
 .contact h2 {
   font-size: clamp(1.7rem, 5vw, 2.6rem);
@@ -1298,8 +1364,6 @@ main:focus-visible { outline: none; }
 
   .js .hero__proof,
 
-  .js .hero__cta,
-
   .js .hero__actions {
     animation: appear 0.62s var(--ease) backwards;
   }
@@ -1308,15 +1372,12 @@ main:focus-visible { outline: none; }
   .js .hero__sub { animation-delay: 0.20s; }
   .js .hero__headline { animation-delay: 0.26s; }
   .js .hero__proof { animation-delay: 0.30s; }
-  .js .hero__cta { animation-delay: 0.34s; }
   .js .hero__actions { animation-delay: 0.34s; }
 }
 
 @keyframes appear {
   from { opacity: 0.001; }
   to { opacity: 1; }
-}
-
 }
 
 /* --------------------------------------------------------------------------
@@ -1329,23 +1390,28 @@ main:focus-visible { outline: none; }
 @media (max-width: 899.98px) {
   :root { --section-gap: 44px; }
 
+  /* Below the reference's own breakpoint the links leave the bar and become a
+     panel under it. The bar keeps the mark, the burger, the clock and the
+     lamp — which is what the reference keeps too. */
+  .nav-burger { display: flex; }
   .nav {
     position: absolute;
-    top: 100%;
     left: 0;
     right: 0;
+    top: var(--header-h, 80px);
     flex-direction: column;
-    align-items: stretch;
-    gap: 2px;
-    padding: var(--gap);
-    background: var(--bg-raised);
+    align-items: flex-start;
+    gap: 0;
+    padding: 8px var(--gap-lg) 18px;
+    background: var(--header-bg, rgba(244, 247, 250, 0.96));
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
     border-bottom: 1px solid var(--line);
-    box-shadow: var(--shadow-card);
+    pointer-events: auto;
   }
   .nav[hidden] { display: none; }
-  .nav a { padding: 10px 12px; font-size: 14px; }
-  .nav a + a::before { content: none; }
-  .nav-toggle { display: inline-block; }
+  .nav a { padding: 12px 0; min-height: 44px; align-content: center; }
+  .nav-clock { display: none; }
 
   .hero { padding-top: 40px; }
   .hero__lockup { padding-top: 12px; }
@@ -1435,7 +1501,7 @@ main:focus-visible { outline: none; }
 .hero__actions {
   position: absolute;
   left: 50%;
-  top: calc(var(--header-h, 58px) + 16px);
+  top: calc(var(--header-h, 80px) + 16px);
   width: max-content;
   transform: translateX(-50%);
   display: flex;
@@ -1586,18 +1652,9 @@ main:focus-visible { outline: none; }
   text-align: center !important;
   transform: translateX(-50%) !important;
 }
-[data-mode='graph'] .hero__cta {
-  position: absolute !important;
-  left: 50.000% !important; top: 72.500% !important;
-  right: auto !important; bottom: auto !important; margin: 0 !important;
-  width: max-content !important; max-width: 92vw !important;
-  transform: translateX(-50%) !important;
-  z-index: 40;
-}
 
 /* The mode toggle must always win the hit test, whatever is drawn over it. */
 .hero__actions { z-index: 60 !important; }
-.hero__cta a { pointer-events: auto !important; }
 .hero__actions .modes,
 
 .hero__actions button { pointer-events: auto !important; }
@@ -1609,10 +1666,10 @@ main:focus-visible { outline: none; }
 
   .strip,
 
-  .nav-toggle,
+  .nav-burger,
 
   .modes { display: none !important; }
-  body { background: #fff; color: #000; background-image: none; }
+  body { background: #fff; color: #000; background-image: none; padding-top: 0; }
 }
 
 /* --------------------------------------------------------------------------
@@ -1767,7 +1824,6 @@ main:focus-visible { outline: none; }
     padding: 11px 14px;      /* was 5px 11px -> 28px tall */
     font-size: 12px;
   }
-  .nav-toggle { padding: 11px 16px; }
 
   .detail__back {
     display: inline-flex;
@@ -1821,9 +1877,7 @@ main:focus-visible { outline: none; }
 
   [data-mode] .hero__headline,
 
-  [data-mode] .hero__proof,
-
-  [data-mode] .hero__cta {
+  [data-mode] .hero__proof {
     position: static !important;
     left: auto !important; top: auto !important; right: auto !important;
     width: auto !important; max-width: 100% !important;
@@ -1844,7 +1898,6 @@ main:focus-visible { outline: none; }
   [data-mode] .hero__sub { margin: 0 auto 20px !important; }
   [data-mode] .hero__headline { margin: 0 auto 16px !important; }
   [data-mode] .hero__proof { margin: 0 auto 20px !important; text-align: center !important; }
-  [data-mode] .hero__cta { margin: 0 auto 22px !important; justify-content: center !important; }
 
   [data-mode] .hero__actions {
     position: static !important;
@@ -2048,7 +2101,7 @@ main:focus-visible { outline: none; }
   max-width: var(--measure);
   margin-inline: auto;
   /* Top padding clears the header plus the toggle's band. */
-  padding: calc(var(--header-h, 58px) + 78px) var(--gap-lg) var(--gap-lg);
+  padding: calc(var(--header-h, 80px) + 78px) var(--gap-lg) var(--gap-lg);
   overflow: visible;
 }
 
@@ -2097,7 +2150,6 @@ main:focus-visible { outline: none; }
   text-align: left;
 }
 [data-mode='mosaic'] .hero__proof { font-size: 11px; margin-bottom: 12px; }
-[data-mode='mosaic'] .hero__cta { justify-content: flex-start; }
 
 /* The mosaic. A fixed row height, not minmax(...,auto): a row that grows to
    its content makes every span mean something different and the tiles stop
@@ -2241,3 +2293,358 @@ a.frag:focus-visible {
    so easing it as well would leave the label trailing behind the thing it
    names. */
 .cue--eased { transition: opacity 120ms var(--ease); }
+/* Nothing behind a modal is reachable, so its cue is a label for something
+   that cannot be clicked. */
+body:has(dialog[open]) .cue { display: none; }
+
+
+/* ==========================================================================
+   14. The project grid, the screen, the shelf overlay and the mosaic toggle
+   ========================================================================== */
+
+/* --- The grid ---------------------------------------------------------
+   Two columns, one per group, with that group's projects beneath its heading.
+   Both renderers emit the same flat run — heading, row, row, heading, row,
+   row — so `grid-auto-flow: column` over three explicit rows lands each
+   heading at the top of its own column without either renderer having to
+   grow a wrapper. A third group wants a third column here; a third project
+   in a group wants a fourth row. */
+.rm-list {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-rows: auto 1fr 1fr;
+  grid-auto-flow: column;
+  gap: 14px 20px;
+  max-width: 940px;
+}
+.rm-list .rm-group { margin-top: 0; }
+/* One quiet line, under both columns. */
+.rm-list .rm-archive { grid-column: 1 / -1; grid-row: 4; margin-top: 6px; }
+
+/* Each row is name, year, one line, stack — and nothing else. The ordinal and
+   the metric are what the grid spends on having four narrow cards instead of
+   four wide ones. */
+.rm-list .rm__num,
+.rm-list .rm__metric { display: none; }
+.rm-list .rm,
+.rm-list .rm--lead { padding: 12px 14px; }
+.rm-list .rm--lead .rm__title { font-size: 17px; }
+.rm-list .rm--lead .rm__desc { font-size: 14px; }
+/* "One line" literally: a longer tagline is clamped rather than allowed to
+   make one card taller than the one beside it. */
+.rm-list .rm__desc {
+  display: -webkit-box;
+  -webkit-line-clamp: 1;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+@media (max-width: 799.98px) {
+  .rm-list {
+    grid-template-columns: 1fr;
+    grid-template-rows: none;
+    grid-auto-flow: row;
+  }
+  .rm-list .rm-archive { grid-row: auto; }
+}
+
+/* --- The screen -------------------------------------------------------
+   No panel: no border, no ground, no rounding. The column it stands in has
+   stood down, so the media is simply what is in that half of the grid for as
+   long as the pointer is on the other half.
+
+   It is absolute inside .rm-stage rather than inside .rm-list, because
+   renderCards() replaces the list wholesale and would take the screen with
+   it. pointer-events:none keeps it from stealing the hover that produced it.
+   object-fit is `contain`, not `cover`: a phone render is a shape, and
+   cropping it is cropping the device. */
+.rm-stage {
+  position: relative;
+  max-width: 940px;
+}
+.rm-screen {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: calc(50% - 10px);          /* half the grid, less half its 20px gap */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.18s var(--ease);
+}
+.rm-screen[data-side='left'] { left: 0; }
+.rm-screen[data-side='right'] { right: 0; }
+.rm-screen[data-on] { opacity: 1; }
+
+.rm-screen img,
+.rm-screen video {
+  display: block;
+  max-width: 100%;
+  max-height: 100%;
+  width: auto;
+  height: auto;
+  object-fit: contain;
+}
+/* More than one piece of media in the slot means two device renders side by
+   side, not one screenshot. Two full-height phones fill the column edge to
+   edge and read as a product shot; held back they read as a screen. */
+.rm-screen img:not(:only-child),
+.rm-screen video:not(:only-child) {
+  max-width: 44%;
+  max-height: 72%;
+}
+
+/* The column that stands down while the other one is being read. It keeps its
+   space — the grid must not reflow under the pointer — and only goes quiet. */
+.rm-list [data-group] { transition: opacity 0.18s var(--ease); }
+/* One class heavier than `.js .reveal.is-visible`, which also sets opacity on
+   these same elements once they have been revealed. */
+.rm-list [data-group].is-stood-down { opacity: 0; pointer-events: none; }
+
+/* One column, so there is no other column to give up. */
+@media (max-width: 799.98px) {
+  .rm-screen { display: none; }
+  .rm-list [data-group].is-stood-down { opacity: 1; pointer-events: auto; }
+}
+
+/* --- The shelf --------------------------------------------------------
+   Spines, and only spines, until the pointer or the keyboard reaches one:
+   that slot widens and its book turns. Nothing is open at rest, so the shelf
+   reads as a shelf. Driven by :hover / :focus-within rather than by a stored
+   aria-pressed state, because turning to look at a book is not a choice the
+   page has to remember. */
+.book-slot:hover,
+.book-slot:has(.book:focus-visible) { width: var(--bw, 160px); }
+.book-slot:hover .book__turn,
+.book-slot:has(.book:focus-visible) .book__turn { transform: rotateY(-90deg); }
+
+/* --- Taking one off the shelf ----------------------------------------
+   The overlay is not a panel. The dialog fills the viewport, has no ground of
+   its own, and the whole site is vignetted behind it through ::backdrop — so
+   the only two things on screen are the book and the scrap of paper beside
+   it. --veil-centre / --veil-edge are the lightbox's own two values and do
+   not flip with the theme: a dark room around a lit object is dark in both.
+   ::backdrop does not inherit custom properties in every engine, so each is
+   used with its literal as a var() fallback. */
+.bookview {
+  width: 100vw;
+  max-width: 100vw;
+  height: 100vh;
+  max-height: 100vh;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--ink);
+  overflow: hidden;
+}
+.bookview::backdrop {
+  background: radial-gradient(ellipse at 50% 46%,
+    var(--veil-centre, rgba(6, 12, 20, 0.62)) 0%,
+    var(--veil-edge, rgba(4, 8, 14, 0.95)) 100%);
+  backdrop-filter: blur(3px);
+}
+.bookview__inner {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: clamp(24px, 6vw, 72px);
+  width: 100%;
+  height: 100%;
+  padding: 24px;
+}
+.bookview__close {
+  position: absolute;
+  top: 18px;
+  right: 18px;
+  z-index: 2;
+  width: 38px;
+  height: 38px;
+  border: 1px solid rgb(255 255 255 / 0.28);
+  border-radius: 50%;
+  background: rgb(255 255 255 / 0.08);
+  color: #fbfcfd;
+  font-size: 18px;
+  line-height: 1;
+  cursor: pointer;
+}
+.bookview__close:hover { background: rgb(255 255 255 / 0.18); }
+
+/* --- The book, as a box ---
+   Six faces on one shared 3-D transform. --rx / --ry are written by
+   js/script.js as the book is dragged; everything else about how it is put
+   together lives here. The faces are hinged off the centre, so the box is
+   W x H x T and turning it needs no per-face maths. */
+.book3d {
+  flex: none;
+  width: var(--w);
+  height: var(--h);
+  perspective: 1400px;
+  cursor: grab;
+  touch-action: none;
+  /* A book you turn, not a file you drag off the page. */
+  user-select: none;
+  -webkit-user-select: none;
+  animation: book-lift 0.5s cubic-bezier(0.2, 0.7, 0.2, 1);
+  /* The shadow lives HERE and not on the box below. A filter on an element
+     forces its transform-style to flat, which collapses the six faces into
+     paint order and leaves the back cover sitting on top of the front one.
+     This element is only the perspective, so it can carry a filter safely. */
+  filter: drop-shadow(0 26px 40px rgb(0 0 0 / 0.55));
+}
+.book3d.is-turning { cursor: grabbing; }
+.book3d:focus-visible { outline: 2px solid #fbfcfd; outline-offset: 12px; }
+
+.book3d__box {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  transform-style: preserve-3d;
+  transform: rotateX(var(--rx, 8deg)) rotateY(var(--ry, -32deg));
+}
+
+.book3d__face {
+  position: absolute;
+  left: 0;
+  top: 0;
+  display: block;
+  background: #efe9df;
+  box-shadow: inset 0 0 0 1px rgb(0 0 0 / 0.12);
+}
+/* The two big faces. */
+.book3d__face--front,
+.book3d__face--back {
+  width: var(--w);
+  height: var(--h);
+}
+.book3d__face--front { transform: translateZ(calc(var(--t) / 2)); }
+.book3d__face--front img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  -webkit-user-drag: none;
+  pointer-events: none;
+}
+.book3d__face--back { transform: rotateY(180deg) translateZ(calc(var(--t) / 2)); }
+
+/* The spine and the fore-edge, hinged on the left and right edges. */
+.book3d__face--spine,
+.book3d__face--fore {
+  width: var(--t);
+  height: var(--h);
+}
+.book3d__face--spine {
+  left: calc(var(--w) / 2 - var(--t) / 2);
+  transform: rotateY(-90deg) translateZ(calc(var(--w) / 2));
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 0;
+  background: var(--spine-bg, #d9dde2);
+  color: var(--spine-ink, #10161d);
+  box-shadow:
+    inset -5px 0 0 -3px rgb(255 255 255 / 0.22),
+    inset 5px 0 8px -5px rgb(0 0 0 / 0.5);
+}
+.book3d__face--spine .spine__title { font-size: 13px; }
+.book3d__face--fore {
+  left: calc(var(--w) / 2 - var(--t) / 2);
+  transform: rotateY(90deg) translateZ(calc(var(--w) / 2));
+  /* The block of pages, as a ruling rather than a texture. */
+  background:
+    repeating-linear-gradient(to right,
+      #f2ede4 0 1px, #d8d1c4 1px 2px);
+}
+
+/* Head and tail: the same block of pages seen end-on. */
+.book3d__face--head,
+.book3d__face--tail {
+  width: var(--w);
+  height: var(--t);
+  background: repeating-linear-gradient(to bottom,
+    #f2ede4 0 1px, #d8d1c4 1px 2px);
+}
+.book3d__face--head {
+  top: calc(var(--h) / 2 - var(--t) / 2);
+  transform: rotateX(90deg) translateZ(calc(var(--h) / 2));
+}
+.book3d__face--tail {
+  top: calc(var(--h) / 2 - var(--t) / 2);
+  transform: rotateX(-90deg) translateZ(calc(var(--h) / 2));
+}
+
+/* --- The paper ---
+   The scrap is the image; the writing is one absolutely positioned span per
+   ruled line, put there from the geometry in js/note-data.js. Caveat is
+   already loaded for the marginalia, so the hand costs no extra request. */
+.notepaper {
+  position: relative;
+  flex: none;
+  animation: note-set 0.5s cubic-bezier(0.2, 0.7, 0.2, 1) 0.12s backwards;
+  filter: drop-shadow(0 18px 26px rgb(0 0 0 / 0.5));
+}
+.notepaper__sheet {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+.notepaper__line {
+  position: absolute;
+  /* `top` marks the rule. With line-height 1 the baseline sits about 0.82em
+     below the box's top edge, so lifting the box by that much lands the
+     writing ON the rule with its descenders hanging under it, which is what
+     handwriting on ruled paper does. */
+  transform: translateY(-0.72em);
+  white-space: nowrap;
+  overflow: hidden;
+  font-family: Caveat, cursive;
+  font-weight: 500;
+  line-height: 1;
+  color: #23303f;
+}
+/* No measured paper at all — the summary is still the point, so it is set
+   plainly rather than dropped. */
+.notepaper__fallback {
+  max-width: 44ch;
+  margin: 0;
+  color: #f2f5f8;
+  font-size: 15px;
+  line-height: 1.7;
+}
+
+@keyframes book-lift {
+  from { opacity: 0; transform: translateY(26px) scale(0.94); }
+  to   { opacity: 1; transform: none; }
+}
+@keyframes note-set {
+  from { opacity: 0; transform: translateX(-18px) rotate(-3deg); }
+  to   { opacity: 1; transform: none; }
+}
+
+/* Two things side by side need the width. Below that the paper goes under the
+   book, and below that again the book shrinks. */
+@media (max-width: 899.98px) {
+  .bookview__inner { flex-direction: column; gap: 22px; overflow: auto; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .book3d, .notepaper { animation: none; }
+}
+
+/* --- The mode toggle, as a tile --------------------------------------
+   Same place in both modes, as before — but in the mosaic it is one of the
+   pinboard's cards rather than a pill floating over it, so it belongs to the
+   arrangement it is sitting on. */
+[data-mode="mosaic"] .hero__actions .modes {
+  padding: 10px 12px;
+  border-radius: var(--radius);
+  background: var(--bg-raised);
+  border: 1px solid var(--line);
+  box-shadow: var(--shadow-sticker);
+}

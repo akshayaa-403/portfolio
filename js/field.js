@@ -59,13 +59,26 @@
     gallery: 'hobbies',  photo: 'hobbies',
     resource: 'resources'
   };
+  /* Three levels, and `lvl` is the whole hierarchy:
+
+       1  Projects, Hobbies, Resources — the three hubs, same size as each
+          other because they are the same kind of thing.
+       2  the names underneath them: each case study, each gallery, each
+          off-site link. Smaller and lighter than a hub, on purpose.
+       3  everything else — a project's tools, a gallery's photographs. They
+          are structure: they pull related level-2 nodes together and they are
+          never hovered, never labelled and never navigated to.
+
+     `hover: false` is what keeps a level-3 node out of the hit test, so
+     hovering a project lights the project and not the twelve tools hanging
+     off it. */
   var KIND = {
-    hub:      { r: 10.0, label: true,  nav: true,  dim: 1.00 },
-    project:  { r: 6.5,  label: true,  nav: true,  dim: 1.00 },
-    tech:     { r: 3.0,  label: false, nav: false, dim: 0.55 },
-    gallery:  { r: 6.5,  label: true,  nav: true,  dim: 1.00 },
-    photo:    { r: 2.4,  label: false, nav: true,  dim: 0.55 },
-    resource: { r: 5.5,  label: true,  nav: true,  dim: 1.00 }
+    hub:      { lvl: 1, r: 10.0, label: true,  nav: true,  hover: true,  dim: 1.00 },
+    project:  { lvl: 2, r: 5.6,  label: true,  nav: true,  hover: true,  dim: 0.72 },
+    gallery:  { lvl: 2, r: 5.6,  label: true,  nav: true,  hover: true,  dim: 0.72 },
+    resource: { lvl: 2, r: 5.6,  label: true,  nav: true,  hover: true,  dim: 0.72 },
+    tech:     { lvl: 3, r: 2.6,  label: false, nav: false, hover: false, dim: 0.34 },
+    photo:    { lvl: 3, r: 2.2,  label: false, nav: false, hover: false, dim: 0.34 }
   };
 
   /* Where each category's map is drawn. Projects left, Hobbies right, and
@@ -218,8 +231,15 @@
       n.x = r.x0 + rnd() * (r.x1 - r.x0);
       n.y = r.y0 + rnd() * (r.y1 - r.y0);
       n.vx = 0; n.vy = 0;
-      // Degree is the whole reason a gallery of 27 looks like a hub.
-      n.rad = KIND[n.kind].r + Math.min(n.deg, 30) * 0.22;
+      /* Degree is the whole reason a gallery of 27 draws bigger than a
+         gallery of 8 — but it is not allowed to promote a node past its own
+         level. A gallery with more photographs than the Hobbies hub has
+         galleries would otherwise draw larger than the hub it hangs off,
+         and the three levels would stop being readable as three levels. */
+      var K = KIND[n.kind];
+      n.rad = K.r + Math.min(n.deg, 30) * 0.22;
+      if (K.lvl === 2) n.rad = Math.min(n.rad, KIND.project.r + 1.6);
+      else if (K.lvl === 3) n.rad = Math.min(n.rad, KIND.tech.r + 0.8);
     }
 
     var adj = {};
@@ -389,8 +409,13 @@
       if (!base) return '#094e94';
       var t = Math.max(0, Math.min(1, (RR.hi - rad) / (RR.hi - RR.lo)));
       var sa = Math.min(92, base.s);
-      var l = dark ? Math.max(46, Math.min(66, base.l)) + t * 22
-                   : Math.max(26, Math.min(46, base.l)) + t * 24;
+      /* The bands are deliberately swapped: the lighter band Wada's colours
+         used to get on a dark ground is now the starting point on paper, and
+         the darker band on a dark ground. The contrast walk below is
+         unchanged, so whichever band it starts from the dot still has to
+         measure against the ground it is actually drawn on. */
+      var l = dark ? Math.max(26, Math.min(46, base.l)) + t * 24
+                   : Math.max(46, Math.min(66, base.l)) + t * 22;
       var need = 4.5 - 1.5 * t;
       var step = dark ? 2 : -2;
       for (var k = 0; k < 40 && l > 2 && l < 98; k++) {
@@ -459,7 +484,8 @@
         var n = nodes[i];
         var dx = px(n) - mx, dy = py(n) - my;
         var d = Math.sqrt(dx * dx + dy * dy);
-        if (d < n.rad + 9 && d < bestD) { best = n; bestD = d; }   // photo dots are 2px
+        if (!KIND[n.kind].hover) continue;
+        if (d < n.rad + 9 && d < bestD) { best = n; bestD = d; }
       }
       return best;
     }
@@ -546,9 +572,14 @@
       }, { threshold: 0 }).observe(stage);
     }
 
+    /* A neighbour only counts if it is a name. Hovering a case study used to
+       light the dozen tools in its stack, which is the sub-graph the reader
+       did not ask for; now it lights the hub it belongs to and nothing else
+       below it. */
     function isNear(n) {
       if (!hover) return true;
       if (n === hover) return true;
+      if (KIND[n.kind].lvl > 2) return false;
       return (adj[hover.id] || []).indexOf(n) !== -1;
     }
 
@@ -578,7 +609,7 @@
       var i, a, b;
       for (i = 0; i < links.length; i++) {
         a = links[i].a; b = links[i].b;
-        var lit = hover && (a === hover || b === hover);
+        var lit = hover && ((a === hover && isNear(b)) || (b === hover && isNear(a)));
         ctx.globalAlpha = hover ? (lit ? 0.8 : 0.05) : 0.18;
         ctx.strokeStyle = lit ? a.color : C.line;
         ctx.lineWidth = lit ? 1.4 : 0.8;
@@ -646,7 +677,9 @@
       var queue = [];
       if (hover) {
         queue.push(hover);
-        (adj[hover.id] || []).forEach(function (n) { queue.push(n); });
+        (adj[hover.id] || []).forEach(function (n) {
+          if (KIND[n.kind].lvl <= 2) queue.push(n);
+        });
       } else {
         nodes.forEach(function (n) { if (KIND[n.kind].label) queue.push(n); });
         queue.sort(function (x, y) { return y.rad - x.rad; });
@@ -657,7 +690,7 @@
 
       for (var q = 0; q < queue.length; q++) {
         var nd = queue[q];
-        ctx.font = ((nd === hover || KIND[nd.kind].label) ? '600 11px ' : '400 10px ') + MONO;
+        ctx.font = (nd === hover ? '600 11px ' : KIND[nd.kind].lvl === 1 ? '600 11px ' : '400 10px ') + MONO;
 
         var text = nd.label.length > 30 ? nd.label.slice(0, 29) + '…' : nd.label;
         var lineH = 13;
@@ -692,7 +725,8 @@
         if (!rect) continue;
         placed.push(rect);
 
-        ctx.globalAlpha = hover ? (nd === hover ? 1 : 0.8) : 0.68;
+        ctx.globalAlpha = (hover ? (nd === hover ? 1 : 0.8) : 0.68) *
+          (KIND[nd.kind].lvl === 1 ? 1 : 0.72);
         ctx.fillStyle = C.label;
         ctx.fillText(text, cx, top);
 

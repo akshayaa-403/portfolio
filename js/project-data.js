@@ -3,6 +3,13 @@
 const projects = [
   {
     "id": "quantamental-screener",
+    /* What the home page's screen shows while this row is hovered, in place
+       of the other column. One path or several; .mp4/.webm play as video,
+       anything else is a still. These sit on the page's own paper with no
+       panel behind them, so anything here wants a transparent or full-bleed
+       background of its own. Not to be confused with "demo", which is the
+       live deployment. */
+    "screen": "public/assets/projects/quant-dashboard.webp",
     "context": "Solo project",
     "title": "Quantamental Screener",
     "tagline": "Multi-factor equity screening with news sentiment.",
@@ -327,6 +334,13 @@ const projects = [
   },
   {
     "id": "phase-contrast-denoising",
+    /* What the home page's screen shows while this row is hovered, in place
+       of the other column. One path or several; .mp4/.webm play as video,
+       anything else is a still. These sit on the page's own paper with no
+       panel behind them, so anything here wants a transparent or full-bleed
+       background of its own. Not to be confused with "demo", which is the
+       live deployment. */
+    "screen": "public/assets/projects/phase-demo-metrics.webp",
     "context": "Research tool",
     "title": "Phase-Contrast Clean-Up Pipeline",
     "tagline": "Removing halo artifacts from microscopy images.",
@@ -603,6 +617,13 @@ const projects = [
   },
   {
     "id": "arteza",
+    /* What the home page's screen shows while this row is hovered, in place
+       of the other column. One path or several; .mp4/.webm play as video,
+       anything else is a still. These sit on the page's own paper with no
+       panel behind them, so anything here wants a transparent or full-bleed
+       background of its own. Not to be confused with "demo", which is the
+       live deployment. */
+    "screen": "public/assets/projects/arteza-home.webp",
     "context": "Client work",
     "title": "Arteza",
     "tagline": "An online gallery and shop for an original-art studio.",
@@ -889,6 +910,16 @@ const projects = [
   },
   {
     "id": "habita",
+    /* What the home page's screen shows while this row is hovered, in place
+       of the other column. One path or several; .mp4/.webm play as video,
+       anything else is a still. These sit on the page's own paper with no
+       panel behind them, so anything here wants a transparent or full-bleed
+       background of its own. Not to be confused with "demo", which is the
+       live deployment. */
+    "screen": [
+      "public/assets/projects/habita-phone-matrix.webp",
+      "public/assets/projects/habita-phone-tilt.webp"
+    ],
     "context": "Solo project",
     "title": "Habita",
     "tagline": "Eisenhower matrix that writes to your real calendar.",

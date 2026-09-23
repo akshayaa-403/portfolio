@@ -73,9 +73,10 @@
     new ResizeObserver(set).observe(header);
   }
 
-  /* Pages without the hero lamp still need a way to change theme. Any page
-     carrying [data-theme-toggle] gets the control wired up here; index.html
-     has the lamp instead and ships no such button. */
+  /* The pull-cord lamp in the header, on every page. It draws its own two
+     states from data-theme in CSS — the rays are painted only while the light
+     is on — so nothing here writes into the button, which would throw the
+     drawing away. */
   function initToggle() {
     var btn = document.querySelector('[data-theme-toggle]');
     if (!btn) return;
@@ -85,7 +86,6 @@
       btn.setAttribute('aria-pressed', dark ? 'true' : 'false');
       btn.setAttribute('aria-label',
         dark ? 'Switch to light theme' : 'Switch to dark theme');
-      btn.textContent = dark ? '☾' : '☀';
     }
 
     btn.addEventListener('click', function () {

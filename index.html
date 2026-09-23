@@ -78,22 +78,44 @@
 
 <a class="skip-link" href="#main">Skip to main content</a>
 
-<header class="site-header" id="site-header">
+<header class="site-header" id="site-header" data-nav-state="top">
   <div class="site-header__inner">
-    <a class="brand" href="#main"><img class="brand__mark" src="public/assets/brand-mark.webp" alt="" aria-hidden="true" width="96" height="96">Akshayaa Kashyap</a>
-    <div class="site-header__end">
-      <button class="theme-toggle" type="button" data-theme-toggle
-              aria-pressed="false" aria-label="Switch to dark theme">☀</button>
-      <button class="nav-toggle" type="button" data-nav-toggle aria-expanded="false" aria-controls="primary-nav">Menu</button>
+    <div class="site-header__start">
+      <a class="brand" href="#main" aria-label="Akshayaa Kashyap — home"><img class="brand__mark" src="public/assets/brand-mark.webp" alt="" aria-hidden="true" width="96" height="96"></a>
+      <button class="nav-burger" type="button" data-nav-toggle aria-expanded="false" aria-controls="primary-nav" aria-label="Open menu">
+        <span aria-hidden="true"></span><span aria-hidden="true"></span><span aria-hidden="true"></span>
+      </button>
       <nav class="nav" id="primary-nav" aria-label="Primary">
-        <a href="#experience">Experience</a>
-        <a href="#work">Work</a>
-        <a href="#readings">Readings</a>
-        <a href="#about">About</a>
-        <a href="#hobbies">Hobbies</a>
-        <a href="#contact">Contact</a>
-        <a href="public/assets/resume.pdf" target="_blank" rel="noopener noreferrer">Resume ↗</a>
+        <a href="#work"><span class="nav__label">Work</span><span class="nav__label nav__label--measure" aria-hidden="true">Work</span></a>
+        <a href="#hobbies"><span class="nav__label">Hobbies</span><span class="nav__label nav__label--measure" aria-hidden="true">Hobbies</span></a>
+        <a href="#readings"><span class="nav__label">Readings</span><span class="nav__label nav__label--measure" aria-hidden="true">Readings</span></a>
+        <a href="#about"><span class="nav__label">About</span><span class="nav__label nav__label--measure" aria-hidden="true">About</span></a>
+        <a href="#contact"><span class="nav__label">Contact</span><span class="nav__label nav__label--measure" aria-hidden="true">Contact</span></a>
+        <a href="public/assets/resume.pdf" target="_blank" rel="noopener noreferrer"><span class="nav__label">Resume ↗</span><span class="nav__label nav__label--measure" aria-hidden="true">Resume ↗</span></a>
       </nav>
+    </div>
+
+    <div class="site-header__end">
+      <!-- The clock and the greeting, after the reference. Written by
+           js/nav.js from the reader's own clock. aria-hidden: it is
+           atmosphere, and a screen reader announcing the time every minute
+           is not. -->
+      <p class="nav-clock" data-nav-clock aria-hidden="true">
+        <span class="nav-clock__time" data-clock-time></span>
+        <span class="nav-clock__greeting" data-clock-greeting></span>
+      </p>
+      <!-- The pull-cord lamp IS the theme switch: pulling the cord turns the
+           light on and off, which is the gesture the theme flip already was.
+           Drawn here rather than borrowed. -->
+      <button class="lightpull" type="button" data-theme-toggle
+              aria-pressed="false" aria-label="Switch to dark theme">
+        <svg viewBox="0 0 26 34" width="22" height="29" aria-hidden="true" focusable="false">
+          <path d="M13 1v8" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/>
+          <path d="M13 9c-5 0-9.6 4.6-10.6 9.6h21.2C22.6 13.6 18 9 13 9Z" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/>
+          <path d="M1.6 18.9h22.8" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/>
+          <path class="lightpull__rays" d="M7.6 24.4h10.8M10.2 29.4h5.6" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/>
+        </svg>
+      </button>
     </div>
   </div>
 </header>
@@ -166,12 +188,6 @@
         <p class="hero__proof">
           3 roles since Jan 2025 &middot; 7 case studies &middot; Python, AWS, PyTorch, SQL
         </p>
-        <!-- Restored primary action. The mode switch chooses an arrangement;
-             this is the thing most visitors came to press. -->
-        <p class="hero__cta">
-          <a class="btn btn--primary" href="#work">See the work</a>
-          <a class="btn btn--quiet" href="#contact">Get in touch</a>
-        </p>
       </div>
 
       <!-- ---------- Mosaic (mosaic mode) ----------
@@ -210,42 +226,23 @@
   -->
   <section class="strip-section" aria-labelledby="skills-h">
     <h2 class="strip__heading" id="skills-h">Skills</h2>
+    <!-- A marquee again: one set of words, duplicated, translated by exactly
+         half its own width so the loop is seamless. The copy is aria-hidden so
+         a screen reader hears the twelve skills once. Motion is dropped and the
+         list wraps under prefers-reduced-motion. -->
     <div class="strip">
-      <ul class="strip__track" role="list">
-        <li>Python</li><li>SQL</li><li>PyTorch</li><li>Pandas</li>
-        <li>Streamlit</li><li>OpenCV</li><li>AWS Lambda</li><li>DynamoDB</li>
-        <li>Bedrock</li><li>Docker</li><li>TypeScript</li><li>React</li>
-      </ul>
-    </div>
-  </section>
-
-  <!-- ===================== Experience =====================
-       Above Projects, deliberately. The project list answers "can she build";
-       this answers "has she shipped inside a team, on a deadline, for someone
-       who paid" — which is the first thing anyone hiring wants to know and
-       the thing this page used not to say at all.
-
-       Rendered by renderExperience() in js/script.js from
-       js/experience-data.js.
-  -->
-  <section class="section" id="experience" aria-labelledby="experience-h">
-    <div class="wrap">
-      <div class="section-head reveal">
-        <h2 id="experience-h">Experience</h2>
-        <span class="glyph" aria-hidden="true">&#9632;</span>
+      <div class="strip__track">
+        <ul class="strip__set" role="list">
+          <li>Python</li><li>SQL</li><li>PyTorch</li><li>Pandas</li>
+          <li>Streamlit</li><li>OpenCV</li><li>AWS Lambda</li><li>DynamoDB</li>
+          <li>Bedrock</li><li>Docker</li><li>TypeScript</li><li>React</li>
+        </ul>
+        <ul class="strip__set" role="list" aria-hidden="true">
+          <li>Python</li><li>SQL</li><li>PyTorch</li><li>Pandas</li>
+          <li>Streamlit</li><li>OpenCV</li><li>AWS Lambda</li><li>DynamoDB</li>
+          <li>Bedrock</li><li>Docker</li><li>TypeScript</li><li>React</li>
+        </ul>
       </div>
-
-      <ol class="xp-list" id="experience-list" role="list">
-        <noscript>
-          <li><b>AI Engineer, InnovyQ</b> — June 2026 to August 2026. Project IVY:
-            a Slack IT-support agent on AWS Lambda, Lex V2 and Bedrock.</li>
-          <li><b>Software Engineer, Artenos Network Pvt Ltd</b> — July 2025 to May 2026.
-            CRM dashboards, LLM benchmarking, internal full-stack tools.</li>
-          <li><b>AI Specialist, Sygnius Digital</b> — January 2025 to June 2025.
-            Lead scraping, an AI voice agent in the CRM, and the sales analysis
-            that changed the follow-up workflow.</li>
-        </noscript>
-      </ol>
     </div>
   </section>
 
@@ -263,6 +260,10 @@
            tools/build-share-pages.js, so this page says what the work is
            without running a line of JavaScript. js/script.js replaces it with
            the same list plus hover cues and the reveal animation. -->
+      <!-- The stage exists only to give the screen something to be absolute
+           inside. The list itself is replaced wholesale by renderCards(), so
+           the screen cannot live in it. -->
+      <div class="rm-stage">
       <div class="rm-list" id="recent-cards">
         <!-- BEGIN generated:project-list — written by tools/build-share-pages.js, do not hand-edit -->
           <div class="rm-group"><h3 class="rm-group__title">Research</h3><p class="rm-group__note">Systems that measure something and report the number, including when the number is bad.</p></div>
@@ -275,6 +276,40 @@
         <!-- END generated:project-list -->
         <!-- No <noscript> here any more: the list above IS the no-JS
              experience. -->
+      </div>
+
+      <!-- The screen. Blank until a row is hovered, then it fades in over the
+           OTHER column: hover a product and it covers Research on the left,
+           hover a research project and it covers Products on the right. The
+           column being read is never the column being covered.
+
+           Wired in js/script.js from `screen` in js/project-data.js; drop an
+           .mp4/.webm at that path and it plays as video instead of a still.
+           aria-hidden: it is a second view of a row that is already a link
+           with a title and a description. -->
+      <div class="rm-screen" data-rm-screen aria-hidden="true"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== Hobbies =====================
+       A justified photo gallery grouped by pursuit. Row heights are solved in
+       js/hobbies.js so every row fills the container edge to edge while each
+       photo keeps its own proportions.
+  -->
+  <section class="section" id="hobbies" aria-labelledby="hobbies-h">
+    <div class="wrap">
+      <div class="section-head reveal">
+        <h2 id="hobbies-h">Hobbies</h2>
+        <span class="glyph" aria-hidden="true">&#10059;</span>
+      </div>
+      <p class="hobbies__intro reveal">Things I make and go looking for when I'm not at a terminal.</p>
+
+      <div id="hobby-groups">
+        <noscript>
+          <p>The gallery needs JavaScript to lay out. Three galleries:
+            photography, artwork and cooking.</p>
+        </noscript>
       </div>
     </div>
   </section>
@@ -322,40 +357,11 @@
             I care more about whether a number can be traced back to its input than about the
             number itself, which is why every project here shows its working.</p>
           <p data-squiggle>Three of those systems were built on someone else's deadline —
-            the roles are <a href="#experience">listed above</a>, most recently three months
+            most recently three months
             at InnovyQ building an AI support agent that lives in Slack. The rest I build in
             order to understand them. If any of it is useful to you, I'd like to hear about it.</p>
         </div>
 
-        <aside class="about__aside reveal">
-          <dl>
-            <dt>Based in</dt><dd>India</dd>
-            <dt>Education</dt><dd>B.Tech Robotics &amp; Automation, Symbiosis Institute of Technology</dd>
-            <dt>Certification</dt><dd>HarvardX STAT110x, Introduction to Probability</dd>
-          </dl>
-        </aside>
-      </div>
-    </div>
-  </section>
-
-  <!-- ===================== Hobbies =====================
-       A justified photo gallery grouped by pursuit. Row heights are solved in
-       js/hobbies.js so every row fills the container edge to edge while each
-       photo keeps its own proportions.
-  -->
-  <section class="section" id="hobbies" aria-labelledby="hobbies-h">
-    <div class="wrap">
-      <div class="section-head reveal">
-        <h2 id="hobbies-h">Hobbies</h2>
-        <span class="glyph" aria-hidden="true">&#10059;</span>
-      </div>
-      <p class="hobbies__intro reveal">Things I make and go looking for when I'm not at a terminal.</p>
-
-      <div id="hobby-groups">
-        <noscript>
-          <p>The gallery needs JavaScript to lay out. Three galleries:
-            photography, artwork and cooking.</p>
-        </noscript>
       </div>
     </div>
   </section>
@@ -393,7 +399,6 @@
 
 <script src="js/util.js" defer></script>
 <script src="js/project-data.js" defer></script>
-<script src="js/experience-data.js" defer></script>
 <script src="js/theme.js" defer></script>
 <script src="js/nav.js" defer></script>
 <script src="js/modes.js" defer></script>
@@ -406,7 +411,6 @@
      sit after project-data.js AND hobby-data.js, not merely be deferred. -->
 <script src="js/field.js" defer></script>
 <script src="js/mosaic.js" defer></script>
-<script src="js/lightbox.js" defer></script>
 <script src="js/hobbies.js" defer></script>
 <!-- Dev-only: fetched solely when ?edit=1 is in the URL, so real visitors
      never download or run it. annotate.js self-gates on the same param as a
@@ -418,6 +422,9 @@ if (/[?&]edit=1/.test(location.search)) {
   document.head.appendChild(el);
 }
 </script>
+<!-- The ruling on every scrap of paper in public/assets/notes/, measured
+     once by tools/trace-notes.py. Must load before script.js. -->
+<script src="js/note-data.js" defer></script>
 <script src="js/readings-data.js" defer></script>
 <script src="js/cursor.js" defer></script>
 <script src="js/script.js" defer></script>

@@ -1,8 +1,13 @@
 /* Hobbies — three cards in a triangular arrangement.
 
-   Each card opens the shared popover (js/lightbox.js) on the spot, and is
-   still a real link to its own page (hobby.html?id=...) for middle-click,
-   keyboard and no-JS. On hover a neural-net mesh animates over the card: particles drift
+   Each card is a plain link to its own gallery (hobby.html?id=...) and
+   nothing intercepts it. It used to open the shared popover on the spot
+   instead, which put one photograph on screen when the card says "27 photos"
+   and the reader has asked for the set. The popover is still what a tile
+   inside a gallery opens, and still where the graph's image nodes point —
+   that is the right place for one photograph.
+
+   On hover a neural-net mesh animates over the card: particles drift
    and draw a line to every neighbour within a radius, the same idea as the
    canvas mesh on jackiehu.dev.
 
@@ -108,8 +113,7 @@
     host.innerHTML =
       '<div class="hob-tri">' +
         GROUPS.map(function (g) {
-          return '<a class="hob-card" data-cue="Open the gallery" href="hobby.html?id=' + esc(g.id) + '"' +
-                    ' data-gallery="' + esc(g.id) + '">' +
+          return '<a class="hob-card" data-cue="Open the gallery" href="hobby.html?id=' + esc(g.id) + '">' +
             '<img src="public/assets/hobbies/' + esc(g.id) + '-1.webp" alt=""' +
                  ' aria-hidden="true" width="600" height="450" loading="lazy" decoding="async">' +
             '<span class="hob-card__body">' +
@@ -120,18 +124,6 @@
           '</a>';
         }).join('') +
       '</div>';
-
-    /* The cards stay real links — middle-click, keyboard and no-JS all still
-       reach the gallery — but a plain left click opens the popover on the
-       spot. Clicking an image anywhere on this site means the same thing. */
-    host.addEventListener('click', function (e) {
-      var card = e.target.closest && e.target.closest('.hob-card');
-      if (!card) return;
-      if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey || e.button !== 0) return;
-      if (!window.portfolioLightbox) return;
-      var id = card.getAttribute('data-gallery');
-      if (id && window.portfolioLightbox.open(id, 1)) e.preventDefault();
-    });
 
     if (reduce) return;
 

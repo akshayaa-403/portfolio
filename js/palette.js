@@ -236,9 +236,14 @@
       // need no special case: they are simply the same three. 4.5:1 is the
       // hub's bar, and field.js ramps the smaller dots down from it to 3:1 —
       // so the swatch in the legend is exactly the hub it stands for.
-      '--graph-projects': css(meet(a, 4.5, g.dark, g.gl, g.dark ? 46 : 26, g.dark ? 66 : 46)),
-      '--graph-hobbies': css(meet(b, 4.5, g.dark, g.gl, g.dark ? 46 : 26, g.dark ? 66 : 46)),
-      '--graph-resources': css(meet(c, 4.5, g.dark, g.gl, g.dark ? 46 : 26, g.dark ? 66 : 46))
+      // Bands swapped, to match shade() in js/field.js: the graph wears the
+      // dark theme's lightness band on paper and the light theme's on a dark
+      // ground. `meet` still walks each one until it measures 4.5:1 against
+      // the ground it is actually on, so the swap changes the colour and
+      // never the contrast.
+      '--graph-projects': css(meet(a, 4.5, g.dark, g.gl, g.dark ? 26 : 46, g.dark ? 46 : 66)),
+      '--graph-hobbies': css(meet(b, 4.5, g.dark, g.gl, g.dark ? 26 : 46, g.dark ? 46 : 66)),
+      '--graph-resources': css(meet(c, 4.5, g.dark, g.gl, g.dark ? 26 : 46, g.dark ? 46 : 66))
     };
 
     written = Object.keys(out);

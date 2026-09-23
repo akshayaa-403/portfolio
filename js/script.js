@@ -37,6 +37,7 @@
   ];
 
   function row(p, n, lead) {
+    // The group decides which half the screen covers, so the row carries it.
     var focus = (p.tech || []).slice(0, 4).map(esc)
       .join(' <span aria-hidden="true">/</span> ');
     var meta = [p.context || p.role, span(p)].filter(Boolean).map(esc).join(' · ');
@@ -48,6 +49,8 @@
        of "Project — Akshayaa Kashyap". */
     return '<a class="rm reveal' + (lead ? ' rm--lead' : '') +
         '" href="work/' + encodeURIComponent(p.id) + '.html"' +
+        (p.screen ? ' data-screen="' + [].concat(p.screen).map(safeUrl).join('|') + '"' : '') +
+        ' data-group="' + esc(p.group || '') + '"' +
         ' data-cue="Read the case study">' +
         '<span class="rm__num" aria-hidden="true">' + (n < 10 ? '0' : '') + n + '</span>' +
         '<span class="rm__text">' +
@@ -76,7 +79,7 @@
     var html = GROUPS.map(function (g) {
       var rows = shown.filter(function (p) { return p.group === g.key; });
       if (!rows.length) return '';
-      return '<div class="rm-group reveal">' +
+      return '<div class="rm-group reveal" data-group="' + esc(g.key) + '">' +
           '<h3 class="rm-group__title">' + esc(g.title) + '</h3>' +
           '<p class="rm-group__note">' + esc(g.note) + '</p>' +
         '</div>' +
@@ -102,6 +105,77 @@
        reader with JS off sees the work rather than an empty column. When JS
        is running, this is the enhanced version of the same thing. */
     host.innerHTML = html;
+    initScreen();
+  }
+
+  /* ---------- the screen ----------
+     Hovering a row takes the OTHER column away and puts that project in the
+     space it left: hover a product and Research goes, hover a research
+     project and Products goes. Not an overlay — there is no panel, no border
+     and no ground behind the media, so what is left on the page is the column
+     you are reading and the thing you are pointing at.
+
+     Each row carries its own media in data-screen (`screen` in
+     js/project-data.js), one path or several; .mp4/.webm play muted and
+     looping, anything else is a still. So swapping a screenshot for a screen
+     recording is a data change and no code change.
+
+     Blank is the resting state on purpose: a panel showing the first project
+     by default is a panel nobody reads as belonging to the row under the
+     cursor.
+
+     GROUPS is the order of the columns, so the side to fill is the index of
+     the group NOT being hovered. Below 800px the grid is one column, there is
+     no other column to give up, and the CSS drops the whole thing. */
+  function initScreen() {
+    var screen = document.querySelector('[data-rm-screen]');
+    var list = document.getElementById('recent-cards');
+    if (!screen || !list) return;
+
+    var at = null;
+    function show(rm) {
+      var src = rm && rm.getAttribute('data-screen');
+      if (src === at) return;
+      at = src;
+
+      var hide = null;
+      if (src) {
+        var i = 0;
+        for (var g = 0; g < GROUPS.length; g++) {
+          if (GROUPS[g].key === rm.getAttribute('data-group')) i = g;
+        }
+        hide = GROUPS[i === 0 ? GROUPS.length - 1 : 0].key;
+        screen.setAttribute('data-side', i === 0 ? 'right' : 'left');
+        screen.setAttribute('data-on', '');
+        screen.innerHTML = src.split('|').map(function (one) {
+          return /\.(mp4|webm|ogv)$/i.test(one)
+            ? '<video src="' + safeUrl(one) + '" autoplay muted loop playsinline></video>'
+            : '<img src="' + safeUrl(one) + '" alt="" decoding="async">';
+        }).join('');
+      } else {
+        screen.removeAttribute('data-on');
+        screen.innerHTML = '';
+      }
+
+      // Which column stands down. Done here rather than in a selector because
+      // CSS cannot compare one element's group against another's.
+      var col = list.querySelectorAll('[data-group]');
+      for (var k = 0; k < col.length; k++) {
+        col[k].classList.toggle('is-stood-down',
+          hide !== null && col[k].getAttribute('data-group') === hide);
+      }
+    }
+
+    list.addEventListener('pointerover', function (e) {
+      show(e.target.closest('.rm'));
+    });
+    // focusin/focusout so the keyboard gets the same view the pointer does.
+    list.addEventListener('focusin', function (e) {
+      var rm = e.target.closest('.rm');
+      if (rm) show(rm);
+    });
+    list.addEventListener('focusout', function () { show(null); });
+    list.addEventListener('pointerleave', function () { show(null); });
   }
 
   /* ---------- experience ----------
@@ -211,20 +285,27 @@
       return '<li class="book-slot" style="--bt:' + t + 'px;--bw:' + w +
           'px;--bh:' + h + 'px">' +
         '<button class="book" type="button" data-book="' + i + '"' +
-          ' aria-pressed="' + (i === 0 ? 'true' : 'false') + '"' +
-          ' data-cue="Turn it around"' +
+          ' aria-haspopup="dialog"' +
+          ' data-cue="Take it off the shelf"' +
           ' style="--spine-bg:' + esc(b.colour || '#d9dde2') +
             ';--spine-ink:' + spineInk(b.colour) +
             ';--spine-fs:' + (Math.round(fs * 10) / 10) + 'px">' +
-          '<span class="book__spine">' +
-            '<span class="spine__title">' + esc(title) + '</span>' +
-            (author ? '<span class="spine__author">' + esc(author) + '</span>' : '') +
-          '</span>' +
-          // alt="": the button already announces the title and author, and the
-          // caption below announces the rest. The cover is a picture of
-          // information the page has already given.
-          '<span class="book__cover">' +
-            '<img src="' + safeUrl(b.cover) + '" alt="" loading="lazy" decoding="async">' +
+          /* The button fills the slot and never turns; the box inside it does.
+             Rotating the button itself made its own box edge-on, so the
+             pointer fell off the thing it was hovering, the book snapped back,
+             and the click landed on nothing. */
+          '<span class="book__turn">' +
+            '<span class="book__spine">' +
+              '<span class="spine__title">' + esc(title) + '</span>' +
+              (author ? '<span class="spine__author">' + esc(author) + '</span>' : '') +
+            '</span>' +
+            // alt="": the button already announces the title and author, and
+            // the caption below announces the rest. The cover is a picture of
+            // information the page has already given.
+            '<span class="book__cover">' +
+              '<img src="' + safeUrl(b.cover) + '" alt="" draggable="false"' +
+                ' loading="lazy" decoding="async">' +
+            '</span>' +
           '</span>' +
         '</button>' +
       '</li>';
@@ -236,36 +317,293 @@
 
     var caption = host.querySelector('[data-shelf-caption]');
     var buttons = host.querySelectorAll('.book');
-    var at = -1;
 
-    function show(i) {
+    /* The shelf below the spines names whichever book the pointer is on. The
+       turn itself is pure CSS — :hover on the slot widens it and :hover on the
+       button rotates it — so nothing here has to keep an "open" book in sync
+       with the pointer. */
+    var at = -1;
+    function say(i) {
       if (i === at || !books[i]) return;
       at = i;
       var b = books[i];
       caption.innerHTML =
         '<b>' + esc(b.title) + '</b> · ' + esc(b.author || '') +
         (b.note ? ' — ' + esc(b.note) : '');
-      for (var n = 0; n < buttons.length; n++) {
-        buttons[n].setAttribute('aria-pressed', n === i ? 'true' : 'false');
-      }
     }
+
+    /* ---------- taking one off the shelf ----------
+       A native <dialog> via showModal(), for the reason js/lightbox.js uses
+       one: focus trapping, page inertness, Escape and ::backdrop come free.
+       The dialog itself has no panel — the site is vignetted behind it and
+       the only two things on screen are the book and the note.
+
+       The book is a real box, six faces on one 3-D transform, and it can be
+       tumbled on both axes with the pointer or the arrow keys. The summary is
+       handwritten onto a scrap of ruled paper, on the rules: js/note-data.js
+       carries where every rule on every scrap is, measured offline by
+       tools/trace-notes.py, so nothing is read back off a canvas here. Drop
+       another scrap in public/assets/notes/, re-run the tool, and it joins
+       the shuffle with no change to this file. */
+
+    var dlg = document.createElement('dialog');
+    dlg.className = 'bookview';
+    dlg.innerHTML =
+      '<button class="bookview__close" type="button" aria-label="Put it back">×</button>' +
+      '<div class="bookview__inner"></div>';
+    document.body.appendChild(dlg);
+    var inner = dlg.querySelector('.bookview__inner');
+
+    /* --- writing on the paper ---
+       One <span> per rule, sitting ON it. The text is measured with the same
+       font the spans are set in — a 2-D context is the only way to ask a
+       browser how wide a string will be before it draws it — and wrapped to
+       the width of the paper AT THAT RULE, which narrows where the scrap is
+       torn.
+
+       Returns null when the words do not fit the paper, which is how the
+       caller knows to try a different scrap rather than overflowing one. */
+    var ruler = document.createElement('canvas').getContext('2d');
+
+    function write(paper, text) {
+      var rules = paper.rules || [];
+      if (rules.length < 2) return null;
+
+      // The hand is sized off the gap between the rules, so it sits IN the
+      // ruling rather than across it, whatever the paper. Then the sheet is
+      // scaled until that hand is legible on screen — a scrap with tight
+      // ruling is simply shown bigger — and capped so it still fits beside
+      // the book.
+      var gaps = [];
+      for (var g = 1; g < rules.length; g++) gaps.push(rules[g].y - rules[g - 1].y);
+      gaps.sort(function (x, y) { return x - y; });
+      var gap = gaps[gaps.length >> 1];
+
+      var scale = Math.max(340 / paper.w, 15 / (gap * 0.82));
+      scale = Math.min(scale, 460 / paper.w);
+      /* Clamped at both ends. Below 14px a hand is a squiggle; above 20px a
+         generously ruled scrap eats its own capacity, because the writing
+         grows with the ruling and the sheet does not. Between the two the
+         type simply sits in whatever ruling the paper has. */
+      var fs = Math.max(14, Math.min(20, gap * scale * 0.82));
+
+      ruler.font = '500 ' + fs + 'px Caveat, cursive';
+
+      /* ONE left margin, a ragged right — which is how anyone writes on ruled
+         paper, and also what keeps the words off the paper's edges.
+
+         The margin is the rightmost point any rule starts at, so no line can
+         begin out on a torn strip or a row of punch holes while its
+         neighbours begin further in. The right-hand end stays per-rule,
+         because that is where the sheet is genuinely narrower — a tear, or a
+         doodle lying over the ruling — and holding every line to the
+         narrowest of them would waste most of the page. */
+      var left = -Infinity;
+      for (var e = 0; e < rules.length; e++) {
+        if (rules[e].x0 > left) left = rules[e].x0;
+      }
+      left *= scale;
+      var pad = Math.max(fs * 0.6, paper.w * scale * 0.035);
+      left += pad;
+      function roomAt(rule) { return rule.x1 * scale - pad - left; }
+
+      var words = String(text).split(/\s+/);
+      var lines = [], at = 0;
+      for (var r = 0; r < rules.length && at < words.length; r++) {
+        var room = roomAt(rules[r]);
+        var line = '';
+        while (at < words.length) {
+          var next = line ? line + ' ' + words[at] : words[at];
+          if (line && ruler.measureText(next).width > room) break;
+          line = next;
+          at++;
+        }
+        // A single word wider than the whole rule would otherwise loop forever.
+        if (!line) { line = words[at]; at++; }
+        lines.push({ rule: rules[r], text: line });
+      }
+      if (at < words.length) return null;          // ran out of paper
+
+      return {
+        scale: scale,
+        html: lines.map(function (l) {
+          return '<span class="notepaper__line" style="' +
+            'left:' + left.toFixed(1) + 'px;' +
+            'top:' + (l.rule.y * scale).toFixed(1) + 'px;' +
+            'width:' + roomAt(l.rule).toFixed(1) + 'px;' +
+            'font-size:' + fs.toFixed(1) + 'px">' + esc(l.text) + '</span>';
+        }).join('')
+      };
+    }
+
+    /* Shuffled, then the first scrap the summary actually fits on — so the
+       paper is different each time a book is taken off the shelf, and the
+       writing never runs off the bottom of one. If a summary has outgrown
+       every scrap, the one with the most rules takes it and the overflow is
+       dropped rather than piled on the last line; keep summaries short (see
+       js/readings-data.js). */
+    function paperFor(text) {
+      var papers = (typeof notePapers === 'undefined' ? [] : notePapers).slice();
+      if (!papers.length) return null;
+
+      for (var i = papers.length - 1; i > 0; i--) {
+        var j = Math.floor(Math.random() * (i + 1));
+        var t = papers[i]; papers[i] = papers[j]; papers[j] = t;
+      }
+
+      for (var p = 0; p < papers.length; p++) {
+        var set = write(papers[p], text);
+        if (set) return { paper: papers[p], scale: set.scale, html: set.html };
+      }
+
+      var roomiest = papers.slice().sort(function (x, y) {
+        return (y.rules || []).length - (x.rules || []).length;
+      })[0];
+      var words = text.split(/\s+/);
+      while (words.length > 4) {
+        words.pop();
+        var fit = write(roomiest, words.join(' ') + '…');
+        if (fit) return { paper: roomiest, scale: fit.scale, html: fit.html };
+      }
+      return null;
+    }
+
+    /* --- the book, as a box --- */
+    function box(b) {
+      var W = mm(b.widthMm || 135);
+      var H = mm(b.heightMm || 200);
+      var T = Math.max(18, mm((b.pages || 300) * 0.0575 + (b.hardback ? 5 : 2.5)));
+      // Bigger than on the shelf: this is the thing being looked at.
+      var k = 1.7;
+      W *= k; H *= k; T *= k;
+
+      return '<div class="book3d" data-book3d tabindex="0" role="application"' +
+          ' aria-label="' + esc(b.title) + ' — drag, or use the arrow keys, to turn it"' +
+          ' data-cue="Drag to turn it"' +
+          ' style="--w:' + W + 'px;--h:' + H + 'px;--t:' + T + 'px">' +
+        '<div class="book3d__box" data-book3d-box>' +
+          '<span class="book3d__face book3d__face--front">' +
+            '<img src="' + safeUrl(b.cover) + '" alt="" draggable="false">' +
+          '</span>' +
+          '<span class="book3d__face book3d__face--back"></span>' +
+          '<span class="book3d__face book3d__face--spine"' +
+            ' style="--spine-bg:' + esc(b.colour || '#d9dde2') +
+              ';--spine-ink:' + spineInk(b.colour) + '">' +
+            '<span class="spine__title">' + esc(b.title) + '</span>' +
+            '<span class="spine__author">' + esc(b.author || '') + '</span>' +
+          '</span>' +
+          '<span class="book3d__face book3d__face--fore"></span>' +
+          '<span class="book3d__face book3d__face--head"></span>' +
+          '<span class="book3d__face book3d__face--tail"></span>' +
+        '</div>' +
+      '</div>';
+    }
+
+    function open(i) {
+      var b = books[i];
+      if (!b || !dlg.showModal) return;
+
+      var text = b.summary || b.note || '';
+      var sheet = paperFor(text);
+
+      inner.innerHTML = box(b) +
+        (sheet
+          ? '<div class="notepaper" style="width:' + (sheet.paper.w * sheet.scale).toFixed(1) +
+              'px;height:' + (sheet.paper.h * sheet.scale).toFixed(1) + 'px">' +
+              '<img class="notepaper__sheet" src="' + safeUrl(sheet.paper.src) +
+                '" alt="" aria-hidden="true">' +
+              // The drawn lines are one sentence chopped into pieces; a screen
+              // reader gets the sentence instead, once, below.
+              '<span aria-hidden="true">' + sheet.html + '</span>' +
+              '<p class="visually-hidden">' + esc(b.title) + ' by ' +
+                esc(b.author || '') + '. ' + esc(text) + '</p>' +
+            '</div>'
+          : '<p class="notepaper__fallback">' + esc(text) + '</p>');
+
+      turn(inner.querySelector('[data-book3d-box]'));
+      dlg.showModal();
+      var focusable = inner.querySelector('[data-book3d]');
+      if (focusable) focusable.focus();
+    }
+
+    /* --- tumbling it ---
+       Free on both axes, as a thing you are holding rather than a thing on a
+       shelf. The angles live on the element as custom properties so the CSS
+       owns the transform and this only ever writes two numbers. */
+    function turn(el) {
+      if (!el) return;
+      var rx = 8, ry = -32, down = null;
+
+      function set() {
+        el.style.setProperty('--rx', rx.toFixed(1) + 'deg');
+        el.style.setProperty('--ry', ry.toFixed(1) + 'deg');
+      }
+      set();
+
+      /* Belt and braces with draggable="false" on the cover: Chrome will still
+         start a native image drag from a pointerdown that began on the <img>,
+         and a book that tears off into a drag ghost cannot be turned. */
+      el.parentNode.addEventListener('dragstart', function (e) { e.preventDefault(); });
+
+      el.parentNode.addEventListener('pointerdown', function (e) {
+        e.preventDefault();
+        down = { x: e.clientX, y: e.clientY };
+        el.parentNode.setPointerCapture(e.pointerId);
+        el.parentNode.classList.add('is-turning');
+      });
+      el.parentNode.addEventListener('pointermove', function (e) {
+        if (!down) return;
+        ry += (e.clientX - down.x) * 0.5;
+        rx -= (e.clientY - down.y) * 0.5;
+        down = { x: e.clientX, y: e.clientY };
+        set();
+      });
+      function drop(e) {
+        if (!down) return;
+        down = null;
+        try { el.parentNode.releasePointerCapture(e.pointerId); } catch (err) {}
+        el.parentNode.classList.remove('is-turning');
+      }
+      el.parentNode.addEventListener('pointerup', drop);
+      el.parentNode.addEventListener('pointercancel', drop);
+
+      // The keyboard gets the same two axes.
+      el.parentNode.addEventListener('keydown', function (e) {
+        var k = e.key, step = e.shiftKey ? 45 : 15;
+        if (k === 'ArrowLeft') ry -= step;
+        else if (k === 'ArrowRight') ry += step;
+        else if (k === 'ArrowUp') rx -= step;
+        else if (k === 'ArrowDown') rx += step;
+        else return;
+        e.preventDefault();
+        set();
+      });
+    }
+
+    dlg.addEventListener('click', function (e) {
+      // The dialog IS the vignette: a click that lands on neither the book nor
+      // the paper is a click outside.
+      if (e.target === dlg || e.target.closest('.bookview__close')) dlg.close();
+    });
+    dlg.addEventListener('close', function () { inner.innerHTML = ''; });
 
     for (var i = 0; i < buttons.length; i++) {
       // pointerenter rather than mouseover: it does not re-fire for every
-      // child the pointer crosses inside the book. focus covers the keyboard,
-      // click covers touch, where there is no hover at all.
+      // child the pointer crosses inside the book.
       buttons[i].addEventListener('pointerenter', function (e) {
-        show(+e.currentTarget.getAttribute('data-book'));
+        say(+e.currentTarget.getAttribute('data-book'));
       });
       buttons[i].addEventListener('focus', function (e) {
-        show(+e.currentTarget.getAttribute('data-book'));
+        say(+e.currentTarget.getAttribute('data-book'));
       });
       buttons[i].addEventListener('click', function (e) {
-        show(+e.currentTarget.getAttribute('data-book'));
+        var n = +e.currentTarget.getAttribute('data-book');
+        say(n);
+        open(n);
       });
     }
 
-    show(0);
+    say(0);
   }
 
   /* ---------- scroll reveal ----------
