@@ -20,7 +20,7 @@
    session and a new combination.
 
    WHEN IT APPLIES
-   Only in graph mode. Mosaic returns the site to the navy sampled from the
+   Only in graph mode. Art and mosaic return the site to the navy sampled from the
    favicon, because mosaic is the arrangement that shows real artifacts and
    they should sit on the site's own colour rather than on a borrowed one.
 
@@ -182,9 +182,9 @@
   }
 
   function apply() {
-    // Only graph mode wears the palette. Mosaic goes back to the navy the
+    // Only graph mode wears the palette. Art and mosaic go back to the navy the
     // brand mark was sampled from.
-    var on = root.getAttribute('data-mode') !== 'mosaic';
+    var on = root.getAttribute('data-mode') === 'graph';
 
     if (!on) {
       written.forEach(function (t) { root.style.removeProperty(t); });

@@ -1604,12 +1604,14 @@ body { padding-top: var(--header-h, 80px); }
   [data-mode='graph'] .field { display: none; }
 }
 
-[data-mode='graph'] .hero__lockup {
+[data-mode='graph'] .hero__lockup,
+[data-mode='art'] .hero__lockup {
   left: 0 !important; right: auto !important; top: 0 !important;
   width: 100% !important; max-width: none !important;
   height: 100% !important;
 }
-[data-mode='graph'] .hero__name {
+[data-mode='graph'] .hero__name,
+[data-mode='art'] .hero__name {
   position: absolute !important;
   /* Centred on the toggle axis. width:max-content + translateX(-50%)
      keeps it one line whatever the string length. */
@@ -1620,7 +1622,8 @@ body { padding-top: var(--header-h, 80px); }
   text-align: center !important;
   transform: translateX(-50%) !important;
 }
-[data-mode='graph'] .hero__role {
+[data-mode='graph'] .hero__role,
+[data-mode='art'] .hero__role {
   position: absolute !important;
   left: 50.000% !important; top: 49.879% !important;
   right: auto !important; bottom: auto !important; margin: 0 !important;
@@ -1628,7 +1631,8 @@ body { padding-top: var(--header-h, 80px); }
   white-space: nowrap !important; text-align: center !important;
   transform: translateX(-50%) !important;
 }
-[data-mode='graph'] .hero__sub {
+[data-mode='graph'] .hero__sub,
+[data-mode='art'] .hero__sub {
   position: absolute !important;
   left: 50.000% !important; top: 54.480% !important;
   right: auto !important; bottom: auto !important; margin: 0 !important;
@@ -1636,7 +1640,8 @@ body { padding-top: var(--header-h, 80px); }
   white-space: nowrap !important; text-align: center !important;
   transform: translateX(-50%) !important;
 }
-[data-mode='graph'] .hero__headline {
+[data-mode='graph'] .hero__headline,
+[data-mode='art'] .hero__headline {
   position: absolute !important;
   left: 50.000% !important; top: 60.412% !important;
   right: auto !important; bottom: auto !important; margin: 0 !important;
@@ -1644,7 +1649,8 @@ body { padding-top: var(--header-h, 80px); }
   text-align: center !important;
   transform: translateX(-50%) !important;
 }
-[data-mode='graph'] .hero__proof {
+[data-mode='graph'] .hero__proof,
+[data-mode='art'] .hero__proof {
   position: absolute !important;
   left: 50.000% !important; top: 68.000% !important;
   right: auto !important; bottom: auto !important; margin: 0 !important;
@@ -2637,14 +2643,20 @@ body:has(dialog[open]) .cue { display: none; }
   .book3d, .notepaper { animation: none; }
 }
 
-/* --- The mode toggle, as a tile --------------------------------------
-   Same place in both modes, as before — but in the mosaic it is one of the
-   pinboard's cards rather than a pill floating over it, so it belongs to the
-   arrangement it is sitting on. */
-[data-mode="mosaic"] .hero__actions .modes {
-  padding: 10px 12px;
-  border-radius: var(--radius);
-  background: var(--bg-raised);
-  border: 1px solid var(--line);
-  box-shadow: var(--shadow-sticker);
+/* --- The mode toggle is identical in every mode ----------------------
+   Same pill, same place: it chooses the arrangement, so nothing about it may
+   change when the arrangement does. Below 900px it is in normal flow under
+   the lockup; in the mosaic that flow is the grid, where it would otherwise
+   land after the last tile, so it takes the full-width row straight after
+   the name tile instead. */
+@media (max-width: 899.98px) {
+  /* The stage's top padding reserves the desktop toggle band; down here the
+     toggle is in the flow, so the band would only be an empty gap. */
+  [data-mode='mosaic'] .stage { padding-top: var(--gap-lg); }
+  [data-mode='mosaic'] .hero__actions {
+    order: -1;
+    grid-column: 1 / -1;
+    align-self: center;
+    justify-self: center;
+  }
 }

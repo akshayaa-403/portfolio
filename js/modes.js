@@ -1,11 +1,11 @@
-/* View-mode switcher: graph (default) / mosaic.
+/* View-mode switcher: graph (default) / art / mosaic.
    The mode lives as data-mode on <html>; js/boot.js has already applied the
    saved value before paint, so this only wires the buttons and keeps their
    aria-checked state honest. */
 (function () {
   'use strict';
 
-  var MODES = ['graph', 'mosaic'];
+  var MODES = ['graph', 'art', 'mosaic'];
   var KEY = 'viewMode';
   var root = document.documentElement;
 
