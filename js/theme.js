@@ -1,62 +1,72 @@
 /* Loaded on every page: shared per-page chores (footer year) plus the
-   light/dark theme.
+   theme.
 
-   The theme is expressed as data-theme="dark" on <html>. On the home page the
-   hero lamp is the switch — lamp lit means dark room — but the choice is
-   global, so project.html and 404.html pick up the same stored preference even
-   though they have no lamp of their own.
+   The theme follows the viewer's clock: js/boot.js has already written
+   data-time (morning / day / evening / night) and, for evening and night,
+   data-theme="dark", before first paint. This file keeps that true while the
+   page stays open — a period boundary passing turns the page with it — and
+   owns the override.
 
-   Order of precedence: an explicit stored choice, then the OS preference, then
-   light. js/boot.js applies the same logic before first paint; this file must
-   agree with it. */
+   The override is the pull-cord in the header and, in desk mode, the lamp.
+   Either flips to the opposite of what the clock says ('day' or 'night') for
+   the rest of this tab's session; flipping again hands control back to the
+   clock. It lives in sessionStorage, so the next visit starts from the clock
+   again. */
 (function () {
   'use strict';
 
-  var KEY = 'theme';
+  var KEY = 'themeOverride';
+  var root = document.documentElement;
 
-  function stored() {
+  // The old light/dark preference was kept forever; the clock replaces it.
+  try { localStorage.removeItem('theme'); } catch (e) {}
+
+  function natural() { return window.periodOf(new Date().getHours()); }
+
+  function override() {
     try {
-      var v = localStorage.getItem(KEY);
-      return (v === 'dark' || v === 'light') ? v : null;
+      var v = sessionStorage.getItem(KEY);
+      return (v === 'day' || v === 'night') ? v : null;
     } catch (e) { return null; }
   }
 
-  function systemPrefersDark() {
-    return window.matchMedia('(prefers-color-scheme: dark)').matches;
-  }
+  function isDark(period) { return period === 'evening' || period === 'night'; }
 
   function current() {
-    return document.documentElement.getAttribute('data-theme') === 'dark'
-      ? 'dark' : 'light';
+    return root.getAttribute('data-theme') === 'dark' ? 'dark' : 'light';
   }
 
-  function apply(theme, persist) {
-    var root = document.documentElement;
-    if (theme === 'dark') root.setAttribute('data-theme', 'dark');
+  function apply(period) {
+    var changed = root.getAttribute('data-time') !== period;
+    root.setAttribute('data-time', period);
+    if (isDark(period)) root.setAttribute('data-theme', 'dark');
     else root.removeAttribute('data-theme');
-
-    if (persist) {
-      try { localStorage.setItem(KEY, theme); } catch (e) {}
+    if (changed) {
+      // Let the rest of the page react (the lamp, the figures, the switch).
+      window.dispatchEvent(new CustomEvent('themechange', {
+        detail: { theme: current(), time: period }
+      }));
     }
-    // Let the rest of the page react (the lamp updates its own pressed state).
-    window.dispatchEvent(new CustomEvent('themechange', { detail: { theme: theme } }));
   }
+
+  function settle() { apply(override() || natural()); }
 
   // Exposed so anything else on the page can drive the theme.
   window.portfolioTheme = {
     get: current,
-    set: function (t) { apply(t, true); },
-    toggle: function () { apply(current() === 'dark' ? 'light' : 'dark', true); }
+    time: function () { return root.getAttribute('data-time'); },
+    toggle: function () {
+      try {
+        if (override()) sessionStorage.removeItem(KEY);
+        else sessionStorage.setItem(KEY, isDark(natural()) ? 'day' : 'night');
+      } catch (e) {
+        // No storage: flip this page only.
+        apply(current() === 'dark' ? 'day' : 'night');
+        return;
+      }
+      settle();
+    }
   };
-
-  /* Follow the OS while the visitor has not made an explicit choice. */
-  function watchSystem() {
-    window.matchMedia('(prefers-color-scheme: dark)')
-      .addEventListener('change', function (e) {
-        if (stored()) return;               // an explicit choice wins
-        apply(e.matches ? 'dark' : 'light', false);
-      });
-  }
 
   /* Publish the real header height as --header-h. The hero pulls itself up by
      this amount to sit under the sticky bar; a hardcoded fallback is wrong at
@@ -102,13 +112,11 @@
   }
 
   function init() {
-    // js/boot.js has already set the attribute; only reconcile if it did not
-    // run (e.g. the script was stripped).
-    if (!document.documentElement.hasAttribute('data-theme')) {
-      var want = stored() || (systemPrefersDark() ? 'dark' : 'light');
-      if (want === 'dark') apply('dark', false);
-    }
-    watchSystem();
+    // js/boot.js has normally set data-time already; settle() is a no-op then,
+    // and the reconcile if it did not run.
+    settle();
+    // Check the clock once a minute, so evening arrives on an open page.
+    setInterval(function () { if (!override()) settle(); }, 60000);
     initHeaderHeight();
     initToggle();
     initYear();

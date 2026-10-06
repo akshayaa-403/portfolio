@@ -1,9 +1,9 @@
 /* ==========================================================================
-   Art mode — the old chaos mode, restored from c515873.
+   Desk mode — the old chaos mode, restored from c515873.
 
    A desk around the lockup: two lilies, a lamp that switches the theme and
    its glow, a music card that plays on hover, and an AirDrop card that hands
-   over the resume. Every element here exists only in [data-mode='art'] at
+   over the resume. Every element here exists only in [data-mode='desk'] at
    >= 900px; the lockup itself shares graph mode's placement in style.css.
    Behaviour lives in js/hero-hover.js.
 
@@ -28,7 +28,7 @@
    nothing on it — not a lily bleeding off the top, not a hover lift — can
    paint into the nav. No z-index, so it makes no stacking context and the
    props still interleave with the lockup by their own --z.
-   Absent outside art mode, and below the stage breakpoint. */
+   Absent outside desk mode, and below the stage breakpoint. */
 .desk {
   position: absolute;
   inset: var(--header-h, 80px) 0 0 0;
@@ -36,7 +36,7 @@
   display: none;
 }
 @media (min-width: 900px) {
-  [data-mode='art'] .desk { display: block; }
+  [data-mode='desk'] .desk { display: block; }
 }
 
 /* --- Lilies --------------------------------------------------------------- */

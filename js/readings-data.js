@@ -12,9 +12,10 @@
    unevenness a real shelf has. `heightMm` and `widthMm` are the trim of the
    edition whose cover is shown; `pages` drives the thickness of the spine.
    Page counts are from Open Library. It carries no `physical_dimensions` for
-   any of these three, so the trims are the standard ones for each edition's
+   any of these four, so the trims are the standard ones for each edition's
    format — 6x9in for the 80,000 Hours paperback, B-format for the Hodder
-   Sceptre, US trade paperback for the St. Martin's Essentials. Set
+   Sceptre, US trade paperback for the St. Martin's Essentials, and
+   5.5x8.25in for the Atria hardcover of The Courage to Be Disliked. Set
    `hardback: true` on a book bound in boards; it only thickens the spine.
 
    Covers come from the Open Library cover archive and live in
@@ -74,6 +75,19 @@ var readings = {
           url: 'https://www.goodreads.com/book/show/39101777-surrounded-by-idiots',
           note: 'Four behaviour types, and the uncomfortable business of working out which one you are.',
           summary: 'Erikson sorts behaviour into four types: Red is commanding, Yellow social, Green easy-going, Blue precise. Most of what reads as stupidity in other people is a mismatch of type. Treat people as they would like to be treated, not as you would.'
+        },
+        {
+          title: 'The Courage to Be Disliked',
+          author: 'Ichiro Kishimi & Fumitake Koga',
+          colour: '#272f6e',
+          cover: 'public/assets/readings/courage-to-be-disliked.webp',
+          heightMm: 210,
+          widthMm: 140,
+          pages: 288,
+          hardback: true,
+          url: 'https://www.goodreads.com/book/show/43306206-the-courage-to-be-disliked',
+          note: 'Adler’s psychology as a five-night argument between a philosopher and a young man who refuses to be convinced.',
+          summary: 'A philosopher and a sceptical youth argue over five nights. Following Alfred Adler, the past does not decide who you are, all problems are interpersonal, and freedom means accepting that some people will dislike you.'
         }
       ]
     }

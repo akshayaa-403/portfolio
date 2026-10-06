@@ -2,7 +2,7 @@
 
    This used to live inside js/field.js and colour only the graph's dots. It
    now sits on its own and on every page, because the three colours are the
-   site's accent family while graph mode is on: links, buttons, chips, rules,
+   site's accent family in every mode: links, buttons, chips, rules,
    the marginalia, the gutter figures and the graph itself all come out of the
    same three.
 
@@ -14,15 +14,12 @@
    saturation are always Wada's — the harmony he published lives in those.
 
    WHEN IT ROLLS
-   Once per session, kept in sessionStorage. A refresh inside the same tab
-   keeps the palette, so clicking from the home page into a case study does
-   not change the site's colour underneath the reader; a new tab is a new
-   session and a new combination.
+   Once a day, by the viewer's own calendar date: everyone who visits on the
+   same day sees the same combination, it never changes underneath someone
+   navigating, and tomorrow is a new one.
 
    WHEN IT APPLIES
-   Only in graph mode. Art and mosaic return the site to the navy sampled from the
-   favicon, because mosaic is the arrangement that shows real artifacts and
-   they should sit on the site's own colour rather than on a borrowed one.
+   In every mode — graph, desk and mosaic all wear the day's combination.
 
    HOW IT STAYS READABLE
    Nothing here is used at the value Wada wrote down. Every token is stepped
@@ -136,24 +133,13 @@
 
   /* ---------- which combination ---------- */
 
-  /* One combination for as long as this tab is open, so the site does not
-     change colour underneath someone navigating it. For a different cadence,
-     replace the two sessionStorage lines: `Date.now() / 864e5 % WADA.length`
-     is one a day, and dropping them entirely is one per page load. */
+  /* One combination per calendar day, counted in the viewer's own time zone
+     (the offset is subtracted so the day turns at local midnight, not UTC). */
   function pick() {
     if (!WADA.length) return 0;
-    var key = 'portfolio:palette';
-    try {
-      var saved = window.sessionStorage.getItem(key);
-      if (saved !== null && WADA[+saved]) return +saved;
-      var n = Math.floor(Math.random() * WADA.length);
-      window.sessionStorage.setItem(key, String(n));
-      return n;
-    } catch (err) {
-      // Private mode, or storage blocked. A palette for this page is better
-      // than no palette at all.
-      return Math.floor(Math.random() * WADA.length);
-    }
+    var d = new Date();
+    var day = Math.floor((d.getTime() - d.getTimezoneOffset() * 60000) / 864e5);
+    return day % WADA.length;
   }
 
   var INDEX = pick();
@@ -182,19 +168,6 @@
   }
 
   function apply() {
-    // Only graph mode wears the palette. Art and mosaic go back to the navy the
-    // brand mark was sampled from.
-    var on = root.getAttribute('data-mode') === 'graph';
-
-    if (!on) {
-      written.forEach(function (t) { root.style.removeProperty(t); });
-      written = [];
-      state.on = false;
-      state.colours = {};
-      emit();
-      return;
-    }
-
     var g = ground();
     var a = toHsl(TRIO[0]), b = toHsl(TRIO[1]), c = toHsl(TRIO[2]);
 
@@ -318,9 +291,9 @@
 
   apply();
 
-  // The ground moves when the theme flips, so every measured step has to be
-  // walked again. data-mode decides whether the palette applies at all.
+  // The ground moves when the theme flips or the time of day changes, so
+  // every measured step has to be walked again.
   new MutationObserver(apply).observe(root, {
-    attributes: true, attributeFilter: ['data-theme', 'data-mode']
+    attributes: true, attributeFilter: ['data-theme', 'data-time']
   });
 })();

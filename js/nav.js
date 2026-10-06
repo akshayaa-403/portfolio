@@ -107,13 +107,11 @@
     var g = document.querySelector('[data-clock-greeting]');
     if (!t && !g) return;
 
-    function greeting(h) {
-      if (h < 5) return 'Good night';
-      if (h < 12) return 'Good morning';
-      if (h < 17) return 'Good afternoon';
-      if (h < 22) return 'Good evening';
-      return 'Good night';
-    }
+    // The same four periods the theme follows (window.periodOf, js/boot.js),
+    // so the page never says "Good evening" in daylight colours.
+    var GREETING = { morning: 'Good morning', day: 'Good day',
+                     evening: 'Good evening', night: 'Good night' };
+    function greeting(h) { return GREETING[window.periodOf(h)]; }
 
     function tick() {
       var d = new Date();

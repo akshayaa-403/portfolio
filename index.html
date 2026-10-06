@@ -40,9 +40,9 @@
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Caveat:wght@500;600&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Caveat:wght@500;600&family=Libre+Caslon+Text:ital,wght@0,400;0,700;1,400&display=swap">
 <link rel="stylesheet" href="css/style.css">
-<link rel="stylesheet" href="css/art.css">
+<link rel="stylesheet" href="css/desk.css">
 
 <!-- No-FOUC: mark JS available and apply the saved view mode + theme
      before first paint. Not deferred, on purpose. -->
@@ -87,7 +87,7 @@
         <span aria-hidden="true"></span><span aria-hidden="true"></span><span aria-hidden="true"></span>
       </button>
       <nav class="nav" id="primary-nav" aria-label="Primary">
-        <a href="#main"><span class="nav__label">Home</span><span class="nav__label nav__label--measure" aria-hidden="true">Home</span></a>
+        <a href="#home"><span class="nav__label">Home</span><span class="nav__label nav__label--measure" aria-hidden="true">Home</span></a>
         <a href="#work"><span class="nav__label">Work</span><span class="nav__label nav__label--measure" aria-hidden="true">Work</span></a>
         <a href="#about"><span class="nav__label">Info</span><span class="nav__label nav__label--measure" aria-hidden="true">Info</span></a>
         <a href="#hobbies"><span class="nav__label">Hobbies</span><span class="nav__label nav__label--measure" aria-hidden="true">Hobbies</span></a>
@@ -142,7 +142,7 @@
        The prop collage that `notebook` used to hold is gone, and with it the
        borrowed third-party photographs it was built from.
   -->
-  <section class="hero" aria-labelledby="hero-name">
+  <section class="hero" id="home" aria-labelledby="hero-name">
 
     <div class="stage" data-collage>
 
@@ -170,12 +170,12 @@
         <p class="field__read" data-field-read>Every page, project, image and tool on this site — hover a node, click to go there</p>
       </div>
 
-      <!-- ---------- The desk (art mode) ----------
+      <!-- ---------- Desk mode ----------
            The old chaos mode, restored: photographed props around the lockup,
            a music card and an AirDrop card. Hidden in every other mode and
            below 900px. The desk starts below the header and clips to it, so
            nothing on it can reach into the nav; every --x/--y is a percentage
-           of the desk, not the stage. Rules in css/art.css; hover, the lamp
+           of the desk, not the stage. Rules in css/desk.css; hover, the lamp
            and the audio in js/hero-hover.js. -->
       <div class="desk">
         <img class="lily lily--bl" src="public/assets/props/lily-pair.webp"
@@ -267,7 +267,7 @@
         <span class="modes" role="radiogroup" aria-label="View mode">
           <span class="modes__label" aria-hidden="true">View</span>
           <button type="button" role="radio" data-mode-btn="graph"    aria-checked="true">graph</button>
-          <button type="button" role="radio" data-mode-btn="art" aria-checked="false">art</button>
+          <button type="button" role="radio" data-mode-btn="desk"   aria-checked="false">desk</button>
           <button type="button" role="radio" data-mode-btn="mosaic"   aria-checked="false">mosaic</button>
         </span>
       </div>
@@ -397,8 +397,23 @@
     </div>
   </section>
 
-  <!-- ===================== Info ===================== -->
-  <section class="section" id="about" aria-labelledby="about-h">
+  <!-- ===================== Info =====================
+       After the intro on emilycampbell.co: one column of large serif prose
+       with things to touch in it — grey pills that turn black, a photo chip
+       that lifts, a split-flap word that reshuffles on click, a terminal chip
+       that types a new ending on click — then a signature. The leaf shadows
+       behind it are drawn in CSS. Behaviour: initInfoIntro() in js/script.js. -->
+  <section class="section info" id="about" aria-labelledby="about-h">
+    <div class="info__shade" aria-hidden="true">
+      <span class="info__leaf" style="--lx:8%; --ly:6%; --lw:260px; --lr:-32deg; --ld:0s;"></span>
+      <span class="info__leaf" style="--lx:62%; --ly:2%; --lw:340px; --lr:-28deg; --ld:-3s;"></span>
+      <span class="info__leaf" style="--lx:84%; --ly:30%; --lw:220px; --lr:-40deg; --ld:-6s;"></span>
+      <span class="info__leaf" style="--lx:30%; --ly:38%; --lw:300px; --lr:-24deg; --ld:-2s;"></span>
+      <span class="info__leaf" style="--lx:70%; --ly:62%; --lw:280px; --lr:-35deg; --ld:-5s;"></span>
+      <span class="info__leaf" style="--lx:4%; --ly:70%; --lw:240px; --lr:-30deg; --ld:-8s;"></span>
+      <span class="info__leaf" style="--lx:44%; --ly:84%; --lw:320px; --lr:-26deg; --ld:-4s;"></span>
+      <span class="info__leaf" style="--lx:90%; --ly:88%; --lw:200px; --lr:-38deg; --ld:-1s;"></span>
+    </div>
     <div class="wrap">
       <div class="section-head reveal">
         <h2 id="about-h">Info</h2>
@@ -406,23 +421,24 @@
         <span class="rule" aria-hidden="true"></span>
       </div>
 
-      <div class="about">
-        <div class="about__body reveal" data-word-reveal>
-          <p class="about__hello" data-squiggle>Hello. It's nice to meet you.</p>
-          <p data-squiggle>I'm Akshayaa Kashyap, an AI engineer who builds the unglamorous
-            middle of a system — the part between a messy source and a decision someone
-            actually has to make.</p>
-          <p data-squiggle>Most of my work begins with data nobody wants to open: a CRM export,
-            a scraped lead list, a noisy microscopy image. I build the pipeline, the model and
-            the interface that turn it into something a person can read, argue with and act on.
-            I care more about whether a number can be traced back to its input than about the
-            number itself, which is why every project here shows its working.</p>
-          <p data-squiggle>Three of those systems were built on someone else's deadline —
-            most recently three months
-            at InnovyQ building an AI support agent that lives in Slack. The rest I build in
-            order to understand them. If any of it is useful to you, I'd like to hear about it.</p>
-        </div>
+      <div class="info__intro reveal">
+        <p class="info__hello" data-cue="👋">Hello.</p>
 
+        <p>I’m Akshayaa Kashyap<span class="info__nowrap"> <span class="info__face" aria-hidden="true"><!-- Placeholder: swap for
+          <img src="public/assets/face.webp" alt="" width="96" height="96"> when the photo exists. --><span class="info__face-ph">AK</span></span>,</span>
+          an <span class="info__pill">AI engineer</span> who <span class="info__pill">builds pipelines</span>
+          and the interfaces that make them useful.</p>
+
+        <p>I have focused <span class="info__pill">my work</span> on data nobody wants to open: the
+          <b class="info__bold">messy</b> middle, where a pipeline is
+          <button type="button" class="flap" data-flap="UNTANGLING" aria-label="untangling"><span class="flap__tile" aria-hidden="true"><span>U</span></span><span class="flap__tile" aria-hidden="true"><span>N</span></span><span class="flap__tile" aria-hidden="true"><span>T</span></span><span class="flap__tile" aria-hidden="true"><span>A</span></span><span class="flap__tile" aria-hidden="true"><span>N</span></span><span class="flap__tile" aria-hidden="true"><span>G</span></span><span class="flap__tile" aria-hidden="true"><span>L</span></span><span class="flap__tile" aria-hidden="true"><span>I</span></span><span class="flap__tile" aria-hidden="true"><span>N</span></span><span class="flap__tile" aria-hidden="true"><span>G</span></span></button>
+          the source and
+          <button type="button" class="term" data-term='~a number you can trace|~a dashboard people read|~a ticket filed for you|~a decision you can make'><span class="term__prompt" aria-hidden="true">&gt;/</span><span class="term__box"><span class="term__size" aria-hidden="true">~a dashboard people read</span><span class="term__out"><span class="term__text">~a number you can trace</span><span class="term__cursor" aria-hidden="true"></span></span></span></button>
+          comes out the other side.</p>
+
+        <p><span class="info__pill">It’s nice to meet you.</span></p>
+
+        <p class="info__sig">Akshayaa</p>
       </div>
     </div>
   </section>
@@ -464,7 +480,6 @@
 <script src="js/nav.js" defer></script>
 <script src="js/modes.js" defer></script>
 <script src="js/hero-hover.js" defer></script>
-<script src="js/squiggle.js" defer></script>
 <!-- Must load before script.js: it injects .reveal elements, and script.js
      registers the reveal observer over whatever is in the DOM at that point. -->
 <script src="js/hobby-data.js" defer></script>

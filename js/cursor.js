@@ -40,13 +40,20 @@
       shown = true;
       // Jump to the pointer before revealing, or the label slides in from
       // wherever it was last seen.
-      x = e.clientX + 16; y = e.clientY + 18;
+      at(e);
       place();
       el.classList.add('is-on');
     }
-    x = e.clientX + 16;
-    y = e.clientY + 18;
+    at(e);
     if (!frame) frame = requestAnimationFrame(place);
+  }
+
+  /* Beside the pointer, down and to the right — unless that would run the
+     label off the window, in which case it flips to the left (or above). */
+  function at(e) {
+    var w = el.offsetWidth, h = el.offsetHeight;
+    x = e.clientX + 16 + w > window.innerWidth - 8 ? e.clientX - 16 - w : e.clientX + 16;
+    y = e.clientY + 18 + h > window.innerHeight - 8 ? e.clientY - 18 - h : e.clientY + 18;
   }
 
   function init() {

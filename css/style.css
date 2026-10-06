@@ -100,6 +100,17 @@
   /* Type */
   --font-mono: 'IBM Plex Mono', ui-monospace, 'SFMono-Regular', Menlo, monospace;
   --font-script: 'Caveat', 'Segoe Script', 'Bradley Hand', cursive;
+  --font-serif: 'Libre Caslon Text', Georgia, 'Times New Roman', serif;
+
+  /* Info intro (after emilycampbell.co): grey word pills that go black on
+     hover, near-black terminal chips, and the leaf shadows behind it. */
+  --pill-bg: rgba(22, 40, 61, 0.1);
+  --pill-hover-bg: #0a0a0a;
+  --pill-hover-ink: #ffffff;
+  --term-bg: #0a0a0a;
+  --term-ink: #e5e5e5;
+  --term-dim: rgba(229, 229, 229, 0.55);
+  --leaf-shade: rgba(22, 40, 61, 0.045);
 
   /* Rhythm — the reference leans hard on a 10px beat */
   --gap: 10px;
@@ -197,6 +208,16 @@
   --shadow-card-hover: 0 10px 28px 2px rgba(0, 0, 0, 0.55);
   --shadow-sticker: 5.32px 5.32px 10px rgba(0, 0, 0, 0.42);
 
+  /* Info intro: the pills invert, the terminal chips stay black, and the
+     leaf shadows deepen so they still read on the dark ground. */
+  --pill-bg: rgba(234, 241, 248, 0.12);
+  --pill-hover-bg: #eaf1f8;
+  --pill-hover-ink: #0c1620;
+  --term-bg: #04070b;
+  --term-ink: #e5e5e5;
+  --term-dim: rgba(229, 229, 229, 0.55);
+  --leaf-shade: rgba(0, 0, 0, 0.22);
+
   --header-bg: rgba(12, 22, 32, 0.85);
   --nav-color: rgba(255, 255, 255, 0.5);
   --nav-color-hover: rgba(255, 255, 255, 0.9);
@@ -206,6 +227,47 @@
   --on-accent-deep: #0c1620;
 
   color-scheme: dark;
+}
+
+/* --------------------------------------------------------------------------
+   Time of day
+   js/boot.js writes data-time from the viewer's clock: morning 5-10, day
+   10-17, evening 17-20, night 20-5. Day is the light theme above and night
+   the dark theme, untouched. Morning warms the paper; evening is the dark
+   theme on a dusky amber ground with warm inks. Only grounds, inks and lines
+   change — the accent family is the day's Wada palette (js/palette.js),
+   re-measured against whichever ground is showing. Contrast, measured: ink
+   13.5, body 10.4, soft 6.5, muted 5.3:1 on morning paper (4.7 on its
+   sunken panels); 15.5 / 13.3 / 9.8 / 6.7:1 on the evening ground.
+   -------------------------------------------------------------------------- */
+:root[data-time='morning'] {
+  --bg: #f8f3ea;
+  --bg-raised: #fdfaf4;
+  --bg-sunken: #efe7d9;
+  --surface: #fffdf8;
+  --surface-muted: #e6dccb;
+  --line: rgba(61, 45, 22, 0.14);
+  --line-strong: rgba(61, 45, 22, 0.28);
+  --pill-bg: rgba(61, 45, 22, 0.09);
+  --leaf-shade: rgba(90, 64, 30, 0.05);
+  --header-bg: rgba(248, 243, 234, 0.96);
+}
+:root[data-theme='dark'][data-time='evening'] {
+  --bg: #1c1612;
+  --bg-raised: #271f19;
+  --bg-sunken: #15100d;
+  --surface: #271f19;
+  --surface-muted: #352b24;
+  --ink: #f5ede4;
+  --ink-body: #e8dccd;
+  --ink-soft: #cfbda8;
+  --ink-muted: #ae9b85;
+  --line: rgba(245, 228, 210, 0.16);
+  --line-strong: rgba(245, 228, 210, 0.32);
+  --pill-bg: rgba(245, 237, 228, 0.12);
+  --pill-hover-bg: #f5ede4;
+  --pill-hover-ink: #1c1612;
+  --header-bg: rgba(28, 22, 18, 0.85);
 }
 
 /* The hero props are photographs lit for a bright room; at full brightness on
@@ -1174,62 +1236,185 @@ body { padding-top: var(--header-h, 80px); }
 }
 
 /* --------------------------------------------------------------------------
-   10. About + contact
+   10. Info
+   After the intro on emilycampbell.co, measured at 1440px: one 720px column
+   of 32px serif at line-height 1.6, paragraphs 1.2em apart. Grey pills turn
+   black on hover; the photo chip (48px) lifts to 120px; the split-flap word
+   and the terminal chip are buttons, driven by initInfoIntro() in
+   js/script.js. Leaf shadows sway behind the section, CSS only.
    -------------------------------------------------------------------------- */
-.about {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--gap-lg);
-  align-items: flex-start;
+.info { position: relative; overflow: hidden; }
+
+/* --- Leaf shadows ----------------------------------------------------------
+   Soft, blurred, elongated shapes at a slant, the way light through a plant
+   falls on a wall. Each sways on its own clock; still under reduced motion. */
+.info__shade {
+  position: absolute;
+  inset: 120px 0 0;         /* below the heading, never into the section above */
+  pointer-events: none;
+  z-index: 0;
 }
-.about__body { flex: 1 1 420px; }
-.about__hello {
-  color: var(--ink) !important;
-  font-size: 22px !important;
+.info__leaf {
+  position: absolute;
+  left: var(--lx);
+  top: var(--ly);
+  width: var(--lw);
+  height: calc(var(--lw) * 0.32);
+  border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%;
+  background: var(--leaf-shade);
+  filter: blur(40px);
+  transform: rotate(var(--lr));
+}
+@media (prefers-reduced-motion: no-preference) {
+  .js .info__leaf { animation: leaf-sway 9s ease-in-out var(--ld, 0s) infinite alternate; }
+}
+@keyframes leaf-sway {
+  to { transform: rotate(calc(var(--lr) + 6deg)) translate(18px, 10px); }
+}
+.info .wrap { position: relative; z-index: 1; }
+
+/* --- The intro ------------------------------------------------------------- */
+.info__intro {
+  max-width: 720px;
+  margin: 72px 0 24px;      /* on the content edge, like every other section */
+  color: var(--ink);
+  font-family: var(--font-serif);
+  font-size: clamp(22px, 4.4vw, 32px);
+  line-height: 1.6;
+}
+.info__intro p { margin: 0 0 1.2em; }
+.info__hello { font-style: italic; }
+.info__nowrap { white-space: nowrap; }
+
+.info__pill {
+  padding: 0.19em 0.375em 0.03em;
+  border-radius: 9999px;
+  background: var(--pill-bg);
+  -webkit-box-decoration-break: clone;
+  box-decoration-break: clone;
+  transition: background 0.26s cubic-bezier(0.22, 1, 0.36, 1),
+              color 0.26s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.info__pill:hover { background: var(--pill-hover-bg); color: var(--pill-hover-ink); }
+
+.info__bold {
+  font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
+  font-weight: 700;
   letter-spacing: -0.02em;
 }
-.about__body p {
-  color: var(--ink-soft);
-  font-size: 18px;
-  line-height: 1.5;
-  margin-bottom: var(--gap-lg);
-}
 
-/* --- About text: squiggle + per-word mount reveal ------------------------
-   Both effects are lifted from the reference's actual implementation.
-
-   1. SQUIGGLE — every paragraph carries an feTurbulence/feDisplacementMap
-      filter whose `seed` and `scale` are re-randomised every 100ms by
-      js/squiggle.js. The reference uses frequency 2 (→ baseFrequency 0.02),
-      1 octave, scale 2, strength 5 (→ scale jitters 1.9–2.1). It is a
-      continuous 10fps state swap with no interpolation, not scroll-driven.
-
-   2. PER-WORD REVEAL — the reference applies this to its short captions
-      rather than its body copy, but it is the nicer effect on prose:
-      blur(10px) + opacity 0.001 + translateY(10px) → clear, 0.05s stagger.
-      Triggered when the section scrolls into view. */
-.js .word {
+/* Photo chip. A placeholder until there is a photo: initials on the accent
+   wash. It grows from its bottom edge, so it rises out of the line. */
+.info__face {
+  position: relative;
   display: inline-block;
-  white-space: pre-wrap;
+  width: 1.5em;
+  height: 1.5em;
+  vertical-align: -0.38em;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.18), 0 8px 20px rgba(0, 0, 0, 0.28);
+  transform-origin: center bottom;
+  transition: transform 0.18s cubic-bezier(0.2, 0.8, 0.2, 1);
+  z-index: 2;
+}
+.info__face img { width: 100%; height: 100%; object-fit: cover; }
+.info__face-ph {
+  display: grid;
+  place-items: center;
+  width: 100%;
+  height: 100%;
+  background: var(--accent-pale);
+  color: var(--accent-ink);
+  font-family: var(--font-mono);
+  font-size: 0.42em;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+}
+.info__face:hover { transform: scale(2.5); }
+
+/* Split-flap word: one dark plate, a lighter tile per letter. */
+.flap {
+  display: inline-flex;
+  gap: 0.09em;
+  padding: 0.09em;
+  border: 0;
+  border-radius: 6px;
+  background: var(--term-bg);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06), 0 0 0 1px rgba(255, 255, 255, 0.08);
+  vertical-align: -0.12em;
+  cursor: pointer;
+  transition: box-shadow 1s;
+}
+.flap:hover { box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06), 0 0 0 1px rgba(255, 255, 255, 0.08), 0 14px 28px rgba(0, 0, 0, 0.28); }
+.flap__tile {
+  display: grid;
+  place-items: center;
+  width: 0.52em;
+  height: 1em;
+  border-radius: 0.07em;
+  background: rgba(255, 255, 255, 0.2);
+  color: var(--term-ink);
+  font-family: var(--font-mono);
+  font-size: 1em;
+  line-height: 1;
+}
+.flap__tile span { font-size: 0.62em; font-weight: 500; }
+
+/* Terminal chip: a prompt, the phrase, a blinking cursor. The hidden sizer
+   holds the longest phrase, so the chip never changes width while typing. */
+.term {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 12px;
+  border: 0;
+  border-radius: 7px;
+  background: var(--term-bg);
+  color: var(--term-ink);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06), 0 0 0 1px rgba(255, 255, 255, 0.08);
+  font-family: var(--font-mono);
+  font-size: 0.6em;
+  font-weight: 500;
+  line-height: 1.4;
+  vertical-align: 0.12em;
+  cursor: pointer;
+  transition: box-shadow 1s;
+}
+.term:hover { box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06), 0 0 0 1px rgba(255, 255, 255, 0.08), 0 14px 28px rgba(0, 0, 0, 0.28); }
+.term__prompt { margin-right: 6px; color: var(--term-dim); font-size: 0.75em; }
+.term__box { display: inline-grid; white-space: pre; text-align: left; }
+.term__size, .term__out { grid-area: 1 / 1; }
+.term__size { visibility: hidden; }
+.term__out { display: inline-flex; align-items: center; }
+.term__cursor {
+  width: 1px;
+  height: 1.1em;
+  margin-left: 2px;
+  background: var(--term-ink);
+}
+@media (prefers-reduced-motion: no-preference) {
+  .js .term__cursor { animation: term-blink 1.1s steps(1) infinite; }
+}
+@keyframes term-blink { 50% { opacity: 0; } }
+
+.flap:focus-visible,
+.term:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
 }
 
-@media (prefers-reduced-motion: no-preference) {
-  .js [data-word-reveal] .word {
-    opacity: 0.001;
-    filter: blur(10px);
-    transform: translateY(10px);
-  }
-  /* 0.4s non-bouncy spring ≈ this cubic-bezier; 0.05s stagger set inline. */
-  .js [data-word-reveal].is-revealed .word {
-    opacity: 1;
-    filter: blur(0);
-    transform: none;
-    transition:
-      opacity 0.4s cubic-bezier(0.16, 0.84, 0.28, 1) var(--wd, 0s),
-      filter 0.4s cubic-bezier(0.16, 0.84, 0.28, 1) var(--wd, 0s),
-      transform 0.4s cubic-bezier(0.16, 0.84, 0.28, 1) var(--wd, 0s);
-  }
+.info__sig {
+  margin-top: 0.4em;
+  font-family: var(--font-script);
+  font-size: 1.7em;
+  line-height: 1;
+  transform: rotate(-4deg);
+  transform-origin: left center;
 }
+
+/* --------------------------------------------------------------------------
+   10b. Contact
+   -------------------------------------------------------------------------- */
 .contact { text-align: center; }
 .contact h2 {
   font-size: clamp(1.7rem, 5vw, 2.6rem);
@@ -1605,13 +1790,13 @@ body { padding-top: var(--header-h, 80px); }
 }
 
 [data-mode='graph'] .hero__lockup,
-[data-mode='art'] .hero__lockup {
+[data-mode='desk'] .hero__lockup {
   left: 0 !important; right: auto !important; top: 0 !important;
   width: 100% !important; max-width: none !important;
   height: 100% !important;
 }
 [data-mode='graph'] .hero__name,
-[data-mode='art'] .hero__name {
+[data-mode='desk'] .hero__name {
   position: absolute !important;
   /* Centred on the toggle axis. width:max-content + translateX(-50%)
      keeps it one line whatever the string length. */
@@ -1623,7 +1808,7 @@ body { padding-top: var(--header-h, 80px); }
   transform: translateX(-50%) !important;
 }
 [data-mode='graph'] .hero__role,
-[data-mode='art'] .hero__role {
+[data-mode='desk'] .hero__role {
   position: absolute !important;
   left: 50.000% !important; top: 49.879% !important;
   right: auto !important; bottom: auto !important; margin: 0 !important;
@@ -1632,7 +1817,7 @@ body { padding-top: var(--header-h, 80px); }
   transform: translateX(-50%) !important;
 }
 [data-mode='graph'] .hero__sub,
-[data-mode='art'] .hero__sub {
+[data-mode='desk'] .hero__sub {
   position: absolute !important;
   left: 50.000% !important; top: 54.480% !important;
   right: auto !important; bottom: auto !important; margin: 0 !important;
@@ -1641,7 +1826,7 @@ body { padding-top: var(--header-h, 80px); }
   transform: translateX(-50%) !important;
 }
 [data-mode='graph'] .hero__headline,
-[data-mode='art'] .hero__headline {
+[data-mode='desk'] .hero__headline {
   position: absolute !important;
   left: 50.000% !important; top: 60.412% !important;
   right: auto !important; bottom: auto !important; margin: 0 !important;
@@ -1650,7 +1835,7 @@ body { padding-top: var(--header-h, 80px); }
   transform: translateX(-50%) !important;
 }
 [data-mode='graph'] .hero__proof,
-[data-mode='art'] .hero__proof {
+[data-mode='desk'] .hero__proof {
   position: absolute !important;
   left: 50.000% !important; top: 68.000% !important;
   right: auto !important; bottom: auto !important; margin: 0 !important;
@@ -1931,7 +2116,6 @@ body { padding-top: var(--header-h, 80px); }
 
   .hero__actions .btn { min-height: 46px; }
   .skip-link { padding: 13px 18px; }
-  .about__body a { display: inline-block; padding: 8px 0; }
   .code-copy { min-height: 44px; padding: 11px 14px; }
   /* Footer year and social labels were 12px. */
   .site-footer__inner { font-size: 13px; }

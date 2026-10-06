@@ -681,93 +681,59 @@
     update();
   }
 
-  /* ---------- per-word mount reveal (About section) ----------
-     Splits each target paragraph into per-word spans and staggers them in with
-     blur(10px) + opacity 0.001 + y:10 → clear, 0.05s apart. These are the
-     reference's own tokenization values (it applies them to captions rather
-     than body copy). Fires when the block scrolls into view.
+  /* ---------- Info intro: split-flap word and terminal chip ----------
+     Both are <button>s in the prose. The split-flap shuffles every tile
+     through random letters and lands them left to right; the terminal erases
+     its phrase and types the next one. Under reduced motion the flap stays put
+     and the terminal swaps its phrase without typing. */
+  function initInfoIntro() {
+    var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    var ABC = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
 
-     Text nodes are walked and replaced in place so inline links survive the
-     split — a naive innerHTML rebuild would destroy them. */
-  function initWordReveal() {
-    var hosts = document.querySelectorAll('[data-word-reveal]');
-    if (!hosts.length) return;
-
-    var words = [];
-
-    function splitTextNode(node) {
-      var parts = node.nodeValue.split(/(\s+)/);
-      if (parts.length < 2 && !/\S/.test(node.nodeValue)) return;
-      var frag = document.createDocumentFragment();
-      for (var i = 0; i < parts.length; i++) {
-        if (!parts[i]) continue;
-        if (/^\s+$/.test(parts[i])) {
-          frag.appendChild(document.createTextNode(parts[i]));
-        } else {
-          var span = document.createElement('span');
-          span.className = 'word';
-          span.textContent = parts[i];
-          frag.appendChild(span);
-          words.push(span);
-        }
-      }
-      node.parentNode.replaceChild(frag, node);
-    }
-
-    function walk(el) {
-      // Snapshot children first: we mutate the tree as we go.
-      var kids = Array.prototype.slice.call(el.childNodes);
-      for (var i = 0; i < kids.length; i++) {
-        var n = kids[i];
-        if (n.nodeType === 3) {
-          splitTextNode(n);
-        } else if (n.nodeType === 1 && !n.classList.contains('word')) {
-          walk(n);
-        }
-      }
-    }
-
-    for (var h = 0; h < hosts.length; h++) {
-      var paras = hosts[h].querySelectorAll('p');
-      var n = 0;
-      for (var p = 0; p < paras.length; p++) {
-        var before = words.length;
-        walk(paras[p]);
-        // 0.05s stagger (the reference's value), but capped: this block runs to
-        // ~130 words and an uncapped ramp would take 6.5s to finish, which
-        // reads as broken rather than choreographed.
-        for (var w = before; w < words.length; w++) {
-          var d = n++ * 0.05;
-          words[w].style.setProperty('--wd', (d > 1.6 ? 1.6 : d).toFixed(2) + 's');
-        }
-      }
-    }
-    if (!words.length) return;
-
-    // Reduced motion: CSS never dims the words, so just mark them revealed.
-    if (reduceMotion) {
-      for (var k = 0; k < hosts.length; k++) hosts[k].classList.add('is-revealed');
-      return;
-    }
-
-    var io = new IntersectionObserver(function (entries) {
-      entries.forEach(function (entry) {
-        if (!entry.isIntersecting) return;
-        entry.target.classList.add('is-revealed');
-        io.unobserve(entry.target);
+    var flaps = document.querySelectorAll('[data-flap]');
+    Array.prototype.forEach.call(flaps, function (btn) {
+      var word = btn.getAttribute('data-flap');
+      var cells = btn.querySelectorAll('.flap__tile span');
+      var busy = false;
+      btn.addEventListener('click', function () {
+        if (busy || reduce) return;
+        busy = true;
+        var start = Date.now();
+        (function tick() {
+          var landed = 0;
+          for (var i = 0; i < cells.length; i++) {
+            if (Date.now() - start >= 350 + i * 90) { cells[i].textContent = word[i]; landed++; }
+            else cells[i].textContent = ABC[Math.floor(Math.random() * 26)];
+          }
+          if (landed < cells.length) setTimeout(tick, 45); else busy = false;
+        })();
       });
-    }, { rootMargin: '0px 0px -15% 0px', threshold: 0.1 });
+    });
 
-    for (var j = 0; j < hosts.length; j++) io.observe(hosts[j]);
-
-    // Failsafe, same reasoning as initReveal: never leave text hidden, and
-    // leave the observer connected so nothing loses its animation.
-    window.setTimeout(function () {
-      for (var m = 0; m < hosts.length; m++) hosts[m].classList.add('is-revealed');
-    }, 5000);
+    var terms = document.querySelectorAll('[data-term]');
+    Array.prototype.forEach.call(terms, function (btn) {
+      var list = btn.getAttribute('data-term').split('|');
+      var out = btn.querySelector('.term__text');
+      var at = 0, timer = null;
+      btn.addEventListener('click', function () {
+        clearTimeout(timer);
+        at = (at + 1) % list.length;
+        var next = list[at];
+        if (reduce) { out.textContent = next; return; }
+        function type(n) {
+          out.textContent = next.slice(0, n);
+          if (n < next.length) timer = setTimeout(function () { type(n + 1); }, 45);
+        }
+        (function erase() {
+          if (out.textContent.length > 1) {
+            out.textContent = out.textContent.slice(0, -1);
+            timer = setTimeout(erase, 18);
+          } else type(1);
+        })();
+      });
+    });
   }
 
-  
   /* ---------- boot ---------- */
   function init() {
     renderExperience();
@@ -776,7 +742,7 @@
     initReveal();
     initActiveNav();
     initHeader();
-    initWordReveal();
+    initInfoIntro();
   }
 
   window.onReady(init);

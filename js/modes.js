@@ -5,7 +5,7 @@
 (function () {
   'use strict';
 
-  var MODES = ['graph', 'art', 'mosaic'];
+  var MODES = ['graph', 'desk', 'mosaic'];
   var KEY = 'viewMode';
   var root = document.documentElement;
 

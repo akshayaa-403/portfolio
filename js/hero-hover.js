@@ -1,4 +1,4 @@
-/* Art mode's desk (restored from the old chaos mode):
+/* Desk mode's desk (restored from the old chaos mode):
      1. Every prop / card scales up slightly on hover and eases back.
      2. The lamp is a theme switch: lit lamp = dark room.
      3. Hovering the music card plays a track; leaving it fades the audio out.
@@ -9,7 +9,7 @@
    rotation and rebuild the full transform instead.
 
    Motion is gated on prefers-reduced-motion. Audio only ever starts from a
-   real pointer interaction, and stops when the visitor leaves art mode. */
+   real pointer interaction, and stops when the visitor leaves desk mode. */
 (function () {
   'use strict';
 
@@ -158,7 +158,7 @@
 
     // The card is hidden in every other mode, so nothing could stop it there.
     window.addEventListener('modechange', function () {
-      if (root.getAttribute('data-mode') !== 'art') {
+      if (root.getAttribute('data-mode') !== 'desk') {
         window.clearInterval(fade);
         audio.pause();
         audio.volume = 0;

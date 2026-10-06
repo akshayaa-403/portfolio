@@ -1,9 +1,19 @@
 /* Runs before first paint — <script src> in <head>, deliberately not deferred.
 
-   Marks JS available and applies the saved view mode and theme to <html>
-   before anything is drawn, so a returning visitor never sees a flash of the
-   default light/graph look. js/theme.js and js/modes.js reconcile with these
-   same attributes later; the precedence rules must match theirs.
+   Marks JS available and applies the saved view mode and the theme to <html>
+   before anything is drawn, so nobody sees a flash of the wrong look.
+   js/theme.js and js/modes.js reconcile with these same attributes later; the
+   rules must match theirs.
+
+   THE THEME FOLLOWS THE VIEWER'S CLOCK. The day is four periods, on sun-like
+   hours — morning 5–10, day 10–17, evening 17–20, night 20–5 — written to
+   data-time. Evening and night also set data-theme="dark", so every rule
+   written for the dark theme applies to both; morning and evening then tint
+   the paper (css/style.css, "Time of day"). The header greeting reads the
+   same periodOf(), so the theme and "Good evening" can never disagree.
+
+   The pull-cord and the desk lamp override it for the rest of the tab's
+   session: sessionStorage 'themeOverride' holds 'day' or 'night'.
 
    Blocking parsing for one small uncached file is the price of no FOUC. */
 (function () {
@@ -13,14 +23,22 @@
   var m = 'graph';
   try {
     var s = localStorage.getItem('viewMode');
-    if (s === 'graph' || s === 'art' || s === 'mosaic') m = s;
+    if (s === 'graph' || s === 'desk' || s === 'mosaic') m = s;
   } catch (e) { /* private mode */ }
   r.setAttribute('data-mode', m);
 
-  var t = null;
-  try { t = localStorage.getItem('theme'); } catch (e) { /* private mode */ }
-  if (t !== 'dark' && t !== 'light') {
-    t = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
-  }
-  if (t === 'dark') r.setAttribute('data-theme', 'dark');
+  window.periodOf = function (h) {
+    if (h >= 5 && h < 10) return 'morning';
+    if (h >= 10 && h < 17) return 'day';
+    if (h >= 17 && h < 20) return 'evening';
+    return 'night';
+  };
+
+  var t = window.periodOf(new Date().getHours());
+  try {
+    var o = sessionStorage.getItem('themeOverride');
+    if (o === 'day' || o === 'night') t = o;
+  } catch (e) { /* private mode */ }
+  r.setAttribute('data-time', t);
+  if (t === 'evening' || t === 'night') r.setAttribute('data-theme', 'dark');
 })();
