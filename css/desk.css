@@ -134,24 +134,42 @@
    (68%), and be wide enough for the headline. From the photograph: the glass
    is 80.3% of the laptop's width and 85.4% of its height, starting 3.24% down,
    and the laptop is 710/432 = 1.6435 wide to high. Hence --lw, the larger of
-   what the width and the height each require, and a top that lands the glass
+   what the width and the height each require (and never under 700px, which
+   keeps the proof line, a fixed ~520px, inside it), and a top that lands the glass
    at 31%: f * (desk + header) - header, less the frame above the glass.
 
    The screen is lighter than the page by day and darker at night
    (--mon-screen), so every line of text on it measures higher contrast than
    it does on --bg, never lower. */
+/* --lw lives on the stage, so the lockup can find the screen's centre too. */
+.stage { --lw: max(54vw, 85svh, 700px); }
 .laptop {
   --hh: var(--header-h, 80px);
-  --lw: max(51vw, 85svh);
   position: absolute;
   left: 50%;
   width: var(--lw);
-  translate: -50% 0;
+  translate: calc(-50% + var(--lap-dx, 0vw)) var(--lap-dy, 0svh);
+  /* Scaled about the centre of its glass (3.24% + 85.4% / 2 down). */
+  scale: var(--lap-s, 1);
+  transform-origin: 50% 45.94%;
   top: calc(0.31 * (100% + var(--hh)) - var(--hh) - var(--lw) * 0.0197);
   z-index: 4;
   pointer-events: none;
   filter: var(--prop-filter);
 }
+/* The lockup rides on the laptop's screen: whatever offset and scale move
+   the laptop (--lap-dx/--lap-dy/--lap-s on .stage, set with ?edit=1) move
+   the text with it, about the same point -- the centre of the glass, which
+   is 31% of the stage plus half the glass: 31% + --lw * 0.2596. */
+[data-mode='desk'] .hero__lockup {
+  translate: var(--lap-dx, 0vw) var(--lap-dy, 0svh);
+  scale: var(--lap-s, 1);
+  transform-origin: 50% calc(31% + var(--lw) * 0.2596);
+}
+@media (max-width: 899.98px) {
+  [data-mode='desk'] .hero__lockup { translate: none; scale: none; }
+}
+
 .laptop__img {
   position: relative;
   display: block;
@@ -167,24 +185,9 @@
 }
 
 /* --- Things on the wall ------------------------------------------------------
-   A framed print (the flora collage inside the blue frame), a poster and a
-   torn strip held up with tape, and a postage stamp whose perforated edge is
+   A print (the flora collage) and a torn strip held up with tape, and a postage stamp whose perforated edge is
    drawn here: the reference's own edge is white paper on white and cannot be
    cut out. */
-.prop--framed { aspect-ratio: 465 / 520; }
-.prop--framed img { position: absolute; display: block; }
-.framed__frame { inset: 0; width: 100%; height: 100%; }
-/* In the frame's opening, measured from its cut-out (17.2/17.6/15.2/16.2%). */
-.framed__print {
-  left: 16.5%;
-  right: 17%;
-  top: 14.5%;
-  bottom: 15.5%;
-  width: auto;
-  height: auto;
-  object-fit: cover;
-}
-
 .prop--poster img,
 .prop--strip img { display: block; width: 100%; height: auto; }
 .prop--poster::before,
@@ -203,9 +206,9 @@
 .prop--strip::before { left: 10%; top: -1%; width: 90%; height: 3.5%; rotate: -4deg; }
 
 /* The stamp: white paper with a perforated edge, the painting inside. The
-   holes are a grid of circles laid over the whole stamp, and the padding box
-   is painted solid again on top, so only the ring of holes round the edge
-   survives. */
+   holes are a grid of circles centred on the stamp's edges, and the content
+   box is painted solid again on top, so only the bites out of the edge
+   survive. */
 .prop--stamp {
   --hole: 4px;
   aspect-ratio: 1;
@@ -213,10 +216,10 @@
   background: #fbfaf7;
   -webkit-mask:
     linear-gradient(#000 0 0) content-box,
-    radial-gradient(circle var(--hole), transparent 98%, #000) calc(var(--hole) * -1) calc(var(--hole) * -1) / calc(var(--hole) * 4) calc(var(--hole) * 4) round;
+    radial-gradient(circle var(--hole), transparent 98%, #000) calc(var(--hole) * -2) calc(var(--hole) * -2) / calc(var(--hole) * 4) calc(var(--hole) * 4) round;
   mask:
     linear-gradient(#000 0 0) content-box,
-    radial-gradient(circle var(--hole), transparent 98%, #000) calc(var(--hole) * -1) calc(var(--hole) * -1) / calc(var(--hole) * 4) calc(var(--hole) * 4) round;
+    radial-gradient(circle var(--hole), transparent 98%, #000) calc(var(--hole) * -2) calc(var(--hole) * -2) / calc(var(--hole) * 4) calc(var(--hole) * 4) round;
 }
 .stamp__img { display: block; width: 100%; height: 100%; object-fit: cover; }
 
@@ -259,7 +262,10 @@
   position: relative;
   width: min(100cqw, 100cqh * 354 / 743);
   aspect-ratio: 354 / 743;
-  pointer-events: none;   /* the button owns the hit test */
+  /* The hit test is the lamp, not the button's box, which is far wider than
+     the lamp and would catch presses meant for anything placed beside it.
+     Presses on the figure still reach the button's listeners by bubbling. */
+  pointer-events: auto;
 }
 .lamp__img {
   position: absolute;
@@ -409,6 +415,7 @@
   -webkit-user-select: none;
 }
 .js .desk [data-drag]:not(button) { cursor: grab; }
+.js .desk .prop--lamp-btn { pointer-events: none; }
 .js .desk [data-drag].is-held { cursor: grabbing; scale: 1.07; }
 .js .desk .prop.is-held {
   /* --prop-filter's fallback is empty, not `none`: `none drop-shadow()` is

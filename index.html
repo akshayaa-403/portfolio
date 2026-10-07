@@ -144,7 +144,10 @@
   -->
   <section class="hero" id="home" aria-labelledby="hero-name">
 
-    <div class="stage" data-collage>
+    <!-- --lap-dx/--lap-dy/--lap-s: how far desk mode's laptop, and the
+         lockup on its screen with it, sits from its default place and at what
+         scale (css/desk.css). Set with the ?edit=1 desk editor. -->
+    <div class="stage" data-collage style="--lap-dx:0vw; --lap-dy:0svh; --lap-s:1;">
 
       <!-- ---------- The graph (graph mode) ----------
            Every destination on this site as a node, every real relationship
@@ -197,14 +200,9 @@
         <!-- The objects on the wall and the desk, cut out of the owner's
              references by tools/build-desk-props.py. Decoration only; each
              can be dragged, and placed with ?edit=1. -->
-        <div class="prop prop--framed" data-drag data-cue="Drag" aria-hidden="true"
-             style="--x:76.000%; --y:47.000%; --w:10.000%; --r:2deg; --z:2;">
-          <img class="framed__print" src="public/assets/desk/flora-print.webp" alt="" width="520" height="520" loading="lazy" decoding="async">
-          <img class="framed__frame" src="public/assets/desk/frame.webp" alt="" width="465" height="520" loading="lazy" decoding="async">
-        </div>
         <div class="prop prop--poster" data-drag data-cue="Drag" aria-hidden="true"
-             style="--x:18.500%; --y:29.000%; --w:7.500%; --r:-3deg; --z:2;">
-          <img class="poster__img" src="public/assets/desk/tattoo-poster.webp" alt="" width="447" height="520" loading="lazy" decoding="async">
+             style="--x:76.000%; --y:47.000%; --w:8.000%; --r:2deg; --z:2;">
+          <img class="poster__img" src="public/assets/desk/flora-print.webp" alt="" width="520" height="520" loading="lazy" decoding="async">
         </div>
         <div class="prop prop--strip" data-drag data-cue="Drag" aria-hidden="true"
              style="--x:87.500%; --y:46.000%; --w:3.200%; --r:1.5deg; --z:2;">
@@ -220,28 +218,9 @@
         <img class="prop prop--swirl" src="public/assets/desk/swirl.webp" alt="" aria-hidden="true" width="520" height="237"
              loading="lazy" decoding="async" data-drag data-cue="Drag"
              style="--x:64.000%; --y:9.000%; --w:8.000%; --r:0deg; --z:2;">
-        <img class="prop prop--cool-sticker" src="public/assets/desk/cool-sticker.webp" alt="" aria-hidden="true" width="240" height="279"
-             loading="lazy" decoding="async" data-drag data-cue="Drag"
-             style="--x:20.500%; --y:6.000%; --w:4.500%; --r:8deg; --z:3;">
-        <img class="prop prop--grad-cap" src="public/assets/desk/grad-cap.webp" alt="" aria-hidden="true" width="520" height="409"
-             loading="lazy" decoding="async" data-drag data-cue="Drag"
-             style="--x:76.600%; --y:33.000%; --w:5.400%; --r:-10deg; --z:3;">
-
-        <img class="prop prop--traffic-light" src="public/assets/desk/traffic-light.webp" alt="" aria-hidden="true" width="180" height="457"
-             loading="lazy" decoding="async" data-drag data-cue="Drag"
-             style="--x:17.400%; --y:65.500%; --w:3.400%; --r:0deg; --z:5;">
         <img class="prop prop--books-glasses" src="public/assets/desk/books-glasses.webp" alt="" aria-hidden="true" width="269" height="280"
              loading="lazy" decoding="async" data-drag data-cue="Drag"
              style="--x:12.500%; --y:80.000%; --w:9.000%; --r:-6deg; --z:6;">
-        <img class="prop prop--zippo" src="public/assets/desk/zippo.webp" alt="" aria-hidden="true" width="160" height="233"
-             loading="lazy" decoding="async" data-drag data-cue="Drag"
-             style="--x:1.500%; --y:87.000%; --w:3.000%; --r:-8deg; --z:7;">
-        <img class="prop prop--keys" src="public/assets/desk/keys.webp" alt="" aria-hidden="true" width="199" height="174"
-             loading="lazy" decoding="async" data-drag data-cue="Drag"
-             style="--x:6.000%; --y:89.000%; --w:5.000%; --r:10deg; --z:7;">
-        <img class="prop prop--heart-key" src="public/assets/desk/heart-key.webp" alt="" aria-hidden="true" width="276" height="129"
-             loading="lazy" decoding="async" data-drag data-cue="Drag"
-             style="--x:22.500%; --y:92.000%; --w:6.000%; --r:-14deg; --z:7;">
         <img class="prop prop--cassette" src="public/assets/desk/cassette.webp" alt="" aria-hidden="true" width="235" height="149"
              loading="lazy" decoding="async" data-drag data-cue="Drag"
              style="--x:27.500%; --y:87.500%; --w:7.000%; --r:-8deg; --z:6;">
@@ -260,27 +239,19 @@
         <img class="prop prop--star-charm" src="public/assets/desk/star-charm.webp" alt="" aria-hidden="true" width="154" height="228"
              loading="lazy" decoding="async" data-drag data-cue="Drag"
              style="--x:60.500%; --y:86.500%; --w:3.000%; --r:8deg; --z:6;">
-        <img class="prop prop--tamagotchi" src="public/assets/desk/tamagotchi.webp" alt="" aria-hidden="true" width="191" height="288"
+
+        <img class="prop prop--grad-cap" src="public/assets/desk/grad-cap.webp" alt="" aria-hidden="true" width="520" height="409"
              loading="lazy" decoding="async" data-drag data-cue="Drag"
-             style="--x:65.500%; --y:85.500%; --w:3.500%; --r:-6deg; --z:6;">
-        <img class="prop prop--lighter" src="public/assets/desk/lighter.webp" alt="" aria-hidden="true" width="85" height="274"
+             style="--x:76.600%; --y:33.000%; --w:5.400%; --r:-10deg; --z:3;">
+        <img class="prop prop--heart-key" src="public/assets/desk/heart-key.webp" alt="" aria-hidden="true" width="276" height="129"
              loading="lazy" decoding="async" data-drag data-cue="Drag"
-             style="--x:71.000%; --y:88.000%; --w:1.600%; --r:-78deg; --z:7;">
-        <img class="prop prop--earbuds-case" src="public/assets/desk/earbuds-case.webp" alt="" aria-hidden="true" width="210" height="292"
+             style="--x:22.500%; --y:92.000%; --w:6.000%; --r:-14deg; --z:7;">
+        <img class="prop prop--keys" src="public/assets/desk/keys.webp" alt="" aria-hidden="true" width="199" height="174"
              loading="lazy" decoding="async" data-drag data-cue="Drag"
-             style="--x:81.000%; --y:72.500%; --w:4.000%; --r:4deg; --z:5;">
-        <img class="prop prop--cd-wallet" src="public/assets/desk/cd-wallet.webp" alt="" aria-hidden="true" width="262" height="242"
-             loading="lazy" decoding="async" data-drag data-cue="Drag"
-             style="--x:88.500%; --y:75.500%; --w:7.000%; --r:6deg; --z:5;">
-        <img class="prop prop--camcorder" src="public/assets/desk/camcorder.webp" alt="" aria-hidden="true" width="317" height="174"
-             loading="lazy" decoding="async" data-drag data-cue="Drag"
-             style="--x:76.500%; --y:84.000%; --w:8.000%; --r:-4deg; --z:6;">
+             style="--x:6.000%; --y:89.000%; --w:5.000%; --r:10deg; --z:7;">
         <img class="prop prop--leica" src="public/assets/desk/leica.webp" alt="" aria-hidden="true" width="273" height="153"
              loading="lazy" decoding="async" data-drag data-cue="Drag"
              style="--x:85.500%; --y:88.000%; --w:7.500%; --r:3deg; --z:7;">
-        <img class="prop prop--stars-book" src="public/assets/desk/stars-book.webp" alt="" aria-hidden="true" width="269" height="306"
-             loading="lazy" decoding="async" data-drag data-cue="Drag"
-             style="--x:93.000%; --y:84.500%; --w:6.000%; --r:10deg; --z:8;">
 
         <!-- The lamp switches the colour theme: lit lamp = dark room. A real
              <button>, so it is reachable by keyboard and announces its state.

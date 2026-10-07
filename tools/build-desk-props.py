@@ -101,22 +101,17 @@ def laptop():
 
 
 def vision_board():
-    """One sheet of sixteen cut-outs on a flat grey: each connected object is
-    its own file. Objects are named by a point on them (x, y in the sheet),
-    not by label number, which shifts with the threshold. A few fall apart
-    into pieces at the threshold (the lighter's cap, the tamagotchi's chain)
-    and are given a point on each piece."""
+    """A sheet of cut-outs on a flat grey: each connected object kept is its
+    own file. Objects are named by a point on them (x, y in the sheet), not
+    by label number, which shifts with the threshold; one that falls apart
+    into pieces can be given a point on each."""
     img = ref('Vision Board Cutouts')
     bg = ground(img, (229,), 13, sat_max=14)
     fg = cv2.morphologyEx((~bg).astype(np.uint8), cv2.MORPH_OPEN, np.ones((3, 3), np.uint8))
     n, lab = cv2.connectedComponents(fg, connectivity=8)
     groups = {
-        'star-charm': [(640, 150)], 'cool-sticker': [(330, 150)],
-        'traffic-light': [(110, 250)], 'lighter': [(510, 70), (515, 200)],
-        'tamagotchi': [(600, 320), (598, 470)], 'cd-wallet': [(360, 410)],
-        'camcorder': [(180, 580)], 'earbuds-case': [(470, 620)],
-        'eight-ball': [(647, 700)], 'heart-key': [(300, 740)],
-        'stars-book': [(580, 960)], 'leica': [(310, 900)], 'zippo': [(95, 960)],
+        'star-charm': [(640, 150)], 'eight-ball': [(647, 700)],
+        'heart-key': [(300, 740)], 'leica': [(310, 900)],
         'books-glasses': [(330, 1130)], 'keys': [(140, 1150)], 'cassette': [(600, 1210)],
     }
 
@@ -128,18 +123,6 @@ def vision_board():
 
     for name, pts in groups.items():
         m = np.isin(lab, [label_near(x, y) for x, y in pts])
-        if name == 'lighter':
-            # The lighter's body is nearly the ground's grey; take everything
-            # in its column that is not the ground, down to its base.
-            x, y, w, h = cv2.boundingRect(m.astype(np.uint8))
-            m[y:318, x:x + w] |= np.abs(img[y:318, x:x + w].astype(int).mean(2) - 229) > 5
-            # ...and it is a convex thing, so its hull mends the notches
-            # where its shading touches the ground's grey.
-            pts = np.vstack([c for c in cv2.findContours(m.astype(np.uint8), cv2.RETR_EXTERNAL,
-                                                          cv2.CHAIN_APPROX_NONE)[0] if cv2.contourArea(c) > 200])
-            m = np.zeros(m.shape, np.uint8)
-            cv2.fillConvexPoly(m, cv2.convexHull(pts), 1)
-            m = m.astype(bool)
         m = cv2.morphologyEx(m.astype(np.uint8), cv2.MORPH_CLOSE, np.ones((5, 5), np.uint8)).astype(bool)
         # Fill holes, so nothing inside an object is see-through.
         cnts, _ = cv2.findContours(m.astype(np.uint8), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE)
@@ -163,12 +146,9 @@ if __name__ == '__main__':
     cutout('swirl', 'Download free image of Van Gogh', CHECKER, 9)
     cutout('starry-night', 'Download premium png of The Starry Night', CHECKER, 9)
     cutout('goddess', 'Download premium png of Greek goddess', CHECKER, 7, sat_max=10)
-    cutout('frame', 'Download premium png of PNG Pastel color frame', CHECKER, 9,
-           seeds=[(367, 408)])
     cutout('grad-cap', 'Vintage Black and White Graduation Cap', (30, 58), 14)
     cutout('moon', 'download (4)', (255,), 10)
     cutout('paper-star', 'download (6)', (255,), 10)
     cutout('enter-key', 'download (7)', (255,), 4, sat_max=6)
     flat('flora-print', 'Download premium psd _ image of Flora', (40, 40, 696, 696))
     flat('water-lilies', 'download (5)', (110, 110, 626, 626))
-    flat('tattoo-poster', 'Tattoo Deising', (20, 150, 716, 960))
