@@ -21,7 +21,7 @@
    Values are grouped rather than sequential; new layers should slot into a
    band rather than inventing a number between two existing ones.
 
-     0        hero stage background (lilies)
+     0        hero stage background (the desk's tabletop)
      1-8      hero props, ordered back-to-front (--z on each element)
      20       hero name lockup, above every prop
      40       dragged / hovered element lifted out of its band
@@ -274,7 +274,7 @@
    a dark ground they glare. Dim and cool them so they read as objects sitting
    in the same low light as everything else. Set as a variable so the hover
    rule can compose its drop-shadow on top rather than overwrite it. The glow
-   is exempt — it is the light source — as are the lilies, already faint. */
+   is exempt — it is the light source. */
 :root[data-theme='dark'] {
   --prop-filter: brightness(0.78) saturate(0.9) contrast(1.02);
   --prop-shadow: rgba(0, 0, 0, 0.5);

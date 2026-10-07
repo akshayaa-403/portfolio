@@ -1,31 +1,27 @@
-/* Desk mode's desk (restored from the old chaos mode):
-     1. Every prop / card scales up slightly on hover and eases back.
+/* Desk mode's desk:
+     1. Every [data-drag] object can be picked up and moved around the desk;
+        "Tidy up" puts everything back. Nothing is saved, so a reload does too.
      2. The lamp is a theme switch: lit lamp = dark room.
      3. Hovering the music card plays a track; leaving it fades the audio out.
 
-   Scaling is done in JS rather than pure CSS because each object carries its
-   own authored rotate(). A CSS `transform: scale()` on hover would replace
-   that rotation and make the object snap upright, so we read the computed
-   rotation and rebuild the full transform instead.
+   Hover lift is CSS: the individual `scale`/`translate`/`rotate` properties
+   compose with each object's authored `transform: rotate()` rather than
+   replacing it, so nothing here has to rebuild a transform.
 
-   Motion is gated on prefers-reduced-motion. Audio only ever starts from a
-   real pointer interaction, and stops when the visitor leaves desk mode. */
+   Tilt and the slide home are gated on prefers-reduced-motion. Audio only
+   ever starts from a real pointer interaction, and stops when the visitor
+   leaves desk mode. */
 (function () {
   'use strict';
 
-  var SCALE = 1.06;
+  /* A press is a click until the pointer has moved this far, so the lamp,
+     the play button and the AirDrop links still work on objects that drag. */
+  var DRAG_PX = 4;
   /* One threshold for "the fade has converged" and "the track is audible",
      so a click landing mid-fade cannot read as silent and start a second play. */
   var FADE_EPSILON = 0.04;
   var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   var root = document.documentElement;
-
-  function rotationOf(el) {
-    var m = getComputedStyle(el).transform.match(/matrix(3d)?\(([^)]+)\)/);
-    if (!m) return 0;
-    var p = m[2].split(',').map(parseFloat);
-    return Math.atan2(p[1], p[0]) * 180 / Math.PI;
-  }
 
   function initLampSwitch() {
     var lamp = document.querySelector('.prop--lamp-btn');
@@ -44,36 +40,95 @@
     sync();
   }
 
-  function initHover() {
-    if (reduce) return;
-    var stage = document.querySelector('.stage');
-    if (!stage) return;
+  /* Pick up, move, put down. The object follows the pointer through the
+     `translate` property, comes to the top of the pile and stays there,
+     tilts a little with the motion, and cannot leave the desk. The lockup is
+     above the desk's whole stacking context (css/desk.css), so nothing can
+     be dropped over the name. */
+  function initDrag() {
+    var desk = document.querySelector('.desk');
+    if (!desk) return;
+    var tidy = desk.querySelector('.desk__tidy');
+    var lamp = desk.querySelector('.prop--lamp-btn');
+    var top = 10;   // above every authored --z
+    var resets = [];
 
-    var items = stage.querySelectorAll('.prop, .obj');
-    var resetters = [];
+    // A native image or link drag would steal the gesture.
+    desk.addEventListener('dragstart', function (e) { e.preventDefault(); });
 
-    Array.prototype.forEach.call(items, function (el) {
-      var deg = null;
+    // At night the tabletop's highlight (css/desk.css) sits under the lamp.
+    // Set on <html>, where --desk-sheen-x reads it.
+    function lampLight() {
+      var d = desk.getBoundingClientRect(), r = lamp.getBoundingClientRect();
+      root.style.setProperty('--lamp-x', ((r.left + r.width / 2 - d.left) / d.width * 100).toFixed(1) + '%');
+    }
 
-      el.addEventListener('pointerenter', function () {
-        // Measured lazily: the layout differs below/above the breakpoint.
-        if (deg === null) deg = Math.round(rotationOf(el));
-        el.classList.add('is-hovered');
-        el.style.setProperty('transform',
-          'rotate(' + deg + 'deg) scale(' + SCALE + ')', 'important');
+    function swallow(e) { e.preventDefault(); e.stopPropagation(); }
+
+    Array.prototype.forEach.call(desk.querySelectorAll('[data-drag]'), function (el) {
+      var tx = 0, ty = 0;   // where it has been dragged to, in px
+
+      el.addEventListener('pointerdown', function (e) {
+        if (e.button !== 0) return;
+        var x0 = e.clientX, y0 = e.clientY;
+        var nx = tx, ny = ty, box = null;
+
+        function move(ev) {
+          var dx = ev.clientX - x0, dy = ev.clientY - y0;
+          if (!box) {
+            if (Math.hypot(dx, dy) < DRAG_PX) return;
+            // Measured once, at pickup: how far it may go each way and stay
+            // on the desk. Something already over an edge may stay there,
+            // but not go further.
+            // `pad` leaves room for the lift (scale 1.07), which is still
+            // growing when this is measured.
+            var d = desk.getBoundingClientRect(), r = el.getBoundingClientRect();
+            var pad = 0.04 * Math.max(r.width, r.height);
+            box = [Math.min(0, d.left - r.left + pad), Math.max(0, d.right - r.right - pad),
+                   Math.min(0, d.top - r.top + pad), Math.max(0, d.bottom - r.bottom - pad)];
+            el.setPointerCapture(ev.pointerId);
+            el.classList.add('is-held');
+            el.style.zIndex = ++top;
+            tidy.hidden = false;
+          }
+          nx = tx + Math.max(box[0], Math.min(box[1], dx));
+          ny = ty + Math.max(box[2], Math.min(box[3], dy));
+          el.style.translate = nx + 'px ' + ny + 'px';
+          if (!reduce) el.style.rotate = Math.max(-6, Math.min(6, ev.movementX * 0.5)) + 'deg';
+          if (el === lamp) lampLight();
+        }
+
+        function end() {
+          window.removeEventListener('pointermove', move);
+          window.removeEventListener('pointerup', end);
+          window.removeEventListener('pointercancel', end);
+          if (!box) return;
+          tx = nx; ty = ny;
+          el.classList.remove('is-held');
+          el.style.rotate = '';
+          // A drag is not a click: swallow the one this release fires, so
+          // dropping the lamp does not switch the theme.
+          window.addEventListener('click', swallow, true);
+          window.setTimeout(function () { window.removeEventListener('click', swallow, true); }, 0);
+        }
+
+        window.addEventListener('pointermove', move);
+        window.addEventListener('pointerup', end);
+        window.addEventListener('pointercancel', end);
       });
 
-      function reset() {
-        el.classList.remove('is-hovered');
-        el.style.removeProperty('transform');
-      }
-      el.addEventListener('pointerleave', reset);
-      el.addEventListener('pointercancel', reset);
-      resetters.push(function () { deg = null; reset(); });
+      resets.push(function () {
+        tx = ty = 0;
+        el.style.translate = '';
+        el.style.zIndex = '';
+      });
     });
 
-    window.addEventListener('modechange', function () {
-      for (var i = 0; i < resetters.length; i++) resetters[i]();
+    tidy.addEventListener('click', function () {
+      for (var i = 0; i < resets.length; i++) resets[i]();
+      top = 10;
+      tidy.hidden = true;
+      root.style.removeProperty('--lamp-x');
     });
   }
 
@@ -167,8 +222,11 @@
   }
 
   window.onReady(function () {
-    initHover();
     initLampSwitch();
+    // Under ?edit=1 js/desk-editor.js owns the pointer on the desk: no
+    // visitor drag, and no track starting every time an object is moved.
+    if (window.isEditing()) return;
+    initDrag();
     initAudio();
   });
 })();
