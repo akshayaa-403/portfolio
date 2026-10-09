@@ -17,7 +17,18 @@
   if (!window.matchMedia('(hover: hover) and (pointer: fine)').matches) return;
 
   var eased = window.matchMedia('(prefers-reduced-motion: no-preference)').matches;
-  var el, x = 0, y = 0, shown = false, frame = 0;
+  var el, header, x = 0, y = 0, shown = false, frame = 0;
+
+  /* The header lets the pointer through its empty middle on purpose (so the
+     page scrolling under it stays clickable), which means the graph's canvas
+     is what sits under the nav bar's gaps. A cue there would describe the
+     hero while the visitor is reading the nav, so nothing is cued inside the
+     bar's box. Hidden on scroll, the box is off-screen and this is a no-op. */
+  function overHeader(e) {
+    if (!header) return false;
+    var r = header.getBoundingClientRect();
+    return e.clientY >= r.top && e.clientY < r.bottom;
+  }
 
   function place() {
     frame = 0;
@@ -27,7 +38,7 @@
   function onMove(e) {
     // Nearest ancestor that declares a cue. closest() walks text nodes'
     // parents too, so a label inside a card still reports the card's cue.
-    var host = e.target.closest ? e.target.closest('[data-cue]') : null;
+    var host = e.target.closest && !overHeader(e) ? e.target.closest('[data-cue]') : null;
     var cue = host && host.getAttribute('data-cue');
 
     if (!cue) {
@@ -57,6 +68,7 @@
   }
 
   function init() {
+    header = document.querySelector('.site-header');
     el = document.createElement('div');
     el.className = 'cue' + (eased ? ' cue--eased' : '');
     // Decorative duplication: every cue describes a control that already

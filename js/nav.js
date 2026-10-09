@@ -107,11 +107,16 @@
     var g = document.querySelector('[data-clock-greeting]');
     if (!t && !g) return;
 
-    // The same four periods the theme follows (window.periodOf, js/boot.js),
-    // so the page never says "Good evening" in daylight colours.
-    var GREETING = { morning: 'Good morning', day: 'Good day',
+    // Named from the period the page is SHOWING (data-time), not the clock,
+    // so a chosen "Night" at noon says "Good night" and the page never says
+    // "Good evening" in daylight colours. It is also the time-of-day menu's
+    // button (js/theme.js).
+    var GREETING = { morning: 'Good morning', day: 'Good afternoon',
                      evening: 'Good evening', night: 'Good night' };
-    function greeting(h) { return GREETING[window.periodOf(h)]; }
+    function greet() {
+      if (g) g.textContent = GREETING[document.documentElement.getAttribute('data-time')] || '';
+    }
+    window.addEventListener('themechange', greet);
 
     function tick() {
       var d = new Date();
@@ -122,7 +127,7 @@
           (d.getMinutes() < 10 ? '0' : '') + d.getMinutes() +
           (h < 12 ? ' AM' : ' PM');
       }
-      if (g) g.textContent = greeting(h);
+      greet();
       // Line up with the wall clock rather than drifting a second per minute.
       window.setTimeout(tick, 60000 - (d.getSeconds() * 1000 + d.getMilliseconds()));
     }

@@ -7,15 +7,16 @@
    page stays open — a period boundary passing turns the page with it — and
    owns the override.
 
-   The override is the pull-cord in the header and, in desk mode, the lamp.
-   Either flips to the opposite of what the clock says ('day' or 'night') for
-   the rest of this tab's session; flipping again hands control back to the
-   clock. It lives in sessionStorage, so the next visit starts from the clock
-   again. */
+   The override, for the rest of this tab's session, comes from two places:
+   the greeting's time-of-day menu, which picks any period or hands back to
+   the clock ("Auto"), and the lamps (the nav lamp, and the desk lamp in desk
+   mode), which flip between light and dark. It lives in sessionStorage, so
+   the next visit starts from the clock again. */
 (function () {
   'use strict';
 
   var KEY = 'themeOverride';
+  var PERIODS = ['morning', 'day', 'evening', 'night'];
   var root = document.documentElement;
 
   // The old light/dark preference was kept forever; the clock replaces it.
@@ -26,7 +27,7 @@
   function override() {
     try {
       var v = sessionStorage.getItem(KEY);
-      return (v === 'day' || v === 'night') ? v : null;
+      return PERIODS.indexOf(v) >= 0 ? v : null;
     } catch (e) { return null; }
   }
 
@@ -51,20 +52,31 @@
 
   function settle() { apply(override() || natural()); }
 
+  // A period, or null / 'auto' to follow the clock again.
+  function choose(period) {
+    try {
+      if (PERIODS.indexOf(period) >= 0) sessionStorage.setItem(KEY, period);
+      else sessionStorage.removeItem(KEY);
+    } catch (e) {
+      // No storage: change this page only.
+      apply(PERIODS.indexOf(period) >= 0 ? period : natural());
+      return;
+    }
+    settle();
+  }
+
   // Exposed so anything else on the page can drive the theme.
   window.portfolioTheme = {
     get: current,
     time: function () { return root.getAttribute('data-time'); },
+    natural: natural,
+    choice: override,
+    set: choose,
+    // Light to dark or back. Landing on the clock's own side of the line
+    // hands control back to it rather than pinning a period.
     toggle: function () {
-      try {
-        if (override()) sessionStorage.removeItem(KEY);
-        else sessionStorage.setItem(KEY, isDark(natural()) ? 'day' : 'night');
-      } catch (e) {
-        // No storage: flip this page only.
-        apply(current() === 'dark' ? 'day' : 'night');
-        return;
-      }
-      settle();
+      var target = current() === 'dark' ? 'day' : 'night';
+      choose(isDark(natural()) === (target === 'night') ? null : target);
     }
   };
 
@@ -105,6 +117,47 @@
     sync();
   }
 
+  /* The time-of-day menu under the greeting. A native popover (light dismiss
+     and Escape come with it); placed under its button when it opens, since
+     the top layer does not know where the button is. */
+  var NAMES = { morning: 'Morning', day: 'Afternoon', evening: 'Evening', night: 'Night' };
+  function initPicker() {
+    var btn = document.querySelector('[data-time-btn]');
+    var menu = document.getElementById('timepick-menu');
+    if (!btn || !menu) return;
+    var picks = menu.querySelectorAll('[data-time-pick]');
+    var now = menu.querySelector('[data-time-auto]');
+
+    function sync() {
+      var chosen = override();
+      for (var i = 0; i < picks.length; i++) {
+        var v = picks[i].getAttribute('data-time-pick');
+        picks[i].setAttribute('aria-pressed', String(v === 'auto' ? !chosen : v === chosen));
+      }
+      if (now) now.textContent = '(' + NAMES[natural()] + ')';
+      btn.setAttribute('aria-label', 'Time of day: ' + NAMES[root.getAttribute('data-time')] +
+        (chosen ? '' : ', following your clock') + '. Change');
+    }
+
+    menu.addEventListener('click', function (e) {
+      var pick = e.target.closest('[data-time-pick]');
+      if (!pick) return;
+      choose(pick.getAttribute('data-time-pick'));
+      sync();
+      if (menu.hidePopover) menu.hidePopover();
+      btn.focus();
+    });
+    menu.addEventListener('beforetoggle', function (e) {
+      if (e.newState !== 'open') return;
+      sync();
+      var r = btn.getBoundingClientRect();
+      menu.style.top = (r.bottom + 6) + 'px';
+      menu.style.right = Math.max(8, window.innerWidth - r.right) + 'px';
+    });
+    window.addEventListener('themechange', sync);
+    sync();
+  }
+
   function initYear() {
     var slots = document.querySelectorAll('[data-year]');
     var year = String(new Date().getFullYear());
@@ -119,6 +172,7 @@
     setInterval(function () { if (!override()) settle(); }, 60000);
     initHeaderHeight();
     initToggle();
+    initPicker();
     initYear();
   }
 

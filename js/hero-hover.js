@@ -33,6 +33,9 @@
       lamp.setAttribute('aria-label', dark
         ? 'Turn off the lamp (light theme)'
         : 'Turn on the lamp (dark theme)');
+      // The hover label speaks for the room: lights on in a light period,
+      // so the lamp offers to turn them off, and the other way round.
+      lamp.setAttribute('data-cue', dark ? 'Turn the lights on!' : 'Turn the lights off!');
     }
 
     lamp.addEventListener('click', function () { window.portfolioTheme.toggle(); });

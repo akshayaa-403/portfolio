@@ -9,11 +9,14 @@
    hours — morning 5–10, day 10–17, evening 17–20, night 20–5 — written to
    data-time. Evening and night also set data-theme="dark", so every rule
    written for the dark theme applies to both; morning and evening then tint
-   the paper (css/style.css, "Time of day"). The header greeting reads the
-   same periodOf(), so the theme and "Good evening" can never disagree.
+   the paper (css/style.css, "Time of day"). The header greeting names
+   whatever data-time ends up being, so the theme and "Good evening" can
+   never disagree.
 
-   The pull-cord and the desk lamp override it for the rest of the tab's
-   session: sessionStorage 'themeOverride' holds 'day' or 'night'.
+   The visitor can override it for the rest of the tab's session — the
+   greeting's time-of-day menu picks any of the four, the nav lamp and the
+   desk lamp flip between light and dark: sessionStorage 'themeOverride'
+   holds the chosen period.
 
    Blocking parsing for one small uncached file is the price of no FOUC. */
 (function () {
@@ -37,7 +40,7 @@
   var t = window.periodOf(new Date().getHours());
   try {
     var o = sessionStorage.getItem('themeOverride');
-    if (o === 'day' || o === 'night') t = o;
+    if (o === 'morning' || o === 'day' || o === 'evening' || o === 'night') t = o;
   } catch (e) { /* private mode */ }
   r.setAttribute('data-time', t);
   if (t === 'evening' || t === 'night') r.setAttribute('data-theme', 'dark');

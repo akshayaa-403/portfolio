@@ -231,43 +231,105 @@
 
 /* --------------------------------------------------------------------------
    Time of day
-   js/boot.js writes data-time from the viewer's clock: morning 5-10, day
-   10-17, evening 17-20, night 20-5. Day is the light theme above and night
-   the dark theme, untouched. Morning warms the paper; evening is the dark
-   theme on a dusky amber ground with warm inks. Only grounds, inks and lines
-   change — the accent family is the day's Wada palette (js/palette.js),
-   re-measured against whichever ground is showing. Contrast, measured: ink
-   13.5, body 10.4, soft 6.5, muted 5.3:1 on morning paper (4.7 on its
-   sunken panels); 15.5 / 13.3 / 9.8 / 6.7:1 on the evening ground.
+   js/boot.js writes data-time from the viewer's clock (or the visitor's pick
+   from the greeting's menu): morning 5-10, day 10-17, evening 17-20, night
+   20-5. Each period is painted after the four times of Genshin Impact's
+   loading screen (the sky island; the owner's reference, sampled from it):
+
+     morning  Dawn  - cream-gold cloud light under a grey-blue haze; slate inks
+     day      Day   - airy sky-white paper, deep sky-navy inks
+     evening  Dusk  - deep plum ground, peach-white inks, the sunset's glow
+     night    Night - saturated royal-blue ground, moonlit pale-blue inks
+
+   Only grounds, inks, lines and the two atmosphere tokens change: --sky (the
+   tint the hero's sky fades down from, .stage) and --lamp-glow (the nav
+   lamp). The accent family is the day's Wada palette (js/palette.js),
+   re-measured against whichever ground is showing. The base :root and
+   [data-theme='dark'] values above remain the fallback when data-time is
+   missing.
+
+   Contrast, measured for ink / body / soft / muted against the WORST of
+   --bg, --bg-raised, --bg-sunken, --surface and --sky:
+     morning 10.8 / 8.9 / 5.7 / 4.7    day   11.7 / 9.2 / 6.0 / 4.6
+     evening 11.5 / 9.9 / 7.5 / 5.5    night 12.5 / 10.8 / 8.0 / 5.9
+   The dark periods' nav text (white at 55%) measures 5.1 and 5.2 on --sky.
    -------------------------------------------------------------------------- */
+:root { --sky: var(--bg); --lamp-glow: #ffbf5e; }
+:root[data-theme='dark'] { --lamp-glow: #ffb347; }
+
 :root[data-time='morning'] {
-  --bg: #f8f3ea;
-  --bg-raised: #fdfaf4;
-  --bg-sunken: #efe7d9;
-  --surface: #fffdf8;
-  --surface-muted: #e6dccb;
-  --line: rgba(61, 45, 22, 0.14);
-  --line-strong: rgba(61, 45, 22, 0.28);
-  --pill-bg: rgba(61, 45, 22, 0.09);
-  --leaf-shade: rgba(90, 64, 30, 0.05);
-  --header-bg: rgba(248, 243, 234, 0.96);
+  --bg: #f4efe7;
+  --bg-raised: #fbf8f2;
+  --bg-sunken: #eae1d3;
+  --surface: #fffcf6;
+  --surface-muted: #e2d8c8;
+  --ink: #1c2c47;
+  --ink-body: #28395a;
+  --ink-soft: #465673;
+  --ink-muted: #56637a;
+  --line: rgba(28, 44, 71, 0.14);
+  --line-strong: rgba(28, 44, 71, 0.28);
+  --pill-bg: rgba(28, 44, 71, 0.08);
+  --leaf-shade: rgba(70, 60, 50, 0.05);
+  --header-bg: rgba(244, 239, 231, 0.96);
+  --sky: #dde2ea;
+  --lamp-glow: #f2c27e;
+}
+:root[data-time='day'] {
+  --bg: #eef5fb;
+  --bg-raised: #f8fbfe;
+  --bg-sunken: #dfeaf5;
+  --surface: #ffffff;
+  --surface-muted: #d3e3f1;
+  --ink: #10284a;
+  --ink-body: #1a3961;
+  --ink-soft: #33567e;
+  --ink-muted: #47678b;
+  --line: rgba(16, 40, 74, 0.13);
+  --line-strong: rgba(16, 40, 74, 0.27);
+  --pill-bg: rgba(16, 40, 74, 0.08);
+  --leaf-shade: rgba(16, 40, 74, 0.045);
+  --header-bg: rgba(238, 245, 251, 0.96);
+  --sky: #d6e7f6;
+  --lamp-glow: #ffd877;
 }
 :root[data-theme='dark'][data-time='evening'] {
-  --bg: #1c1612;
-  --bg-raised: #271f19;
-  --bg-sunken: #15100d;
-  --surface: #271f19;
-  --surface-muted: #352b24;
-  --ink: #f5ede4;
-  --ink-body: #e8dccd;
-  --ink-soft: #cfbda8;
-  --ink-muted: #ae9b85;
-  --line: rgba(245, 228, 210, 0.16);
-  --line-strong: rgba(245, 228, 210, 0.32);
-  --pill-bg: rgba(245, 237, 228, 0.12);
-  --pill-hover-bg: #f5ede4;
-  --pill-hover-ink: #1c1612;
-  --header-bg: rgba(28, 22, 18, 0.85);
+  --bg: #23182b;
+  --bg-raised: #2f2238;
+  --bg-sunken: #1a1121;
+  --surface: #2f2238;
+  --surface-muted: #3d2d47;
+  --ink: #fcefe6;
+  --ink-body: #f2ddcf;
+  --ink-soft: #ddbeac;
+  --ink-muted: #c4a191;
+  --line: rgba(250, 218, 200, 0.16);
+  --line-strong: rgba(250, 218, 200, 0.32);
+  --pill-bg: rgba(252, 239, 230, 0.12);
+  --pill-hover-bg: #fcefe6;
+  --pill-hover-ink: #23182b;
+  --header-bg: rgba(35, 24, 43, 0.86);
+  --sky: #45273f;
+  --lamp-glow: #ff9a5c;
+}
+:root[data-theme='dark'][data-time='night'] {
+  --bg: #09132e;
+  --bg-raised: #121f45;
+  --bg-sunken: #060d24;
+  --surface: #121f45;
+  --surface-muted: #1c2c5c;
+  --ink: #eaf3ff;
+  --ink-body: #d3e4fc;
+  --ink-soft: #abc6ef;
+  --ink-muted: #8ea9d9;
+  --line: rgba(170, 205, 255, 0.16);
+  --line-strong: rgba(170, 205, 255, 0.32);
+  --pill-bg: rgba(234, 243, 255, 0.12);
+  --pill-hover-bg: #eaf3ff;
+  --pill-hover-ink: #09132e;
+  --header-bg: rgba(9, 19, 46, 0.86);
+  --sky: #0f2766;
+  --lamp-glow: #7fd6ff;
 }
 
 /* The hero props are photographs lit for a bright room; at full brightness on
@@ -513,7 +575,8 @@ main:focus-visible { outline: none; }
    body type, and this bar is a copy of that bar. It is the one place on the
    site that is not in IBM Plex Mono. */
 .nav a,
-.nav-clock {
+.nav-clock,
+.timepick__btn {
   font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
                "Helvetica Neue", Arial, ui-sans-serif, sans-serif;
 }
@@ -561,7 +624,81 @@ main:focus-visible { outline: none; }
 /* Tabular, so the minute ticking over does not shuffle the greeting beside it. */
 .nav-clock__time { font-variant-numeric: tabular-nums; }
 
-/* --- the lamp --- */
+/* --- the time-of-day picker ---
+   The greeting is a button that opens a small menu (js/theme.js): Auto, or
+   one of the four periods. Set like the clock beside it; the menu is a
+   native popover in the top layer, placed under the button by script. */
+.timepick__btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 32px;
+  padding: 0 2px;
+  border: 0;
+  background: none;
+  color: var(--nav-color);
+  font: inherit;
+  font-size: 12.8px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: color 0.6s var(--ease);
+}
+.timepick__btn:hover,
+.timepick__btn[aria-expanded='true'] { color: var(--nav-color-hover); }
+.timepick__btn:focus-visible,
+.lightpull:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; border-radius: 4px; }
+.timepick__caret {
+  width: 6px;
+  height: 6px;
+  margin-top: -3px;
+  border-right: 1.3px solid currentColor;
+  border-bottom: 1.3px solid currentColor;
+  rotate: 45deg;
+}
+.timepick__menu {
+  position: fixed;
+  inset: auto;
+  margin: 0;
+  min-width: 190px;
+  padding: 6px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--bg-raised);
+  box-shadow: var(--shadow-card);
+  color: var(--ink);
+  pointer-events: auto;
+}
+.timepick__menu button {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  min-height: 34px;
+  padding: 0 10px;
+  border: 0;
+  border-radius: 6px;
+  background: none;
+  color: var(--ink);
+  font: 13px/1.2 system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif;
+  text-align: left;
+  cursor: pointer;
+}
+.timepick__menu button:hover,
+.timepick__menu button:focus-visible { background: var(--pill-bg); outline: none; }
+/* The chosen one carries a tick; the others keep its room so nothing shifts. */
+.timepick__menu button::before { content: ''; width: 12px; flex: none; }
+.timepick__menu button[aria-pressed='true'] { font-weight: 600; }
+.timepick__menu button[aria-pressed='true']::before { content: '\2713'; }
+.timepick__now { color: var(--ink-muted); font-weight: 400; }
+
+/* --- the lamp ---
+   A line drawing of desk mode's lamp. Its glow (--lamp-glow, behind the
+   shade, coloured per period under "Time of day") behaves differently at each time of day: the morning warms on
+   slowly, the afternoon holds steady, the evening flickers as it dims, the
+   night pulses. With reduced motion each simply holds its own brightness.
+   Hidden in desk mode, where the desk's own lamp is the switch. */
 .lightpull {
   display: inline-flex;
   padding: 0;
@@ -572,10 +709,48 @@ main:focus-visible { outline: none; }
   transition: color 0.6s var(--ease);
 }
 .lightpull:hover { color: var(--nav-color-hover); }
-/* Lit means the light is on, which is the light theme. The rays are drawn
-   only then, so the icon states what it did rather than what it will do. */
-.lightpull__rays { opacity: 0; transition: opacity 0.4s var(--ease); }
-:root:not([data-theme='dark']) .lightpull__rays { opacity: 1; }
+.lightpull svg { overflow: visible; }
+.lightpull__glow { transform-box: fill-box; transform-origin: center; opacity: 0.5; }
+.lightpull__bulb { fill: var(--lamp-glow); fill-opacity: 0.55; }
+:root[data-time='morning'] .lightpull__glow { opacity: 0.45; }
+:root[data-time='day'] .lightpull__glow { opacity: 0.4; }
+:root[data-time='evening'] .lightpull__glow { opacity: 0.6; }
+:root[data-time='night'] .lightpull__glow { opacity: 0.85; }
+:root[data-time='night'] .lightpull__bulb { fill-opacity: 0.9; }
+@media (min-width: 900px) {
+  [data-mode='desk'] .lightpull { display: none; }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .js:root[data-time='morning'] .lightpull__glow { animation: lamp-warm 6s ease-in-out infinite alternate; }
+  .js:root[data-time='day'] .lightpull__glow { animation: lamp-steady 9s ease-in-out infinite alternate; }
+  .js:root[data-time='evening'] .lightpull__glow { animation: lamp-flicker 3.4s linear infinite; }
+  .js:root[data-time='night'] .lightpull__glow { animation: lamp-pulse 2.8s ease-in-out infinite; }
+}
+/* Morning: the light warming on, slowly, from almost nothing. */
+@keyframes lamp-warm {
+  from { opacity: 0.08; scale: 0.8; }
+  to { opacity: 0.7; scale: 1; }
+}
+/* Afternoon: on and steady; the faintest drift, so it reads as lit, not drawn. */
+@keyframes lamp-steady {
+  from { opacity: 0.38; }
+  to { opacity: 0.5; }
+}
+/* Evening: a lamp on its way down, catching and dimming. */
+@keyframes lamp-flicker {
+  0%, 18%, 22%, 54%, 100% { opacity: 0.62; }
+  20% { opacity: 0.25; }
+  56% { opacity: 0.35; }
+  58% { opacity: 0.6; }
+  76% { opacity: 0.2; }
+  79% { opacity: 0.55; }
+}
+/* Night: the room's one light, breathing. */
+@keyframes lamp-pulse {
+  0%, 100% { opacity: 0.55; scale: 0.92; }
+  50% { opacity: 1; scale: 1.08; }
+}
 
 /* --- the burger, for the narrow layout --- */
 .nav-burger {
@@ -631,6 +806,8 @@ body { padding-top: var(--header-h, 80px); }
   position: relative;
   width: 100%;
   min-height: 100svh;
+  /* The period's sky, fading down into the page (see "Time of day"). */
+  background: linear-gradient(to bottom, var(--sky) 0%, var(--bg) 72%);
   overflow: hidden;
 }
 
@@ -672,23 +849,6 @@ body { padding-top: var(--header-h, 80px); }
   font-weight: 400;
   line-height: 1.5;
 }
-.hero__sub {
-  width: fit-content;
-  margin: 0 auto 26px;
-  color: var(--ink-soft);
-  font-size: 13px;
-  font-style: italic;
-}
-
-.hero__headline {
-  max-width: min(540px, calc(100vw - 64px));
-  margin: 0 auto 22px;
-  color: var(--ink-body);
-  font-size: 15px;
-  line-height: 1.55;
-  letter-spacing: -0.01em;
-}
-
 /* The proof line. Small, plain, and every figure in it is stated again
    further down the page — it exists so a five-second visit leaves with a
    number rather than with a dot cloud. */
@@ -1275,15 +1435,15 @@ body { padding-top: var(--header-h, 80px); }
 
 /* --- The intro ------------------------------------------------------------- */
 .info__intro {
-  max-width: 720px;
-  margin: 72px auto 24px;   /* centred in the section, lines and all */
+  max-width: 600px;
+  margin: 40px auto 8px;    /* centred in the section, lines and all */
   text-align: center;
   color: var(--ink);
   font-family: var(--font-serif);
-  font-size: clamp(22px, 4.4vw, 32px);
-  line-height: 1.6;
+  font-size: clamp(17px, 2.6vw, 22px);
+  line-height: 1.5;
 }
-.info__intro p { margin: 0 0 1.2em; }
+.info__intro p { margin: 0 0 0.75em; }
 .info__hello { font-style: italic; }
 .info__nowrap { white-space: nowrap; }
 
@@ -1544,10 +1704,6 @@ body { padding-top: var(--header-h, 80px); }
 
   .js .hero__role,
 
-  .js .hero__sub,
-
-  .js .hero__headline,
-
   .js .hero__proof,
 
   .js .hero__actions {
@@ -1555,9 +1711,7 @@ body { padding-top: var(--header-h, 80px); }
   }
   .js .hero__name { animation-delay: 0.05s; }
   .js .hero__role { animation-delay: 0.14s; }
-  .js .hero__sub { animation-delay: 0.20s; }
-  .js .hero__headline { animation-delay: 0.26s; }
-  .js .hero__proof { animation-delay: 0.30s; }
+  .js .hero__proof { animation-delay: 0.22s; }
   .js .hero__actions { animation-delay: 0.34s; }
 }
 
@@ -1801,7 +1955,7 @@ body { padding-top: var(--header-h, 80px); }
   position: absolute !important;
   /* Centred on the toggle axis. width:max-content + translateX(-50%)
      keeps it one line whatever the string length. */
-  left: 50.000% !important; top: 38.135% !important;
+  left: 50.000% !important; top: 42.000% !important;
   right: auto !important; bottom: auto !important; margin: 0 !important;
   width: max-content !important; max-width: 92vw !important;
   white-space: nowrap !important;
@@ -1811,34 +1965,16 @@ body { padding-top: var(--header-h, 80px); }
 [data-mode='graph'] .hero__role,
 [data-mode='desk'] .hero__role {
   position: absolute !important;
-  left: 50.000% !important; top: 49.879% !important;
+  left: 50.000% !important; top: 53.600% !important;
   right: auto !important; bottom: auto !important; margin: 0 !important;
   width: max-content !important; max-width: 92vw !important;
   white-space: nowrap !important; text-align: center !important;
-  transform: translateX(-50%) !important;
-}
-[data-mode='graph'] .hero__sub,
-[data-mode='desk'] .hero__sub {
-  position: absolute !important;
-  left: 50.000% !important; top: 54.480% !important;
-  right: auto !important; bottom: auto !important; margin: 0 !important;
-  width: max-content !important; max-width: 92vw !important;
-  white-space: nowrap !important; text-align: center !important;
-  transform: translateX(-50%) !important;
-}
-[data-mode='graph'] .hero__headline,
-[data-mode='desk'] .hero__headline {
-  position: absolute !important;
-  left: 50.000% !important; top: 60.412% !important;
-  right: auto !important; bottom: auto !important; margin: 0 !important;
-  width: 36.780% !important; max-width: 92vw !important;
-  text-align: center !important;
   transform: translateX(-50%) !important;
 }
 [data-mode='graph'] .hero__proof,
 [data-mode='desk'] .hero__proof {
   position: absolute !important;
-  left: 50.000% !important; top: 68.000% !important;
+  left: 50.000% !important; top: 60.500% !important;
   right: auto !important; bottom: auto !important; margin: 0 !important;
   width: max-content !important; max-width: 92vw !important;
   text-align: center !important;
@@ -2065,10 +2201,6 @@ body { padding-top: var(--header-h, 80px); }
 
   [data-mode] .hero__role,
 
-  [data-mode] .hero__sub,
-
-  [data-mode] .hero__headline,
-
   [data-mode] .hero__proof {
     position: static !important;
     left: auto !important; top: auto !important; right: auto !important;
@@ -2086,9 +2218,7 @@ body { padding-top: var(--header-h, 80px); }
   }
 
   [data-mode] .hero__name { margin: 0 auto 14px !important; }
-  [data-mode] .hero__role { margin: 0 auto !important; }
-  [data-mode] .hero__sub { margin: 0 auto 20px !important; }
-  [data-mode] .hero__headline { margin: 0 auto 16px !important; }
+  [data-mode] .hero__role { margin: 0 auto 16px !important; }
   [data-mode] .hero__proof { margin: 0 auto 20px !important; text-align: center !important; }
 
   [data-mode] .hero__actions {
@@ -2325,16 +2455,10 @@ body { padding-top: var(--header-h, 80px); }
   line-height: 1.05;
 }
 [data-mode='mosaic'] .hero__role { font-size: 13px; }
-[data-mode='mosaic'] .hero__sub { font-size: 11.5px; margin-bottom: 12px; }
-[data-mode='mosaic'] .hero__headline {
-  font-size: 12.5px;
-  line-height: 1.5;
-}
+[data-mode='mosaic'] .hero__role { margin-bottom: 12px; }
 /* The base styles centre these two inside the lockup; the mosaic lockup is
    a left-aligned block, so they come back to the left edge with it. */
 [data-mode='mosaic'] .hero__role,
-[data-mode='mosaic'] .hero__sub,
-[data-mode='mosaic'] .hero__headline,
 [data-mode='mosaic'] .hero__proof {
   margin-left: 0;
   margin-right: auto;

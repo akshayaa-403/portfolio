@@ -83,7 +83,7 @@
    The top of a table seen from the front, across the bottom of the hero and
    flush with it: only the surface going back to the wall shows, no front
    edge, as in references/Untitled design.png. Its top sits below the
-   lockup's proof line (68% of the stage), so the name never lands on wood.
+   lockup's proof line (60.5% of the stage), so no text lands on wood.
    z-index 0: under every object. The photograph is anchored at its back
    edge, so the line where wood meets wall is always the photographed one. */
 .desk__top {
@@ -130,8 +130,8 @@
 
    The lockup's lines are placed as percentages of the STAGE (style.css), so
    the glass is sized and placed in stage terms too: it must run from 31% of
-   the stage's height to at least 75%, round the name (38%) and the proof line
-   (68%), and be wide enough for the headline. From the photograph: the glass
+   the stage's height to at least 75%, round the name (42%) and the proof line
+   (60.5%), and be wide enough for the proof line. From the photograph: the glass
    is 80.3% of the laptop's width and 85.4% of its height, starting 3.24% down,
    and the laptop is 710/432 = 1.6435 wide to high. Hence --lw, the larger of
    what the width and the height each require (and never under 700px, which

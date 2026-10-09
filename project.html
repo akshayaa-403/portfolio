@@ -93,24 +93,44 @@
     </div>
 
     <div class="site-header__end">
-      <!-- The clock and the greeting, after the reference. Written by
-           js/nav.js from the reader's own clock. aria-hidden: it is
-           atmosphere, and a screen reader announcing the time every minute
-           is not. -->
+      <!-- The clock, after the reference. Written by js/nav.js from the
+           reader's own clock. aria-hidden: it is atmosphere, and a screen
+           reader announcing the time every minute is not. -->
       <p class="nav-clock" data-nav-clock aria-hidden="true">
         <span class="nav-clock__time" data-clock-time></span>
-        <span class="nav-clock__greeting" data-clock-greeting></span>
       </p>
-      <!-- The pull-cord lamp IS the theme switch: pulling the cord turns the
-           light on and off, which is the gesture the theme flip already was.
-           Drawn here rather than borrowed. -->
+      <!-- The greeting is the time-of-day picker: it names the period the page
+           is showing, and opens a menu to choose another (js/theme.js). A
+           native popover, so Escape and a click outside close it for free. -->
+      <div class="timepick">
+        <button class="timepick__btn" type="button" popovertarget="timepick-menu" data-time-btn>
+          <span class="nav-clock__greeting" data-clock-greeting></span><span class="timepick__caret" aria-hidden="true"></span>
+        </button>
+        <div class="timepick__menu" id="timepick-menu" popover aria-label="Time of day">
+          <button type="button" data-time-pick="auto" aria-pressed="false">Auto <span class="timepick__now" data-time-auto></span></button>
+          <button type="button" data-time-pick="morning" aria-pressed="false">Morning</button>
+          <button type="button" data-time-pick="day" aria-pressed="false">Afternoon</button>
+          <button type="button" data-time-pick="evening" aria-pressed="false">Evening</button>
+          <button type="button" data-time-pick="night" aria-pressed="false">Night</button>
+        </div>
+      </div>
+      <!-- The lamp IS the light switch: a line drawing of desk mode's lamp,
+           whose glow behaves differently at each time of day (css/style.css).
+           Hidden in desk mode, where the desk's own lamp does the job. -->
       <button class="lightpull" type="button" data-theme-toggle
               aria-pressed="false" aria-label="Switch to dark theme">
         <svg viewBox="0 0 26 34" width="22" height="29" aria-hidden="true" focusable="false">
-          <path d="M13 1v8" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/>
-          <path d="M13 9c-5 0-9.6 4.6-10.6 9.6h21.2C22.6 13.6 18 9 13 9Z" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/>
-          <path d="M1.6 18.9h22.8" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/>
-          <path class="lightpull__rays" d="M7.6 24.4h10.8M10.2 29.4h5.6" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/>
+          <defs>
+            <radialGradient id="lamp-glow-fill">
+              <stop offset="0" stop-color="var(--lamp-glow)" stop-opacity="0.95"/>
+              <stop offset="1" stop-color="var(--lamp-glow)" stop-opacity="0"/>
+            </radialGradient>
+          </defs>
+          <circle class="lightpull__glow" cx="13" cy="15" r="10.5" fill="url(#lamp-glow-fill)"/>
+          <path d="M3.2 12.6a9.8 9.8 0 0 1 19.6 0Z" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/>
+          <circle class="lightpull__bulb" cx="13" cy="15.3" r="2.7" stroke="currentColor" stroke-width="1.3"/>
+          <path d="M13 18v10" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/>
+          <path d="M7.4 32.4a5.6 4.4 0 0 1 11.2 0Z" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/>
         </svg>
       </button>
     </div>
