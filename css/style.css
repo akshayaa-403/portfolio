@@ -1612,9 +1612,15 @@ body { padding-top: var(--header-h, 80px); }
   outline-offset: 3px;
 }
 
+/* The signature alone is set in Halimun, self-hosted. */
+@font-face {
+  font-family: 'Halimun';
+  src: url('../public/assets/fonts/Halimun.ttf') format('truetype');
+  font-display: swap;
+}
 .info__sig {
   margin-top: 0.4em;
-  font-family: var(--font-script);
+  font-family: 'Halimun', var(--font-script);
   font-size: 1.7em;
   line-height: 1;
   transform: rotate(-4deg);
