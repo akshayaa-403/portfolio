@@ -3,7 +3,8 @@
 
    The theme follows the viewer's clock: js/boot.js has already written
    data-time (morning / day / evening / night) and, for evening and night,
-   data-theme="dark", before first paint. This file keeps that true while the
+   data-theme="dark", before first paint — except evening in desk mode, which
+   is light (emilycampbell.co's periods; css/style.css). This file keeps that true while the
    page stays open — a period boundary passing turns the page with it — and
    owns the override.
 
@@ -31,18 +32,22 @@
     } catch (e) { return null; }
   }
 
-  function isDark(period) { return period === 'evening' || period === 'night'; }
+  function isDark(period) {
+    return period === 'night' ||
+      (period === 'evening' && root.getAttribute('data-mode') !== 'desk');
+  }
 
   function current() {
     return root.getAttribute('data-theme') === 'dark' ? 'dark' : 'light';
   }
 
   function apply(period) {
+    var was = current();
     var changed = root.getAttribute('data-time') !== period;
     root.setAttribute('data-time', period);
     if (isDark(period)) root.setAttribute('data-theme', 'dark');
     else root.removeAttribute('data-theme');
-    if (changed) {
+    if (changed || current() !== was) {
       // Let the rest of the page react (the lamp, the figures, the switch).
       window.dispatchEvent(new CustomEvent('themechange', {
         detail: { theme: current(), time: period }
@@ -170,6 +175,8 @@
     settle();
     // Check the clock once a minute, so evening arrives on an open page.
     setInterval(function () { if (!override()) settle(); }, 60000);
+    // Evening is dark everywhere but desk mode, so a mode change can flip it.
+    window.addEventListener('modechange', settle);
     initHeaderHeight();
     initToggle();
     initPicker();

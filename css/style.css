@@ -233,102 +233,150 @@
    Time of day
    js/boot.js writes data-time from the viewer's clock (or the visitor's pick
    from the greeting's menu): morning 5-10, day 10-17, evening 17-20, night
-   20-5. Each period is painted after the four times of Genshin Impact's
-   loading screen (the sky island; the owner's reference, sampled from it):
-
-     morning  Dawn  - cream-gold cloud light under a grey-blue haze; slate inks
-     day      Day   - airy sky-white paper, deep sky-navy inks
-     evening  Dusk  - deep plum ground, peach-white inks, the sunset's glow
-     night    Night - saturated royal-blue ground, moonlit pale-blue inks
-
-   Only grounds, inks, lines and the two atmosphere tokens change: --sky (the
-   tint the hero's sky fades down from, .stage) and --lamp-glow (the nav
-   lamp). The accent family is the day's Wada palette (js/palette.js),
-   re-measured against whichever ground is showing. The base :root and
-   [data-theme='dark'] values above remain the fallback when data-time is
-   missing.
+   20-5. Graph and mosaic show only two of them: a light theme for morning
+   and day, a dark one for evening and night (data-theme="dark"). Both are
+   near-neutral greys with the mildest cool tint, no gradients, and do not
+   follow desk mode's palette (the block after this one). The accent family
+   is the day's Wada palette (js/palette.js), re-measured against whichever
+   ground is showing. The base :root and [data-theme='dark'] values above
+   remain the fallback when data-time is missing.
 
    Contrast, measured for ink / body / soft / muted against the WORST of
-   --bg, --bg-raised, --bg-sunken, --surface and --sky:
-     morning 10.8 / 8.9 / 5.7 / 4.7    day   11.7 / 9.2 / 6.0 / 4.6
-     evening 11.5 / 9.9 / 7.5 / 5.5    night 12.5 / 10.8 / 8.0 / 5.9
-   The dark periods' nav text (white at 55%) measures 5.1 and 5.2 on --sky.
+   --bg, --bg-raised, --bg-sunken and --surface:
+     light 15.4 / 12.4 / 7.7 / 5.4      dark 14.4 / 11.8 / 8.4 / 5.8
+   The dark theme's nav text (white at 50%) measures 4.8 on --bg-raised.
    -------------------------------------------------------------------------- */
-:root { --sky: var(--bg); --lamp-glow: #ffbf5e; }
+:root { --lamp-glow: #ffbf5e; }
 :root[data-theme='dark'] { --lamp-glow: #ffb347; }
 
-:root[data-time='morning'] {
-  --bg: #f4efe7;
-  --bg-raised: #fbf8f2;
-  --bg-sunken: #eae1d3;
-  --surface: #fffcf6;
-  --surface-muted: #e2d8c8;
-  --ink: #1c2c47;
-  --ink-body: #28395a;
-  --ink-soft: #465673;
-  --ink-muted: #56637a;
-  --line: rgba(28, 44, 71, 0.14);
-  --line-strong: rgba(28, 44, 71, 0.28);
-  --pill-bg: rgba(28, 44, 71, 0.08);
-  --leaf-shade: rgba(70, 60, 50, 0.05);
-  --header-bg: rgba(244, 239, 231, 0.96);
-  --sky: #dde2ea;
-  --lamp-glow: #f2c27e;
-}
+:root[data-time='morning'],
 :root[data-time='day'] {
-  --bg: #eef5fb;
-  --bg-raised: #f8fbfe;
-  --bg-sunken: #dfeaf5;
+  --bg: #f6f7f8;
+  --bg-raised: #fbfbfc;
+  --bg-sunken: #eceef0;
   --surface: #ffffff;
-  --surface-muted: #d3e3f1;
-  --ink: #10284a;
-  --ink-body: #1a3961;
-  --ink-soft: #33567e;
-  --ink-muted: #47678b;
-  --line: rgba(16, 40, 74, 0.13);
-  --line-strong: rgba(16, 40, 74, 0.27);
-  --pill-bg: rgba(16, 40, 74, 0.08);
-  --leaf-shade: rgba(16, 40, 74, 0.045);
-  --header-bg: rgba(238, 245, 251, 0.96);
-  --sky: #d6e7f6;
+  --surface-muted: #e1e3e6;
+  --ink: #15171a;
+  --ink-body: #272a2e;
+  --ink-soft: #464a50;
+  --ink-muted: #5c6168;
+  --line: rgba(20, 22, 26, 0.12);
+  --line-strong: rgba(20, 22, 26, 0.26);
+  --pill-bg: rgba(20, 22, 26, 0.07);
+  --leaf-shade: rgba(20, 22, 26, 0.045);
+  --header-bg: rgba(246, 247, 248, 0.96);
   --lamp-glow: #ffd877;
 }
-:root[data-theme='dark'][data-time='evening'] {
-  --bg: #23182b;
-  --bg-raised: #2f2238;
-  --bg-sunken: #1a1121;
-  --surface: #2f2238;
-  --surface-muted: #3d2d47;
-  --ink: #fcefe6;
-  --ink-body: #f2ddcf;
-  --ink-soft: #ddbeac;
-  --ink-muted: #c4a191;
-  --line: rgba(250, 218, 200, 0.16);
-  --line-strong: rgba(250, 218, 200, 0.32);
-  --pill-bg: rgba(252, 239, 230, 0.12);
-  --pill-hover-bg: #fcefe6;
-  --pill-hover-ink: #23182b;
-  --header-bg: rgba(35, 24, 43, 0.86);
-  --sky: #45273f;
+:root[data-theme='dark'][data-time='evening'],
+:root[data-theme='dark'][data-time='night'] {
+  --bg: #141517;
+  --bg-raised: #1d1f22;
+  --bg-sunken: #0e0f11;
+  --surface: #1d1f22;
+  --surface-muted: #2a2d31;
+  --ink: #eeeff1;
+  --ink-body: #d8dadd;
+  --ink-soft: #b6b9be;
+  --ink-muted: #969aa0;
+  --line: rgba(235, 238, 242, 0.14);
+  --line-strong: rgba(235, 238, 242, 0.28);
+  --pill-bg: rgba(238, 240, 242, 0.12);
+  --pill-hover-bg: #eeeff1;
+  --pill-hover-ink: #141517;
+  --header-bg: rgba(20, 21, 23, 0.86);
+  --lamp-glow: #ffb347;
+}
+
+/* --------------------------------------------------------------------------
+   Time of day, desk mode
+   Desk mode alone wears the colours of emilycampbell.co at the same time of
+   day; graph and mosaic keep the plain light and dark above. That site multiplies
+   a shader's light and shadow onto one ground per period (morning #f9dcc3,
+   midday #f9f7f6, golden #fbcbbc, moonlight #66718f); --bg here is what it
+   actually RENDERS on lit wall, mix(bg, bg * output, blendLight), checked
+   against a screenshot (night excepted, below). js/desk-wall.js draws the leaf shadows from the same
+   numbers. Evening is a light period here, as it is there: js/theme.js sets
+   data-theme="dark" for evening only outside desk mode.
+
+   Inks are hers, black (white at night) at 90 / 78 / 68 % over the ground,
+   the last tier raised until it passes. Contrast for ink / body / soft /
+   muted against the WORST of --bg, --bg-raised, --bg-sunken and --surface:
+     morning 12.0 / 8.7 / 6.3 / 4.6    day   15.1 / 10.3 / 7.0 / 4.6
+     evening 11.2 / 8.3 / 6.0 / 4.6    night  8.0 /  7.1 / 6.3 / 5.3
+   Night is the owner's own pair, not hers: the background #1a1e2c (--bg),
+   darker than the leaves #485374, the slate surfaces between them.
+   -------------------------------------------------------------------------- */
+:root[data-mode='desk'][data-time='morning'] {
+  --bg: #f9d4b8;
+  --bg-raised: #fbe3d1;
+  --bg-sunken: #efccb1;
+  --surface: #fcecdf;
+  --surface-muted: #e3c1a7;
+  --ink: #191512;
+  --ink-body: #372f28;
+  --ink-soft: #50443b;
+  --ink-muted: #66574b;
+  --line: rgba(0, 0, 0, 0.1);
+  --line-strong: rgba(0, 0, 0, 0.17);
+  --pill-bg: rgba(0, 0, 0, 0.08);
+  --leaf-shade: rgba(0, 0, 0, 0.05);
+  --header-bg: rgba(249, 212, 184, 0.96);
+  --lamp-glow: #f2c27e;
+}
+:root[data-mode='desk'][data-time='day'] {
+  --bg: #f9f7f6;
+  --bg-raised: #fbfaf9;
+  --bg-sunken: #efedec;
+  --surface: #fcfbfb;
+  --surface-muted: #e3e1e0;
+  --ink: #191919;
+  --ink-body: #373636;
+  --ink-soft: #504f4f;
+  --ink-muted: #6b6a6a;
+  --line: rgba(0, 0, 0, 0.1);
+  --line-strong: rgba(0, 0, 0, 0.17);
+  --pill-bg: rgba(0, 0, 0, 0.08);
+  --leaf-shade: rgba(0, 0, 0, 0.05);
+  --header-bg: rgba(249, 247, 246, 0.96);
+  --lamp-glow: #ffd877;
+}
+:root[data-mode='desk'][data-time='evening'] {
+  --bg: #fbc8a9;
+  --bg-raised: #fcdbc7;
+  --bg-sunken: #f1c0a2;
+  --surface: #fde6d8;
+  --surface-muted: #e4b699;
+  --ink: #191411;
+  --ink-body: #372c25;
+  --ink-soft: #504036;
+  --ink-muted: #645043;
+  --line: rgba(0, 0, 0, 0.1);
+  --line-strong: rgba(0, 0, 0, 0.17);
+  --pill-bg: rgba(0, 0, 0, 0.08);
+  --leaf-shade: rgba(0, 0, 0, 0.05);
+  --header-bg: rgba(251, 200, 169, 0.96);
   --lamp-glow: #ff9a5c;
 }
-:root[data-theme='dark'][data-time='night'] {
-  --bg: #09132e;
-  --bg-raised: #121f45;
-  --bg-sunken: #060d24;
-  --surface: #121f45;
-  --surface-muted: #1c2c5c;
-  --ink: #eaf3ff;
-  --ink-body: #d3e4fc;
-  --ink-soft: #abc6ef;
-  --ink-muted: #8ea9d9;
-  --line: rgba(170, 205, 255, 0.16);
-  --line-strong: rgba(170, 205, 255, 0.32);
-  --pill-bg: rgba(234, 243, 255, 0.12);
-  --pill-hover-bg: #eaf3ff;
-  --pill-hover-ink: #09132e;
-  --header-bg: rgba(9, 19, 46, 0.86);
-  --sky: #0f2766;
+:root[data-mode='desk'][data-time='night'] {
+  --bg: #1a1e2c;
+  --bg-raised: #414b69;
+  --bg-sunken: #141724;
+  --surface: #3f4865;
+  --surface-muted: #5a6482;
+  --ink: #f6f6f8;
+  --ink-body: #e7e9ed;
+  --ink-soft: #dadde3;
+  --ink-muted: #c8cbd5;
+  --line: rgba(255, 255, 255, 0.12);
+  --line-strong: rgba(255, 255, 255, 0.18);
+  --pill-bg: rgba(255, 255, 255, 0.1);
+  --pill-hover-bg: #ffffff;
+  --pill-hover-ink: #10121b;
+  --header-bg: rgba(26, 30, 44, 0.92);
+  /* The dark theme's white-at-50% nav measures 3.2 on this ground. */
+  --nav-color: var(--ink-muted);
+  --nav-color-hover: var(--ink-body);
+  --nav-color-active: var(--ink);
   --lamp-glow: #7fd6ff;
 }
 
@@ -502,8 +550,8 @@ main:focus-visible { outline: none; }
 /* --------------------------------------------------------------------------
    4. Header / nav
 
-   Rebuilt after emilycampbell.co: a fixed, completely transparent bar 80px
-   tall, the mark and the links pushed left, the clock and the lamp pushed
+   Rebuilt after emilycampbell.co: a fixed, completely transparent bar, kept
+   compact at 56px tall (the reference's is 80px), the mark and the links pushed left, the clock and the lamp pushed
    right, and the whole thing sliding up out of the way on a downward scroll
    and back on an upward one. No ground, no blur, no rule under it — the page
    simply runs beneath it.
@@ -534,8 +582,10 @@ main:focus-visible { outline: none; }
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 24px;
-  height: var(--header-h, 80px);
+  gap: 20px;
+  /* A fixed height, not --header-h: js/theme.js measures --header-h off this
+     very bar, so reading it back here could never let the bar shrink. */
+  min-height: 56px;
   max-width: var(--measure);
   margin: 0 auto;
   padding: 0 24px;
@@ -544,10 +594,10 @@ main:focus-visible { outline: none; }
 .site-header__end {
   display: flex;
   align-items: center;
-  gap: 24px;
+  gap: 18px;
   min-width: 0;
 }
-.site-header__end { gap: 20px; }
+.site-header__end { gap: 14px; }
 
 /* The mark alone, no wordmark — the reference carries only its logo, and the
    name is the first thing the page itself says. */
@@ -557,8 +607,8 @@ main:focus-visible { outline: none; }
   color: var(--nav-color-active);
 }
 .brand__mark {
-  width: 26px;
-  height: 26px;
+  width: 22px;
+  height: 22px;
   flex: none;
   object-fit: contain;
 }
@@ -566,10 +616,10 @@ main:focus-visible { outline: none; }
 .nav {
   display: flex;
   align-items: center;
-  gap: 16px;
+  gap: 12px;
 }
 
-/* 12.8px, 1px of tracking, uppercase, and only the colour changes — over
+/* 12px, 1px of tracking, uppercase, and only the colour changes — over
    0.6s, which is slow enough to read as a fade rather than a flick. */
 /* The reference sets its nav in the system UI face rather than in its own
    body type, and this bar is a copy of that bar. It is the one place on the
@@ -584,7 +634,7 @@ main:focus-visible { outline: none; }
 .nav a {
   display: grid;
   color: var(--nav-color);
-  font-size: 12.8px;
+  font-size: 12px;
   font-weight: 400;
   letter-spacing: 1px;
   line-height: 1.5;
@@ -616,7 +666,7 @@ main:focus-visible { outline: none; }
   gap: 8px;
   margin: 0;
   color: var(--nav-color);
-  font-size: 12.8px;
+  font-size: 12px;
   letter-spacing: 1px;
   text-transform: uppercase;
   white-space: nowrap;
@@ -632,13 +682,13 @@ main:focus-visible { outline: none; }
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  min-height: 32px;
+  min-height: 28px;
   padding: 0 2px;
   border: 0;
   background: none;
   color: var(--nav-color);
   font: inherit;
-  font-size: 12.8px;
+  font-size: 12px;
   letter-spacing: 1px;
   text-transform: uppercase;
   white-space: nowrap;
@@ -806,8 +856,6 @@ body { padding-top: var(--header-h, 80px); }
   position: relative;
   width: 100%;
   min-height: 100svh;
-  /* The period's sky, fading down into the page (see "Time of day"). */
-  background: linear-gradient(to bottom, var(--sky) 0%, var(--bg) 72%);
   overflow: hidden;
 }
 

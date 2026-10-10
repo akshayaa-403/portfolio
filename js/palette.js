@@ -291,9 +291,9 @@
 
   apply();
 
-  // The ground moves when the theme flips or the time of day changes, so
-  // every measured step has to be walked again.
+  // The ground moves when the theme flips, the time of day changes, or desk
+  // mode swaps in its own grounds, so every measured step is walked again.
   new MutationObserver(apply).observe(root, {
-    attributes: true, attributeFilter: ['data-theme', 'data-time']
+    attributes: true, attributeFilter: ['data-theme', 'data-time', 'data-mode']
   });
 })();

@@ -9,7 +9,10 @@
    hours — morning 5–10, day 10–17, evening 17–20, night 20–5 — written to
    data-time. Evening and night also set data-theme="dark", so every rule
    written for the dark theme applies to both; morning and evening then tint
-   the paper (css/style.css, "Time of day"). The header greeting names
+   the paper (css/style.css, "Time of day"). Desk mode is the exception: it
+   wears emilycampbell.co's periods, where evening is light, so there only
+   night is dark (js/theme.js re-decides on every mode change). The header
+   greeting names
    whatever data-time ends up being, so the theme and "Good evening" can
    never disagree.
 
@@ -43,5 +46,5 @@
     if (o === 'morning' || o === 'day' || o === 'evening' || o === 'night') t = o;
   } catch (e) { /* private mode */ }
   r.setAttribute('data-time', t);
-  if (t === 'evening' || t === 'night') r.setAttribute('data-theme', 'dark');
+  if (t === 'night' || (t === 'evening' && m !== 'desk')) r.setAttribute('data-theme', 'dark');
 })();

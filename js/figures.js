@@ -10,10 +10,10 @@
      balance   a beam tipping until momentum and sentiment agree
      rank      five names re-ordering as the weight between two factors moves
      race      the real backtest curves, traced out of the screenshot
-     halo      her own cells, losing the collar the microscope added
+     halo      the repo's synthetic cells, losing the collar the simulated optics added
      residual  one scan line as three profiles: captured, halo, difference
      orbit     five collections circling, the matched one pulled in
-     handoff   ninety paintings narrowing to one WhatsApp message
+     handoff   106 paintings narrowing to one WhatsApp message
      grid      a Tuesday falling into the Eisenhower quadrants
      calendar  a block written through to the phone's own calendar
      colony    ants converging, pheromone thickening where they agree
@@ -658,18 +658,18 @@
 
   /* handoff — where an Arteza sale actually ends.
 
-     Every online-shop diagram ends in a cart. This one does not, because the
+     Every online-shop diagram ends in a payment. This one does not, because the
      studio does not sell that way: the catalogue narrows to a collection, the
-     collection to one painting, and then the buyer leaves for WhatsApp and
-     talks to a person. The last node is off the site on purpose — that is the
+     collection to one painting, the cart records it, and then the buyer leaves
+     for WhatsApp and talks to a person. The last node is off the site on purpose — that is the
      decision the case study is defending.
 
      The counts are the real ones from the project data. */
   KIND.handoff = function () {
     var stages = [
-      { n: '90+', t: 'paintings' },
+      { n: '106', t: 'paintings' },
       { n: '5', t: 'collections' },
-      { n: '3', t: 'quiz answers' },
+      { n: '5', t: 'quiz answers' },
       { n: '1', t: 'painting' }
     ];
     var at = 0, held = false, t = 0, fly = 0;
@@ -733,7 +733,7 @@
 
         ctx.fillStyle = this.soft;
         ctx.font = '9px ui-monospace, monospace';
-        ctx.fillText('no cart  ·  drag', 8, 11);
+        ctx.fillText('no card form  ·  drag', 8, 11);
       }
     };
   };
