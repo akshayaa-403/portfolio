@@ -23,7 +23,6 @@
    set by js/hero-hover.js). No text sits on any of it. */
 :root {
   --mon-screen: var(--surface);
-  --tape: rgba(236, 222, 186, 0.78);
   --prop-filter: ;
   --prop-shadow: rgba(28, 55, 90, 0.22);
   --prop-shadow-held: rgba(28, 55, 90, 0.30);
@@ -38,7 +37,6 @@
    glare. Dim them, except the glow (the light source) and the lamp (on). */
 :root[data-theme='dark'] {
   --mon-screen: var(--bg-sunken);
-  --tape: rgba(150, 138, 110, 0.72);
   --prop-filter: brightness(0.78) saturate(0.9) contrast(1.02);
   --prop-shadow: rgba(0, 0, 0, 0.5);
   --prop-shadow-held: rgba(0, 0, 0, 0.62);
@@ -198,45 +196,6 @@
   inset: 3% 9.7% 11.2% 9.7%;
   background: var(--mon-screen);
 }
-
-/* --- Things on the wall ------------------------------------------------------
-   A print (the flora collage) and a torn strip held up with tape, and a postage stamp whose perforated edge is
-   drawn here: the reference's own edge is white paper on white and cannot be
-   cut out. */
-.prop--poster img,
-.prop--strip img { display: block; width: 100%; height: auto; }
-.prop--poster::before,
-.prop--poster::after,
-.prop--strip::before {
-  content: '';
-  position: absolute;
-  width: 34%;
-  height: 7%;
-  min-height: 12px;
-  background: var(--tape);
-  box-shadow: 0 1px 1px rgba(0, 0, 0, 0.08);
-}
-.prop--poster::before { left: -8%; top: -2%; rotate: -32deg; }
-.prop--poster::after { right: -8%; top: -2%; rotate: 32deg; }
-.prop--strip::before { left: 10%; top: -1%; width: 90%; height: 3.5%; rotate: -4deg; }
-
-/* The stamp: white paper with a perforated edge, the painting inside. The
-   holes are a grid of circles centred on the stamp's edges, and the content
-   box is painted solid again on top, so only the bites out of the edge
-   survive. */
-.prop--stamp {
-  --hole: 4px;
-  aspect-ratio: 1;
-  padding: calc(var(--hole) * 2);
-  background: #fbfaf7;
-  -webkit-mask:
-    linear-gradient(#000 0 0) content-box,
-    radial-gradient(circle var(--hole), transparent 98%, #000) calc(var(--hole) * -2) calc(var(--hole) * -2) / calc(var(--hole) * 4) calc(var(--hole) * 4) round;
-  mask:
-    linear-gradient(#000 0 0) content-box,
-    radial-gradient(circle var(--hole), transparent 98%, #000) calc(var(--hole) * -2) calc(var(--hole) * -2) / calc(var(--hole) * 4) calc(var(--hole) * 4) round;
-}
-.stamp__img { display: block; width: 100%; height: 100%; object-fit: cover; }
 
 /* --- Props ---------------------------------------------------------------- */
 .prop {

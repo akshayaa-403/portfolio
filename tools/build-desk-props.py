@@ -100,55 +100,6 @@ def laptop():
     save('laptop', img, alpha, crop=False, max_side=10 ** 4)   # shown larger than its 710px
 
 
-def vision_board():
-    """A sheet of cut-outs on a flat grey: each connected object kept is its
-    own file. Objects are named by a point on them (x, y in the sheet), not
-    by label number, which shifts with the threshold; one that falls apart
-    into pieces can be given a point on each."""
-    img = ref('Vision Board Cutouts')
-    bg = ground(img, (229,), 13, sat_max=14)
-    fg = cv2.morphologyEx((~bg).astype(np.uint8), cv2.MORPH_OPEN, np.ones((3, 3), np.uint8))
-    n, lab = cv2.connectedComponents(fg, connectivity=8)
-    groups = {
-        'star-charm': [(640, 150)], 'eight-ball': [(647, 700)],
-        'heart-key': [(300, 740)], 'leica': [(310, 900)],
-        'books-glasses': [(330, 1130)], 'keys': [(140, 1150)], 'cassette': [(600, 1210)],
-    }
-
-    def label_near(x, y, r=14):
-        win = lab[y - r:y + r, x - r:x + r]
-        ids, counts = np.unique(win[win > 0], return_counts=True)
-        assert len(ids), ('no object near', x, y)
-        return ids[counts.argmax()]
-
-    for name, pts in groups.items():
-        m = np.isin(lab, [label_near(x, y) for x, y in pts])
-        m = cv2.morphologyEx(m.astype(np.uint8), cv2.MORPH_CLOSE, np.ones((5, 5), np.uint8)).astype(bool)
-        # Fill holes, so nothing inside an object is see-through.
-        cnts, _ = cv2.findContours(m.astype(np.uint8), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE)
-        solid = np.zeros(m.shape, np.uint8)
-        cv2.drawContours(solid, cnts, -1, 1, -1)
-        save(name, img, solid.astype(bool))
-
-
-def flat(name, prefix, box):
-    """A rectangle of a reference kept as it is (a print, a painting)."""
-    img = ref(prefix)
-    x0, y0, x1, y1 = box
-    crop = img[y0:y1, x0:x1]
-    save(name, crop, np.ones(crop.shape[:2], bool), crop=False)
-
-
 if __name__ == '__main__':
     os.makedirs(OUT, exist_ok=True)
     laptop()
-    vision_board()
-    cutout('swirl', 'Download free image of Van Gogh', CHECKER, 9)
-    cutout('starry-night', 'Download premium png of The Starry Night', CHECKER, 9)
-    cutout('goddess', 'Download premium png of Greek goddess', CHECKER, 7, sat_max=10)
-    cutout('grad-cap', 'Vintage Black and White Graduation Cap', (30, 58), 14)
-    cutout('moon', 'download (4)', (255,), 10)
-    cutout('paper-star', 'download (6)', (255,), 10)
-    cutout('enter-key', 'download (7)', (255,), 4, sat_max=6)
-    flat('flora-print', 'Download premium psd _ image of Flora', (40, 40, 696, 696))
-    flat('water-lilies', 'download (5)', (110, 110, 626, 626))
