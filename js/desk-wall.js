@@ -14,9 +14,8 @@
    Each pixel is a straight mix from the period's lit wall to its shadow by
    how deep the video's shadow is there. The day colours are what
    emilycampbell.co renders at each time of day; night is the owner's pair,
-   slate #485374 lit and #1a1e2c in shadow, as in option B of
-   night-options-abc.png. css/style.css ("Time of day, desk mode") keeps --bg
-   in step.
+   slate #485374 lit and #1a1e2c in shadow (the "option B" she picked).
+   css/style.css ("Time of day, desk mode") keeps --bg in step.
 
    Still under reduced motion (the first frame). Without WebGL there is no
    canvas and the wall is plain --bg. Plays only while the desk is on screen. */

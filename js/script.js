@@ -1,4 +1,4 @@
-/* Homepage behaviour: experience, the project list, the reading shelf, scroll
+/* Homepage behaviour: the project list, the reading shelf, scroll
    reveals and active-nav tracking.
    No dependencies. All motion is gated on prefers-reduced-motion. */
 (function () {
@@ -176,50 +176,6 @@
     });
     list.addEventListener('focusout', function () { show(null); });
     list.addEventListener('pointerleave', function () { show(null); });
-  }
-
-  /* ---------- experience ----------
-     Above the project list, because it answers the question the project list
-     cannot: whether any of this has been built for someone else, to a date.
-     Data in js/experience-data.js. */
-  function renderExperience() {
-    if (typeof experience === 'undefined') return;
-
-    var host = document.getElementById('experience-list');
-    if (!host) return;
-
-    host.insertAdjacentHTML('afterbegin', experience.map(function (x) {
-      var bullets = (x.bullets || []).map(function (b) {
-        return '<li>' + esc(b) + '</li>';
-      }).join('');
-
-      var stack = (x.stack || []).map(function (t) {
-        return '<li>' + esc(t) + '</li>';
-      }).join('');
-
-      // A role that produced a case study on this site links to it, so the
-      // claim and the evidence are one click apart.
-      var proof = x.project
-        ? '<a class="xp__proof" href="work/' + encodeURIComponent(x.project) +
-            '.html">Read the case study →</a>'
-        : '';
-
-      return '<li class="xp reveal">' +
-          '<div class="xp__head">' +
-            '<h3 class="xp__role">' + esc(x.role) +
-              ' <span class="xp__at">at</span> ' +
-              '<span class="xp__company">' + esc(x.company) + '</span></h3>' +
-            '<p class="xp__when">' +
-              '<time datetime="' + esc(x.start || '') + '">' + esc(x.dates) + '</time>' +
-              (x.place ? ' · ' + esc(x.place) : '') +
-            '</p>' +
-          '</div>' +
-          (x.blurb ? '<p class="xp__blurb">' + esc(x.blurb) + '</p>' : '') +
-          '<ul class="xp__bullets">' + bullets + '</ul>' +
-          (stack ? '<ul class="xp__stack" aria-label="Stack">' + stack + '</ul>' : '') +
-          proof +
-        '</li>';
-    }).join(''));
   }
 
   /* ---------- reading list ----------
@@ -736,7 +692,6 @@
 
   /* ---------- boot ---------- */
   function init() {
-    renderExperience();
     renderCards();
     renderReadings();
     initReveal();

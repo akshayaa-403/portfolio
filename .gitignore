@@ -19,9 +19,8 @@ dist-ssr
 .vscode/*
 !.vscode/extensions.json
 
-# .claude/ holds the project guide (CLAUDE.md) and its reference docs, which
-# belong in version control so they reach anyone else working on this. Only
-# the machine-local settings and agent scratch are ignored.
+# .claude/ holds the project guide, reference docs and the owner's mood
+# references. It stays local (untracked since aab9945).
 .claude/
 .idea
 .DS_Store
@@ -34,4 +33,3 @@ dist-ssr
 # Original artwork and photographs. The web-sized copies under
 # public/assets/ are what ship; these are the masters and stay local.
 sources/
-links.txt
