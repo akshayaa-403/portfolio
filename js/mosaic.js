@@ -29,12 +29,14 @@
      point of a mosaic is that the big things are big. A photograph wants to be
      portrait, a snippet of source wants width to stay on one line, and a count
      is one number and needs nothing. Applied as spans over uniform rows, with
-     grid-auto-flow:dense filling whatever holes the mix leaves. */
+     grid-auto-flow:dense filling whatever holes the mix leaves. A note is two
+     or three short lines, so it lies wide rather than tall; stood on end,
+     notes and snippets both left a blank middle bigger than what they held. */
   var SPAN = {
     stat:  [1, 1],
     tag:   [1, 1],
-    note:  [1, 2],
-    code:  [2, 2],
+    note:  [2, 1],
+    code:  [3, 1],
     photo: [1, 2]
   };
 
@@ -52,7 +54,7 @@
 
   function pool() {
     var out = [];
-    var i, j;
+    var i;
 
     /* --- counts. Derived, never typed, so they cannot drift. --- */
     var galleries = Object.keys(typeof hobbies === 'undefined' ? {} : hobbies);
@@ -81,24 +83,20 @@
       var p = shown[i];
       var href = 'work/' + encodeURIComponent(p.id) + '.html';
 
-      /* --- a margin note, in the hand it is set in on the detail page --- */
-      var notes = (p.notes && (p.notes.overview || []).concat(p.notes.challenge || [])) || [];
-      if (notes.length) {
-        var note = notes[Math.floor(Math.random() * notes.length)];
+      /* --- a margin note, in the hand it is set in on the case study, and
+         a few lines of its real source. Both are the article's own words,
+         copied into `excerpt` so the home page need not load the article;
+         tools/check.js fails if either stops matching it. --- */
+      var ex = p.excerpt || {};
+      if (ex.note) {
         out.push(tile('note', href, 'Read the case study',
-          '<span class="frag__note">' + esc(note[1]) + '</span>' +
+          '<span class="frag__note">' + esc(ex.note) + '</span>' +
           '<span class="frag__from">' + esc(p.title) + '</span>'));
       }
-
-      /* --- a line of real source out of the deep dive --- */
-      for (j = 0; j < (p.deepDive || []).length; j++) {
-        var d = p.deepDive[j];
-        if (d.kind === 'code') {
-          out.push(tile('code', href, 'Read the case study',
-            '<pre><code>' + esc(d.code.split('\n').slice(0, 5).join('\n')) + '</code></pre>' +
-            '<span class="frag__from">' + esc(p.title) + '</span>'));
-          break;
-        }
+      if (ex.code) {
+        out.push(tile('code', href, 'Read the case study',
+          '<pre><code>' + esc(ex.code.split('\n').slice(0, 4).join('\n')) + '</code></pre>' +
+          '<span class="frag__from">' + esc(p.title) + '</span>'));
       }
 
       /* --- the paper or spec behind the idea --- */

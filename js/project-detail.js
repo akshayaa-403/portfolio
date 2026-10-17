@@ -1,5 +1,7 @@
-/* Renders a case study from the ?id= query param against js/project-data.js,
-   and sets per-project title/description/OG metadata. */
+/* The case-study page: header, facts row, at-a-glance and the demo embed,
+   from the summary in js/project-data.js; then the article itself, which
+   js/article.js renders from js/articles/<id>.js. Sets per-project
+   title/description/OG metadata. */
 (function () {
   'use strict';
 
@@ -26,396 +28,6 @@
         '<a class="btn btn--primary" href="index.html#work">Back to work</a>' +
       '</div>';
     document.title = 'Project not found — Akshayaa Kashyap';
-  }
-
-  /* ---------- deep-dive section renderers ----------
-     Each section in a project's deepDive array is one of a small set of kinds.
-     Everything interpolated goes through esc() — the data file is trusted, but
-     escaping keeps a stray apostrophe or angle bracket from breaking markup. */
-  /* Body copy is written with blank lines between paragraphs and backticks
-     around identifiers, the way it would be written anywhere else. Split on
-     the blank lines; turn `foo` into <code>foo</code>.
-
-     Order matters: esc() runs FIRST, so what reaches the backtick pass is
-     already inert. The only markup this function introduces is its own <p> and
-     <code>, and neither can be produced from the source text. */
-  function paras(body) {
-    return String(body || '').split(/\n\s*\n/).map(function (part) {
-      return '<p>' + esc(part.trim()).replace(/`([^`]+)`/g, '<code>$1</code>') + '</p>';
-    }).join('');
-  }
-
-  var SECTION = {
-    prose: function (s) {
-      return '<section class="dd dd--prose">' +
-        (s.heading ? '<h3>' + esc(s.heading) + '</h3>' : '') +
-        paras(s.body) +
-      '</section>';
-    },
-
-    figure: function (s) {
-      return '<figure class="dd dd--figure">' +
-        '<img src="' + safeUrl(s.src) + '" alt="' + esc(s.alt || '') + '" loading="lazy" decoding="async">' +
-        (s.caption ? '<figcaption>' + esc(s.caption) + '</figcaption>' : '') +
-      '</figure>';
-    },
-
-    /* Typeset by js/tex.js — a small renderer covering the TeX subset these
-       case studies use. MathJax/KaTeX would mean a CDN request and ~300KB for
-       eight short formulas, on a site that is deliberately buildless. */
-    formula: function (s) {
-      // The ONE value on this page that reaches innerHTML unescaped, because
-      // renderTex returns markup by design. Its contract: every interpolated
-      // substring is escaped inside js/tex.js (see esc() there) and it emits
-      // only <span>/<sup>/<sub> with fixed class names. Keep that true, or
-      // escape here instead.
-      var body = (typeof window.renderTex === 'function')
-        ? window.renderTex(s.tex)
-        : esc(s.tex);
-      return '<figure class="dd dd--formula">' +
-        '<div class="formula" role="math" aria-label="' + esc(s.caption || 'Formula') + '">' +
-          body +
-        '</div>' +
-        (s.caption ? '<figcaption>' + esc(s.caption) + '</figcaption>' : '') +
-      '</figure>';
-    },
-
-    code: function (s) {
-      // Language chip and copy button sit in a header bar so the block reads
-      // as a code block rather than an indented paragraph. The button is wired
-      // up after render (see initCopy) so no inline handler is needed.
-      return '<figure class="dd dd--code">' +
-        '<div class="code-head">' +
-          '<span class="code-lang">' + esc(s.lang || 'text') + '</span>' +
-          '<button class="code-copy" type="button" aria-label="Copy code">Copy</button>' +
-        '</div>' +
-        '<pre><code class="lang-' + esc(s.lang || 'text') + '">' + esc(s.code) + '</code></pre>' +
-        (s.caption ? '<figcaption>' + esc(s.caption) + '</figcaption>' : '') +
-      '</figure>';
-    },
-
-    table: function (s) {
-      var head = (s.head || []).map(function (h) {
-        return '<th scope="col">' + esc(h) + '</th>';
-      }).join('');
-      var rows = (s.rows || []).map(function (r) {
-        return '<tr>' + r.map(function (c, i) {
-          return i === 0
-            ? '<th scope="row">' + esc(c) + '</th>'
-            : '<td>' + esc(c) + '</td>';
-        }).join('') + '</tr>';
-      }).join('');
-      return '<figure class="dd dd--table">' +
-        '<div class="table-scroll">' +
-          '<table>' +
-            (head ? '<thead><tr>' + head + '</tr></thead>' : '') +
-            '<tbody>' + rows + '</tbody>' +
-          '</table>' +
-        '</div>' +
-        (s.caption ? '<figcaption>' + esc(s.caption) + '</figcaption>' : '') +
-      '</figure>';
-    },
-
-    /* ---------- diagram ----------
-       Drawn explanations, in the four shapes that actually earn their place in
-       these case studies: a `flow` for a pipeline, a `cycle` for a loop, a
-       `quadrant` for a two-axis idea, and `bars` for a measured comparison.
-       All four are built from data and drawn in markup — no chart library, no
-       image, so they theme with the page and stay sharp at any zoom.
-
-       Each carries a real caption saying where its numbers come from. */
-    diagram: function (s) {
-      var D = {
-        /* input -> stage -> stage -> output, with the arrow between. */
-        flow: function (s) {
-          return '<ol class="dg dg--flow">' + (s.steps || []).map(function (st, i) {
-            return '<li class="dg-step">' +
-                '<span class="dg-step__n" aria-hidden="true">' + (i + 1) + '</span>' +
-                '<span class="dg-step__t">' + esc(st.t) + '</span>' +
-                (st.d ? '<span class="dg-step__d">' + esc(st.d) + '</span>' : '') +
-              '</li>';
-          }).join('') + '</ol>';
-        },
-
-        /* The same steps, but the last one feeds the first. The ring is drawn
-           as one SVG behind the labels so the arrowhead lands on the path. */
-        cycle: function (s) {
-          var items = s.steps || [];
-          var n = items.length || 1;
-          var R = 116, C = 150;
-          var nodes = items.map(function (st, i) {
-            var a = (i / n) * 2 * Math.PI - Math.PI / 2;
-            return '<li class="dg-node" style="--nx:' + (C + R * Math.cos(a)).toFixed(1) +
-                'px;--ny:' + (C + R * Math.sin(a)).toFixed(1) + 'px">' +
-                '<span class="dg-node__t">' + esc(st.t) + '</span>' +
-                (st.d ? '<span class="dg-node__d">' + esc(st.d) + '</span>' : '') +
-              '</li>';
-          }).join('');
-          return '<div class="dg dg--cycle">' +
-              '<svg class="dg-ring" width="300" height="300" viewBox="0 0 300 300" aria-hidden="true">' +
-                '<defs><marker id="dg-ah" viewBox="0 0 10 10" refX="8" refY="5" ' +
-                  'markerWidth="6" markerHeight="6" orient="auto-start-reverse">' +
-                  '<path d="M0 0 L10 5 L0 10 z" fill="currentColor"/></marker></defs>' +
-                '<circle cx="150" cy="150" r="116" fill="none" stroke="currentColor" ' +
-                  'stroke-width="1.5" stroke-dasharray="4 7"/>' +
-                '<path d="M 150 34 A 116 116 0 0 1 226 62" fill="none" stroke="currentColor" ' +
-                  'stroke-width="1.5" marker-end="url(#dg-ah)"/>' +
-              '</svg>' +
-              '<ul class="dg-nodes">' + nodes + '</ul>' +
-            '</div>';
-        },
-
-        /* Two axes, four cells. The axis labels are the point: without them a
-           quadrant is just four boxes. */
-        quadrant: function (s) {
-          var cells = (s.cells || []).map(function (c) {
-            return '<li class="dg-cell">' +
-                '<span class="dg-cell__t">' + esc(c.t) + '</span>' +
-                (c.d ? '<span class="dg-cell__d">' + esc(c.d) + '</span>' : '') +
-              '</li>';
-          }).join('');
-          return '<div class="dg dg--quadrant">' +
-              '<span class="dg-axis dg-axis--y">' + esc(s.y || '') + '</span>' +
-              '<ul class="dg-cells">' + cells + '</ul>' +
-              '<span class="dg-axis dg-axis--x">' + esc(s.x || '') + '</span>' +
-            '</div>';
-        },
-
-        /* A measured comparison, with an optional rule for the benchmark or
-           ceiling the bars are being judged against. */
-        bars: function (s) {
-          var max = s.max != null ? s.max : Math.max.apply(null,
-            (s.rows || []).map(function (r) { return Math.abs(r.v); }).concat([s.rule || 0]));
-          var rows = (s.rows || []).map(function (r) {
-            var pct = max ? (Math.abs(r.v) / max) * 100 : 0;
-            return '<li class="dg-bar' + (r.best ? ' is-best' : '') + '">' +
-                '<span class="dg-bar__k">' + esc(r.k) + '</span>' +
-                '<span class="dg-bar__track"><span class="dg-bar__fill" ' +
-                  'style="width:' + pct.toFixed(1) + '%"></span></span>' +
-                '<span class="dg-bar__v">' + esc(r.label != null ? r.label : r.v) + '</span>' +
-              '</li>';
-          }).join('');
-          /* The rule has to cross the bars at the same value they are drawn
-             against, so it is measured inside a box that is exactly the track
-             column — a static inner span, because a percentage on an
-             absolutely positioned element resolves against the padding box of
-             its containing block, not against the column. */
-          var rule = '';
-          if (s.rule != null && max) {
-            rule = '<span class="dg-rulebox" aria-hidden="true">' +
-                '<span class="dg-ruletrack">' +
-                  '<span class="dg-rule" style="left:' +
-                    ((s.rule / max) * 100).toFixed(1) + '%">' +
-                    '<span>' + esc(s.ruleLabel || '') + '</span>' +
-                  '</span>' +
-                '</span>' +
-              '</span>';
-          }
-          return '<div class="dg dg--bars">' + rule +
-            '<ul class="dg-barlist">' + rows + '</ul></div>';
-        }
-      };
-
-      var draw = D[s.shape];
-      if (!draw) return '';
-      return '<figure class="dd dd--dg"' +
-          (s.layer ? ' data-layer="' + esc(s.layer) + '"' : '') + '>' +
-        (s.heading ? '<h3>' + esc(s.heading) + '</h3>' : '') +
-        (s.body ? '<p>' + esc(s.body) + '</p>' : '') +
-        draw(s) +
-        (s.caption ? '<figcaption>' + esc(s.caption) + '</figcaption>' : '') +
-      '</figure>';
-    },
-
-    /* ---------- interactive ----------
-       Three widgets, all built from data (see js/interactive.js for the
-       behaviour). The markup written here already holds every number, item
-       and image the widget will ever show, so with JavaScript off the section
-       still reads as a table, a list or a picture — the control is the only
-       thing lost. */
-    interactive: function (s) {
-      var W = {
-        /* Sliders over a small ranked table. The weights are the real default
-           weights; the rows are real measured values. */
-        weights: function (s) {
-          var sliders = (s.sliders || []).map(function (sl) {
-            return '<label class="ix-slider">' +
-                '<span class="ix-slider__name">' + esc(sl.label) + '</span>' +
-                '<input type="range" data-w-slider="' + esc(sl.key) + '" ' +
-                  'data-default="' + esc(sl.value) + '" value="' + esc(sl.value) + '" ' +
-                  'min="' + esc(sl.min != null ? sl.min : 0) + '" ' +
-                  'max="' + esc(sl.max != null ? sl.max : 1) + '" ' +
-                  'step="' + esc(sl.step != null ? sl.step : 0.05) + '" ' +
-                  'aria-label="' + esc(sl.label) + ' weight">' +
-                '<output data-w-out="' + esc(sl.key) + '">' + esc(sl.value) + '</output>' +
-              '</label>';
-          }).join('');
-
-          var rows = (s.rows || []).map(function (r, i) {
-            var cells = (s.sliders || []).map(function (sl) {
-              var v = r.values[sl.key];
-              return '<td class="ix-num">' + esc(v == null ? '—' : v) + '</td>';
-            }).join('');
-            // esc() turns the JSON's quotes into &quot;, so a double-quoted
-            // attribute holds it intact.
-            return '<tr data-w-row data-values="' +
-                esc(JSON.stringify(r.values)) + '">' +
-              '<td class="ix-rank" data-w-rank>' + (i + 1) + '</td>' +
-              '<th scope="row">' + esc(r.name) + '</th>' + cells +
-              '<td class="ix-num ix-score" data-w-score>0.00</td>' +
-            '</tr>';
-          }).join('');
-
-          var head = (s.sliders || []).map(function (sl) {
-            return '<th scope="col">' + esc(sl.short || sl.label) + '</th>';
-          }).join('');
-
-          return '<div class="ix" data-interactive="weights">' +
-            '<div class="ix-controls">' + sliders +
-              '<button class="ix-reset" type="button" data-w-reset>Reset</button>' +
-            '</div>' +
-            '<div class="table-scroll"><table class="ix-table">' +
-              '<thead><tr><th scope="col" class="ix-rank">#</th>' +
-                '<th scope="col">' + esc(s.rowLabel || 'Item') + '</th>' + head +
-                '<th scope="col">' + esc(s.scoreLabel || 'Score') + '</th></tr></thead>' +
-              '<tbody data-w-rows>' + rows + '</tbody>' +
-            '</table></div>' +
-          '</div>';
-        },
-
-        /* One list, several frames over it. Each frame lights the items it
-           picks, in order, and says what it was optimising for. */
-        steps: function (s) {
-          var frames = (s.frames || []).map(function (f, i) {
-            return '<button class="ix-frame" type="button" data-s-frame ' +
-              'data-picks="' + esc(JSON.stringify(f.picks || [])) + '" ' +
-              'data-note="' + esc(f.note || '') + '" ' +
-              'aria-pressed="' + (i === 0 ? 'true' : 'false') + '">' +
-              esc(f.label) + '</button>';
-          }).join('');
-
-          var items = (s.items || []).map(function (it, i) {
-            return '<li class="ix-item" data-s-item>' +
-              '<span class="ix-item__n" aria-hidden="true">' + (i + 1) + '</span>' +
-              esc(it) + '</li>';
-          }).join('');
-
-          return '<div class="ix" data-interactive="steps">' +
-            '<div class="ix-controls ix-controls--frames">' + frames +
-              '<button class="ix-play" type="button" data-s-play aria-pressed="false" ' +
-                'data-play-label="' + esc(s.playLabel || 'Play all') + '" ' +
-                'data-stop-label="' + esc(s.stopLabel || 'Stop') + '">' +
-                esc(s.playLabel || 'Play all') + '</button>' +
-            '</div>' +
-            '<ol class="ix-list">' + items + '</ol>' +
-            '<p class="ix-note" data-s-note aria-live="polite"></p>' +
-          '</div>';
-        },
-
-        /* Two images, one divider. The range input is the control; dragging
-           the picture drives the same input. */
-        wipe: function (s) {
-          return '<div class="ix" data-interactive="wipe">' +
-            '<div class="ix-wipe" data-wipe style="--wipe:50%">' +
-              '<img class="ix-wipe__a" src="' + safeUrl(s.a.src) + '" alt="' + esc(s.a.alt || '') + '" ' +
-                'loading="lazy" decoding="async">' +
-              '<img class="ix-wipe__b" src="' + safeUrl(s.b.src) + '" alt="' + esc(s.b.alt || '') + '" ' +
-                'loading="lazy" decoding="async">' +
-              '<span class="ix-wipe__bar" aria-hidden="true"></span>' +
-              '<span class="ix-wipe__tag ix-wipe__tag--a" aria-hidden="true">' + esc(s.a.label) + '</span>' +
-              '<span class="ix-wipe__tag ix-wipe__tag--b" aria-hidden="true">' + esc(s.b.label) + '</span>' +
-            '</div>' +
-            '<label class="ix-wipe__control">' +
-              '<span>' + esc(s.controlLabel || 'Wipe') + '</span>' +
-              '<input type="range" min="0" max="100" value="50" step="1" data-wipe-input ' +
-                'aria-label="' + esc(s.controlLabel || 'Wipe between the two images') + '">' +
-            '</label>' +
-          '</div>';
-        }
-      };
-
-      var build = W[s.widget];
-      if (!build) return '';
-      return '<figure class="dd dd--ix"' +
-          (s.layer ? ' data-layer="' + esc(s.layer) + '"' : '') + '>' +
-        (s.heading ? '<h3>' + esc(s.heading) + '</h3>' : '') +
-        (s.body ? '<p>' + esc(s.body) + '</p>' : '') +
-        build(s) +
-        (s.caption ? '<figcaption>' + esc(s.caption) + '</figcaption>' : '') +
-      '</figure>';
-    },
-
-    steps: function (s) {
-      var items = (s.items || []).map(function (it) {
-        return '<li><strong>' + esc(it.t) + '</strong><span>' + esc(it.d) + '</span></li>';
-      }).join('');
-      return '<section class="dd dd--steps">' +
-        (s.heading ? '<h3>' + esc(s.heading) + '</h3>' : '') +
-        '<ol class="steps">' + items + '</ol>' +
-      '</section>';
-    }
-  };
-
-  /* ---------- the gutter figures ----------
-     Live drawings down BOTH margins of a case study, each anchored beside the
-     section it belongs to. They replaced the single sticky instrument that
-     used to sit in the right gutter, which was the same idea with one of it
-     and nowhere for the argument to develop.
-
-     Each one is a small piece of the project's real mechanism, running, and
-     operated by the pointer — a beam tipping until two factors agree, the
-     real backtest curves racing, a halo coming off her own traced cells. A
-     project's figures are `figures` in js/project-data.js; the drawing lives
-     in js/figures.js.
-
-     The canvas is aria-hidden and unfocusable on purpose: the title and the
-     note beside it are not, so everything the drawing claims is also in
-     words. Nothing here invents a measurement — where a figure uses real
-     numbers (the backtest curves, the cell outlines) they were traced out of
-     this repository's own screenshots by tools/trace-figures.py, and the note
-     says so.
-
-     One figure. `side` puts it in the left or the right margin; `at` is the
-     index of the deep-dive section it belongs beside, so it arrives with the
-     paragraph it illustrates rather than floating somewhere near it.
-
-     The title and the note are the Napkin half of this: a drawing with no
-     claim attached is decoration, and the note is where the claim goes. The
-     canvas is aria-hidden and the note is not — everything the drawing says
-     is also said in words, which is what lets the canvas be decorative. */
-  function figure(f) {
-    return '<aside class="fig fig--' + (f.side === 'l' ? 'l' : 'r') + '"' +
-        ' data-figure="' + esc(f.kind) + '">' +
-        (f.title ? '<h4 class="fig__title">' + esc(f.title) + '</h4>' : '') +
-        '<canvas class="fig__canvas" aria-hidden="true"></canvas>' +
-        (f.note ? '<p class="fig__note">' + esc(f.note) + '</p>' : '') +
-      '</aside>';
-  }
-
-  function renderDeepDive(sections, project) {
-    if (!sections || !sections.length) return '';
-
-    /* Group the figures by the section they are anchored to, so a section
-       with two of them gets both and the order in the data is the order down
-       the page. */
-    var anchored = {};
-    (project.figures || []).forEach(function (f) {
-      var k = Math.max(0, Math.min(sections.length - 1, f.at || 0));
-      (anchored[k] = anchored[k] || []).push(figure(f));
-    });
-
-    var body = sections.map(function (s, i) {
-      var fn = SECTION[s.kind];
-      // The figure is emitted BEFORE its section: it floats into the margin,
-      // and a float has to be declared before the text it sits beside or it
-      // starts a line lower than the paragraph it belongs to.
-      return (anchored[i] ? anchored[i].join('') : '') + (fn ? fn(s) : '');
-    }).join('');
-
-    return '<div class="detail__deep">' +
-      '<h2>How it works <span class="glyph" aria-hidden="true">◆</span></h2>' +
-      '<div class="detail__deep-body">' + body + '</div>' +
-    '</div>';
   }
 
   /* One delegated listener rather than one per button. Uses the async
@@ -474,8 +86,8 @@
      direct link rather than leaving an empty box. */
   function liveEmbed(p) {
     if (!p.demo) return '';
-    return '<section class="dd live" data-live>' +
-      '<h2>See it running <span class="glyph" aria-hidden="true">▸</span></h2>' +
+    return '<section class="live" data-live>' +
+      '<h3 class="a-h">See it running</h3>' +
       '<div class="live__frame">' +
         '<div class="live__chrome" aria-hidden="true">' +
           '<span class="live__dot"></span><span class="live__dot"></span><span class="live__dot"></span>' +
@@ -653,80 +265,24 @@
     return Number(m[3]) + ' ' + MONTHS[Number(m[2]) - 1] + ' ' + m[1];
   }
 
-  /* ---------- marginalia ----------
-     Overview and The tricky part are printed as one centred column with a
-     second, handwritten voice in the margin. Each entry in a project's
-     `notes` array is a [phrase, note] pair: the phrase is marked in the
-     prose, the note is parked beside it, sides alternating.
+  /* ---------- the article ----------
+     Each case study is its own file, js/articles/<id>.js plus
+     css/articles/<id>.css, fetched for this page only — the home page loads
+     the summaries in js/project-data.js and nothing else. The version tag
+     travels with both so a deploy is never half old, half new. */
+  var ARTICLE_V = '1';
 
-     Everything is escaped before it is spliced, and the search runs over the
-     already-escaped text so a phrase containing & or a quote still matches
-     what is actually in the document. A phrase that no longer appears — the
-     copy was edited and the note left behind — drops its note silently
-     rather than rendering an aside pointing at nothing. tools/check.js
-     fails on that case, so it is caught before it ships. */
-  function marginalia(heading, glyph, text, notes, key) {
-    // The opener's chevron links to this heading, so it needs an id.
-    var body = esc(text || '');
-    var asides = '';
+  function loadArticle(id, done) {
+    var css = document.createElement('link');
+    css.rel = 'stylesheet';
+    css.href = 'css/articles/' + encodeURIComponent(id) + '.css?v=' + ARTICLE_V;
+    document.head.appendChild(css);
 
-    for (var i = 0; i < (notes || []).length; i++) {
-      var phrase = esc(notes[i][0]);
-      var at = body.indexOf(phrase);
-      if (at === -1) continue;
-
-      var id = 'mg-' + key + '-' + i;
-      body = body.slice(0, at) +
-             '<mark class="mg__mark" id="' + id + '">' + phrase + '</mark>' +
-             body.slice(at + phrase.length);
-
-      asides += '<aside class="mg__note mg__note--' + (i % 2 ? 'l' : 'r') + '" ' +
-                'data-mg-for="' + id + '">' + esc(notes[i][1]) + '</aside>';
-    }
-
-    return '<section class="mg">' +
-      '<div class="mg__col">' +
-        '<h2 id="' + esc(key) + '-h">' + esc(heading) +
-          ' <span class="glyph" aria-hidden="true">' + glyph + '</span></h2>' +
-        '<p class="mg__para">' + body + '</p>' +
-      '</div>' +
-      asides +
-    '</section>';
-  }
-
-  /* Park each note at the vertical position of the phrase it annotates. This
-     cannot be CSS: where a phrase lands depends on where the line wrapped,
-     which only the browser knows, and it moves when the column resizes or
-     when Caveat finishes loading and the notes reflow.
-
-     Below the gutter breakpoint the notes are static, so any inline top left
-     over from a wider layout has to be cleared or they sit in the wrong
-     place. */
-  function alignNotes(root) {
-    var notes = root.querySelectorAll('[data-mg-for]');
-    if (!notes.length) return;
-
-    var wide = window.matchMedia('(min-width: 1060px)');
-
-    function place() {
-      for (var i = 0; i < notes.length; i++) {
-        if (!wide.matches) { notes[i].style.top = ''; continue; }
-        var mark = document.getElementById(notes[i].getAttribute('data-mg-for'));
-        // .mg is the only positioned ancestor, so offsetTop is already
-        // measured from the section both elements share.
-        if (mark) notes[i].style.top = Math.max(0, mark.offsetTop - 2) + 'px';
-      }
-    }
-
-    place();
-    wide.addEventListener('change', place);
-    if (window.ResizeObserver) {
-      new ResizeObserver(place).observe(root);
-    } else {
-      window.addEventListener('resize', place);
-    }
-    // Caveat arrives after first paint and changes every note's height.
-    if (document.fonts && document.fonts.ready) document.fonts.ready.then(place);
+    var js = document.createElement('script');
+    js.src = 'js/articles/' + encodeURIComponent(id) + '.js?v=' + ARTICLE_V;
+    js.onload = function () { done(window.Article && window.Article.get(id)); };
+    js.onerror = function () { done(null); };
+    document.body.appendChild(js);
   }
 
   function render() {
@@ -741,9 +297,6 @@
     if (index === -1) { notFound(root); return; }
 
     var p = projects[index];
-
-    /* One list on the home page now, in array order: the neighbour here is
-       the neighbour there. */
     var prev = projects[index - 1];
     var next = projects[index + 1];
 
@@ -756,42 +309,25 @@
     setMeta('meta[name="twitter:title"]', 'content', pageTitle);
     setMeta('meta[name="twitter:description"]', 'content', p.summary);
 
-    /* --- pieces --- */
-    // || [] for the same reason s.rows || [] has it above: a project entry
-    // missing either field should render a short page, not throw and leave
-    // the visitor on an empty one.
     var tech = (p.tech || []).map(function (t) { return '<li>' + esc(t) + '</li>'; }).join('');
 
-    var highlights = (p.highlights || []).map(function (h) {
-      return '<li>' + esc(h) + '</li>';
-    }).join('');
-
-    /* Both links carry the same weight — neither the repo nor the running
-       demo is the "primary" thing to do with a case study, and styling one as
-       the loud one was an arbitrary call.
-
-       The label has to match where the link goes. Arteza's `repo` is
-       arteza.site — the client owns the code — and labelling that "Source"
-       promised a repository and delivered a shop. */
-    var repoLabel = /(^|\.)github\.com\//.test(String(p.repo || '')) ? 'Source ↗' : 'Visit the site ↗';
+    /* The label has to match where the link goes. Arteza's `repo` is the
+       shop itself — the client owns the code — and labelling that "Source"
+       promised a repository and delivered a storefront. */
+    var repoLabel = /^https:\/\/github\.com\//.test(String(p.repo || '')) ? 'Source ↗' : 'Visit the site ↗';
     var actions = '<a class="btn btn--quiet" href="' + safeUrl(p.repo) + '" target="_blank" rel="noopener noreferrer">' + repoLabel + '</a>' +
       (p.demo ? '<a class="btn btn--quiet" href="' + safeUrl(p.demo) + '" target="_blank" rel="noopener noreferrer">Live demo ↗</a>' : '');
 
     var navPrev = prev
-      ? '<a href="project.html?id=' + encodeURIComponent(prev.id) + '">← ' + esc(prev.title) + '</a>'
-      : '<span>← start of list</span>';
+      ? '<a href="work/' + encodeURIComponent(prev.id) + '.html"><span>Previous</span>' + esc(prev.title) + '</a>'
+      : '<span></span>';
     var navNext = next
-      ? '<a href="project.html?id=' + encodeURIComponent(next.id) + '">' + esc(next.title) + ' →</a>'
-      : '<span>end of list →</span>';
-
-    var notes = p.notes || {};
+      ? '<a href="work/' + encodeURIComponent(next.id) + '.html"><span>Next</span>' + esc(next.title) + '</a>'
+      : '<span></span>';
 
     root.innerHTML =
       '<a class="detail__back" href="index.html#work">← All work</a>' +
-
       '<header class="detail__head">' +
-        // Title on the left, the two links stacked on the right, sharing the
-        // heading's first line.
         '<div class="detail__headrow">' +
           '<div class="detail__headtext">' +
             '<h1 class="detail__title">' + esc(p.title) + '</h1>' +
@@ -801,30 +337,32 @@
         '</div>' +
         facts(p, tech) +
       '</header>' +
-
       '<div class="detail__body">' +
         glance(p) +
-
-        marginalia('Overview', '▶', p.overview, notes.overview, 'overview') +
-
-        '<h2>What it does <span class="glyph" aria-hidden="true">⁕</span></h2>' +
-        '<ul class="detail__list">' + highlights + '</ul>' +
-
-        liveEmbed(p) +
-
-        marginalia('The tricky part', '⌘', p.challenge, notes.challenge, 'challenge') +
-
-        renderDeepDive(p.deepDive, p) +
+        '<p class="detail__dek" data-dek hidden></p>' +
       '</div>' +
-
+      '<article class="a" id="article" aria-busy="true"></article>' +
       '<nav class="detail__nav" aria-label="Project navigation">' + navPrev + navNext + '</nav>';
 
     initCopy(root);
     initLive(root);
-    alignNotes(root);
-    if (typeof window.initFigures === 'function') window.initFigures(root);
-    if (typeof window.initOpener === 'function') window.initOpener(p);
-    if (typeof window.initInteractive === 'function') window.initInteractive(root);
+
+    loadArticle(p.id, function (spec) {
+      var art = document.getElementById('article');
+      art.removeAttribute('aria-busy');
+      if (!spec) {
+        art.innerHTML = '<p class="a-p">' + esc(p.summary) + '</p>';
+        if (typeof window.initOpener === 'function') window.initOpener(p, null);
+        return;
+      }
+      if (spec.dek) {
+        var dek = root.querySelector('[data-dek]');
+        dek.innerHTML = window.Article.inline(spec.dek);
+        dek.hidden = false;
+      }
+      window.Article.render(art, p, spec, { live: liveEmbed(p) });
+      if (typeof window.initOpener === 'function') window.initOpener(p, spec);
+    });
   }
 
   window.onReady(render);

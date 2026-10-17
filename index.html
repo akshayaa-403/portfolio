@@ -88,9 +88,9 @@
       </button>
       <nav class="nav" id="primary-nav" aria-label="Primary">
         <a href="#home"><span class="nav__label">Home</span><span class="nav__label nav__label--measure" aria-hidden="true">Home</span></a>
-        <a href="#work"><span class="nav__label">Work</span><span class="nav__label nav__label--measure" aria-hidden="true">Work</span></a>
-        <a href="#about"><span class="nav__label">Info</span><span class="nav__label nav__label--measure" aria-hidden="true">Info</span></a>
+        <a href="#work"><span class="nav__label">Projects</span><span class="nav__label nav__label--measure" aria-hidden="true">Projects</span></a>
         <a href="#hobbies"><span class="nav__label">Hobbies</span><span class="nav__label nav__label--measure" aria-hidden="true">Hobbies</span></a>
+        <a href="#about"><span class="nav__label">Info</span><span class="nav__label nav__label--measure" aria-hidden="true">Info</span></a>
       </nav>
     </div>
 
@@ -156,18 +156,17 @@
 <main id="main" tabindex="-1">
 
   <!-- ===================== Hero =====================
-       Two arrangements of the same stage, chosen by data-mode on <html>:
+       Three arrangements of the same stage, chosen by data-mode on <html>:
        `graph` (the default) draws the latent field behind a centred lockup,
-       `mosaic` sets the lockup top-left over a pinboard of real artifacts.
-       The prop collage that `notebook` used to hold is gone, and with it the
-       borrowed third-party photographs it was built from.
+       `desk` puts the lockup on a laptop's screen on a desk (900px and up),
+       and `mosaic` makes the lockup one tile in a grid of real artifacts.
   -->
   <section class="hero" id="home" aria-labelledby="hero-name">
 
     <!-- --lap-dx/--lap-dy/--lap-s: how far desk mode's laptop, and the
          lockup on its screen with it, sits from its default place and at what
          scale (css/desk.css). Set with the ?edit=1 desk editor. -->
-    <div class="stage" data-collage style="--lap-dx:0vw; --lap-dy:0svh; --lap-s:1;">
+    <div class="stage" style="--lap-dx:0vw; --lap-dy:0svh; --lap-s:1;">
 
       <!-- ---------- The graph (graph mode) ----------
            Every destination on this site as a node, every real relationship
@@ -222,7 +221,7 @@
              The glow lives inside it, in the lamp image's own coordinates,
              so it stays under the shade at any size, tilt or hover scale.
              Lit whenever the dark theme is on, previewed while hovered. -->
-        <button class="prop prop--lamp-btn" data-prop="lamp" type="button" data-drag data-cue="Turn the lights off!"
+        <button class="prop prop--lamp-btn" type="button" data-drag data-cue="Turn the lights off!"
                 aria-pressed="false" aria-label="Turn on the lamp (dark theme)"
                 style="--x:-1.358%; --y:35.444%; --w:23.819%; --h:50.778%; --r:0deg; --z:4;">
           <span class="lamp__fig">
@@ -274,9 +273,10 @@
              behind it is the most interesting thing on the page and the least
              legible on arrival, so name, role and a proof point are stated
              plainly over the top of it. Every figure here is on the page
-             below. -->
+             below: four case studies in the list (the count the mosaic
+             derives too), and three tools out of their stacks. -->
         <p class="hero__proof">
-          3 roles since Jan 2025 &middot; 7 case studies &middot; Python, AWS, PyTorch, SQL
+          4 case studies, each shown working &middot; Python, PyTorch, React
         </p>
       </div>
 
@@ -306,17 +306,20 @@
   </section>
 
   <!-- ===================== Skills =====================
-       A list, and now only a list. It used to drift sideways and could be
-       dragged to scrub, which was an interaction over a set of twelve words
-       that revealed nothing new at either end of the drag.
+       Headed like every other section; the strip under the heading runs
+       full-bleed as a marquee.
 
-       Every entry below has to be evidenced somewhere on this page — in a
-       role under Experience or in the stack of a case study. Azure, Power BI
-       and LangChain were listed here and appear nowhere in the work, so they
-       are gone rather than asserted.
+       Every entry below has to be evidenced somewhere on this page, in the
+       stack of a case study. Azure, Power BI and LangChain were listed here
+       and appear nowhere in the work, so they are gone rather than asserted.
   -->
   <section class="strip-section" aria-labelledby="skills-h">
-    <h2 class="strip__heading" id="skills-h">Skills</h2>
+    <div class="wrap">
+      <div class="section-head reveal">
+        <h2 id="skills-h">Skills</h2>
+        <span class="glyph" aria-hidden="true">&#8984;</span>
+      </div>
+    </div>
     <!-- A marquee again: one set of words, duplicated, translated by exactly
          half its own width so the loop is seamless. The copy is aria-hidden so
          a screen reader hears the twelve skills once. Motion is dropped and the
@@ -338,7 +341,9 @@
   </section>
 
   <!-- ===================== Work =====================
-       One narrow column of project rows; a preview image fades in on hover.
+       Two columns, Research and Products, a card per project; hovering a
+       card shows its media in the other column. The archived case studies
+       get one line at the foot.
   -->
   <section class="section" id="work" aria-labelledby="work-h">
     <div class="wrap">
@@ -384,9 +389,8 @@
   </section>
 
   <!-- ===================== Hobbies =====================
-       A justified photo gallery grouped by pursuit. Row heights are solved in
-       js/hobbies.js so every row fills the container edge to edge while each
-       photo keeps its own proportions.
+       Three cards, one per gallery, built by js/hobbies.js from
+       js/hobby-data.js. Each is a plain link to its gallery page.
   -->
   <section class="section" id="hobbies" aria-labelledby="hobbies-h">
     <div class="wrap">
@@ -406,9 +410,11 @@
   </section>
 
   <!-- ===================== Readings =====================
-       Built from js/readings-data.js: a short shelf of spines, with whichever
-       one is chosen held open above it. The spines are drawn from each book's
-       own cover colour; only the cover itself is an image.
+       Built from js/readings-data.js: a short shelf of spines, each at the
+       edition's real size. Hovering or focusing one turns it to show its
+       cover, with the caption beside it; choosing it takes it off the shelf.
+       The spines are drawn from each book's own cover colour; only the cover
+       itself is an image.
   -->
   <section class="section" id="readings" aria-labelledby="readings-h">
     <div class="wrap">
@@ -448,7 +454,6 @@
       <div class="section-head reveal">
         <h2 id="about-h">Info</h2>
         <span class="glyph" aria-hidden="true">☺︎</span>
-        <span class="rule" aria-hidden="true"></span>
       </div>
 
       <div class="info__intro reveal">
@@ -485,6 +490,8 @@
           <svg class="icon" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" focusable="false"><use href="#i-github"></use></svg>GitHub</a>
         <a class="btn btn--icon" href="https://linkedin.com/in/akshayaa-kashyap" target="_blank" rel="noopener noreferrer">
           <svg class="icon" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" focusable="false"><use href="#i-linkedin"></use></svg>LinkedIn</a>
+        <a class="btn btn--icon" href="public/assets/resume.pdf" target="_blank" rel="noopener noreferrer">
+          <svg class="icon" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" focusable="false"><path fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" d="M14 3H7a1.5 1.5 0 0 0-1.5 1.5v15A1.5 1.5 0 0 0 7 21h10a1.5 1.5 0 0 0 1.5-1.5V7.5L14 3Zm0 0v4.5h4.5M9 12.5h6M9 16h6"/></svg>Résumé</a>
       </div>
     </div>
   </section>
@@ -492,7 +499,7 @@
 
 <footer class="site-footer">
   <div class="site-footer__inner">
-    <p style="margin:0;">© <span data-year>2026</span> Akshayaa Kashyap</p>
+    <p>© <span data-year>2026</span> Akshayaa Kashyap</p>
     <nav class="site-footer__social" aria-label="Footer">
       <a href="https://github.com/akshayaa-403" target="_blank" rel="noopener noreferrer" aria-label="GitHub">
         <svg class="icon" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" focusable="false"><use href="#i-github"></use></svg><span>GitHub</span></a>
@@ -500,6 +507,8 @@
         <svg class="icon" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" focusable="false"><use href="#i-linkedin"></use></svg><span>LinkedIn</span></a>
       <a href="mailto:akshayaakashyap5@gmail.com" aria-label="Email">
         <svg class="icon" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" focusable="false"><use href="#i-mail"></use></svg><span>Email</span></a>
+      <a href="public/assets/resume.pdf" target="_blank" rel="noopener noreferrer" aria-label="Résumé (PDF)">
+        <svg class="icon" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" focusable="false"><path fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" d="M14 3H7a1.5 1.5 0 0 0-1.5 1.5v15A1.5 1.5 0 0 0 7 21h10a1.5 1.5 0 0 0 1.5-1.5V7.5L14 3Zm0 0v4.5h4.5M9 12.5h6M9 16h6"/></svg><span>Résumé</span></a>
     </nav>
   </div>
 </footer>

@@ -46,7 +46,7 @@
       var base = 'public/assets/hobbies/' + encodeURIComponent(file);
 
       /* A 600px variant exists for every source wider than ~660px (see
-         tools/build-share-pages.js). Phones were being served the full-size
+         tools/build-image-variants.py). Phones were being served the full-size
          desktop file — up to 198 KB for a tile a few hundred px wide. */
       var small = (dim && dim[0] > 660)
         ? 'public/assets/hobbies/' +
@@ -54,8 +54,7 @@
         : null;
 
       shots += '<figure class="hob-shot"' +
-          (dim ? ' style="--ar:' + (dim[0] / dim[1]).toFixed(4) + '"' : '') +
-          (dim && dim[0] / dim[1] > 1.2 ? ' data-wide="1"' : '') + '>' +
+          (dim ? ' style="--ar:' + (dim[0] / dim[1]).toFixed(4) + '"' : '') + '>' +
         /* A real <button>, not a click handler on the <img>: the tile has to
            be reachable and operable from the keyboard, and the browser's own
            button semantics announce it as something that does a thing. */
@@ -74,8 +73,8 @@
       '</figure>';
     }
 
-    // Deferred: the mosaic spans are set from each image's real aspect ratio
-    // once it decodes (see sizeMosaic below).
+    // The mosaic spans are set from each image's aspect ratio, after the
+    // markup is in (see sizeMosaic below).
 
     // prev / next around the three galleries, wrapping at both ends
     var at = ORDER.indexOf(id);

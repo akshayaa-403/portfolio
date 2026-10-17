@@ -83,6 +83,10 @@
       // The 6px of slop is what stops a trackpad's jitter flickering the bar.
       else if (y > last + 6 && y > header.offsetHeight) {
         header.setAttribute('data-nav-state', 'hidden');
+        // The time-of-day menu is in the top layer, so it does not travel
+        // with the bar: left open, it stayed stranded over the page.
+        var menu = document.getElementById('timepick-menu');
+        if (menu && menu.hidePopover && menu.matches(':popover-open')) menu.hidePopover();
       } else if (y < last - 6) {
         header.setAttribute('data-nav-state', 'revealed');
       }

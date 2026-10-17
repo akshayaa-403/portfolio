@@ -1,15 +1,15 @@
 /* ==========================================================================
    Akshayaa Kashyap — portfolio
-   Layout and interaction language follow jackiehu.design: a draggable
-   desktop-collage hero, mono-first type with one script display face,
-   decorative trailing glyphs on headings, soft shadows and scattered objects.
+   Mono-first type with one script display face, decorative trailing glyphs
+   on section headings, soft shadows.
 
-   The palette, however, comes from the site's own lotus favicon — deep navy,
-   mid blue and pale blue on cool paper. Light-only; every colour is a token
-   so a dark variant can be added in one block.
+   Grounds and inks are tokens here, per time of day (light and dark, plus
+   desk mode's own four). The accent family is rebuilt at run time from the
+   day's Sanzo Wada combination by js/palette.js; the navy values below are
+   only the fallback.
 
-   Two view modes (graph / mosaic) are set as a `data-mode`
-   attribute on <html> — see section 14.
+   Three view modes (graph / desk / mosaic) are set as a `data-mode`
+   attribute on <html> — see section 14; desk mode's rules are css/desk.css.
    ========================================================================== */
 
 /* --------------------------------------------------------------------------
@@ -25,8 +25,8 @@
      1-8      hero props, ordered back-to-front (--z on each element)
      20       hero name lockup, above every prop
      40       dragged / hovered element lifted out of its band
-     60       hero mode switcher, above the pen's rotated bounding box
-     100      sticky site header
+     60       hero mode switcher, above everything drawn in the hero
+     100      fixed site header
      200      skip link, above everything
    -------------------------------------------------------------------------- */
 
@@ -54,21 +54,18 @@
   --accent-hover: #002d6b;
   --accent-pale: #b2d5e7;   /* pale highlight from the mark — decorative */
   --accent-mid: #80b1d7;
-  /* Graph categories — Projects, Hobbies, Resources. These values are only
-     the fallback: js/field.js overwrites all three on the field element with
-     a three-colour combination drawn at random from Sanzo Wada's dictionary
-     on every reload, so the graph is not in the site's navy and is not the
-     same colours twice. They are non-text marks, and field.js clamps each
-     drawn colour's lightness to the ground so the 3:1 bar holds either way;
-     the left/right/centre split carries the distinction on its own, which is
-     what keeps the map readable in greyscale and to colour-blind vision.
-
-     The photograph popover's veil. It does not flip with the theme on
+  /* The photograph popover's veil. It does not flip with the theme on
      purpose: it is a darkened room around a lit picture, and a light room
      would be a different idea, not a light-mode version of this one. The
      caption sits on it in white in both themes. */
   --veil-centre: rgba(6, 12, 20, 0.62);
   --veil-edge:   rgba(4, 8, 14, 0.95);
+  /* Graph categories — Projects, Hobbies, Resources. These values are only
+     the fallback: js/palette.js rebuilds all three from the day's Sanzo Wada
+     combination (one per calendar day), stepped until each measures against
+     the ground. The left/right/centre split carries the distinction on its
+     own, which keeps the map readable in greyscale and to colour-blind
+     vision. */
   --graph-projects:  #00317a;
   --graph-hobbies:   #2f7ab5;
   --graph-resources: #6a9fc4;
@@ -95,7 +92,6 @@
   /* Shadows — cool and soft, never harsh black */
   --shadow-card: 0 2px 10px 1px rgba(28, 55, 90, 0.14);
   --shadow-card-hover: 0 10px 28px 2px rgba(28, 55, 90, 0.22);
-  --shadow-sticker: 5.32px 5.32px 10px rgba(28, 55, 90, 0.16);
 
   /* Type */
   --font-mono: 'IBM Plex Mono', ui-monospace, 'SFMono-Regular', Menlo, monospace;
@@ -122,13 +118,6 @@
   --radius-lg: 20px;
   --radius-pill: 100px;
 
-  /* Layer-stack slabs (css/project.css). Hue comes from the project's own
-     data as --lh; only lightness and saturation are the theme's, so one pair
-     of tokens covers every layer of every project. */
-  --slab-fill: hsl(var(--lh, 210) 82% 92%);
-  --slab-edge: hsl(var(--lh, 210) 52% 64%);
-  --slab-ink: hsl(var(--lh, 210) 55% 26%);
-
   /* The nav's three tiers, after emilycampbell.co, which carries the same
      three as --nav-color / -hover / -active on its header. The reference is
      dark-only and can use white at 50%; this site has a light theme too, and
@@ -143,7 +132,6 @@
   --measure-narrow: 720px;
 
   --ease: cubic-bezier(0.4, 0, 0.2, 1);
-  --ease-bloom: cubic-bezier(0.22, 0.68, 0.24, 1); /* slow, organic unfurl */
   /* Interaction feedback only — every use of --dur is a hover/focus
      transition. 0.45s read as lag on a link; reveals set their own 0.6s. */
   --dur: 0.16s;
@@ -154,9 +142,10 @@
 /* --------------------------------------------------------------------------
    1a. Dark theme
 
-   Switched by the hero lamp: lamp lit = dark room. Set as data-theme="dark" on
-   <html> by js/theme.js, which also persists the choice and honours the OS
-   preference on a first visit.
+   Set as data-theme="dark" on <html> by js/boot.js and js/theme.js for the
+   evening and night periods of the viewer's clock (evening stays light in
+   desk mode), or when a lamp or the time-of-day menu overrides the clock for
+   the tab's session.
 
    Same navy family as the light theme, inverted: the deep navy that was ink
    becomes the ground, and the pale blues that were decorative become text.
@@ -164,12 +153,6 @@
    in the comments are measured, not estimated.
    -------------------------------------------------------------------------- */
 :root[data-theme='dark'] {
-  /* Same hues, dropped to the dark ground: the slabs stay distinguishable
-     from each other without glowing off a #0c1620 page. */
-  --slab-fill: hsl(var(--lh, 210) 46% 30%);
-  --slab-edge: hsl(var(--lh, 210) 52% 56%);
-  --slab-ink: hsl(var(--lh, 210) 60% 82%);
-
   /* Ground — deep navy, never pure black */
   --bg: #0c1620;
   --bg-raised: #16232f;
@@ -206,7 +189,6 @@
   /* Shadows read as depth only if they are darker than the ground */
   --shadow-card: 0 2px 10px 1px rgba(0, 0, 0, 0.44);
   --shadow-card-hover: 0 10px 28px 2px rgba(0, 0, 0, 0.55);
-  --shadow-sticker: 5.32px 5.32px 10px rgba(0, 0, 0, 0.42);
 
   /* Info intro: the pills invert, the terminal chips stay black, and the
      leaf shadows deepen so they still read on the dark ground. */
@@ -380,15 +362,6 @@
   --lamp-glow: #7fd6ff;
 }
 
-/* The hero props are photographs lit for a bright room; at full brightness on
-   a dark ground they glare. Dim and cool them so they read as objects sitting
-   in the same low light as everything else. Set as a variable so the hover
-   rule can compose its drop-shadow on top rather than overwrite it. The glow
-   is exempt — it is the light source. */
-:root[data-theme='dark'] {
-  --prop-filter: brightness(0.78) saturate(0.9) contrast(1.02);
-  --prop-shadow: rgba(0, 0, 0, 0.5);
-}
 /* --------------------------------------------------------------------------
    2. Reset & base
    -------------------------------------------------------------------------- */
@@ -401,9 +374,8 @@
 html {
   -webkit-text-size-adjust: 100%;
   /* The horizontal clip lives here, not on <body>. overflow-x on body makes
-     body a scroll container, which silently breaks `position: sticky` on its
-     descendants — and there are two (the site header and the case-study
-     aside). On <html> the guard works and sticky keeps working. */
+     body a scroll container, which silently breaks `position: sticky` on
+     anything inside it. On <html> the guard works and sticky keeps working. */
   overflow-x: hidden;
 }
 
@@ -541,11 +513,6 @@ main:focus-visible { outline: none; }
   font-size: 18px;
   line-height: 1;
 }
-.section-head .rule {
-  flex: 1;
-  height: 1px;
-  background: var(--line);
-}
 
 /* --------------------------------------------------------------------------
    4. Header / nav
@@ -567,10 +534,19 @@ main:focus-visible { outline: none; }
      hero is drawing underneath them. */
   isolation: isolate;
   transform: translateY(0);
-  transition: transform 0.4s var(--ease);
+  transition: transform 0.4s var(--ease), background-color 0.2s var(--ease);
 }
 /* Out of the way on the way down, back on the way up. Driven by js/nav.js. */
 .site-header[data-nav-state='hidden'] { transform: translateY(-100%); }
+/* Transparent only at the top, over the hero it was drawn for. Coming back
+   down mid-page it is over body text, and without a ground its links printed
+   straight on top of the paragraph underneath. */
+.site-header[data-nav-state='revealed'] {
+  background-color: var(--header-bg, rgba(246, 247, 248, 0.96));
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
+  box-shadow: 0 1px 0 var(--line);
+}
 
 /* The bar is a row of controls over a page that scrolls under it, so its own
    empty middle must not swallow clicks meant for the page. */
@@ -696,7 +672,7 @@ main:focus-visible { outline: none; }
   transition: color 0.6s var(--ease);
 }
 .timepick__btn:hover,
-.timepick__btn[aria-expanded='true'] { color: var(--nav-color-hover); }
+.timepick:has(.timepick__menu:popover-open) .timepick__btn { color: var(--nav-color-hover); }
 .timepick__btn:focus-visible,
 .lightpull:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; border-radius: 4px; }
 .timepick__caret {
@@ -751,7 +727,10 @@ main:focus-visible { outline: none; }
    Hidden in desk mode, where the desk's own lamp is the switch. */
 .lightpull {
   display: inline-flex;
-  padding: 0;
+  /* A 22px drawing in a 38px hit area; the negative margin keeps the bar's
+     layout exactly where the bare drawing had it. */
+  padding: 8px;
+  margin: -8px;
   border: 0;
   background: none;
   color: var(--nav-color);
@@ -808,9 +787,10 @@ main:focus-visible { outline: none; }
   flex-direction: column;
   justify-content: center;
   gap: 4px;
-  width: 30px;
-  height: 30px;
-  padding: 0;
+  width: 44px;
+  height: 44px;
+  margin: -7px;
+  padding: 0 12px;
   border: 0;
   background: none;
   cursor: pointer;
@@ -834,21 +814,17 @@ main:focus-visible { outline: none; }
 body { padding-top: var(--header-h, 80px); }
 
 /* --------------------------------------------------------------------------
-   5. Hero — full-viewport prop stage
-   Mirrors jackiehu.design: a full-height cream stage, props clustered left and
-   right (some bleeding off-screen), the name lockup centred between them, and
-   a scroll chevron pinned to the bottom.
-
-   Every prop is placed with percentage --x/--y/--w against the stage box, so
-   the composition scales with the viewport instead of breaking at one width.
+   5. Hero — a full-viewport stage
+   One stage, three arrangements (section 14): the graph drawn behind a
+   centred lockup, the desk around it (css/desk.css), or the mosaic's grid
+   with the lockup as one of its tiles.
    -------------------------------------------------------------------------- */
 .hero {
   position: relative;
   overflow: hidden;
-  /* The sticky header sits above this section and would otherwise push the
-     whole stage down, shifting every prop off the reference's coordinates.
-     Pulling the hero up under the translucent header restores a true
-     full-viewport stage anchored at y=0, as on the reference. */
+  /* The fixed header sits over this section. Pulling the hero up under it by
+     the header's height gives a true full-viewport stage anchored at y=0,
+     which is what the graph and the desk are laid out against. */
   margin-top: calc(-1 * var(--header-h, 80px));
 }
 
@@ -872,10 +848,6 @@ body { padding-top: var(--header-h, 80px); }
   /* Props can be dragged over this area, so empty space must not eat clicks */
   pointer-events: none;
 }
-.hero__lockup a,
-
-.hero__lockup button { pointer-events: auto; }
-
 .hero__name {
   width: fit-content;
   margin-left: auto;
@@ -904,8 +876,8 @@ body { padding-top: var(--header-h, 80px); }
   max-width: min(540px, calc(100vw - 64px));
   margin: 0 auto 18px;
   color: var(--ink-soft);
-  font-size: 12.5px;
-  letter-spacing: 0.02em;
+  font-size: 14px;
+  letter-spacing: 0.01em;
 }
 
 /* --- Narrow screens ----------------------------------------------------
@@ -929,28 +901,20 @@ body { padding-top: var(--header-h, 80px); }
 /* --------------------------------------------------------------------------
    6. Skills marquee
 
-   Sits directly below the hero. Drifts on its own and can be dragged
-   horizontally to scrub; see js/marquee.js.
+   Sits directly below the hero, headed like every other section. The strip
+   itself runs full-bleed and drifts on its own, CSS only; hovering pauses it.
+   Its ends fade out rather than cutting a word in half at the window edge.
    -------------------------------------------------------------------------- */
 .strip-section {
-  padding: 34px 0 0;
-}
-/* Type matches .hero__role so the label reads as part of the hero's voice.
-   It used to be offset to a --skills-cx the marquee measured at run time;
-   the marquee is gone and that value was always 50%, so it just centres. */
-.strip__heading {
-  width: max-content;
-  margin: 0 auto 12px;
-  color: var(--ink-body);
-  font-size: 18px;
-  font-weight: 400;
-  line-height: 1.5;
+  padding: var(--section-gap) 0;
 }
 .strip {
   border-top: 1px solid var(--line);
   border-bottom: 1px solid var(--line);
   background: var(--bg-sunken);
   overflow: hidden;
+  -webkit-mask-image: linear-gradient(90deg, transparent, #000 6%, #000 94%, transparent);
+  mask-image: linear-gradient(90deg, transparent, #000 6%, #000 94%, transparent);
 }
 /* The marquee. One set of words and an aria-hidden copy of it, side by side
    inside a track twice the width of the strip; translating the track by
@@ -961,8 +925,7 @@ body { padding-top: var(--header-h, 80px); }
   width: max-content;
   animation: strip-drift 38s linear infinite;
 }
-.strip:hover .strip__track,
-.strip:focus-within .strip__track { animation-play-state: paused; }
+.strip:hover .strip__track { animation-play-state: paused; }
 
 .strip__set {
   display: flex;
@@ -974,8 +937,8 @@ body { padding-top: var(--header-h, 80px); }
   list-style: none;
   margin: 0;
   padding: 14px 17px;
-  color: var(--ink-muted);
-  font-size: 12px;
+  color: var(--ink-soft);
+  font-size: 13px;
   white-space: nowrap;
 }
 
@@ -994,24 +957,13 @@ body { padding-top: var(--header-h, 80px); }
 
 /* --------------------------------------------------------------------------
    7. Work / project cards
-   Two shapes, both copied from the reference:
-
-   .rm  (Projects) — narrow left column, ~500px wide. Square icon tile +
-        title + one-line description per row. A bigger preview fades in beside
-        the row on hover (placeholder art for now).
+   Text-only rows: title, context and years, one line of what it is, the one
+   measured result where there is one, and the stack. The grid that puts the
+   two groups side by side, and the screen that shows a row's media on hover,
+   are in section 17.
    -------------------------------------------------------------------------- */
 
 /* --- Projects ------------------------------------------------------ */
-.rm-list {
-  /* The reading column. Nothing sits beside it any more, so this is just how
-     wide a numbered list wants to be. */
-  --rm-w: 700px;
-  display: flex;
-  flex-direction: column;
-  gap: var(--gap);
-  max-width: var(--rm-w);
-}
-
 .rm {
   position: relative;
   display: flex;
@@ -1030,17 +982,10 @@ body { padding-top: var(--header-h, 80px); }
   color: var(--ink);
 }
 
-/* The index. Tabular so 01..10 stay in one column, and muted so it reads as
-   an ordinal rather than a heading. */
-.rm__num {
-  flex: none;
-  padding-top: 2px;
-  width: 2ch;
-  color: var(--ink-faint, var(--ink-soft));
-  font-size: 13px;
-  font-variant-numeric: tabular-nums;
-  letter-spacing: 0.04em;
-}
+/* The row number is not shown. The static list tools/build-share-pages.js
+   writes into index.html still carries one, so it is hidden here rather than
+   left to print for a reader with JS off. */
+.rm__num { display: none; }
 
 .rm__text {
   display: flex;
@@ -1050,7 +995,7 @@ body { padding-top: var(--header-h, 80px); }
 }
 .rm__title {
   color: var(--ink);
-  font-size: 17px;
+  font-size: 19px;
   font-weight: 500;
   letter-spacing: -0.02em;
 }
@@ -1109,7 +1054,7 @@ body { padding-top: var(--header-h, 80px); }
 }
 .rm-archive__label {
   margin-right: 10px;
-  color: var(--ink-faint, var(--ink-muted));
+  color: var(--ink-muted);
   font-size: 11px;
   letter-spacing: 0.1em;
   text-transform: uppercase;
@@ -1125,9 +1070,9 @@ body { padding-top: var(--header-h, 80px); }
   text-decoration-color: currentColor;
 }
 
-/* The one measured figure the project has, if it has one. Three of the seven
-   do not, and the gap is the hierarchy: a row carrying a number is a row with
-   a result behind it. */
+/* The one measured figure the project has, if it has one. Not every project
+   has an honest number, and the gap is the hierarchy: a row carrying a figure
+   is a row with a result behind it. */
 .rm__metric {
   align-self: flex-start;
   margin-top: 4px;
@@ -1139,12 +1084,6 @@ body { padding-top: var(--header-h, 80px); }
   font-variant-numeric: tabular-nums;
   letter-spacing: 0.01em;
 }
-
-/* The lead row. Six near-identical rows gave a reader no way to tell which
-   project to open first, so the first one is bigger. */
-.rm--lead { padding: 20px 18px; }
-.rm--lead .rm__title { font-size: 21px; }
-.rm--lead .rm__desc { font-size: 15px; }
 
 /* The stack, as a labelled row rather than pills: four items at most, so the
    row stays one line and the list keeps its rhythm. */
@@ -1188,7 +1127,7 @@ body { padding-top: var(--header-h, 80px); }
   font-size: 16px;
 }
 .readings__asof {
-  color: var(--ink-faint, var(--ink-soft));
+  color: var(--ink-soft);
   font-size: 13px;
   letter-spacing: 0.04em;
   text-transform: uppercase;
@@ -1208,9 +1147,15 @@ body { padding-top: var(--header-h, 80px); }
      flat squash rather than a book turning. */
   perspective: 1500px;
   perspective-origin: 50% 60%;
-  /* The board they stand on, with its own shadow under it. */
+  /* The board is as long as the books need: every spine, plus room for one
+     cover to open (--shelf-w, measured in js/script.js). Run the full width
+     of the column, it was a long empty plank with four books at one end.
+     The shadow sits under the board only; a blurrier one bled up both ends
+     and drew the plank as an empty box. */
+  width: var(--shelf-w, fit-content);
+  max-width: 100%;
   border-bottom: 3px solid var(--line-strong);
-  box-shadow: 0 7px 14px -10px rgb(0 0 0 / 0.5);
+  box-shadow: 0 8px 6px -6px rgb(0 0 0 / 0.45);
 }
 
 /* The slot is the gap on the shelf. It is as wide as the spine until the book
@@ -1343,6 +1288,15 @@ body { padding-top: var(--header-h, 80px); }
 }
 .shelf__caption b { color: var(--ink); font-weight: 500; }
 
+/* With the width for it, the caption stands beside the shelf, level with the
+   board, in the space the plank used to leave empty. The shelf's width already
+   allows for an open cover, so turning a book never shoves the caption. */
+@media (min-width: 900px) {
+  .readings { display: flex; align-items: flex-end; gap: 48px; }
+  .shelf__books { flex: none; }
+  .shelf__caption { flex: 0 1 46ch; margin: 0 0 16px; }
+}
+
 @media (max-width: 599.98px) {
   .shelf__books { gap: 4px; }
   .shelf__caption { font-size: 13.5px; }
@@ -1366,6 +1320,11 @@ body { padding-top: var(--header-h, 80px); }
   inset: 120px 0 0;         /* below the heading, never into the section above */
   pointer-events: none;
   z-index: 0;
+  /* The section clips at its bottom edge, and blurred leaves cut off there
+     (or at this box's own top) drew a hard horizontal line across the page.
+     Fade them in and out instead. */
+  -webkit-mask-image: linear-gradient(to bottom, transparent, #000 18%, #000 70%, transparent);
+  mask-image: linear-gradient(to bottom, transparent, #000 18%, #000 70%, transparent);
 }
 .info__leaf {
   position: absolute;
@@ -1389,7 +1348,7 @@ body { padding-top: var(--header-h, 80px); }
 /* --- The intro ------------------------------------------------------------- */
 .info__intro {
   max-width: 600px;
-  margin: 40px auto 8px;    /* centred in the section, lines and all */
+  margin: 40px auto 0;      /* centred in the section, lines and all */
   text-align: center;
   color: var(--ink);
   font-family: var(--font-serif);
@@ -1397,6 +1356,8 @@ body { padding-top: var(--header-h, 80px); }
   line-height: 1.5;
 }
 .info__intro p { margin: 0 0 0.75em; }
+/* The signature's margin would otherwise add to the section's own padding. */
+.info__intro p:last-child { margin-bottom: 0; }
 .info__hello { font-style: italic; }
 .info__nowrap { white-space: nowrap; }
 
@@ -1412,9 +1373,7 @@ body { padding-top: var(--header-h, 80px); }
 .info__pill:hover { background: var(--pill-hover-bg); color: var(--pill-hover-ink); }
 
 .info__bold {
-  font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
   font-weight: 700;
-  letter-spacing: -0.02em;
 }
 
 /* Photo chip. A placeholder until there is a photo: initials on the accent
@@ -1439,7 +1398,9 @@ body { padding-top: var(--header-h, 80px); }
   width: 100%;
   height: 100%;
   background: var(--accent-pale);
-  color: var(--accent-ink);
+  /* --ink, not the accent: the accent on its own wash measured 2.6:1 at
+     night. --ink clears 9:1 on --accent-pale in both themes. */
+  color: var(--ink);
   font-family: var(--font-mono);
   font-size: 0.42em;
   font-weight: 600;
@@ -1537,7 +1498,7 @@ body { padding-top: var(--header-h, 80px); }
    -------------------------------------------------------------------------- */
 .contact { text-align: center; }
 .contact h2 {
-  font-size: clamp(1.7rem, 5vw, 2.6rem);
+  font-size: clamp(1.6rem, 4vw, 2rem);
   margin-bottom: var(--gap);
 }
 .contact p {
@@ -1636,6 +1597,7 @@ body { padding-top: var(--header-h, 80px); }
 }
 .site-footer a { color: var(--ink-muted); }
 .site-footer a:hover { color: var(--accent-ink); }
+.site-footer__inner p { margin: 0; }
 
 /* --------------------------------------------------------------------------
    12. Reveal animation — gated on .js AND reduced-motion
@@ -1654,9 +1616,9 @@ body { padding-top: var(--header-h, 80px); }
 
 /* --------------------------------------------------------------------------
    12a. Page-load choreography
-   The reference fades + rises its hero pieces in on mount. Same here: the
-   lockup parts first, then the props and cards, then the scroll cue.
-   Only opacity animates — props and cards carry rotate()/drag transforms.
+   The hero's pieces fade in on mount: the name, the role, the proof line,
+   then the mode switcher. Only opacity animates — the lockup's lines carry
+   positioning transforms of their own.
    -------------------------------------------------------------------------- */
 @media (prefers-reduced-motion: no-preference) {
   .js .hero__name,
@@ -1682,9 +1644,9 @@ body { padding-top: var(--header-h, 80px); }
 /* --------------------------------------------------------------------------
    13. Small screens
 
-   The nav collapses at the same 899.98px the hero stage does. They used to
-   differ (810 vs 900), which left an 810-899px band where the desktop prop
-   stage coexisted with the mobile dropdown. js/nav.js matches this value.
+   The nav collapses at the same 899.98px the hero stage does, so there is
+   no band where the desktop stage and the mobile dropdown coexist.
+   js/nav.js matches this value.
    -------------------------------------------------------------------------- */
 @media (max-width: 899.98px) {
   :root { --section-gap: 44px; }
@@ -1720,12 +1682,14 @@ body { padding-top: var(--header-h, 80px); }
 /* --------------------------------------------------------------------------
    14. View modes
    Set as data-mode on <html> by js/modes.js; persisted to localStorage and
-   applied by an inline <head> script before paint so there's no flash.
+   applied by js/boot.js before first paint so there's no flash.
 
      graph  — the default. The latent field: every page, project, image and
               tool as a node, laid out by a force simulation.
-     mosaic — the same material as a pinboard: real artifacts at mixed sizes
-              under a left-aligned lockup.
+     desk   — a desk round the lockup, with the lockup on a laptop's screen
+              (css/desk.css). Hidden below 900px.
+     mosaic — the same material as a pinboard: real artifacts at mixed sizes,
+              with the lockup as one of the tiles.
    -------------------------------------------------------------------------- */
 
 /* Mode switcher control. Hidden without JS, where the buttons would do
@@ -1747,7 +1711,7 @@ body { padding-top: var(--header-h, 80px); }
    aria-label, so it is hidden from the accessibility tree in the markup. */
 .modes__label {
   margin-right: 6px;
-  color: var(--ink-faint, var(--ink-muted));
+  color: var(--ink-muted);
   font-size: 10px;
   letter-spacing: 0.1em;
   text-transform: uppercase;
@@ -1772,11 +1736,16 @@ body { padding-top: var(--header-h, 80px); }
   color: var(--accent-ink);
   box-shadow: inset 0 0 0 1px var(--line-strong);
 }
+/* Desk mode's desk is hidden below 900px, so on a phone its button only
+   recoloured the page. Offer the two arrangements a phone can show. */
+@media (max-width: 899.98px) {
+  .modes [data-mode-btn='desk'] { display: none; }
+}
 
 /* --- Lockup position ---
    Graph centres the name over the field. The left offset is a percentage, so
    the block must also be told it can never exceed the space remaining to its
-   right — otherwise the headline runs off the viewport on narrow screens.
+   right — otherwise the lockup runs off the viewport on narrow screens.
    Mosaic overrides all of this further down. */
 .hero__lockup {
   left: 39.514%;
@@ -1808,10 +1777,10 @@ body { padding-top: var(--header-h, 80px); }
 }
 
 /* ---------- graph mode: the latent field ----------
-   The default mode. The desk is gone; the stage is a 2-D projection of the
-   work, drawn to a canvas by js/field.js. The lockup keeps the coordinates
-   the collage used — centred on the mode toggle's axis (x=734 of 1468),
-   values as % of the stage — so it reads as the centroid of the field. */
+   The default mode: the stage is a 2-D projection of the work, drawn to a
+   canvas by js/field.js. The lockup is centred on the mode toggle's axis,
+   its lines placed as % of the stage, so it reads as the centroid of the
+   field. Desk mode shares those coordinates. */
 
 /* --- The graph ----------------------------------------------------------
    Every destination on the site as a node, every real relationship as an
@@ -1819,7 +1788,8 @@ body { padding-top: var(--header-h, 80px); }
    onto the canvas rather than set as elements: ~90 of them as DOM nodes would
    mean 90 layout boxes moved every frame.
 
-   Hidden in mosaic, which uses the same stage for its tiles. */
+   Hidden in desk and mosaic, which use the same stage for their own
+   arrangements. */
 .field {
   position: absolute;
   inset: 0;
@@ -1871,11 +1841,6 @@ body { padding-top: var(--header-h, 80px); }
   white-space: nowrap;
 }
 .field__legend li { display: flex; align-items: center; gap: 7px; }
-.field__legend b {
-  color: var(--ink-muted);
-  font-weight: 400;
-  font-variant-numeric: tabular-nums;
-}
 .field__swatch { width: 9px; height: 9px; border-radius: 50%; flex: none; }
 
 .field__read {
@@ -1892,12 +1857,11 @@ body { padding-top: var(--header-h, 80px); }
 }
 .field__read b { color: var(--ink); font-weight: 600; display: block; }
 
-/* Below the prop breakpoint the stage stops being a stage: min-height drops
-   to 0 and the lockup returns to normal flow, so there is no canvas to lay
-   the graph out on and the nodes would pile up behind the name. The graph
-   goes the same way the props do at this width — the phone hero is the
-   lockup, a sentence and two buttons, which is the right hero for a phone
-   anyway. The selector matches [data-mode='graph'] .field so it wins without
+/* Below 900px the stage stops being a stage: min-height drops to 0 and the
+   lockup returns to normal flow, so there is no canvas to lay the graph out
+   on and the nodes would pile up behind the name. The phone hero is the
+   lockup and the mode switcher, which is the right hero for a phone anyway.
+   The selector matches [data-mode='graph'] .field so it wins without
    !important. */
 @media (max-width: 899.98px) {
   [data-mode='graph'] .field { display: none; }
@@ -1930,15 +1894,24 @@ body { padding-top: var(--header-h, 80px); }
   white-space: nowrap !important; text-align: center !important;
   transform: translateX(-50%) !important;
 }
+/* A fixed 18px under the role (whose line box is 27px), rather than a stage
+   percentage: at 60.5% it sat twice as far from the role as the role from
+   the name, and read as a caption for the graph rather than the third line
+   of the lockup. */
 [data-mode='graph'] .hero__proof,
 [data-mode='desk'] .hero__proof {
   position: absolute !important;
-  left: 50.000% !important; top: 60.500% !important;
+  left: 50.000% !important; top: calc(53.600% + 45px) !important;
   right: auto !important; bottom: auto !important; margin: 0 !important;
   width: max-content !important; max-width: 92vw !important;
   text-align: center !important;
   transform: translateX(-50%) !important;
 }
+
+/* Over the graph the lockup's smaller lines can cross an edge at narrower
+   widths; a halo in the ground's own colour keeps the words off the lines. */
+[data-mode='graph'] .hero__role,
+[data-mode='graph'] .hero__proof { text-shadow: 0 0 3px var(--bg), 0 0 8px var(--bg); }
 
 /* The mode toggle must always win the hit test, whatever is drawn over it. */
 .hero__actions { z-index: 60 !important; }
@@ -1960,18 +1933,16 @@ body { padding-top: var(--header-h, 80px); }
 }
 
 /* --------------------------------------------------------------------------
-   15. Hobbies — three cards, triangular arrangement
+   15. Hobbies — three cards in one row
 
-   Two cards on the top row and one centred beneath, matching the tri sketch.
-   Each links to its own page; on hover js/hobbies.js paints a neural-net mesh
-   over the card. Grid areas rather than absolute positioning, so the layout
-   reflows to a single column on phones with no extra rules.
+   Each links to its own gallery; on hover js/hobbies.js paints a neural-net
+   mesh over the card. Three across down to 600px, one column below that.
    -------------------------------------------------------------------------- */
 .hobbies__intro {
   max-width: var(--measure-narrow);
   margin: 0 0 26px;
   color: var(--ink-soft);
-  font-size: 15px;
+  font-size: 16px;
   line-height: 1.6;
 }
 
@@ -2030,7 +2001,9 @@ body { padding-top: var(--header-h, 80px); }
 }
 .hob-card__label {
   font-family: var(--font-script);
-  font-size: clamp(24px, 3.4vw, 33px);
+  /* Below the section headings, not above them: at 33px a hobby's name was
+     set twice the size of a project's title. */
+  font-size: clamp(22px, 2.2vw, 26px);
   line-height: 1.05;
 }
 /* Overrides the generic `a:hover { color: var(--accent-ink) }`, which
@@ -2070,10 +2043,6 @@ body { padding-top: var(--header-h, 80px); }
   outline-offset: 3px;
 }
 
-/* Three 4:3 tiles get cramped before the phone breakpoint does. */
-@media (max-width: 899.98px) {
-  .hob-tri { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-}
 @media (max-width: 599.98px) {
   .hob-tri { grid-template-columns: 1fr; gap: 14px; }
 }
@@ -2088,8 +2057,8 @@ body { padding-top: var(--header-h, 80px); }
      - tap targets under the 44px minimum (WCAG 2.5.5): footer links, mode
        toggle buttons, nav toggle, player button, detail back-links
      - body text under 13px: share-card copy, palette meta, table cells
-     - the marquee and the lilies deliberately overflow; everything else that
-       did has been contained rather than clipped
+     - the marquee deliberately overflows; everything else that did has been
+       contained rather than clipped
 
    Horizontal overflow measured 0px on every combination before and after.
    -------------------------------------------------------------------------- */
@@ -2119,6 +2088,7 @@ body { padding-top: var(--header-h, 80px); }
   }
   .btn { padding: 12px 18px; }
   .brand { padding: 11px 0; }
+  .timepick__btn { min-height: 44px; }
 
   /* --- legibility ------------------------------------------------------ */
   /* Nothing below 13px: iOS also zooms the page when tapped text is smaller. */
@@ -2136,8 +2106,9 @@ body { padding-top: var(--header-h, 80px); }
   :root { --gap-lg: 18px; --section-gap: 34px; }
   .section-head h2 { font-size: 21px; }
 
-  /* Cards stack, so the icon can be larger and the text gets full width. */
+  /* One card per row, so the text gets the full width. */
   .rm { padding: 14px; gap: 12px; }
+  .rm__title { font-size: 17px; }
 }
 
 /* --------------------------------------------------------------------------
@@ -2147,7 +2118,7 @@ body { padding-top: var(--header-h, 80px); }
    `position: absolute !important` and no media guard, so below 900px it
    overlapped the base mobile reset (which had no !important). This block wins
    by coming later with matching specificity plus !important, so the hero
-   stacks: name -> role -> headline -> toggle.
+   stacks: name -> role -> proof line -> toggle.
    -------------------------------------------------------------------------- */
 @media (max-width: 899.98px) {
   [data-mode] .hero__lockup {
@@ -2167,10 +2138,10 @@ body { padding-top: var(--header-h, 80px); }
     white-space: normal !important;
     transform: none !important;
   }
-  /* The hero is pulled up under the sticky header by --header-h so the desktop
-     prop stage can start at y=0. On mobile there is no stage — just stacked
-     type — and that negative margin was clipping the top of the name behind
-     the bar. Cancel it and pad clear of the header instead. */
+  /* The hero is pulled up under the fixed header by --header-h so the
+     desktop stage can start at y=0. On mobile there is no stage — just
+     stacked type — and that negative margin was clipping the top of the name
+     behind the bar. Cancel it and pad clear of the header instead. */
   .hero {
     margin-top: 0 !important;
     padding-top: 26px !important;
@@ -2204,7 +2175,7 @@ body { padding-top: var(--header-h, 80px); }
   .modes button { padding: 13px 14px; }
   .contact__links .btn,
 
-  .hero__actions .btn { min-height: 46px; }
+  .notfound__actions .btn { min-height: 46px; }
   .skip-link { padding: 13px 18px; }
   .code-copy { min-height: 44px; padding: 11px 14px; }
   /* Footer year and social labels were 12px. */
@@ -2217,11 +2188,18 @@ body { padding-top: var(--header-h, 80px); }
 /* --------------------------------------------------------------------------
    404 page
 
-   Lives here rather than in project.css: these four rules were the only thing
-   404.html used out of that 563-line file, so the page was downloading an
-   entire stylesheet to render six lines of text.
+   Lives here rather than in project.css: these few rules were the only thing
+   404.html used out of that file, so the page was downloading an entire
+   stylesheet to render six lines of text.
    -------------------------------------------------------------------------- */
-/* 404 */
+/* The page is one short block; without this the footer floated mid-window
+   with an empty band under it. */
+body:has(.notfound) {
+  display: flex;
+  flex-direction: column;
+  min-height: 100svh;
+}
+body:has(.notfound) main { flex: 1; }
 .notfound {
   display: flex;
   flex-direction: column;
@@ -2238,9 +2216,21 @@ body { padding-top: var(--header-h, 80px); }
   color: var(--accent); /* decorative at this size; aria-hidden in the markup */
 }
 .notfound h1 { font-size: clamp(1.4rem, 4vw, 2rem); }
-.notfound p { color: var(--ink-soft); max-width: 420px; }
+/* :not() so the numeral, also a <p>, keeps its accent. */
+.notfound p:not(.notfound__code) { color: var(--ink-soft); max-width: 420px; }
+/* Its own row under the copy. It used to borrow .hero__actions, which is
+   absolutely placed under the header, so the buttons floated 260px above
+   the text they answer, touching each other. */
+.notfound__actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: var(--gap);
+  margin-top: 10px;
+}
 
-/* Mobile: the stage is stacked type, not a composition. */@media (max-width: 899.98px) {
+/* Mobile: the stage is stacked type, not a composition. */
+@media (max-width: 899.98px) {
   :root[data-mode] .stage { position: relative; }
 
   /* The lockup must sit above the graph. */
@@ -2352,16 +2342,11 @@ body { padding-top: var(--header-h, 80px); }
 }
 
 /* --------------------------------------------------------------------------
-   Fragments mode
-   The third view mode, in the slot `clean` used to hold. The stage stops
-   being a prop collage and becomes one grid: the name lockup is the first
-   cell, the artifacts from js/mosaic.js flow after it, and the mode
-   switcher closes the run. Everything is in normal flow, so none of the
-   per-prop --x/--y coordinates apply and the stage grows to its content.
-
-   The per-element hero coordinates clean used to carry were deleted rather
-   than overridden: this mode places nothing by hand, so nothing up there had
-   anything left to say.
+   Mosaic mode
+   The stage becomes one grid: the name lockup is the first cell and the
+   artifacts from js/mosaic.js flow after it. Everything is in normal flow,
+   so nothing is placed by hand and the stage grows to its content. The mode
+   switcher keeps its place above the grid (section 14).
    -------------------------------------------------------------------------- */
 
 [data-mode='mosaic'] .stage {
@@ -2385,13 +2370,14 @@ body { padding-top: var(--header-h, 80px); }
   overflow: visible;
 }
 
-/* The name, as a tile. Two columns and three rows is the smallest box that
-   holds the headline without the type having to shrink. */
+/* The name, as a tile: two columns by two rows. It was three rows, sized for
+   a headline that has since been removed, which left the tile mostly empty
+   round three short lines. */
 [data-mode='mosaic'] .hero__lockup {
   position: static !important;
   order: -1;
   grid-column: span 2;
-  grid-row: span 3;
+  grid-row: span 2;
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -2410,7 +2396,7 @@ body { padding-top: var(--header-h, 80px); }
 /* Inside a tile the name has to fit the tile, not the viewport. */
 [data-mode='mosaic'] .hero__name {
   margin: 0 0 10px;
-  font-size: clamp(1.6rem, 2.2vw, 30px);
+  font-size: clamp(1.9rem, 3vw, 44px);
   line-height: 1.05;
 }
 [data-mode='mosaic'] .hero__role { font-size: 13px; }
@@ -2423,7 +2409,7 @@ body { padding-top: var(--header-h, 80px); }
   margin-right: auto;
   text-align: left;
 }
-[data-mode='mosaic'] .hero__proof { font-size: 11px; margin-bottom: 12px; }
+[data-mode='mosaic'] .hero__proof { font-size: 12.5px; margin-bottom: 0; }
 
 /* The mosaic. A fixed row height, not minmax(...,auto): a row that grows to
    its content makes every span mean something different and the tiles stop
@@ -2478,7 +2464,7 @@ a.frag:focus-visible {
 .frag__label,
 .frag__from,
 .frag__kicker {
-  color: var(--ink-faint, var(--ink-soft));
+  color: var(--ink-soft);
   font-size: 11.5px;
   letter-spacing: 0.04em;
 }
@@ -2506,7 +2492,7 @@ a.frag:focus-visible {
 
 .frag--note { justify-content: space-between; }
 .frag__note {
-  font-family: var(--font-note, var(--font-script));
+  font-family: var(--font-script);
   font-size: 17px;
   line-height: 1.3;
   color: var(--ink);
@@ -2531,14 +2517,17 @@ a.frag:focus-visible {
   line-height: 1.25;
 }
 
-/* Two columns at phone width, so nothing may span more than both of them. */
+/* Two columns at phone width, so nothing may span more than both of them.
+   The span is set on grid-column itself: js/mosaic.js writes --fc inline,
+   and an inline custom property beats any rule here, so overriding --fc did
+   nothing and a three-wide snippet would have added a phantom column. */
 @media (max-width: 599.98px) {
   [data-mode='mosaic'] .stage {
     grid-template-columns: repeat(2, 1fr);
     grid-auto-rows: 116px;
   }
-  .frag { --fc: 1; }
-  .frag--code { --fc: 2; }
+  .frag--code,
+  .frag--note { grid-column: span 2; }
   .frag--code pre { font-size: 10px; }
 }
 
@@ -2573,7 +2562,7 @@ body:has(dialog[open]) .cue { display: none; }
 
 
 /* ==========================================================================
-   14. The project grid, the screen, the shelf overlay and the mosaic toggle
+   17. The project grid, the screen, the shelf overlay and the mosaic toggle
    ========================================================================== */
 
 /* --- The grid ---------------------------------------------------------
@@ -2589,29 +2578,16 @@ body:has(dialog[open]) .cue { display: none; }
   grid-template-rows: auto 1fr 1fr;
   grid-auto-flow: column;
   gap: 14px 20px;
-  max-width: 940px;
 }
 .rm-list .rm-group { margin-top: 0; }
 /* One quiet line, under both columns. */
 .rm-list .rm-archive { grid-column: 1 / -1; grid-row: 4; margin-top: 6px; }
 
-/* Each row is name, year, one line, stack — and nothing else. The ordinal and
-   the metric are what the grid spends on having four narrow cards instead of
-   four wide ones. */
-.rm-list .rm__num,
-.rm-list .rm__metric { display: none; }
-.rm-list .rm,
-.rm-list .rm--lead { padding: 12px 14px; }
-.rm-list .rm--lead .rm__title { font-size: 17px; }
-.rm-list .rm--lead .rm__desc { font-size: 14px; }
-/* "One line" literally: a longer tagline is clamped rather than allowed to
-   make one card taller than the one beside it. */
-.rm-list .rm__desc {
-  display: -webkit-box;
-  -webkit-line-clamp: 1;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-}
+/* Each row is name, year, one line, the measured result where there is one,
+   and the stack. The description is not clamped: the grid's rows are 1fr, so
+   the cards in a row already match heights, and a one-line clamp cut every
+   tagline off mid-word on a phone. */
+.rm-list .rm { padding: 12px 14px; }
 
 @media (max-width: 799.98px) {
   .rm-list {
@@ -2632,10 +2608,7 @@ body:has(dialog[open]) .cue { display: none; }
    it. pointer-events:none keeps it from stealing the hover that produced it.
    object-fit is `contain`, not `cover`: a phone render is a shape, and
    cropping it is cropping the device. */
-.rm-stage {
-  position: relative;
-  max-width: 940px;
-}
+.rm-stage { position: relative; }
 .rm-screen {
   position: absolute;
   top: 0;

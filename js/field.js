@@ -1,14 +1,16 @@
 /* The graph — graph mode's hero.
 
    Two maps, one either side of the name: Projects on the left, Hobbies on the
-   right. Each is a force-directed graph of real destinations, drawn the way
+   right, and a small third, Resources, in the strip under the name. Each is
+   a force-directed graph of real destinations, drawn the way
    Obsidian draws a vault — nodes, edges, hover a node and its neighbourhood
    lights while the rest dims, click it and you go there.
 
-   Two categories, and only two. A project's tools belong to Projects; a
-   gallery's images belong to Hobbies; nothing else is on the stage. Colour
-   says which map you are looking at, and the left/right split says it again,
-   so the graph still reads in greyscale or with colour-blind vision.
+   Three categories, and only three. A project's tools belong to Projects; a
+   gallery's images belong to Hobbies; the social and résumé links are
+   Resources; nothing else is on the stage. Colour says which map you are
+   looking at, and the left/right/centre split says it again, so the graph
+   still reads in greyscale or with colour-blind vision.
 
    Everything comes from js/project-data.js and js/hobby-data.js at run time,
    so the graph cannot claim more than the site holds. Nothing here is a
@@ -29,7 +31,7 @@
   /* ---------- the palette ----------
 
      The three colours are no longer chosen here. js/palette.js picks one
-     Sanzo Wada combination per session, derives the site's whole accent
+     Sanzo Wada combination per calendar day, derives the site's whole accent
      family from it, and writes --graph-projects / --graph-hobbies /
      --graph-resources onto <html>. This file reads those three and ramps
      each one by node size; the legend's swatches read the same tokens, so
@@ -40,9 +42,9 @@
 
   /* ---------- categories ---------- */
 
-  /* `side` is which half of the stage the category's map occupies; `token` is
-     the CSS custom property its dots are drawn in, which field.js sets from
-     the drawn palette so the legend's swatches follow the dots. */
+  /* `side` is which part of the stage the category's map occupies; `token`
+     is the CSS custom property its dots are drawn in, which js/palette.js
+     sets from the day's palette, so the legend's swatches follow the dots. */
   var CATS = {
     projects:  { name: 'Projects',  token: '--graph-projects',  side: 'L' },
     hobbies:   { name: 'Hobbies',   token: '--graph-hobbies',   side: 'R' },
@@ -430,6 +432,9 @@
       function v(name, fallback) { return (cs.getPropertyValue(name) || '').trim() || fallback; }
       C.line   = v('--ink-muted', '#4e6880');
       C.label  = v('--ink', '#16283d');
+      // Second-tier names are drawn in a solid softer ink, not in --ink at
+      // half alpha: that measured 3.3:1 at 10px on the light ground.
+      C.labelSoft = v('--ink-soft', '#3c5a7a');
       C.ground = v('--bg', '#f4f7fa');
 
       // Which way to clamp is a question about the ground, not about the
@@ -692,7 +697,10 @@
         var nd = queue[q];
         ctx.font = (nd === hover ? '600 11px ' : KIND[nd.kind].lvl === 1 ? '600 11px ' : '400 10px ') + MONO;
 
-        var text = nd.label.length > 30 ? nd.label.slice(0, 29) + '…' : nd.label;
+        // Long names are cut at a word, never mid-word, and only past 34
+        // characters: every current project title fits whole.
+        var text = nd.label;
+        if (text.length > 34) text = text.slice(0, text.lastIndexOf(' ', 33)) + '…';
         var lineH = 13;
         var lines = nd === hover ? 2 : 1;      // the hovered node adds its category
         var tw = ctx.measureText(text).width;
@@ -725,9 +733,8 @@
         if (!rect) continue;
         placed.push(rect);
 
-        ctx.globalAlpha = (hover ? (nd === hover ? 1 : 0.8) : 0.68) *
-          (KIND[nd.kind].lvl === 1 ? 1 : 0.72);
-        ctx.fillStyle = C.label;
+        ctx.globalAlpha = hover && nd !== hover ? 0.85 : 1;
+        ctx.fillStyle = KIND[nd.kind].lvl === 1 || nd === hover ? C.label : C.labelSoft;
         ctx.fillText(text, cx, top);
 
         if (nd === hover) {
@@ -753,8 +760,10 @@
       var count = {};
       nodes.forEach(function (n) { count[n.cat] = (count[n.cat] || 0) + 1; });
       box.innerHTML = CAT_ORDER.filter(function (k) { return count[k]; }).map(function (k) {
+        // No count: it was the number of nodes, tools and photographs
+        // included, and "Projects 34" read as thirty-four projects.
         return '<li><span class="field__swatch" style="background:var(' + CATS[k].token + ')"></span>' +
-               esc(CATS[k].name) + ' <b>' + count[k] + '</b></li>';
+               esc(CATS[k].name) + '</li>';
       }).join('');
     })();
 

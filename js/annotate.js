@@ -1,6 +1,6 @@
 /* ==========================================================================
-   Annotate — dev-only comment layer. Enable with ?edit=1; never loaded
-   otherwise. Works on every page (no dependency on the hero stage).
+   Annotate — dev-only comment layer. Enable with ?edit=1 on index.html, the
+   only page that loads it; never loaded otherwise.
 
      Alt-click anywhere   drop a comment pin at that spot
      click a pin          edit / delete it

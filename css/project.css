@@ -6,7 +6,10 @@
    the annotation layer below. */
 
 .detail {
-  padding: 40px 0 var(--section-gap);
+  /* Block padding only: a `0` on the sides here cancelled .wrap's gutter,
+     which put the gallery flush against both edges of a phone and 24px off
+     the header's rail on a desktop. */
+  padding-block: 40px var(--section-gap);
 }
 
 .detail__back {
@@ -190,46 +193,11 @@
   .detail__actions { width: 100%; }
 }
 
-/* The body is one centred measure now. min-width:0 keeps a wide code block
-   or table from stretching it (see the grid note further down). */
+/* The glance and the dek share the article's centred measure. */
 .detail__body {
   max-width: var(--measure-narrow);
+  min-width: 0;
   margin-inline: auto;
-}
-
-.detail__body h2 {
-  display: flex;
-  align-items: baseline;
-  gap: var(--gap);
-  margin: 32px 0 var(--gap);
-  font-size: 20px;
-}
-.detail__body h2:first-child { margin-top: 0; }
-.detail__body h2 .glyph {
-  color: var(--accent-ink);
-  font-size: 15px;
-}
-
-.detail__body p {
-  color: var(--ink-soft);
-  font-size: 16px;
-  line-height: 1.7;
-  margin-bottom: var(--gap-lg);
-}
-
-.detail__list li {
-  position: relative;
-  padding-left: 20px;
-  margin-bottom: var(--gap);
-  color: var(--ink-soft);
-  font-size: 15px;
-  line-height: 1.65;
-}
-.detail__list li::before {
-  content: '▹';
-  position: absolute;
-  left: 0;
-  color: var(--accent-ink);
 }
 
 .detail__nav {
@@ -259,242 +227,6 @@
 .detail__missing p {
   color: var(--ink-soft);
   margin-bottom: var(--gap-lg);
-}
-
-/* ==========================================================================
-   Marginalia — Overview and The tricky part
-
-   The prose is set plain in the centre column and a second, handwritten
-   voice lives in the margins: each note in a project's `notes` array marks a
-   phrase in the paragraph and parks an aside beside it. The vertical
-   alignment is done in js/project-detail.js after layout, because only the
-   browser knows which line a marked phrase wrapped onto.
-
-   Below --measure there is no gutter to write in, so the notes fall inline
-   under the paragraph and keep their handwriting. Nothing is lost either
-   way: the note is real text in the document at both sizes.
-   ========================================================================== */
-.mg {
-  position: relative;
-  margin: 32px 0 var(--gap-lg);
-}
-.mg:first-child { margin-top: 0; }
-
-.mg__col {
-  max-width: var(--measure-narrow);
-  margin-inline: auto;
-}
-
-/* The marked phrase. An underline rather than a highlight block: the note in
-   the margin is already the loud element, and two of them fight. */
-.mg__mark {
-  background: none;
-  color: inherit;
-  border-bottom: 1.5px solid var(--accent-mid);
-  padding-bottom: 1px;
-}
-
-.mg__note {
-  font-family: var(--font-script);
-  font-size: 20px;
-  line-height: 1.25;
-  color: var(--accent-ink);
-  margin: var(--gap) 0 0;
-}
-
-@media (min-width: 1060px) {
-  .mg__note {
-    position: absolute;
-    top: 0;                       /* js sets the real value per note */
-    width: 180px;
-    margin: 0;
-  }
-  /* 720px column + 2 x (180px note + 20px gap) = 1120px = --measure. */
-  .mg__note--l {
-    right: 50%;
-    margin-right: calc(var(--measure-narrow) / 2 + 20px);
-    text-align: right;
-  }
-  .mg__note--r {
-    left: 50%;
-    margin-left: calc(var(--measure-narrow) / 2 + 20px);
-  }
-}
-
-/* Inline fallback: a small stack under the paragraph, ruled off so the two
-   voices stay visibly separate. */
-@media (max-width: 1059.98px) {
-  .mg__note {
-    max-width: var(--measure-narrow);
-    margin-inline: auto;
-    padding-left: var(--gap-lg);
-    border-left: 2px solid var(--accent-mid);
-  }
-  .mg__note + .mg__note { margin-top: 8px; }
-}
-
-/* ==========================================================================
-   Deep-dive case study sections
-
-   Rendered by js/project-detail.js from each project's `deepDive` array.
-   Every colour is a token, so these follow the light/dark theme with the
-   rest of the site.
-   ========================================================================== */
-.detail__deep { margin-top: 8px; }
-
-.dd { margin: 0 0 32px; }
-
-.dd--prose h3,
-.dd--steps h3 {
-  margin: 28px 0 8px;
-  color: var(--ink);
-  font-size: 17px;
-  font-weight: 600;
-  letter-spacing: -0.01em;
-}
-/* Body copy is several paragraphs now, not one block, so they need air
-   between them. The last one carries none: the section's own margin does
-   that job. */
-.dd--prose p {
-  margin: 0 0 1.05em;
-  color: var(--ink-body);
-}
-.dd--prose p:last-child { margin-bottom: 0; }
-
-/* A first paragraph that stands alone reads as the standfirst it is. */
-.dd--prose h3 + p {
-  color: var(--ink);
-  font-size: 1.04em;
-}
-
-/* --- figures --------------------------------------------------------------
-   Screenshots are dark-UI captures, so they get a border rather than a
-   shadow: on the dark theme a shadow would vanish into the page. */
-.dd--figure { margin: 0 0 32px; }
-.dd--figure img {
-  display: block;
-  width: 100%;
-  height: auto;
-  border: 1px solid var(--line);
-  border-radius: var(--radius-sm);
-  background: var(--bg-sunken);
-}
-
-.dd figcaption {
-  margin-top: 10px;
-  color: var(--ink-muted);
-  font-size: 13px;
-  line-height: 1.6;
-}
-
-/* --- formulas -------------------------------------------------------------
-   TeX source, presented as a display block. Not typeset: MathJax/KaTeX would
-   mean a CDN request and this site is deliberately buildless and offline-safe.
-   Kept short enough to read as notation. */
-.dd--formula { margin: 0 0 32px; }
-/* --- code ----------------------------------------------------------------- */
-.dd--code { margin: 0 0 32px; }
-.dd--code code {
-  color: var(--ink-body);
-  font-family: var(--font-mono);
-  font-size: 13px;
-  line-height: 1.65;
-  white-space: pre;
-}
-
-/* --- tables ---------------------------------------------------------------
-   Wide tables scroll inside their own container so the page body never
-   scrolls sideways. */
-.dd--table { margin: 0 0 32px; }
-.table-scroll {
-  overflow-x: auto;
-  border: 1px solid var(--line);
-  border-radius: var(--radius-sm);
-}
-.dd--table table {
-  width: 100%;
-  border-collapse: collapse;
-  font-size: 13px;
-}
-.dd--table th,
-.dd--table td {
-  padding: 10px 14px;
-  text-align: left;
-  vertical-align: top;
-  border-bottom: 1px solid var(--line);
-}
-.dd--table thead th {
-  background: var(--bg-sunken);
-  color: var(--ink);
-  font-weight: 600;
-  white-space: nowrap;
-}
-.dd--table tbody th {
-  color: var(--ink);
-  font-weight: 600;
-}
-.dd--table td { color: var(--ink-body); }
-.dd--table tbody tr:last-child th,
-.dd--table tbody tr:last-child td { border-bottom: 0; }
-
-/* --- numbered steps ------------------------------------------------------- */
-.steps {
-  margin: 0;
-  padding: 0;
-  list-style: none;
-  counter-reset: step;
-}
-.steps li {
-  position: relative;
-  margin: 0 0 14px;
-  padding-left: 40px;
-  counter-increment: step;
-}
-.steps li::before {
-  content: counter(step);
-  position: absolute;
-  left: 0;
-  top: 1px;
-  display: grid;
-  place-items: center;
-  width: 26px;
-  height: 26px;
-  border-radius: 50%;
-  background: var(--accent-tint);
-  color: var(--accent-ink);
-  font-size: 12px;
-  font-weight: 600;
-}
-.steps strong {
-  display: block;
-  color: var(--ink);
-  font-size: 15px;
-}
-.steps span { color: var(--ink-body); font-size: 14px; }
-
-/* --------------------------------------------------------------------------
-   Narrow viewports
-
-   Long code lines and formulas are the only things wide enough to push the
-   page sideways. They scroll inside their own container; `min-width: 0` is
-   what actually allows that — without it a grid/flex child refuses to shrink
-   below its content and the overflow escapes to the document instead.
-   -------------------------------------------------------------------------- */
-.detail__body { min-width: 0; }
-
-.dd--code,
-.dd--formula,
-.dd--table,
-.dd--code pre,
-.formula,
-.table-scroll { max-width: 100%; min-width: 0; }
-
-@media (max-width: 599.98px) {
-  .dd--code code { font-size: 12px; }
-  .steps li { padding-left: 34px; }
-  .steps li::before { width: 22px; height: 22px; font-size: 11px; }
-  /* .formula's small-screen size is set after the main .formula block below;
-     declaring it here lost to that block every time. */
 }
 
 /* ==========================================================================
@@ -564,7 +296,7 @@
 /* ==========================================================================
    Code blocks
    ========================================================================== */
-.dd--code {
+.a-code {
   margin: 0 0 32px;
   border: 1px solid var(--line);
   border-radius: var(--radius-sm);
@@ -610,7 +342,7 @@
   background: var(--accent-deep);
   color: var(--on-accent-deep, #fff);
 }
-.dd--code pre {
+.a-code pre {
   margin: 0;
   padding: 16px 18px;
   overflow-x: auto;
@@ -618,7 +350,7 @@
   border-radius: 0;
   background: transparent;
 }
-.dd--code figcaption { padding: 0 14px 12px; margin-top: 10px; }
+.a-code figcaption { padding: 0 14px 12px; margin-top: 10px; }
 
 /* ==========================================================================
    Hobby gallery page (hobby.html)
@@ -638,7 +370,10 @@
    shape. grid-auto-flow:dense backfills the gaps a mixed-span grid leaves. */
 .hob-shots {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
+  /* An even count, so two-column landscapes pair up. auto-fill gave five
+     tracks at full width, and the leftover fifth became a half-width
+     column down the right-hand side. */
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   grid-auto-rows: 10px;
   grid-auto-flow: row dense;
   gap: 10px;
@@ -697,6 +432,9 @@
   pointer-events: none;
   white-space: normal;
 }
+@media (max-width: 899.98px) {
+  .hob-shots { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
 /* One column cannot hold a two-column span. */
 @media (max-width: 519.98px) {
   .hob-shots { grid-template-columns: 1fr; }
@@ -720,21 +458,12 @@
   .detail__actions { gap: 8px; }
   .detail__actions .btn { padding: 11px 15px; font-size: 13px; min-height: 44px; }
 
-  .detail__deep h2 { font-size: 19px; }
-  .dd--prose h3,
-  .dd--steps h3 { font-size: 16px; }
-  .dd { margin-bottom: 24px; }
-
-  /* Captions are the smallest text on the page; keep them readable. */
-  .dd figcaption { font-size: 13px; }
 
   /* Tables: a phone cannot show four columns, so let them scroll and hint it. */
   .table-scroll {
     -webkit-overflow-scrolling: touch;
     scrollbar-width: thin;
   }
-  .dd--table th,
-  .dd--table td { padding: 9px 11px; }
 
   .code-head { padding: 6px 8px 6px 12px; }
   .code-copy { padding: 12px 15px; min-height: 44px; }
@@ -896,107 +625,6 @@
 @media (prefers-reduced-motion: reduce) {
   .live__iframe { transition: none; }
   .live.is-loading .live__stage::after { animation: none; }
-}
-
-/* --------------------------------------------------------------------------
-   The gutter figures (js/figures.js)
-
-   Live drawings down both margins of a case study, each one anchored beside
-   the section it belongs to rather than parked at the top of the page. Built
-   after a set of Napkin diagrams: a title that makes a claim, one drawing,
-   and a note underneath saying what the drawing is evidence of. The drawing
-   is the only part that is not words.
-
-   Below the breakpoint they fall back into the reading column as ordinary
-   figures, full width, in document order — which is where they already are in
-   the markup, so nothing has to move.
-
-   The colours are not in this file. Every figure reads --accent, --accent-mid
-   and --ink off the page at run time, and js/palette.js rebuilds those from
-   the session's Sanzo Wada combination — so the figures wear the same three
-   colours as the graph on the home page, and follow a theme flip with it.
-   -------------------------------------------------------------------------- */
-.fig {
-  margin: 0 0 32px;
-  padding: 12px 12px 14px;
-  border: 1px solid var(--line);
-  border-radius: var(--radius);
-  background: var(--bg-raised);
-}
-/* The claim. It is an h4 because it sits under the h3 of the section it
-   annotates, and the outline should say so. */
-.fig__title {
-  margin: 0 0 9px;
-  color: var(--ink);
-  font-size: 12.5px;
-  font-weight: 600;
-  line-height: 1.35;
-  letter-spacing: -0.01em;
-}
-.fig__canvas {
-  display: block;
-  width: 100%;
-  height: 232px;
-  border-radius: calc(var(--radius) - 4px);
-  /* The pointer IS the control, so the canvas takes the gesture rather than
-     letting the page scroll under the finger. */
-  touch-action: none;
-  cursor: crosshair;
-}
-/* .detail__body p sets 16px and outranks a single class, so the note has to
-   be addressed through its parent to win. */
-.fig .fig__note {
-  margin: 9px 1px 0;
-  color: var(--ink-soft);
-  font-size: 11.5px;
-  line-height: 1.55;
-}
-
-/* Wide: out into the margins. Both of them.
-
-   The figures are floated rather than placed in a grid because they live
-   inside the prose in document order — a figure is emitted immediately before
-   the section it belongs to — and a float keeps that relationship without
-   anyone having to compute a grid row. The negative margin is larger than the
-   column, so the text is never indented around them; they sit entirely
-   outside the measure.
-
-   1560px is the width at which two 236px columns and their gutters clear the
-   720px measure without touching the viewport edge. */
-@media (min-width: 1560px) {
-  .detail__deep-body { position: relative; }
-  .fig {
-    width: 236px;
-    margin-bottom: 26px;
-  }
-  .fig--l {
-    float: left;
-    margin-left: -282px;
-    /* A figure that starts a section should line up with its heading, not
-       with the paragraph under it. */
-    margin-top: 6px;
-  }
-  .fig--r {
-    float: right;
-    margin-right: -282px;
-    margin-top: 6px;
-  }
-  /* A section must not slide up beside a figure it has nothing to do with. */
-  .dd { clear: none; }
-  .detail__deep h2 { clear: both; }
-}
-
-/* Between the one-column and the two-margin layouts there is room for one
-   side only. The right gutter is the one that was always there. */
-@media (min-width: 1180px) and (max-width: 1559.98px) {
-  .detail__deep-body { position: relative; }
-  .fig {
-    float: right;
-    clear: right;
-    width: 212px;
-    margin: 6px -250px 22px 0;
-  }
-  .fig__canvas { height: 190px; }
 }
 
 /* --------------------------------------------------------------------------

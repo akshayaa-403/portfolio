@@ -1,6 +1,6 @@
 """Cut desk mode's objects out of the owner's reference images.
 
-OpenCV, run once, output committed -- like tools/trace-figures.py, so the
+OpenCV, run once, output committed, so the
 site stays buildless. Reads .claude/references/ (the owner's mood folder,
 which is only opened when the owner asks), writes public/assets/desk/*.webp
 with real transparency.
@@ -15,7 +15,6 @@ so a white highlight inside a statue does not become a hole.
     python tools/build-desk-props.py
 """
 import os
-import glob
 import cv2
 import numpy as np
 from PIL import Image
@@ -71,14 +70,6 @@ def save(name, img, alpha, crop=True, max_side=MAX_SIDE):
     path = os.path.join(OUT, name + '.webp')
     im.save(path, 'WEBP', quality=86, method=6)
     print('%-16s %4dx%-4d %6d B' % (name, im.width, im.height, os.path.getsize(path)))
-
-
-CHECKER = (236, 252)
-
-
-def cutout(name, prefix, greys, tol, **kw):
-    img = ref(prefix)
-    save(name, img, ~ground(img, greys, tol, **kw))
 
 
 def laptop():

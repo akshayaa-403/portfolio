@@ -6,14 +6,11 @@
 
   var reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-  /* ---------- helpers ---------- */
-
   /* ---------- project list ----------
-     A numbered list and nothing else. The square icon tile and the preview
-     that faded in beside each row are gone: they were screenshots of a UI,
-     which tells a reader what a thing looked like and never what it does. The
-     case study carries a drawn diagram instead (see the `diagram` deep-dive
-     kind in js/project-detail.js). */
+     A card per project, in two columns by group: title, context and years,
+     one line of what it is, the one measured result if there is one, and the
+     stack. Hovering a card shows its media in the other column (initScreen,
+     below). */
   /* The real span, not one year. Every card used to read "2026" off p.year,
      which made six projects spanning Jan 2025 to Aug 2026 look like a single
      weekend of portfolio-building. created/updated are already on the data for
@@ -36,7 +33,7 @@
       note: 'Things built for someone else to open — a shop and a phone app.' }
   ];
 
-  function row(p, n, lead) {
+  function row(p) {
     // The group decides which half the screen covers, so the row carries it.
     var focus = (p.tech || []).slice(0, 4).map(esc)
       .join(' <span aria-hidden="true">/</span> ');
@@ -47,12 +44,10 @@
        one is a real document with its own <title> and og: tags, so a crawler,
        a chat unfurl or a reader with JS off gets the project's name instead
        of "Project — Akshayaa Kashyap". */
-    return '<a class="rm reveal' + (lead ? ' rm--lead' : '') +
-        '" href="work/' + encodeURIComponent(p.id) + '.html"' +
+    return '<a class="rm reveal" href="work/' + encodeURIComponent(p.id) + '.html"' +
         (p.screen ? ' data-screen="' + [].concat(p.screen).map(safeUrl).join('|') + '"' : '') +
         ' data-group="' + esc(p.group || '') + '"' +
         ' data-cue="Read the case study">' +
-        '<span class="rm__num" aria-hidden="true">' + (n < 10 ? '0' : '') + n + '</span>' +
         '<span class="rm__text">' +
           '<span class="rm__title">' + esc(p.title) + '</span>' +
           (meta ? '<span class="rm__meta">' + meta + '</span>' : '') +
@@ -74,7 +69,6 @@
 
     var shown = projects.filter(function (p) { return !p.archived; });
     var gone = projects.filter(function (p) { return p.archived; });
-    var n = 0;
 
     var html = GROUPS.map(function (g) {
       var rows = shown.filter(function (p) { return p.group === g.key; });
@@ -83,7 +77,7 @@
           '<h3 class="rm-group__title">' + esc(g.title) + '</h3>' +
           '<p class="rm-group__note">' + esc(g.note) + '</p>' +
         '</div>' +
-        rows.map(function (p) { n++; return row(p, n, n === 1); }).join('');
+        rows.map(row).join('');
     }).join('');
 
     /* The archive. These case studies are still written, still live and still
@@ -179,16 +173,16 @@
   }
 
   /* ---------- reading list ----------
-     A shelf of spines rather than a list of titles. Each book is drawn from
-     its own cover colour (js/readings-data.js); nothing is downloaded, so the
-     section costs no image request and borrows no cover art.
+     A shelf of spines rather than a list of titles. Each spine is drawn in a
+     colour taken from its cover (js/readings-data.js); the cover image in
+     public/assets/readings/ is only fetched when a book turns to show it.
 
-     Two things are computed here rather than authored. The spine's height
-     comes from the length of its title, which is what a real shelf looks like
-     and also guarantees the vertical type has room. The ink comes from the
-     colour's measured relative luminance — the same reason js/field.js
-     measures rather than eyeballs: a mid-yellow and a mid-navy have similar
-     HSL lightness and opposite contrast. */
+     Computed here rather than authored: every book's size, from the
+     edition's real trim and page count; the spine's type size, solved until
+     the title fits; and the spine's ink, from the colour's measured relative
+     luminance — the same reason js/field.js measures rather than eyeballs: a
+     mid-yellow and a mid-navy have similar HSL lightness and opposite
+     contrast. */
   function spineInk(hex) {
     // The same measurement js/palette.js already does, so it is borrowed
     // rather than written again: whichever of white or near-black contrasts
@@ -222,6 +216,10 @@
        page is half that, plus a few mm for the boards. */
     var PX_PER_MM = 1.16;
     var mm = function (v) { return Math.round(v * PX_PER_MM); };
+    // The board's length: every spine and the gaps between them, plus room
+    // for the widest cover to open, so a turning book never pushes past the
+    // end of the shelf (or shoves the caption standing beside it).
+    var spineSum = 0, grow = 0, GAP = 5;
 
     var spines = books.map(function (b, i) {
       var thickMm = (b.pages || 300) * 0.0575 + (b.hardback ? 5 : 2.5);
@@ -234,9 +232,15 @@
       // need are known; the size is solved down until both fit rather than
       // being clipped, because a spine reading "The Art of Creative Think…"
       // has failed at the only job a spine has.
+      // Below 9px a spine is unreadable, so when the title cannot reach 9px
+      // beside its author, the author comes off the spine: the caption names
+      // them anyway, and a spine has failed if its title is cut short.
       var CHAR = 0.68, title = b.title, author = b.author || '';
       var room = h - 34 - author.length * 9 * CHAR;
-      var fs = Math.max(7.5, Math.min(12, room / (title.length * CHAR)));
+      if (author && room / (title.length * CHAR) < 9) { author = ''; room = h - 34; }
+      var fs = Math.max(9, Math.min(12, room / (title.length * CHAR)));
+      spineSum += t;
+      grow = Math.max(grow, w - t);
 
       return '<li class="book-slot" style="--bt:' + t + 'px;--bw:' + w +
           'px;--bh:' + h + 'px">' +
@@ -253,7 +257,9 @@
           '<span class="book__turn">' +
             '<span class="book__spine">' +
               '<span class="spine__title">' + esc(title) + '</span>' +
-              (author ? '<span class="spine__author">' + esc(author) + '</span>' : '') +
+              (author ? '<span class="spine__author">' + esc(author) + '</span>'
+                // Off the spine for room, but still part of the button's name.
+                : b.author ? '<span class="visually-hidden">' + esc(b.author) + '</span>' : '') +
             '</span>' +
             // alt="": the button already announces the title and author, and
             // the caption below announces the rest. The cover is a picture of
@@ -268,7 +274,8 @@
     }).join('');
 
     host.insertAdjacentHTML('afterbegin',
-      '<ul class="shelf__books" role="list">' + spines + '</ul>' +
+      '<ul class="shelf__books" role="list" style="--shelf-w:' +
+        (spineSum + GAP * (books.length - 1) + grow + 24) + 'px">' + spines + '</ul>' +
       '<p class="shelf__caption" data-shelf-caption aria-live="polite"></p>');
 
     var caption = host.querySelector('[data-shelf-caption]');
@@ -620,23 +627,6 @@
     for (var k = 0; k < sections.length; k++) io.observe(sections[k]);
   }
 
-  /* ---------- header shadow on scroll ---------- */
-  function initHeader() {
-    var header = document.getElementById('site-header');
-    if (!header) return;
-    var ticking = false;
-    function update() {
-      header.classList.toggle('is-scrolled', window.scrollY > 8);
-      ticking = false;
-    }
-    window.addEventListener('scroll', function () {
-      if (ticking) return;
-      ticking = true;
-      window.requestAnimationFrame(update);
-    }, { passive: true });
-    update();
-  }
-
   /* ---------- Info intro: split-flap word and terminal chip ----------
      Both are <button>s in the prose. The split-flap shuffles every tile
      through random letters and lands them left to right; the terminal erases
@@ -696,7 +686,6 @@
     renderReadings();
     initReveal();
     initActiveNav();
-    initHeader();
     initInfoIntro();
   }
 

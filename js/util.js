@@ -28,9 +28,7 @@
     return w.esc(s);
   };
 
-  /* Degrees of rotation currently applied to an element, read back from the
-     computed matrix. Used wherever a hover or drag has to rebuild a transform
-     without discarding the authored rotate(). */
+  /* True when the dev-only editors are switched on with ?edit=1. */
   w.isEditing = function isEditing() {
     return /[?&]edit=1/.test(location.search);
   };

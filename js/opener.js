@@ -58,70 +58,16 @@
     return out;
   }
 
-  /* ---------- the drawn figures ----------
-     One per instrument kind. Abstract and diagrammatic on purpose: a cell with
-     a collar, a closed tour, a clock cut in four. They signify the mechanism
-     and claim nothing measured. */
-  var FIGURE = {
-    rank: function (c) {
-      var bars = [0.82, 0.64, 0.47, 0.33, 0.2], out = '';
-      bars.forEach(function (b, i) {
-        out += '<rect x="' + (20 - 0) + '" y="' + (14 + i * 20) + '" width="' + (b * 84) +
-          '" height="11" rx="2" fill="' + (i === 0 ? c.a : c.l) + '"' +
-          (i === 0 ? '' : ' opacity="0.55"') + '/>';
-      });
-      return out + '<line x1="14" y1="8" x2="14" y2="118" stroke="' + c.l + '" stroke-width="1"/>';
-    },
-    halo: function (c) {
-      return '<circle cx="64" cy="64" r="46" fill="none" stroke="' + c.a +
-        '" stroke-width="10" opacity="0.14"/>' +
-        '<circle cx="64" cy="64" r="34" fill="none" stroke="' + c.a +
-        '" stroke-width="5" opacity="0.3"/>' +
-        '<circle cx="64" cy="64" r="24" fill="' + c.i + '" opacity="0.14"/>' +
-        '<circle cx="64" cy="64" r="24" fill="none" stroke="' + c.a + '" stroke-width="1.4"/>';
-    },
-    colony: function (c) {
-      var pts = [[64, 12], [104, 40], [96, 92], [56, 112], [20, 80], [26, 34]];
-      var d = pts.map(function (p, i) { return (i ? 'L' : 'M') + p[0] + ' ' + p[1]; }).join(' ') + ' Z';
-      var dots = pts.map(function (p, i) {
-        return '<circle cx="' + p[0] + '" cy="' + p[1] + '" r="' + (i === 0 ? 5 : 3.2) +
-          '" fill="' + (i === 0 ? c.a : c.i) + '"/>';
-      }).join('');
-      return '<path d="' + d + '" fill="none" stroke="' + c.a +
-        '" stroke-width="1.6" opacity="0.75"/>' + dots;
-    },
-    grid: function (c) {
-      return '<circle cx="64" cy="64" r="50" fill="none" stroke="' + c.l + '" stroke-width="1"/>' +
-        '<line x1="64" y1="14" x2="64" y2="114" stroke="' + c.l + '" stroke-width="1"/>' +
-        '<line x1="14" y1="64" x2="114" y2="64" stroke="' + c.l + '" stroke-width="1"/>' +
-        '<path d="M64 64 L64 14 A50 50 0 0 1 114 64 Z" fill="' + c.a + '" opacity="0.16"/>' +
-        '<circle cx="88" cy="40" r="4" fill="' + c.a + '"/>';
-    },
-    pick: function (c) {
-      var out = '', lit = [1, 4, 5, 9];
-      for (var i = 0; i < 12; i++) {
-        var on = lit.indexOf(i) !== -1;
-        out += '<rect x="18" y="' + (12 + i * 9) + '" width="' +
-          (46 + (i % 4) * 16) + '" height="4.5" rx="2" fill="' +
-          (on ? c.a : c.l) + '" opacity="' + (on ? 1 : 0.45) + '"/>';
-      }
-      return out;
-    },
-    orbit: function (c) {
-      var out = '<circle cx="64" cy="64" r="44" fill="none" stroke="' + c.l +
-        '" stroke-width="1" stroke-dasharray="3 6"/>';
-      for (var i = 0; i < 5; i++) {
-        var a = (i / 5) * 6.2832 - 1.57;
-        var rr = i === 1 ? 16 : 44;
-        out += '<circle cx="' + (64 + Math.cos(a) * rr).toFixed(1) + '" cy="' +
-          (64 + Math.sin(a) * rr).toFixed(1) + '" r="' + (i === 1 ? 7 : 4.5) +
-          '" fill="' + (i === 1 ? c.a : c.i) + '" opacity="' + (i === 1 ? 1 : 0.6) + '"/>';
-      }
-      return out + '<circle cx="64" cy="64" r="3" fill="' + c.a + '"/>';
-    }
-  };
+  /* The drawn figure is the article's own: `opener(c)` in
+     js/articles/<id>.js returns SVG markup for a 128×128 box, drawn with the
+     colours it is handed (c.i ink, c.a accent, c.l line). Abstract on
+     purpose — it signifies the mechanism and claims nothing measured. With no
+     article, a plain ring stands in. */
+  function plain(c) {
+    return '<circle cx="64" cy="64" r="40" fill="none" stroke="' + c.a + '" stroke-width="1.4"/>';
+  }
 
-  function build(host, project) {
+  function build(host, project, spec) {
     var words = (project.fragments || []).slice(0, 34);
     if (!words.length) return;
 
@@ -138,23 +84,59 @@
         ';--fdelay:' + (sp.s * 1.6).toFixed(2) + 's">' + esc(word) + '</span>';
     }).join('');
 
-    var c = {
-      i: getComputedStyle(host).getPropertyValue('--ink').trim() || '#14314f',
-      a: getComputedStyle(host).getPropertyValue('--accent').trim() || '#094e94',
-      l: getComputedStyle(host).getPropertyValue('--line-strong').trim() || '#c3cedb'
-    };
-    var fig = (FIGURE[(project.instrument || {}).kind] || FIGURE.halo)(c);
+    var draw = spec && typeof spec.opener === 'function' ? spec.opener : plain;
+    function figure() {
+      var cs = getComputedStyle(host);
+      var c = {
+        i: cs.getPropertyValue('--ink').trim() || '#14314f',
+        a: cs.getPropertyValue('--accent').trim() || '#094e94',
+        l: cs.getPropertyValue('--line-strong').trim() || '#c3cedb'
+      };
+      try { return draw(c); } catch (e) { return plain(c); }
+    }
 
     host.innerHTML =
       '<div class="op-field" aria-hidden="true">' + frags +
-        '<svg class="op-figure" viewBox="0 0 128 128" width="128" height="128">' + fig + '</svg>' +
+        '<svg class="op-figure" viewBox="0 0 128 128" width="128" height="128">' + figure() + '</svg>' +
       '</div>' +
-      '<a class="op-more" href="#overview-h">' +
+      '<a class="op-more" href="#article">' +
         '<span class="op-more__t">' + esc(project.title) + '</span>' +
         '<span class="op-more__c" aria-hidden="true">⌄⌄</span>' +
       '</a>';
 
+    // The figure follows the palette, which is re-measured on a theme flip.
+    var svgEl = host.querySelector('.op-figure');
+    if (window.portfolioPalette) window.portfolioPalette.on(function () { svgEl.innerHTML = figure(); });
+
     if (reduce) return;
+
+    /* The words are alive: every so often one dissolves into the article's
+       own glyph alphabet (`scramble` in its spec) and settles back, the way
+       altermag's opener fragments do. Only while the opener is on screen. */
+    var chars = spec && spec.scramble ? String(spec.scramble) : '';
+    var spans = host.querySelectorAll('.op-frag');
+    if (chars && spans.length) {
+      window.setInterval(function () {
+        if (document.hidden || window.scrollY > host.offsetHeight) return;
+        var s = spans[Math.floor(Math.random() * spans.length)];
+        if (s._busy) return;
+        s._busy = true;
+        var word = s.textContent, t0 = 0;
+        function frame(now) {
+          if (!t0) t0 = now;
+          var p = Math.min(1, (now - t0) / 650);
+          var out = '';
+          for (var k = 0; k < word.length; k++) {
+            out += word.charAt(k) === ' ' || k / word.length < (p - 0.35) / 0.65 ? word.charAt(k)
+              : chars.charAt(Math.floor(Math.random() * chars.length));
+          }
+          s.textContent = out;
+          if (p < 1) window.requestAnimationFrame(frame);
+          else { s.textContent = word; s._busy = false; }
+        }
+        window.requestAnimationFrame(frame);
+      }, 900);
+    }
 
     /* Scroll thins the field out: each fragment drifts at its own depth and
        fades, and the figure sinks. One passive listener writing two custom
@@ -176,8 +158,8 @@
     onScroll();
   }
 
-  window.initOpener = function initOpener(project) {
+  window.initOpener = function initOpener(project, spec) {
     var host = document.querySelector('[data-opener]');
-    if (host && project) build(host, project);
+    if (host && project) build(host, project, spec);
   };
 })();

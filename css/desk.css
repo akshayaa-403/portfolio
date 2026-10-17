@@ -313,7 +313,9 @@
 }
 .player__bar span {
   position: absolute;
-  inset: 0 62% 0 0;
+  /* Empty at rest: the time beside it reads 0:00. js/hero-hover.js writes
+     `right` as the track plays. */
+  inset: 0 100% 0 0;
   background: var(--ink-soft);
 }
 .player__times {
@@ -353,8 +355,8 @@
 
 /* AirDrop-style share card */
 .obj--share { padding: 10px; text-align: center; }
-.share__title { margin: 0 0 2px; color: var(--ink); font-size: 11px; font-weight: 600; }
-.share__sub { margin: 0 0 8px; color: var(--ink-muted); font-size: 9px; line-height: 1.4; }
+.share__title { margin: 0 0 2px; color: var(--ink); font-size: 12px; font-weight: 600; }
+.share__sub { margin: 0 0 8px; color: var(--ink-muted); font-size: 11px; line-height: 1.4; text-wrap: balance; }
 .share__thumb {
   height: 88px;
   margin-bottom: 8px;
@@ -372,7 +374,7 @@
   padding-top: 6px;
   border-top: 1px solid var(--line);
 }
-.share__btn { flex: 1; color: var(--link); font-size: 10px; }
+.share__btn { flex: 1; color: var(--link); font-size: 11px; }
 .share__btn--go { font-weight: 600; }
 
 /* --- Dragging -------------------------------------------------------------
@@ -425,8 +427,6 @@
   .js .stage .obj {
     animation: appear 0.62s var(--ease) 0.40s backwards;
   }
-  .js .stage .prop:nth-of-type(2n) { animation-delay: 0.48s; }
-  .js .stage .prop:nth-of-type(3n) { animation-delay: 0.56s; }
   .js .stage .obj { animation-delay: 0.62s; }
 
   .js .desk [data-drag] {

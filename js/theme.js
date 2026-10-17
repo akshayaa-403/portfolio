@@ -100,10 +100,10 @@
     new ResizeObserver(set).observe(header);
   }
 
-  /* The pull-cord lamp in the header, on every page. It draws its own two
-     states from data-theme in CSS — the rays are painted only while the light
-     is on — so nothing here writes into the button, which would throw the
-     drawing away. */
+  /* The lamp in the header, on every page (hidden in desk mode at 900px and
+     up, where the desk's own lamp is the switch). Its glow is drawn in CSS
+     from data-time, so nothing here writes into the button, which would
+     throw the drawing away. */
   function initToggle() {
     var btn = document.querySelector('[data-theme-toggle]');
     if (!btn) return;

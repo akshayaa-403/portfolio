@@ -157,23 +157,25 @@ console.log('6. project data');
 const PROJECTS = require('./data').loadProjects();
 
 for (const p of PROJECTS) {
-  for (const field of ['id', 'title', 'tagline', 'year', 'role', 'summary',
-                       'overview', 'challenge', 'repo']) {
+  for (const field of ['id', 'title', 'tagline', 'year', 'role', 'summary', 'repo']) {
     checked++;
     if (!p[field]) fail('project-data', p.id + ' missing ' + field);
     else if (/^TODO/i.test(String(p[field]))) {
       fail('project-data', p.id + '.' + field + ' is a placeholder: ' + p[field]);
     }
   }
-  for (const field of ['tech', 'highlights']) {
-    checked++;
-    if (!Array.isArray(p[field]) || !p[field].length) {
-      fail('project-data', p.id + '.' + field + ' is empty');
-    }
+  checked++;
+  if (!Array.isArray(p.tech) || !p.tech.length) fail('project-data', p.id + '.tech is empty');
+  checked++;
+  if (!p.archived && !['research', 'products'].includes(p.group)) {
+    // projectListHtml filters by group, so a live project without one
+    // silently vanishes from the home page.
+    fail('project-data', p.id + ' is not archived and has no valid group');
   }
-  // The project list is text only now, so no per-project card art is
-  // required. Figures inside a case study are checked by §2 like any other
-  // asset reference.
+  checked++;
+  if (!p.glance || !p.glance.problem || !p.glance.built || !p.glance.result) {
+    fail('project-data', p.id + '.glance needs problem, built and result');
+  }
 }
 
 /* ---------- 6b. live-demo embeds ---------- */
@@ -217,50 +219,14 @@ for (const p of PROJECTS) {
   }
 }
 
-/* ---------- 8. margin notes still point at real phrases ----------
-
-   Each [phrase, note] pair in a project's `notes` has to quote the Overview
-   or The tricky part verbatim, or js/project-detail.js silently drops the
-   note: the aside would have nothing to sit beside. Editing the prose and
-   forgetting the note is the obvious way to break this, and it breaks
-   quietly, so it is worth a check. */
-
-console.log('8. margin notes');
-for (const p of PROJECTS) {
-  if (!p.notes) continue;
-  for (const key of Object.keys(p.notes)) {
-    const text = p[key];
-    checked++;
-    if (typeof text !== 'string') {
-      fail('notes', p.id + ' has notes for "' + key + '" but no such field');
-      continue;
-    }
-    for (const [phrase, say] of p.notes[key]) {
-      checked++;
-      const hits = text.split(phrase).length - 1;
-      if (hits === 0) {
-        fail('notes', p.id + '/' + key + ': phrase not in the prose — "' + phrase + '"');
-      } else if (hits > 1) {
-        fail('notes', p.id + '/' + key + ': phrase appears ' + hits +
-                      ' times, so the note marks the wrong one — "' + phrase + '"');
-      }
-      if (!say || !say.trim()) {
-        fail('notes', p.id + '/' + key + ': empty note on "' + phrase + '"');
-      }
-    }
-  }
-}
-
-/* ---------- 9. header facts and graph targets ----------
+/* ---------- 8. header facts ----------
 
    The two dates are transcribed from the GitHub API rather than fetched at
    run time, so nothing at run time can catch a typo in them. Tags are
    outbound links and get the same rel/protocol treatment as every other
-   external link on the site. And js/field.js hard-codes one anchor for its
-   tech nodes — if that heading ever loses its id, every tool in the graph
-   quietly links to nothing. */
+   external link on the site. */
 
-console.log('9. header facts');
+console.log('8. header facts');
 const ISO = /^\d{4}-\d{2}-\d{2}$/;
 for (const p of PROJECTS) {
   checked++;
@@ -288,9 +254,114 @@ for (const p of PROJECTS) {
   }
 }
 
-checked++;
-if (!read('index.html').includes('id="skills-h"')) {
-  fail('facts', 'js/field.js links its tech nodes to #skills-h, which index.html no longer has');
+/* ---------- 9. the articles ----------
+
+   Each case study is js/articles/<id>.js (plus its stylesheet), rendered by
+   js/article.js. The engine drops what it cannot render rather than failing,
+   so the mistakes that matter are silent ones, and this is where they are
+   caught: a block of no known kind, a widget name with no function behind it,
+   a figure that points at no file, a margin note whose phrase was edited out
+   of its paragraph, a demo the article never places, and a home-page excerpt
+   that no longer matches the article it was copied from. */
+
+console.log('9. articles');
+const vm = require('vm');
+const KINDS = ['p', 'h', 'quote', 'callout', 'list', 'figure', 'code', 'tex',
+               'table', 'widget', 'scrolly', 'live'];
+
+function loadArticle(id) {
+  const file = path.join(ROOT, 'js', 'articles', id + '.js');
+  if (!fs.existsSync(file)) return null;
+  const reg = {};
+  const sandbox = { Article: { register: (k, spec) => { reg[k] = spec; } } };
+  sandbox.window = sandbox;
+  vm.createContext(sandbox);
+  new vm.Script(fs.readFileSync(file, 'utf8'), { filename: file }).runInContext(sandbox);
+  return reg[id] || null;
+}
+
+for (const p of PROJECTS) {
+  const where = 'articles/' + p.id;
+  checked += 2;
+  if (!fs.existsSync(path.join(ROOT, 'css', 'articles', p.id + '.css'))) {
+    fail(where, 'css/articles/' + p.id + '.css is missing');
+  }
+  let spec;
+  try { spec = loadArticle(p.id); } catch (e) { fail(where, 'does not evaluate: ' + e.message); continue; }
+  if (!spec) { fail(where, 'js/articles/' + p.id + '.js is missing or never registers "' + p.id + '"'); continue; }
+
+  const widgets = spec.widgets || {};
+  const chapters = (spec.chapters || []).slice();
+  checked += 3;
+  if (!chapters.length) fail(where, 'has no chapters');
+  if (!spec.closing || !(spec.closing.blocks || []).length) fail(where, 'has no closing ("What I would do differently")');
+  if (!(spec.sources || []).length) fail(where, 'lists no sources for its numbers');
+  if (spec.rail) {
+    checked++;
+    if (typeof widgets[spec.rail] !== 'function') fail(where, 'rail "' + spec.rail + '" has no widget');
+  }
+  if (spec.closing) chapters.push(spec.closing);
+
+  const ids = new Set();
+  let lives = 0;
+  const notes = [];
+  const codes = [];
+  for (const c of chapters) {
+    if (c !== spec.closing) {
+      checked++;
+      if (!/^[a-z0-9_-]+$/.test(c.id || '')) fail(where, 'chapter id must be [a-z0-9_-]: ' + c.id);
+      else if (ids.has(c.id)) fail(where, 'duplicate chapter id ' + c.id);
+      ids.add(c.id);
+    }
+    for (const b of c.blocks || []) {
+      checked++;
+      const kinds = KINDS.filter((k) => b[k] != null);
+      if (kinds.length !== 1) {
+        fail(where, (c.id || 'closing') + ' has a block of ' +
+          (kinds.length ? 'several kinds (' + kinds + ')' : 'no known kind') +
+          ': ' + JSON.stringify(b).slice(0, 80));
+        continue;
+      }
+      const k = kinds[0];
+      if ((k === 'widget' || k === 'scrolly') && typeof widgets[b[k]] !== 'function') {
+        fail(where, k + ' "' + b[k] + '" has no widget function');
+      }
+      if (k === 'scrolly' && !((b.steps || []).length >= 2)) {
+        fail(where, 'scrolly "' + b.scrolly + '" needs at least two steps');
+      }
+      if (k === 'figure') {
+        if (!fs.existsSync(path.join(ROOT, b.figure.split('?')[0]))) fail(where, 'figure file missing: ' + b.figure);
+        if (!b.alt) fail(where, 'figure without alt text: ' + b.figure);
+      }
+      if (k === 'live') lives++;
+      if (k === 'code') codes.push(b.code);
+      if (k === 'p') {
+        for (const [phrase, say] of b.notes || []) {
+          checked++;
+          const hits = b.p.split(phrase).length - 1;
+          if (hits !== 1) {
+            fail(where, 'margin-note phrase appears ' + hits +
+              ' times in its paragraph (needs exactly 1): "' + phrase + '"');
+          }
+          if (!say || !say.trim()) fail(where, 'empty margin note on "' + phrase + '"');
+          notes.push(say);
+        }
+      }
+    }
+  }
+  checked++;
+  if (p.demo && lives !== 1) fail(where, 'has a demo but places { live: true } ' + lives + ' times (needs exactly 1)');
+  if (!p.demo && lives) fail(where, 'places a live demo but the project has no demo');
+
+  const ex = p.excerpt || {};
+  if (ex.note) {
+    checked++;
+    if (!notes.includes(ex.note)) fail(where, 'excerpt.note is not one of the article\'s margin notes: "' + ex.note + '"');
+  }
+  if (ex.code) {
+    checked++;
+    if (!codes.some((c) => c.includes(ex.code))) fail(where, 'excerpt.code does not appear in any of the article\'s code blocks');
+  }
 }
 
 /* ---------- report ---------- */

@@ -42,7 +42,7 @@
   var root = document.documentElement;
 
   /* ---------- colour maths ----------
-     Small, exact, and shared: js/field.js and js/figures.js both read these
+     Small, exact, and shared: js/field.js and the case-study widgets (js/article.js) read these
      off window.portfolioPalette rather than keeping a second copy that can
      drift. */
 
@@ -159,28 +159,44 @@
 
   var state = { index: INDEX, trio: TRIO, on: false, colours: {} };
 
+  /* `gl` is the page ground. `worst` is the hardest of the grounds text
+     actually sits on — the lightest of --bg, --bg-raised, --surface and
+     --bg-sunken on a dark page, the darkest on a light one. Accent text is
+     set on cards and pills as well as on the page, and measured against
+     --bg alone it came out at 4.2:1 on a raised card at night, and 2.5:1 on
+     desk mode's slate surfaces. */
   function ground() {
     var cs = getComputedStyle(root);
     var bg = (cs.getPropertyValue('--bg') || '').trim() || '#f4f7fa';
     var g = toHsl(bg);
     var dark = !!g && g.l < 50;
-    return { dark: dark, gl: g ? lum(hslRgb(g.h, g.s, g.l)) : (dark ? 0.01 : 0.9) };
+    var gl = g ? lum(hslRgb(g.h, g.s, g.l)) : (dark ? 0.01 : 0.9);
+    var worst = gl;
+    ['--bg-raised', '--surface', '--bg-sunken'].forEach(function (t) {
+      var c = toHsl((cs.getPropertyValue(t) || '').trim());
+      if (!c) return;
+      var l = lum(hslRgb(c.h, c.s, c.l));
+      worst = dark ? Math.max(worst, l) : Math.min(worst, l);
+    });
+    return { dark: dark, gl: gl, worst: worst };
   }
 
   function apply() {
     var g = ground();
     var a = toHsl(TRIO[0]), b = toHsl(TRIO[1]), c = toHsl(TRIO[2]);
 
-    // Text tier: anything a sentence is set in has to clear 4.5:1.
-    var accent = meet(a, 4.5, g.dark, g.gl, g.dark ? 50 : 26, g.dark ? 70 : 46);
+    // Text tier: anything a sentence is set in has to clear 4.5:1, on the
+    // hardest ground it is set on (see ground()).
+    var accent = meet(a, 4.5, g.dark, g.worst, g.dark ? 50 : 26, g.dark ? 70 : 46);
     // Deep tier: a solid ground for a filled button, held to 7:1 so the
     // label on it has room whichever way --on-accent-deep lands.
-    var deep = meet(b, 7, g.dark, g.gl, g.dark ? 56 : 16, g.dark ? 76 : 36);
+    var deep = meet(b, 7, g.dark, g.worst, g.dark ? 56 : 16, g.dark ? 76 : 36);
     // Mark tier: borders, chips, rules. 3:1 is the non-text bar.
-    var mid = meet(c, 3, g.dark, g.gl, g.dark ? 44 : 34, g.dark ? 64 : 54);
-    // Wash tier: deliberately under the bar. It sits behind things.
+    var mid = meet(c, 3, g.dark, g.worst, g.dark ? 44 : 34, g.dark ? 64 : 54);
+    // Wash tier: deliberately under the bar. It sits behind things, so it is
+    // measured against the page ground itself.
     var pale = soften(c, 1.9, g.dark, g.gl);
-    var hover = meet(a, 7, g.dark, g.gl, g.dark ? 58 : 20, g.dark ? 78 : 40);
+    var hover = meet(a, 7, g.dark, g.worst, g.dark ? 58 : 20, g.dark ? 78 : 40);
 
     // The label on a filled --accent-deep button, chosen by measuring the
     // button rather than by assuming white works. Same test the reading
@@ -236,7 +252,7 @@
     }
   }
 
-  /* The public surface. field.js and figures.js use `shade` to ramp a
+  /* The public surface. field.js and js/article.js use `shade` to ramp a
      category's colour by size or depth, exactly as field.js used to do
      internally. */
   window.portfolioPalette = {

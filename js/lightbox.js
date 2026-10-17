@@ -1,10 +1,8 @@
-/* The image popover, shared by every place a hobby image is clickable.
+/* The image popover on the gallery page (hobby.html).
 
-   Used from two places today — the three cards in the Hobbies section on the
-   home page, and every tile on a gallery page — and it is the destination the
-   home page graph's image nodes point at. One component rather than one per
-   surface, because "clicking an image opens it" has to mean the same thing
-   everywhere on the site.
+   Every tile on a gallery page opens it, and it is the destination the home
+   page graph's image nodes point at (hobby.html?id=…&i=…). The home page's
+   hobby cards are plain links to the gallery and do not open it.
 
    A native <dialog> opened with showModal(). Focus trapping, inertness for
    the rest of the page, Escape-to-close and the ::backdrop all come free;
@@ -58,17 +56,12 @@
     dlg.addEventListener('close', function () { mark(0); });
   }
 
-  /* Reflect the open image in the URL so it can be copied and shared — but
-     only on the gallery page, whose ?id=&i= this actually describes. Doing it
-     on the home page would rewrite the address bar to a page the visitor is
-     not on. replaceState, not pushState: opening photographs should not bury
-     the referring page under a history entry each. */
-  function onGalleryPage() {
-    return /hobby\.html$/.test(w.location.pathname) ||
-           /\/hobby\.html/.test(w.location.pathname);
-  }
+  /* Reflect the open image in the URL so it can be copied and shared. Only
+     the gallery page loads this file, so the ?id=&i= always describes the
+     page the visitor is on. replaceState, not pushState: opening photographs
+     should not bury the referring page under a history entry each. */
   function mark(i) {
-    if (!onGalleryPage() || !gid) return;
+    if (!gid) return;
     try {
       history.replaceState(null, '',
         'hobby.html?id=' + encodeURIComponent(gid) + (i ? '&i=' + i : ''));

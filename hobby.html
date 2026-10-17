@@ -66,9 +66,6 @@
   <symbol id="i-linkedin" viewBox="0 0 24 24">
     <path fill="currentColor" d="M20.45 20.45h-3.56v-5.57c0-1.33-.02-3.04-1.85-3.04-1.85 0-2.14 1.45-2.14 2.94v5.67H9.35V9h3.41v1.56h.05a3.74 3.74 0 0 1 3.37-1.85c3.6 0 4.27 2.37 4.27 5.46v6.28ZM5.34 7.43a2.06 2.06 0 1 1 0-4.13 2.06 2.06 0 0 1 0 4.13Zm1.78 13.02H3.55V9h3.57v11.45ZM22.22 0H1.77C.79 0 0 .77 0 1.72v20.56C0 23.23.79 24 1.77 24h20.45c.98 0 1.78-.77 1.78-1.72V1.72C24 .77 23.2 0 22.22 0Z"/>
   </symbol>
-  <symbol id="i-substack" viewBox="0 0 24 24">
-    <path fill="currentColor" d="M22.539 8.242H1.46V5.406h21.08v2.836ZM1.46 10.812V24L12 18.11 22.54 24V10.812H1.46ZM22.539 0H1.46v2.836h21.08V0Z"/>
-  </symbol>
   <symbol id="i-mail" viewBox="0 0 24 24">
     <path fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" d="M3 6.5h18v11a1.5 1.5 0 0 1-1.5 1.5h-15A1.5 1.5 0 0 1 3 17.5v-11Zm0 .5 9 6.5L21 7"/>
   </symbol>
@@ -83,9 +80,9 @@
       </button>
       <nav class="nav" id="primary-nav" aria-label="Primary">
         <a href="index.html"><span class="nav__label">Home</span><span class="nav__label nav__label--measure" aria-hidden="true">Home</span></a>
-        <a href="index.html#work"><span class="nav__label">Work</span><span class="nav__label nav__label--measure" aria-hidden="true">Work</span></a>
+        <a href="index.html#work"><span class="nav__label">Projects</span><span class="nav__label nav__label--measure" aria-hidden="true">Projects</span></a>
+        <a href="index.html#hobbies" class="is-active" aria-current="true"><span class="nav__label">Hobbies</span><span class="nav__label nav__label--measure" aria-hidden="true">Hobbies</span></a>
         <a href="index.html#about"><span class="nav__label">Info</span><span class="nav__label nav__label--measure" aria-hidden="true">Info</span></a>
-        <a href="index.html#hobbies"><span class="nav__label">Hobbies</span><span class="nav__label nav__label--measure" aria-hidden="true">Hobbies</span></a>
       </nav>
     </div>
 
@@ -148,12 +145,16 @@
 
 <footer class="site-footer">
   <div class="site-footer__inner">
-    <p style="margin:0;">© <span data-year>2026</span> Akshayaa Kashyap · built by hand, no framework</p>
-    <nav aria-label="Footer">
-      <a href="https://github.com/akshayaa-403" target="_blank" rel="noopener noreferrer">GitHub</a>
-      <a href="https://linkedin.com/in/akshayaa-kashyap" target="_blank" rel="noopener noreferrer">LinkedIn</a>
-      <a href="https://akshayaakashyap.substack.com" target="_blank" rel="noopener noreferrer">Substack</a>
-      <a href="mailto:akshayaakashyap5@gmail.com">Email</a>
+    <p>© <span data-year>2026</span> Akshayaa Kashyap</p>
+    <nav class="site-footer__social" aria-label="Footer">
+      <a href="https://github.com/akshayaa-403" target="_blank" rel="noopener noreferrer" aria-label="GitHub">
+        <svg class="icon" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" focusable="false"><use href="#i-github"></use></svg><span>GitHub</span></a>
+      <a href="https://linkedin.com/in/akshayaa-kashyap" target="_blank" rel="noopener noreferrer" aria-label="LinkedIn">
+        <svg class="icon" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" focusable="false"><use href="#i-linkedin"></use></svg><span>LinkedIn</span></a>
+      <a href="mailto:akshayaakashyap5@gmail.com" aria-label="Email">
+        <svg class="icon" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" focusable="false"><use href="#i-mail"></use></svg><span>Email</span></a>
+      <a href="public/assets/resume.pdf" target="_blank" rel="noopener noreferrer" aria-label="Résumé (PDF)">
+        <svg class="icon" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" focusable="false"><path fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" d="M14 3H7a1.5 1.5 0 0 0-1.5 1.5v15A1.5 1.5 0 0 0 7 21h10a1.5 1.5 0 0 0 1.5-1.5V7.5L14 3Zm0 0v4.5h4.5M9 12.5h6M9 16h6"/></svg><span>Résumé</span></a>
     </nav>
   </div>
 </footer>

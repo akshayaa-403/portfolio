@@ -1,4 +1,4 @@
-/* Hobbies — three cards in a triangular arrangement.
+/* Hobbies — three cards in one row.
 
    Each card is a plain link to its own gallery (hobby.html?id=...) and
    nothing intercepts it. It used to open the shared popover on the spot

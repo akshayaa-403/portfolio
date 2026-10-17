@@ -1,0 +1,791 @@
+/* ==========================================================================
+   The article (js/article.js)
+
+   A case study is a long read: serif body in one centred measure, the site's
+   mono for everything that is chrome — chapter labels, captions, numbers,
+   controls, code. Figures break the measure when they need the room ('wide',
+   'full'); margin notes sit in the gutters in the owner's hand; a scrolly
+   section pins its figure while the prose beside it moves the figure along.
+
+   Each article's own widgets are styled in css/articles/<id>.css. This file
+   is the shared grammar, and every colour in it is a token, so the articles
+   follow the theme, the time of day and the day's Wada palette.
+   ========================================================================== */
+
+.a {
+  --col: 660px;
+  --wide: 1040px;
+  --gutter: max(16px, 4vw);
+  --serif-size: 19px;
+  --a-gap: 30px;
+  position: relative;
+  display: grid;
+  grid-template-columns:
+    [full-start] minmax(var(--gutter), 1fr)
+    [wide-start] minmax(0, calc((var(--wide) - var(--col)) / 2))
+    [col-start] min(var(--col), 100% - 2 * var(--gutter))
+    [col-end] minmax(0, calc((var(--wide) - var(--col)) / 2))
+    [wide-end] minmax(var(--gutter), 1fr) [full-end];
+  margin-top: 56px;
+  color: var(--ink-body);
+}
+.a > *, .a-ch > * { grid-column: col; min-width: 0; }
+
+/* Each chapter is its own grid on the same lines, so a wide figure inside it
+   can break out of the measure. */
+.a-ch {
+  grid-column: full;
+  display: grid;
+  grid-template-columns: subgrid;
+  padding-top: 72px;
+}
+.a-ch:first-of-type { padding-top: 8px; }
+
+.a-size--wide { grid-column: wide; }
+.a-size--full { grid-column: full; }
+
+/* ---------- chapter heads ---------- */
+.a-ch__head { margin: 0 0 28px; }
+.a-ch__label {
+  margin: 0 0 10px;
+  color: var(--accent-ink);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+.a-ch__title {
+  margin: 0;
+  color: var(--ink);
+  font-family: var(--font-serif);
+  font-size: clamp(28px, 4.2vw, 40px);
+  font-weight: 400;
+  line-height: 1.12;
+  letter-spacing: -0.015em;
+  text-wrap: balance;
+}
+.a-ch__title code { font-size: 0.7em; }
+
+/* ---------- prose ---------- */
+.a-p, .a-p > p, .a-list, .a-step p, .a-callout p {
+  font-family: var(--font-serif);
+  font-size: var(--serif-size);
+  line-height: 1.7;
+  color: var(--ink-body);
+}
+.a-p, .a-p > p { margin: 0 0 1.05em; }
+.a-p > p:last-of-type { margin-bottom: 0; }
+div.a-p { margin-bottom: 1.05em; }
+
+.a strong { color: var(--ink); font-weight: 700; }
+.a em { font-style: italic; }
+
+.a-h {
+  margin: 1.8em 0 0.5em;
+  color: var(--ink);
+  font-family: var(--font-mono);
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+}
+
+/* Identifiers in running serif text: the mono face, a size smaller so its
+   x-height matches, on a tint so it reads as a token, not a typo. */
+.a :not(pre) > code {
+  padding: 0.08em 0.32em;
+  border-radius: 4px;
+  background: var(--accent-tint);
+  color: var(--ink);
+  font-family: var(--font-mono);
+  font-size: 0.8em;
+  overflow-wrap: anywhere;
+}
+
+.a a:not(.btn):not(.a-progress__seg) {
+  color: var(--accent-ink);
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 3px;
+}
+
+.a-list { margin: 0 0 1.05em; padding-left: 1.2em; }
+.a-list li { margin-bottom: 0.45em; padding-left: 0.2em; }
+.a-list li::marker { color: var(--accent-mid); }
+ol.a-list li::marker { font-family: var(--font-mono); font-size: 0.8em; }
+
+/* The standfirst: the article's first word, set larger, before the chapters. */
+.detail__body .detail__dek {
+  margin: 48px 0 0;
+  color: var(--ink);
+  font-family: var(--font-serif);
+  font-size: clamp(21px, 2.4vw, 25px);
+  line-height: 1.5;
+  text-wrap: pretty;
+}
+.detail__dek code { font-size: 0.8em; }
+
+/* ---------- pull quote, callout ---------- */
+.a-quote {
+  grid-column: wide;
+  margin: 24px 0 40px;
+  padding: 0 0 0 28px;
+  border-left: 3px solid var(--accent);
+}
+.a-quote p {
+  margin: 0;
+  color: var(--ink);
+  font-family: var(--font-serif);
+  font-size: clamp(24px, 3vw, 32px);
+  font-style: italic;
+  line-height: 1.32;
+  text-wrap: balance;
+}
+.a-quote cite {
+  display: block;
+  margin-top: 12px;
+  color: var(--ink-muted);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-style: normal;
+}
+
+.a-callout {
+  margin: 8px 0 32px;
+  padding: 22px 24px 20px;
+  border: 1px solid var(--line);
+  border-left: 3px solid var(--accent);
+  border-radius: var(--radius-sm);
+  background: var(--bg-sunken);
+}
+.a-callout__label {
+  margin: 0 0 8px !important;
+  color: var(--accent-ink) !important;
+  font-family: var(--font-mono) !important;
+  font-size: 11px !important;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+.a-callout p { font-size: 17px; margin: 0 0 0.8em; }
+.a-callout p:last-child { margin-bottom: 0; }
+
+/* ---------- figures ---------- */
+.a-fig { margin: 12px 0 40px; }
+.a-fig img {
+  display: block;
+  width: 100%;
+  height: auto;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  background: var(--bg-sunken);
+}
+.a-fig figcaption {
+  max-width: var(--col);
+  margin-top: 12px;
+  color: var(--ink-soft);
+  font-family: var(--font-mono);
+  font-size: 12.5px;
+  line-height: 1.65;
+}
+.a-size--wide figcaption, .a-size--full figcaption { margin-inline: auto; }
+.a-size--full figcaption { padding-inline: var(--gutter); }
+
+.a-tex .formula { margin: 0; }
+.a-code { margin-bottom: 40px; }
+
+.table-scroll {
+  max-width: 100%;
+  overflow-x: auto;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: thin;
+}
+.a-table table {
+  width: 100%;
+  border-collapse: collapse;
+  font-family: var(--font-mono);
+  font-size: 13px;
+  font-variant-numeric: tabular-nums;
+}
+.a-table th, .a-table td {
+  padding: 10px 14px;
+  text-align: left;
+  vertical-align: top;
+  border-bottom: 1px solid var(--line);
+}
+.a-table thead th {
+  background: var(--bg-sunken);
+  color: var(--ink);
+  font-weight: 600;
+  white-space: nowrap;
+}
+.a-table tbody th { color: var(--ink); font-weight: 600; }
+.a-table td { color: var(--ink-body); }
+.a-table tbody tr:last-child > * { border-bottom: 0; }
+
+/* The live demo sits in the article like any other figure. */
+.a .live { margin: 12px 0 40px; }
+.a .live .a-h { margin-top: 0; }
+
+/* ---------- widgets ----------
+   The frame every interactive figure shares. A widget draws inside
+   .a-widget__stage; the caption under it is the claim in words, because a
+   canvas is aria-hidden and the reader of a screen reader still needs it. */
+.a-widget__stage {
+  position: relative;
+  padding: 22px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--bg-raised);
+  color: var(--ink-body);
+  font-family: var(--font-mono);
+  font-size: 13px;
+  line-height: 1.5;
+}
+.a-widget__stage:empty { display: none; }
+.k-canvas { display: block; width: 100%; height: 280px; }
+
+/* Controls row, shared by every widget that has one. */
+.k-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px 20px;
+  margin: 0 0 16px;
+}
+.k-row:last-child { margin-bottom: 0; }
+
+.k-slider {
+  display: grid;
+  grid-template-columns: auto minmax(120px, 1fr) 6ch;
+  align-items: center;
+  gap: 10px;
+  flex: 1 1 240px;
+  min-width: 0;
+}
+.k-slider__label { color: var(--ink-soft); font-size: 12px; white-space: nowrap; }
+.k-slider__out {
+  color: var(--ink);
+  font-size: 13px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+}
+.k-slider input[type=range] { width: 100%; min-width: 0; margin: 0; accent-color: var(--accent); }
+
+.k-choice {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px;
+  padding: 3px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-pill);
+  background: var(--bg);
+}
+.k-choice__label {
+  padding: 0 8px 0 10px;
+  color: var(--ink-muted);
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.k-choice__btn, .k-btn {
+  min-height: 32px;
+  padding: 5px 13px;
+  border: 1px solid transparent;
+  border-radius: var(--radius-pill);
+  background: transparent;
+  color: var(--ink-body);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  cursor: pointer;
+  transition: background var(--dur) var(--ease), color var(--dur) var(--ease),
+              border-color var(--dur) var(--ease);
+}
+.k-choice__btn:hover { background: var(--accent-tint); color: var(--ink); }
+.k-choice__btn[aria-pressed="true"] {
+  background: var(--accent-deep);
+  color: var(--on-accent-deep, #fff);
+}
+.k-btn {
+  border-color: var(--line-strong);
+  background: var(--bg);
+}
+.k-btn:hover { border-color: var(--accent); background: var(--accent-tint); color: var(--ink); }
+.k-btn--primary {
+  border-color: var(--accent-deep);
+  background: var(--accent-deep);
+  color: var(--on-accent-deep, #fff);
+}
+.k-btn--primary:hover { background: var(--accent-ink); border-color: var(--accent-ink); color: var(--on-accent-deep, #fff); }
+.k-btn:disabled { opacity: 0.45; cursor: default; }
+
+.k-readout { display: inline-flex; flex-direction: column; gap: 2px; min-width: 0; }
+.k-readout__k {
+  color: var(--ink-muted);
+  font-size: 10.5px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+.k-readout__v {
+  color: var(--ink);
+  font-size: 20px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  line-height: 1.2;
+}
+.k-readout--accent .k-readout__v { color: var(--accent-ink); }
+
+/* ---------- prose ↔ figure ---------- */
+.xref {
+  border-bottom: 1.5px dotted var(--accent-mid);
+  cursor: help;
+  transition: background var(--dur) var(--ease);
+}
+.xref:hover, .xref:focus-visible, .xref.is-on {
+  background: var(--accent-tint-strong);
+  outline: none;
+}
+.a-live {
+  color: var(--accent-ink);
+  font-family: var(--font-mono);
+  font-size: 0.82em;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ---------- margin notes ----------
+   The phrase is underlined in the prose; the note is set in Caveat in the
+   gutter beside it. js/article.js parks each note at its phrase's line. */
+.mg { position: relative; }
+.mg__mark {
+  background: none;
+  color: inherit;
+  border-bottom: 1.5px solid var(--accent-mid);
+  padding-bottom: 1px;
+}
+.mg__note {
+  margin: 10px 0 0;
+  color: var(--accent-ink);
+  font-family: var(--font-script);
+  font-size: 21px;
+  line-height: 1.22;
+}
+.mg__note code { font-size: 0.7em; }
+
+@media (min-width: 1180px) {
+  .mg__note {
+    position: absolute;
+    top: 0;
+    width: 190px;
+    margin: 0;
+  }
+  .mg__note--l { right: calc(100% + 28px); text-align: right; }
+  .mg__note--r { left: calc(100% + 28px); }
+}
+@media (max-width: 1179.98px) {
+  .mg__note {
+    padding-left: 16px;
+    border-left: 2px solid var(--accent-mid);
+  }
+  .mg__note + .mg__note { margin-top: 6px; }
+}
+
+/* ---------- scrolly ----------
+   The figure pins; the prose beside it scrolls past and, step by step,
+   sets the figure's state. Wide screens put them side by side; narrow ones
+   pin the figure at the top and pass the steps over it as cards. */
+.a-scrolly {
+  grid-column: wide;
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 360px);
+  gap: 0 56px;
+  margin: 24px 0 48px;
+}
+.a-scrolly__stage {
+  grid-column: 1;
+  grid-row: 1;
+  position: sticky;
+  top: calc(var(--header-h, 56px) + 28px);
+  align-self: start;
+  z-index: 1;
+}
+.a-scrolly__stage .a-fig { margin: 0; }
+.a-scrolly__steps { grid-column: 2; grid-row: 1; padding: 30vh 0 34vh; }
+.a-step {
+  min-height: 52vh;
+  padding: 4px 0 0 18px;
+  border-left: 2px solid var(--line);
+  opacity: 0.38;
+  transition: opacity 0.35s var(--ease), border-color 0.35s var(--ease);
+}
+.a-step + .a-step { margin-top: 8px; }
+.a-step.is-active { opacity: 1; border-left-color: var(--accent); }
+.a-step p { font-size: 18px; margin: 0 0 0.9em; }
+.a-step p:last-child { margin-bottom: 0; }
+
+@media (max-width: 959.98px) {
+  .a-scrolly { grid-template-columns: minmax(0, 1fr); grid-column: col; }
+  .a-scrolly__stage {
+    top: calc(var(--header-h, 56px) + 6px);
+    padding-bottom: 8px;
+    background: var(--bg);
+  }
+  .a-scrolly__stage figcaption { display: none; }
+  .a-scrolly__steps { grid-column: 1; grid-row: 2; position: relative; z-index: 2; padding: 0 0 20vh; }
+  .a-step {
+    min-height: 0;
+    margin: 0 0 46vh;
+    padding: 18px 20px;
+    border: 1px solid var(--line);
+    border-left: 3px solid var(--line-strong);
+    border-radius: var(--radius-sm);
+    background: var(--bg-raised);
+    box-shadow: var(--shadow-card);
+    opacity: 1;
+  }
+  .a-step.is-active { border-left-color: var(--accent); }
+}
+
+/* ---------- the rail ----------
+   One companion that stays with the reader — a ledger, a specimen, a task
+   card. Pinned in the right gutter where there is room for it; otherwise it
+   sits once at the top of the article, as an ordinary figure. */
+.a-rail { margin: 0 0 40px; }
+.a-rail__in {
+  padding: 18px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--bg-raised);
+  font-family: var(--font-mono);
+  font-size: 12.5px;
+  line-height: 1.5;
+}
+@media (min-width: 1360px) {
+  .a.has-rail { --wide: 980px; }
+  .a.has-rail > .a-rail {
+    position: fixed;
+    top: calc(var(--header-h, 56px) + 40px);
+    left: calc(50% + var(--col) / 2 + 48px);
+    width: min(280px, calc(50vw - var(--col) / 2 - 72px));
+    max-height: calc(100vh - var(--header-h, 56px) - 80px);
+    overflow: auto;
+    margin: 0;
+    z-index: 3;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.3s var(--ease), visibility 0.3s;
+  }
+  .a.has-rail.rail-on > .a-rail { opacity: 1; visibility: visible; }
+  /* The rail owns the right gutter, so notes all move to the left and wide
+     figures grow leftward only. */
+  .a.has-rail .a-scrolly, .a.has-rail .a-size--wide, .a.has-rail .a-quote {
+    grid-column: wide-start / col-end;
+  }
+}
+
+/* ---------- contents ---------- */
+.a-toc {
+  margin: 0 0 24px;
+  padding: 18px 0 4px;
+  border-top: 1px solid var(--line-strong);
+  border-bottom: 1px solid var(--line);
+  font-family: var(--font-mono);
+}
+.a-toc__k {
+  margin: 0 0 10px;
+  color: var(--ink-muted);
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+.a-toc ol {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 280px), 1fr));
+  gap: 0 28px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.a-toc a {
+  display: flex;
+  gap: 12px;
+  align-items: baseline;
+  padding: 7px 0;
+  border-bottom: 1px dashed var(--line);
+  color: var(--ink-body);
+  font-size: 13px;
+  line-height: 1.45;
+  text-decoration: none !important;
+}
+.a-toc li:nth-last-child(-n+1) a { border-bottom: 0; }
+.a-toc a:hover .a-toc__t { color: var(--accent-ink); }
+.a-toc__l {
+  flex: none;
+  min-width: 6.5em;
+  color: var(--accent-ink);
+  font-size: 10.5px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+/* ---------- footnotes ----------
+   A small number in the text; its note shows beside it on hover or focus,
+   and again in the list at the end, which is where a phone reader gets it. */
+.a-fn { position: relative; line-height: 0; font-size: 0.62em; }
+.a-fn > a {
+  padding: 0 0.15em;
+  color: var(--accent-ink) !important;
+  font-family: var(--font-mono);
+  font-weight: 600;
+  text-decoration: none !important;
+}
+.a-fn__pop {
+  position: absolute;
+  left: 50%;
+  bottom: calc(100% + 1.2em);
+  z-index: 30;
+  width: max-content;
+  max-width: min(320px, 80vw);
+  padding: 10px 12px;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius-sm);
+  background: var(--surface, var(--bg-raised));
+  box-shadow: var(--shadow-card);
+  color: var(--ink-body);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 1.55;
+  text-align: left;
+  white-space: normal;
+  transform: translateX(-50%);
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition: opacity var(--dur) var(--ease), visibility var(--dur);
+}
+.a-fn:hover .a-fn__pop, .a-fn:focus-within .a-fn__pop { opacity: 1; visibility: visible; }
+@media (hover: none) { .a-fn__pop { display: none; } }
+
+.a-notes { margin-top: 72px; padding-top: 24px; border-top: 1px solid var(--line); }
+.a-notes + .a-sources { margin-top: 32px; }
+.a-notes h2 {
+  margin: 0 0 14px;
+  color: var(--ink-soft);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+.a-notes ol {
+  margin: 0;
+  padding-left: 1.4em;
+  color: var(--ink-body);
+  font-family: var(--font-mono);
+  font-size: 12.5px;
+  line-height: 1.65;
+}
+.a-notes li { margin-bottom: 8px; }
+.a-notes li:target { background: var(--accent-tint); }
+.a-notes__back { text-decoration: none !important; }
+
+/* ---------- closing + sources ---------- */
+.a-ch--closing { padding-top: 96px; }
+.a-ch--closing > .a-ch__head {
+  padding-top: 28px;
+  border-top: 1px solid var(--line-strong);
+}
+
+.a-sources {
+  margin-top: 72px;
+  padding-top: 24px;
+  border-top: 1px solid var(--line);
+}
+.a-sources h2 {
+  margin: 0 0 14px;
+  color: var(--ink-soft);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+.a-sources ol {
+  margin: 0;
+  padding-left: 1.4em;
+  color: var(--ink-soft);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  line-height: 1.65;
+}
+.a-sources li { margin-bottom: 8px; }
+.a-sources li::marker { color: var(--ink-muted); }
+.a-sources strong { color: var(--ink-body); font-weight: 600; }
+
+/* ---------- reading progress ----------
+   Under the header: one segment per chapter, each a link to it. */
+.a-progress {
+  position: fixed;
+  top: var(--header-h, 56px);
+  left: 0;
+  right: 0;
+  z-index: 40;
+  display: flex;
+  gap: 3px;
+  height: 3px;
+  padding: 0 3px;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s var(--ease);
+}
+.a-progress.is-shown { opacity: 1; pointer-events: auto; }
+.a-progress__seg {
+  position: relative;
+  flex: 1 1 0;
+  background: var(--line);
+}
+/* A taller hit area than the 3px it draws. */
+.a-progress__seg::before { content: ''; position: absolute; inset: -6px 0 -10px; }
+.a-progress__fill {
+  position: absolute;
+  inset: 0;
+  transform: scaleX(var(--p, 0));
+  transform-origin: left;
+  background: var(--accent);
+}
+.a-progress__seg:hover { background: var(--line-strong); }
+
+/* ---------- the sheet ----------
+   altermag's opener stays where it is and the article rises over it like a
+   sheet of paper. The opener is pinned; the page container is lifted over its
+   last fifth with a soft top edge. Only when an opener was actually drawn —
+   with none, the page starts as an ordinary page. */
+.opener:not(:empty) { position: sticky; top: 0; z-index: 0; }
+.opener:not(:empty) + .detail {
+  position: relative;
+  z-index: 1;
+  margin-top: -20svh;
+  padding-top: 44px;
+  border-radius: 28px 28px 0 0;
+  background: var(--bg);
+  box-shadow: 0 -1px 0 var(--line), 0 -24px 48px -28px rgb(0 0 0 / 0.28);
+}
+@media (max-width: 599.98px) {
+  .opener:not(:empty) + .detail { margin-top: -10svh; border-radius: 20px 20px 0 0; padding-top: 28px; }
+}
+
+/* The title is the article's, so it is set in the article's face. */
+.detail__title {
+  font-family: var(--font-serif);
+  font-weight: 400;
+  letter-spacing: -0.02em;
+  line-height: 1.04;
+  text-wrap: balance;
+}
+
+/* ---------- chapter art ----------
+   A small drawing beside a chapter head, in the day's colours: altermag
+   opens its chapters with a scene; this is the buildless version. */
+.a-ch__head:has(.a-ch__art) { display: flex; gap: 24px; align-items: flex-end; justify-content: space-between; }
+.a-ch__art { flex: none; width: clamp(96px, 16vw, 168px); }
+.a-ch__art svg { display: block; width: 100%; height: auto; overflow: visible; }
+
+/* ---------- side notes ----------
+   Footnotes set beside the line that cites them, numbered, the way a long
+   read on paper does it. Only where the right gutter is free (no rail). */
+.a-sn { display: none; }
+.a.has-sn .a-sn {
+  display: block;
+  position: absolute;
+  left: calc(50% + var(--col) / 2 + 32px);
+  width: min(220px, calc(50vw - var(--col) / 2 - 56px));
+  padding-top: 6px;
+  border-top: 1px solid var(--line-strong);
+  color: var(--ink-soft);
+  font-family: var(--font-mono);
+  font-size: 11.5px;
+  line-height: 1.55;
+}
+.a.has-sn .a-sn b { margin-right: 6px; color: var(--accent-ink); font-weight: 600; }
+.a.has-sn .a-sn a { color: var(--accent-ink); }
+.a.has-sn .a-fn__pop { display: none; }
+.a-sn.is-hl { color: var(--ink); border-top-color: var(--accent); }
+
+/* The notes sheet, for touch: tapping a number opens every note at once with
+   the tapped one marked, instead of a jump to the foot of the page. */
+.a-sheet {
+  width: min(560px, 100vw);
+  max-height: 70vh;
+  margin: auto auto 0;
+  padding: 18px 20px 24px;
+  border: 1px solid var(--line-strong);
+  border-radius: 18px 18px 0 0;
+  background: var(--surface, var(--bg-raised));
+  color: var(--ink-body);
+  font-family: var(--font-mono);
+  font-size: 13px;
+  line-height: 1.6;
+}
+.a-sheet::backdrop { background: rgb(0 0 0 / 0.4); }
+.a-sheet__head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+.a-sheet h2 { margin: 0; font-size: 12px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--ink-soft); }
+.a-sheet ol { margin: 0; padding-left: 1.4em; }
+.a-sheet li { margin-bottom: 8px; padding: 4px 6px; border-radius: 6px; }
+.a-sheet li.is-hl { background: var(--accent-tint-strong); color: var(--ink); }
+.a-sheet .a-notes__back { display: none; }
+
+/* ---------- the page around the article ----------
+   The article needs the whole width for its full-bleed figures, so the page
+   container stops constraining it; everything else on the page keeps the
+   site's measure and gets the side gutter it was missing on phones. */
+.wrap.detail { max-width: none; padding-inline: 0; }
+.detail > :not(.a) {
+  max-width: var(--measure);
+  margin-inline: auto;
+  padding-inline: var(--gutter-x, max(16px, 4vw));
+}
+.detail > .detail__body { max-width: calc(var(--measure-narrow) + 2 * max(16px, 4vw)); }
+
+.detail__nav {
+  max-width: var(--wide, 1040px);
+  margin: 96px auto 0;
+}
+.detail__nav a {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  max-width: 45%;
+  color: var(--ink);
+  font-family: var(--font-serif);
+  font-size: 20px;
+  text-decoration: none;
+}
+.detail__nav a span {
+  color: var(--ink-muted);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+.detail__nav a:last-child { text-align: right; margin-left: auto; }
+.detail__nav a:hover { color: var(--accent-ink); }
+
+@media (max-width: 599.98px) {
+  .a { --serif-size: 17.5px; margin-top: 40px; }
+  .a-ch { padding-top: 56px; }
+  .a-widget__stage { padding: 16px 14px; }
+  .a-callout { padding: 18px 16px; }
+  .a-quote { padding-left: 18px; }
+  .detail__nav a { max-width: 100%; font-size: 18px; }
+  .detail__nav a:last-child { text-align: left; margin-left: 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .a-step, .a-progress, .a.has-rail > .a-rail { transition: none; }
+}

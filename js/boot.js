@@ -31,6 +31,10 @@
     var s = localStorage.getItem('viewMode');
     if (s === 'graph' || s === 'desk' || s === 'mosaic') m = s;
   } catch (e) { /* private mode */ }
+  // The desk is hidden below 900px and so is its button, so a saved `desk`
+  // there would only recolour the page with no mode shown as chosen. The
+  // saved value is left alone for the next wide visit.
+  if (m === 'desk' && window.matchMedia && matchMedia('(max-width: 899.98px)').matches) m = 'graph';
   r.setAttribute('data-mode', m);
 
   window.periodOf = function (h) {

@@ -8,19 +8,18 @@ Live Site: [akshayaa-403.github.io/portfolio](https://akshayaa-403.github.io/por
 
 ## About Me
 
-I am an AI Engineer based in India, working primarily at the intersection of data analysis and model development. The common thread across my work is turning messy data—whether CRM exports, scraped lead lists, or noisy microscopy images—into clear, readable, and actionable decisions.
+I am an AI Engineer based in India, working primarily at the intersection of data analysis and model development. The common thread across my work is turning messy data—noisy microscopy images, for one—into clear, readable, and actionable decisions.
 
 - Education: B.Tech in Robotics & Automation, Symbiosis Institute of Technology
 - Certifications: IBM SkillsBuild AI Literacy, HarvardX STAT110x Probability, UiPath RPA
-- Writing: [Substack](https://akshayaakashyap.substack.com)
 
 ---
 
 ## Technical Skills
 
-- **Languages & Core:** Python, SQL, TypeScript
-- **AI & Data:** PyTorch, LangChain, Streamlit, Pandas, OpenCV
-- **Tools & Web:** Next.js, Docker, Azure, Power BI
+- **Languages:** Python, TypeScript, JavaScript
+- **AI & data:** PyTorch, Pandas, OpenCV, Streamlit
+- **Web & infra:** React, Docker, AWS (Lambda, DynamoDB, Bedrock), SQL (Postgres)
 
 ---
 
@@ -50,10 +49,9 @@ python3 -m http.server 8000
 
 My inbox is open whether you have a role, a potential AI collaboration, or a question about my work.
 
-* Email: [akshayaakashyap5@gmail.com](https://www.google.com/search?q=mailto%3Aakshayaakashyap5%40gmail.com)
+* Email: [akshayaakashyap5@gmail.com](mailto:akshayaakashyap5@gmail.com)
 * GitHub: [github.com/akshayaa-403](https://github.com/akshayaa-403)
 * LinkedIn: [linkedin.com/in/akshayaa-kashyap](https://linkedin.com/in/akshayaa-kashyap)
-* Substack: [akshayaakashyap.substack.com](https://akshayaakashyap.substack.com)
 
 ---
 
