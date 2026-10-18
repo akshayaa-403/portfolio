@@ -1,0 +1,86 @@
+/* Phase-contrast case study ("specimen" form): the loupe rail and the widgets. */
+
+.a[data-form="specimen"] .a-ch__label::before { content: '◍ '; }
+.ph-svg { display: block; max-width: 100%; height: auto; font-family: var(--font-mono); font-size: 11px; }
+.ph-svg__lab { font-weight: 600; }
+.ph-readouts { gap: 10px 24px; }
+.ph-readouts .k-readout__v { font-size: 15px; }
+.ph-warn { margin: 8px 0 0; color: var(--accent-ink); font-size: 12px; }
+.ph-warn:empty { display: none; }
+
+/* ---------- the loupe ---------- */
+.ph-loupe__k { margin: 0 0 10px; color: var(--ink-muted); font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; }
+.ph-slide { position: relative; width: 100%; max-width: 256px; aspect-ratio: 1; overflow: hidden; border-radius: 6px; cursor: crosshair; }
+.ph-slide__img { display: block; width: 100%; height: 100%; image-rendering: pixelated; }
+.a .ph-lens {
+  position: absolute; width: 37.5%; aspect-ratio: 1; padding: 0;
+  border: 2px solid var(--accent); border-radius: 50%;
+  background-color: #000; background-repeat: no-repeat; image-rendering: pixelated;
+  box-shadow: 0 0 0 3px var(--bg-raised), 0 6px 18px rgb(0 0 0 / 0.35);
+  cursor: grab; touch-action: none;
+}
+.a .ph-lens:focus-visible { outline: 3px solid var(--accent-ink); outline-offset: 3px; }
+.ph-loupe__legend { margin: 6px 0 0; color: var(--ink-soft); font-size: 11px; }
+.ph-loupe__pick { margin-top: 10px; border-radius: 12px; }
+.ph-loupe__pick .k-choice__btn { min-height: 28px; padding: 3px 9px; font-size: 11px; }
+.ph-ledger { margin: 14px 0 0; padding: 12px 0 0; border-top: 1px solid var(--line); list-style: none; }
+.ph-ledger__g { margin: 0 0 8px; color: var(--ink-soft); }
+.ph-ledger__g.is-now { color: var(--ink); }
+.ph-ledger__p { display: block; color: var(--accent-ink); font-size: 10.5px; letter-spacing: 0.1em; text-transform: uppercase; }
+.ph-ledger ul { margin: 2px 0 0; padding-left: 1em; font-size: 11.5px; font-variant-numeric: tabular-nums; }
+@media (max-width: 1359.98px) {
+  .a[data-form="specimen"] .a-rail__in { display: grid; grid-template-columns: minmax(0, 256px) minmax(0, 1fr); gap: 0 20px; }
+  .a[data-form="specimen"] .a-rail__in > :not(.ph-slide):not(.ph-ledger) { grid-column: 1 / -1; }
+  .a[data-form="specimen"] .ph-slide { grid-column: 1; grid-row: 2; }
+  .a[data-form="specimen"] .ph-ledger { grid-column: 2; grid-row: 2; margin: 0; padding: 0; border: 0; }
+}
+@media (max-width: 599.98px) {
+  .a[data-form="specimen"] .a-rail__in { display: block; }
+  .a[data-form="specimen"] .ph-slide { margin-inline: auto; }
+  .a[data-form="specimen"] .ph-ledger { margin-top: 12px; padding-top: 10px; border-top: 1px solid var(--line); }
+}
+
+/* ---------- Plate 1: the generator ---------- */
+.ph-gen { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 14px; align-items: start; margin-bottom: 12px; }
+.ph-gen__img { width: 100%; height: auto; aspect-ratio: 1; border-radius: 6px; image-rendering: pixelated; }
+.ph-gen__row { gap: 8px 10px; }
+.ph-gen__cells { padding: 5px 10px; border: 1px dashed var(--line-strong); border-radius: var(--radius-pill); color: var(--ink-soft); font-size: 12px; }
+.ph-tog[aria-pressed="true"] { border-color: var(--accent-deep); background: var(--accent-deep); color: var(--on-accent-deep, #fff); }
+.ph-tog[aria-pressed="false"] { text-decoration: line-through; }
+.ph-gen__more summary { cursor: pointer; color: var(--ink-soft); font-size: 12px; margin: 4px 0 10px; }
+@media (max-width: 959.98px) {
+  .ph-gen { gap: 10px; }
+  .ph-gen__img { max-height: 30vh; width: auto; max-width: 100%; }
+  .ph-gen__row .k-readout__v { font-size: 15px; }
+}
+
+/* ---------- Plate 3: the ceiling ---------- */
+.ph-ceil { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 20px 32px; max-width: 1180px; margin: 0 auto; }
+.ph-ceil__pane { min-width: 0; }
+.ph-ceil__h { margin: 0 0 6px; color: var(--ink); font-size: 13px; font-weight: 600; }
+.ph-ceil__tiles { display: flex; gap: 16px; margin: 10px 0; }
+.ph-ceil__tiles figure { margin: 0; }
+.ph-ceil__tiles figcaption { margin-top: 4px; color: var(--ink-muted); font-size: 11px; }
+.ph-ceil__tile { display: block; width: 96px; height: 96px; image-rendering: pixelated; border-radius: 4px; }
+.a-size--full .a-widget__stage:has(.ph-ceil) { border-radius: 0; border-inline: 0; }
+@media (max-width: 759.98px) { .ph-ceil { grid-template-columns: minmax(0, 1fr); } }
+
+/* ---------- Plate 4: the scrub ---------- */
+.ph-scrub__strip { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; margin-bottom: 12px; cursor: row-resize; }
+.ph-scrub__fig { margin: 0; }
+.ph-scrub__img { display: block; width: 100%; height: auto; aspect-ratio: 1; border-radius: 4px; image-rendering: pixelated; }
+.ph-scrub__fig figcaption { margin-top: 4px; color: var(--ink-soft); font-size: 11px; }
+.ph-key { display: flex; flex-wrap: wrap; gap: 6px 14px; margin: 0; font-size: 12px; color: var(--ink-soft); }
+.ph-key span::before, .a[data-form="specimen"] .xref[data-key]::before {
+  content: ''; display: inline-block; width: 18px; margin: 0 6px 0.25em 0; vertical-align: middle;
+  border-top: 2px solid var(--ph-s0, var(--accent));
+}
+.ph-key__res::before, .a[data-form="specimen"] .xref[data-key="res"]::before { border-top: 2px dashed var(--ph-s1, var(--accent)) !important; }
+.ph-key__out::before, .a[data-form="specimen"] .xref[data-key="out"]::before { border-top: 3px solid var(--ph-s2, var(--accent)) !important; }
+.ph-key__truth::before, .a[data-form="specimen"] .xref[data-key="truth"]::before { border-top: 2px dotted var(--ink-soft) !important; }
+.a[data-form="specimen"] .xref[data-key="corrupt"]::before { border-top: 2px dashed var(--ph-s1, var(--accent)); }
+.a[data-form="specimen"] .xref[data-key="product"]::before { border-top: 3px solid var(--ink); }
+
+/* A hidden footnote popover still takes layout and pushed the phone page
+   128px wide; keep it out of layout until it is shown. */
+.a[data-form="specimen"] .a-fn:not(:hover):not(:focus-within) .a-fn__pop { display: none; }

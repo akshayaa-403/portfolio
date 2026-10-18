@@ -1,0 +1,108 @@
+/* Quantamental Screener — the forensic article. Every colour is a token. */
+
+/* ledger (rail) */
+.qs-ledger summary { display: flex; justify-content: space-between; gap: 8px; cursor: pointer; list-style: none; }
+.qs-ledger summary::-webkit-details-marker { display: none; }
+.qs-ledger__t { color: var(--ink); font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; font-size: 11px; }
+.qs-ledger__n { color: var(--ink-muted); font-size: 11px; }
+.qs-ledger__list { margin: 12px 0 0; padding: 0; list-style: none; }
+.qs-ledger__row { padding: 10px 0; border-top: 1px dashed var(--line); transition: opacity 0.3s var(--ease); }
+.qs-ledger__row.is-sealed { opacity: 0.35; }
+.qs-ledger__row.is-sealed .qs-ledger__claim, .qs-ledger__row.is-sealed dl { display: none; }
+.qs-ledger__row.is-sealed .qs-ledger__ex::after { content: ' · sealed'; }
+.qs-ledger__row.is-current { border-top: 2px solid var(--accent); }
+.qs-ledger__ex { color: var(--accent-ink); font-size: 10.5px; letter-spacing: 0.1em; text-transform: uppercase; }
+.qs-ledger__claim { margin: 3px 0 4px; color: var(--ink); font-weight: 600; }
+.qs-ledger dl { display: grid; grid-template-columns: auto 1fr; gap: 1px 8px; margin: 0; font-size: 11.5px; }
+.qs-ledger dt { color: var(--ink-muted); }
+.qs-ledger dd { margin: 0; color: var(--ink-body); }
+.qs-ledger__v { color: var(--ink) !important; font-weight: 600; }
+
+/* VADER strips */
+.qs-strips { display: grid; gap: 8px; }
+.qs-strip {
+  display: flex; flex-wrap: wrap; justify-content: space-between; align-items: baseline; gap: 6px 16px;
+  width: 100%; padding: 10px 14px; border: 1px solid var(--line); border-left: 3px solid var(--line-strong);
+  border-radius: var(--radius-sm); background: var(--bg); color: var(--ink-body); text-align: left;
+  font: inherit; cursor: pointer;
+}
+.qs-strip[aria-pressed="true"] { border-left-color: var(--accent); background: var(--accent-tint); }
+.qs-strip:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.qs-strip__words { font-family: var(--font-serif); font-size: 17px; line-height: 2.1; color: var(--ink); }
+.qs-w { position: relative; white-space: nowrap; }
+.qs-w--known { border-bottom: 2px solid var(--accent-mid); }
+.qs-w--miss { text-decoration: line-through; text-decoration-color: var(--ink-muted); color: var(--ink-soft); }
+.qs-w__v { margin-left: 2px; color: var(--accent-ink); font-family: var(--font-mono); font-size: 10px; text-decoration: none; display: inline-block; }
+.qs-w--miss .qs-w__v { color: var(--ink-muted); }
+.qs-w.is-key { background: var(--accent-tint-strong); }
+.qs-strip__nums { display: grid; grid-template-columns: auto auto; gap: 0 8px; font-variant-numeric: tabular-nums; }
+.qs-strip__k { color: var(--ink-muted); font-size: 11px; }
+.qs-strip__n { color: var(--ink); font-weight: 600; text-align: right; }
+.qs-strips__foot { display: flex; flex-wrap: wrap; gap: 16px 24px; align-items: center; margin-top: 18px; }
+.qs-curve { flex: 0 1 260px; width: 260px; max-width: 100%; height: auto; }
+.qs-strips__meter { flex: 1 1 260px; min-width: 0; }
+.qs-strips__meter .k-slider { grid-template-columns: minmax(0, 1fr) 6ch; }
+.qs-strips__meter .k-slider__label { grid-column: 1 / -1; white-space: normal; }
+
+/* the sum */
+.qs-sum__ctl .k-slider { flex-basis: 200px; }
+.qs-sum__legend { display: flex; flex-wrap: wrap; gap: 6px 14px; margin: 0 0 10px; font-size: 11.5px; color: var(--ink-soft); }
+.qs-sw::before { content: ''; display: inline-block; width: 10px; height: 10px; margin-right: 5px; border-radius: 2px; background: var(--qs-c); vertical-align: -1px; }
+.qs-f0 { --qs-c: var(--graph-projects, var(--accent)); }
+.qs-f1 { --qs-c: var(--graph-hobbies, var(--accent-mid)); }
+.qs-f2 { --qs-c: var(--graph-resources, var(--ink-soft)); }
+.qs-f3 { --qs-c: var(--ink-muted); }
+.qs-sum { margin: 0; padding: 0; list-style: none; }
+.qs-sum__row { display: grid; grid-template-columns: 6.5em minmax(0, 1fr) 4.5em; gap: 10px; align-items: center; padding: 5px 0; border-top: 1px solid var(--line); transition: opacity 0.2s; }
+.qs-sum__row.is-dim { opacity: 0.3; }
+.qs-sum__tk { color: var(--ink); font-weight: 600; white-space: nowrap; }
+.qs-badge { margin-left: 4px; padding: 0 4px; border: 1px solid var(--line-strong); border-radius: 4px; color: var(--ink-soft); font-size: 10px; font-weight: 400; }
+.qs-sum__legend .qs-badge { margin: 0; }
+.qs-sum__track { position: relative; height: 22px; }
+.qs-seg { position: absolute; top: 3px; height: 16px; background: var(--qs-c); color: var(--bg); font-size: 10px; line-height: 16px; text-align: center; overflow: hidden; transition: left 0.3s var(--ease), width 0.3s var(--ease); }
+.qs-seg + .qs-seg { box-shadow: inset 1px 0 0 var(--bg-raised); }
+.qs-sum__zero { position: absolute; left: 50%; top: 0; bottom: 0; width: 1px; background: var(--ink-muted); }
+.qs-sum__tick { position: absolute; top: -1px; width: 3px; height: 24px; margin-left: -1px; background: var(--ink); transition: left 0.3s var(--ease); }
+.qs-sum__score { text-align: right; color: var(--ink); font-variant-numeric: tabular-nums; }
+
+/* the clock */
+.qs-clock svg { display: block; font-family: var(--font-mono); }
+.qs-clock__say { margin: 8px 0 0; color: var(--ink); font-weight: 600; }
+
+/* the dartboard */
+.qs-weeks__k { margin: 18px 0 6px; color: var(--ink-muted); font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; }
+.qs-weeks { display: grid; grid-template-columns: repeat(50, minmax(0, 1fr)); gap: 2px; }
+.qs-week { position: relative; height: 44px; padding: 0; border: 1px solid var(--line); border-radius: 2px; background: var(--bg); cursor: pointer; }
+.qs-week__bar { position: absolute; left: 0; right: 0; bottom: 0; height: calc(var(--h) * 100%); background: var(--line-strong); }
+.qs-week.is-above .qs-week__bar { background: var(--accent); }
+.qs-week__m { position: absolute; top: 0; left: 0; right: 0; color: var(--ink); font-size: 8px; line-height: 1; }
+.qs-week[aria-pressed="true"] { outline: 2px solid var(--ink); outline-offset: 1px; }
+.qs-week:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+.qs-weeks__panel { min-height: 5.5em; margin-top: 12px; padding: 10px 12px; border: 1px solid var(--line); border-radius: var(--radius-sm); background: var(--bg); }
+.qs-weeks__panel p { margin: 0 0 4px; }
+.qs-weeks__h { color: var(--ink); font-weight: 600; }
+.qs-weeks__warn { color: var(--accent-ink); }
+
+/* xref glyphs: same mark in prose as in the figure */
+.a[data-form="forensic"] .xref[data-key=picks]::before { content: '│'; margin-right: 2px; color: var(--ink); }
+.a[data-form="forensic"] .xref[data-key=spy]::before { content: '┆'; margin-right: 2px; color: var(--ink); }
+.a[data-form="forensic"] .xref[data-key=missing] { text-decoration: line-through; }
+
+@media (max-width: 599.98px) {
+  .qs-weeks { grid-template-columns: repeat(10, minmax(0, 1fr)); }
+  .qs-week { height: 34px; }
+  .qs-sum__row { grid-template-columns: 5.2em minmax(0, 1fr) 3.8em; gap: 6px; font-size: 12px; }
+  .qs-strip__words { font-size: 15.5px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .qs-seg, .qs-sum__tick, .qs-ledger__row { transition: none; }
+}
+.a[data-form="forensic"] .a-code pre { max-width: 100%; overflow-x: auto; }
+/* A hidden footnote popover near the right edge still widens the page on a
+   phone (engine: visibility, not display). Take it out of layout until shown. */
+.a[data-form="forensic"] .a-fn:not(:hover):not(:focus-within) .a-fn__pop { display: none; }
+/* The dartboard is full-bleed, but the pinned ledger owns the right gutter
+   from 1360px: bleed left only. */
+@media (min-width: 1360px) {
+  .a.has-rail[data-form="forensic"] .a-size--full { grid-column: full-start / col-end; padding-left: var(--gutter); }
+}

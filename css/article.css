@@ -569,7 +569,10 @@ ol.a-list li::marker { font-family: var(--font-mono); font-size: 0.8em; }
   pointer-events: none;
   transition: opacity var(--dur) var(--ease), visibility var(--dur);
 }
-.a-fn:hover .a-fn__pop, .a-fn:focus-within .a-fn__pop { opacity: 1; visibility: visible; }
+/* display:none at rest: a hidden absolute popover still widens the page on
+   phones (scrollWidth ~500 at 390px). */
+.a-fn__pop { display: none; }
+.a-fn:hover .a-fn__pop, .a-fn:focus-within .a-fn__pop { display: block; opacity: 1; visibility: visible; }
 @media (hover: none) { .a-fn__pop { display: none; } }
 
 .a-notes { margin-top: 72px; padding-top: 24px; border-top: 1px solid var(--line); }

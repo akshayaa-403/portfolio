@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Phase-Contrast Clean-Up Pipeline — Akshayaa Kashyap</title>
-<meta name="description" content="A hybrid classical-CV and deep-learning pipeline that suppresses the halo artifact in phase-contrast microscopy and lifts cell contrast, shipping a pre-trained fp16 model so hybrid inference runs without a training step.">
+<meta name="description" content="A Python pipeline that cleans synthetic, seeded phase-contrast-style frames. It has an OpenCV front end (difference of Gaussians, then CLAHE) and an optional 31M-parameter residual U-Net, plus a browser port of the classical half that agrees with OpenCV to about 50 dB.">
 <meta name="author" content="Akshayaa Kashyap">
 <meta name="referrer" content="strict-origin-when-cross-origin">
 <meta name="theme-color" content="#f4f7fa" media="(prefers-color-scheme: light)">
@@ -15,12 +15,12 @@
 <meta property="og:site_name" content="Akshayaa Kashyap">
 <meta property="og:locale" content="en_US">
 <meta property="og:title" content="Phase-Contrast Clean-Up Pipeline — Akshayaa Kashyap">
-<meta property="og:description" content="A hybrid classical-CV and deep-learning pipeline that suppresses the halo artifact in phase-contrast microscopy and lifts cell contrast, shipping a pre-trained fp16 model so hybrid inference runs without a training step.">
+<meta property="og:description" content="A Python pipeline that cleans synthetic, seeded phase-contrast-style frames. It has an OpenCV front end (difference of Gaussians, then CLAHE) and an optional 31M-parameter residual U-Net, plus a browser port of the classical half that agrees with OpenCV to about 50 dB.">
 <meta property="og:url" content="https://akshayaa-403.github.io/portfolio/work/phase-contrast-denoising.html">
 <meta property="og:image" content="https://akshayaa-403.github.io/portfolio/public/assets/work/phase-contrast-denoising-thumb.webp">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="Phase-Contrast Clean-Up Pipeline — Akshayaa Kashyap">
-<meta name="twitter:description" content="A hybrid classical-CV and deep-learning pipeline that suppresses the halo artifact in phase-contrast microscopy and lifts cell contrast, shipping a pre-trained fp16 model so hybrid inference runs without a training step.">
+<meta name="twitter:description" content="A Python pipeline that cleans synthetic, seeded phase-contrast-style frames. It has an OpenCV front end (difference of Gaussians, then CLAHE) and an optional 31M-parameter residual U-Net, plus a browser port of the classical half that agrees with OpenCV to about 50 dB.">
 <meta name="twitter:image" content="https://akshayaa-403.github.io/portfolio/public/assets/work/phase-contrast-denoising-thumb.webp">
 
 <link rel="icon" href="../public/assets/favicon.webp" type="image/webp">
@@ -45,7 +45,7 @@
 <body>
 <main>
   <h1>Phase-Contrast Clean-Up Pipeline</h1>
-  <p>Removing halo artifacts from microscopy images.</p>
+  <p>One held-out microscope frame, followed through a classical filter and a residual U-Net.</p>
   <p><a href="../project.html?id=phase-contrast-denoising">Continue to the full page</a> &middot;
      <a href="../index.html">Home</a></p>
 </main>

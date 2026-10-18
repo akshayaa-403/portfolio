@@ -1,0 +1,144 @@
+/* Arteza — "rooms". Widget classes are prefixed .az-; every colour is a token. */
+
+.a[data-form="rooms"] .a-ch__label::before { content: '◇ '; color: var(--accent-mid); }
+
+/* prose ↔ figure glyphs */
+.a[data-form="rooms"] .xref[data-key=origin]::before { content: '⊕ '; color: var(--ink); }
+.a[data-form="rooms"] .xref[data-key=target]::before { content: '◎ '; color: var(--accent-ink); }
+.a[data-form="rooms"] .xref[data-key=card]::before { content: '▭ '; color: var(--accent-ink); }
+.a[data-form="rooms"] .xref[data-key=qr]::before,
+.a[data-form="rooms"] .xref[data-key=utr]::before { content: '▏'; color: var(--accent-ink); }
+.a[data-form="rooms"] .xref[data-key=cut]::before { content: '▼ '; color: var(--accent-ink); }
+
+/* ---------- the wall ---------- */
+.az-wall__svg { display: block; width: 100%; max-height: 62vh; margin: 4px 0 8px; }
+.az-stage { fill: var(--bg); stroke: var(--line-strong); stroke-width: 3; }
+.az-frame { fill: none; stroke: var(--ink-soft); }
+.az-pol__card { fill: var(--surface, var(--bg-raised)); stroke: var(--line-strong); }
+.az-copy { fill: var(--ink-muted); }
+.az-rays line { stroke: var(--line-strong); stroke-width: 2; stroke-dasharray: 8 10; }
+.az-path { stroke: var(--accent); stroke-width: 3; stroke-dasharray: 4 8; }
+.az-t circle { fill: none; stroke: var(--accent-ink); stroke-width: 4; }
+.az-t line { stroke: var(--accent-ink); stroke-width: 3; }
+.az-t text, .az-o text { fill: var(--ink); font-family: var(--font-mono); }
+.az-t__hit { fill: transparent !important; stroke: none !important; cursor: ns-resize; touch-action: none; }
+.az-o circle { fill: var(--ink); }
+.az-o line { stroke: var(--ink); stroke-width: 3; }
+.az-wall__svg[data-hl=origin] .az-o circle { fill: var(--accent); }
+.az-wall__svg[data-hl=origin] .az-rays line { stroke: var(--accent-mid); }
+.az-wall__svg[data-hl=target] .az-t circle { stroke-width: 9; }
+.az-wall__svg[data-hl=card] .az-pol__card { stroke: var(--accent); stroke-width: 8; }
+.az-wall__svg[data-hl=card] .az-path { stroke-width: 6; }
+.az-eq { margin: 4px 0 12px; color: var(--ink); font-size: 12.5px; overflow-wrap: anywhere; }
+.az-ramps { display: grid; gap: 4px; }
+.az-ramp { display: grid; grid-template-columns: 8ch 1fr 4ch; gap: 10px; align-items: center; font-size: 12px; }
+.az-ramp__k { color: var(--ink-soft); }
+.az-ramp__bar { height: 6px; border-radius: 3px; background: var(--line); overflow: hidden; }
+.az-ramp__fill { display: block; height: 100%; background: var(--accent); }
+.az-ramp__v { color: var(--ink); text-align: right; font-variant-numeric: tabular-nums; }
+
+/* ---------- the drum ---------- */
+.az-drum__scene {
+  position: relative; overflow: hidden; margin: 6px 0 0;
+  border-radius: var(--radius-sm); background: var(--bg-sunken);
+  cursor: grab; user-select: none;
+}
+.az-drum__track { position: absolute; inset: 0; transform-style: preserve-3d; }
+.az-card {
+  position: absolute; left: 50%; top: 50%;
+  border: 1px solid var(--line-strong); border-radius: 4px;
+  box-shadow: var(--shadow-card);
+  backface-visibility: hidden;
+}
+.az-card span {
+  position: absolute; left: 6px; bottom: 6px; padding: 1px 6px; border-radius: 3px;
+  background: var(--surface, var(--bg-raised)); color: var(--ink); font-size: 11px;
+}
+.az-drum__plan { margin: 8px 0 10px; }
+.az-drum__plan .k-canvas { height: 96px; }
+.az-sep { flex: 0 0 8px; }
+.az-readouts { gap: 12px 28px; }
+
+/* ---------- the shelf ---------- */
+.az-shelf__mark { color: var(--ink-muted); font-size: 11.5px; }
+.az-shelf__info { margin: 8px 0 0; color: var(--ink); font-size: 12px; font-variant-numeric: tabular-nums; }
+@media (max-width: 959.98px) {
+  .a-scrolly[data-widget=shelf] .k-row { margin-bottom: 8px; gap: 6px 12px; }
+  .a-scrolly[data-widget=shelf] .az-shelf__mark { display: none; }
+}
+
+/* ---------- the timeline ---------- */
+.az-tl { display: grid; grid-template-columns: minmax(0, 1fr) 190px; gap: 16px; align-items: start; }
+.az-tl__svg { display: block; width: 100%; height: auto; overflow: visible; }
+.az-axis { stroke: var(--ink); stroke-width: 1.5; }
+.az-tick { stroke: var(--ink-muted); }
+.az-lbl { fill: var(--ink-soft); font-family: var(--font-mono); font-size: 10.5px; }
+.az-lbl--ev { fill: var(--ink-body); }
+.az-lbl--span { fill: var(--accent-ink); font-weight: 600; }
+.az-ev { fill: var(--bg-raised); stroke: var(--ink); stroke-width: 1.5; }
+.az-span rect { fill: var(--accent); }
+.az-span line { stroke: var(--accent-ink); stroke-dasharray: 2 3; }
+.az-cut rect { fill: var(--line-strong); }
+.az-cut.is-past rect { fill: var(--accent-ink); }
+.az-now { stroke: var(--ink); stroke-width: 1; stroke-dasharray: 3 3; }
+.az-tl__svg[data-hl=qr] [data-key=qr] rect,
+.az-tl__svg[data-hl=utr] [data-key=utr] rect,
+.az-tl__svg[data-hl=cut] [data-key=cut] rect { fill: var(--accent-deep); stroke: var(--accent); stroke-width: 3; }
+.az-phone {
+  padding: 14px; border: 1px solid var(--line-strong); border-radius: 18px;
+  background: var(--surface, var(--bg)); min-height: 140px;
+}
+.az-phone p { margin: 0 0 6px; }
+.az-phone__k { color: var(--ink-muted); font-size: 10.5px; letter-spacing: 0.08em; text-transform: uppercase; }
+.az-phone__t { color: var(--ink); font-size: 14px; font-weight: 600; }
+.az-phone__b { color: var(--ink-body); font-size: 12px; }
+.az-scrub { flex-basis: 100%; }
+@media (max-width: 699.98px) { .az-tl { grid-template-columns: minmax(0, 1fr); } }
+
+/* ---------- the counter ---------- */
+.az-label { display: block; margin: 0 0 6px; color: var(--ink-soft); font-size: 12px; }
+.az-req {
+  box-sizing: border-box; width: 100%; padding: 10px 12px; resize: vertical;
+  border: 1px solid var(--line-strong); border-radius: var(--radius-sm);
+  background: var(--bg); color: var(--ink); font: 12.5px/1.5 var(--font-mono);
+}
+.az-req:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+.az-presets { margin-top: 10px; gap: 8px; }
+.az-out { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 16px; }
+.az-status { margin: 0 0 6px; color: var(--ink); font-weight: 600; }
+.az-status[data-ok="1"]::before { content: '✓ '; color: var(--accent-ink); }
+.az-status[data-ok="0"]::before { content: '✕ '; color: var(--accent-ink); }
+.az-said { margin: 0 0 6px; padding-left: 1.2em; color: var(--ink-body); font-size: 12px; }
+.az-resp {
+  margin: 0 0 6px; padding: 8px 10px; overflow-x: auto; white-space: pre-wrap; overflow-wrap: anywhere;
+  border-radius: var(--radius-sm); background: var(--bg-sunken); color: var(--ink-body); font-size: 11.5px;
+}
+.az-resp:empty, .az-said:empty { display: none; }
+.az-counts { margin: 0; color: var(--ink-soft); font-size: 11.5px; }
+.az-bubble {
+  padding: 10px 12px; border-radius: 12px 12px 12px 2px; white-space: pre-wrap; overflow-wrap: anywhere;
+  border: 1px solid var(--line); background: var(--accent-tint); color: var(--ink); font-size: 12px;
+}
+@media (max-width: 699.98px) { .az-out { grid-template-columns: minmax(0, 1fr); } }
+
+/* ---------- the border ---------- */
+.az-border { display: block; width: 100%; height: auto; }
+.az-border path { fill: none; stroke-linecap: round; stroke-linejoin: round; }
+.az-border__ink { stroke: var(--ink); }
+.az-border__gap { stroke: var(--bg-raised); }
+
+/* ---------- the price track ---------- */
+.az-price__svg { display: block; width: 100%; height: auto; overflow: visible; }
+.az-band { fill: var(--accent-tint); }
+.az-dot { fill: var(--accent); transition: transform 0.45s cubic-bezier(0.2, 0.7, 0.2, 1); }
+.az-dot.is-out { fill: var(--line-strong); }
+.az-dot.is-tj { fill: var(--bg-raised); stroke: var(--accent-ink); stroke-width: 2; }
+.az-check { display: inline-flex; gap: 8px; align-items: center; color: var(--ink-body); font-size: 12px; cursor: pointer; }
+.az-check input { accent-color: var(--accent); }
+
+@media (prefers-reduced-motion: reduce) {
+  .az-dot { transition: none; }
+}
+
+/* long source lines scroll inside their block, never the page */
+.a[data-form="rooms"] .a-code pre { max-width: 100%; overflow-x: auto; }
