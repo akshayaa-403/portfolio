@@ -24,9 +24,7 @@
                                     .mp4/.webm play, anything else is a still
      thumb                          false: no image, so a text-only share card
      fragments                      the project's own vocabulary, scattered over
-                                    the case study's opener
-     excerpt                        { note, code } the mosaic shows; both must
-                                    appear in the article (tools/check.js §9) */
+                                    the case study's opener */
 const projects = [
   {
     "id": "quantamental-screener",
@@ -107,11 +105,7 @@ const projects = [
       "pydantic-settings",
       "pytest",
       "headless Chrome"
-    ],
-    "excerpt": {
-      "note": "the hardest sentence on this page to write",
-      "code": "signal = scores_df['composite'].groupby(level='Ticker').shift(1).unstack('Ticker')"
-    }
+    ]
   },
   {
     "id": "phase-contrast-denoising",
@@ -178,11 +172,7 @@ const projects = [
       "BORDER_REFLECT_101",
       "OpenCV",
       "the mistake, not the picture"
-    ],
-    "excerpt": {
-      "note": "more precision was exactly the problem",
-      "code": "# CLAHE requires an integer image; uint16 keeps more precision than uint8.\nimg_u16 = ((img - lo) / rng * 65535.0).astype(np.uint16)"
-    }
+    ]
   },
   {
     "id": "arteza",

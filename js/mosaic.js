@@ -1,112 +1,89 @@
-/* The mosaic — the second view mode, and the one `clean` and then
-   `fragments` used to occupy.
+/* The mosaic — the third view mode: the whole site at a glance.
 
-   A grid of small artifacts rather than a summary: a photograph out of a
-   gallery, a snippet out of a case study, a margin note, a paper the work
-   leans on, a count. Every tile is built from js/project-data.js and
-   js/hobby-data.js at run time, so nothing here can claim more than the site
-   actually holds, and every tile that links goes somewhere real.
+   One tile per case study (its group, title, the one measured figure, the
+   tagline and the first of its stack), a count for each section below, and
+   a photograph from each gallery. Read in one pass, it says what the page
+   holds before anyone scrolls. Every tile is built from js/project-data.js,
+   js/hobby-data.js and js/readings-data.js at run time, so nothing here can
+   claim more than the site actually holds, and every tile links somewhere
+   real.
 
-   The pool is shuffled on each load and the first N shown, so the hero is
-   different on a second visit without anyone having to write a second hero.
+   Fixed order, not shuffled: a summary is read top-left first, so the work
+   leads and is in the same place on every visit. Only which photograph
+   stands for each gallery changes.
 
-   Must load after both data files. */
+   Must load after all three data files. */
 (function () {
   'use strict';
 
-  var COUNT = 14;
-
-  /* The mosaic shows what the page shows. Archived case studies keep their
-     pages and their link in the "Also built" line, but they do not get a tile
-     here or a node in the graph — the hero would otherwise still be claiming
-     work the list below it has deliberately stepped back from. */
+  /* Archived case studies keep their pages and their line under "Also
+     built", but not a tile — the list below has stepped back from them. */
   function live() {
     return projects.filter(function (p) { return !p.archived; });
   }
 
-  /* How many cells of the mosaic each kind of artifact takes, as
-     [columns, rows]. A grid where every tile is the same size is a table; the
-     point of a mosaic is that the big things are big. A photograph wants to be
-     portrait, a snippet of source wants width to stay on one line, and a count
-     is one number and needs nothing. Applied as spans over uniform rows, with
-     grid-auto-flow:dense filling whatever holes the mix leaves. A note is two
-     or three short lines, so it lies wide rather than tall; stood on end,
-     notes and snippets both left a blank middle bigger than what they held. */
+  /* [columns, rows] per kind. A case study holds five short lines, so it
+     takes a double square, and so does a photograph: at six columns, three
+     of them fill one band exactly. Counts and the contact tile are single
+     cells, four of them, so they fill the double square beside the work. */
   var SPAN = {
+    work:  [2, 2],
     stat:  [1, 1],
-    tag:   [1, 1],
-    note:  [2, 1],
-    code:  [3, 1],
-    photo: [1, 2]
+    photo: [2, 2]
   };
 
-  function tile(cls, href, cue, inner, big) {
+  function tile(cls, href, cue, inner) {
     var span = SPAN[cls] || [1, 1];
-    // `big` promotes a tile to a double square. One or two of those per screen
-    // is what stops the mosaic reading as a grid with a few tall cells in it.
-    var style = ' style="--fc:' + (big ? 2 : span[0]) + ';--fr:' + (big ? 2 : span[1]) + '"';
-    var open = href
-      ? '<a class="frag frag--' + cls + '"' + style + ' href="' + safeUrl(href) +
-        '" data-cue="' + esc(cue || 'Open') + '">'
-      : '<div class="frag frag--' + cls + '"' + style + '>';
-    return '<li role="listitem">' + open + inner + (href ? '</a>' : '</div>') + '</li>';
+    return '<li role="listitem"><a class="frag frag--' + cls + '"' +
+      ' style="--fc:' + span[0] + ';--fr:' + span[1] + '"' +
+      ' href="' + safeUrl(href) + '" data-cue="' + esc(cue) + '">' +
+      inner + '</a></li>';
   }
 
-  function pool() {
+  function stat(href, cue, n, label) {
+    return tile('stat', href, cue,
+      '<span class="frag__num">' + n + '</span>' +
+      '<span class="frag__label">' + esc(label) + '</span>');
+  }
+
+  function build() {
     var out = [];
-    var i;
+    var shown = live();
+
+    /* --- the work, in the list's own order --- */
+    shown.forEach(function (p) {
+      out.push(tile('work', 'work/' + encodeURIComponent(p.id) + '.html', 'Read the case study',
+        '<span class="frag__kicker">' + esc(p.group || '') + (p.year ? ' · ' + esc(p.year) : '') + '</span>' +
+        '<span class="frag__title">' + esc(p.title) + '</span>' +
+        // No honest figure, no line: the gap is the hierarchy (see CLAUDE.md).
+        (p.metric ? '<span class="frag__metric">' + esc(p.metric) + '</span>' : '') +
+        '<span class="frag__tagline">' + esc(p.tagline) + '</span>' +
+        '<span class="frag__from">' + esc((p.tech || []).slice(0, 3).join(' · ')) + '</span>'));
+    });
 
     /* --- counts. Derived, never typed, so they cannot drift. --- */
-    var galleries = Object.keys(typeof hobbies === 'undefined' ? {} : hobbies);
+    var galleries = Object.keys(hobbies);
     var photos = galleries.reduce(function (n, id) { return n + hobbies[id].n; }, 0);
-    out.push(tile('stat', '#work', 'See the work',
-      '<span class="frag__num">' + live().length + '</span>' +
-      '<span class="frag__label">case studies, each one shown working</span>'));
-    out.push(tile('stat', '#hobbies', 'See the galleries',
-      '<span class="frag__num">' + photos + '</span>' +
-      '<span class="frag__label">photographs across ' + galleries.length + ' galleries</span>'));
+    var books = typeof readings === 'undefined' ? 0 :
+      readings.groups.reduce(function (n, g) { return n + g.books.length; }, 0);
+    out.push(stat('#work', 'See the work', shown.length, 'case studies, each one shown working'));
+    if (books) out.push(stat('#readings', 'See the shelf', books, 'books on the shelf'));
+    out.push(stat('#hobbies', 'See the galleries', photos,
+      'photographs across ' + galleries.length + ' galleries'));
+    out.push(tile('stat', '#contact', 'Get in touch',
+      '<span class="frag__title">Get in touch</span>' +
+      '<span class="frag__label">email, GitHub, LinkedIn</span>'));
 
     /* --- one photograph per gallery, deep-linked into the popover --- */
-    for (i = 0; i < galleries.length; i++) {
-      var g = hobbies[galleries[i]];
+    galleries.forEach(function (id) {
+      var g = hobbies[id];
       var n = Math.floor(Math.random() * g.n) + 1;
-      out.push(tile('photo', 'hobby.html?id=' + encodeURIComponent(galleries[i]) + '&i=' + n,
-        'View photograph',
-        '<img src="public/assets/hobbies/' + esc(galleries[i]) + '-' + n + '.webp"' +
-        ' alt="' + esc(g.captions[n - 1] || g.label) + '" loading="lazy" decoding="async">' +
-        '<span class="frag__cap">' + esc(g.captions[n - 1] || g.label) + '</span>',
-        i === 0));
-    }
-
-    var shown = live();
-    for (i = 0; i < shown.length; i++) {
-      var p = shown[i];
-      var href = 'work/' + encodeURIComponent(p.id) + '.html';
-
-      /* --- a margin note, in the hand it is set in on the case study, and
-         a few lines of its real source. Both are the article's own words,
-         copied into `excerpt` so the home page need not load the article;
-         tools/check.js fails if either stops matching it. --- */
-      var ex = p.excerpt || {};
-      if (ex.note) {
-        out.push(tile('note', href, 'Read the case study',
-          '<span class="frag__note">' + esc(ex.note) + '</span>' +
-          '<span class="frag__from">' + esc(p.title) + '</span>'));
-      }
-      if (ex.code) {
-        out.push(tile('code', href, 'Read the case study',
-          '<pre><code>' + esc(ex.code.split('\n').slice(0, 4).join('\n')) + '</code></pre>' +
-          '<span class="frag__from">' + esc(p.title) + '</span>'));
-      }
-
-      /* --- the paper or spec behind the idea --- */
-      if (p.tags && p.tags.length) {
-        var t = p.tags[Math.floor(Math.random() * p.tags.length)];
-        out.push(tile('tag', t[1], 'Read the source',
-          '<span class="frag__kicker">reading behind ' + esc(p.title) + '</span>' +
-          '<span class="frag__tag">' + esc(t[0]) + ' \u2197</span>'));
-      }
-    }
+      var cap = g.captions[n - 1] || g.label;
+      out.push(tile('photo', 'hobby.html?id=' + encodeURIComponent(id) + '&i=' + n, 'View photograph',
+        '<img src="public/assets/hobbies/' + esc(id) + '-' + n + '.webp"' +
+        ' alt="' + esc(cap) + '" loading="lazy" decoding="async">' +
+        '<span class="frag__cap">' + esc(g.label) + '</span>'));
+    });
 
     return out;
   }
@@ -114,14 +91,7 @@
   function init() {
     var host = document.querySelector('[data-mosaic]');
     if (!host || typeof projects === 'undefined' || typeof hobbies === 'undefined') return;
-
-    var all = pool();
-    // Fisher-Yates. Math.random is fine here: this decides a decoration.
-    for (var i = all.length - 1; i > 0; i--) {
-      var k = Math.floor(Math.random() * (i + 1));
-      var tmp = all[i]; all[i] = all[k]; all[k] = tmp;
-    }
-    host.innerHTML = all.slice(0, COUNT).join('');
+    host.innerHTML = build().join('');
   }
 
   window.onReady(init);

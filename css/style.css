@@ -2490,32 +2490,25 @@ a.frag:focus-visible {
   line-height: 1.35;
 }
 
-.frag--note { justify-content: space-between; }
-.frag__note {
-  font-family: var(--font-script);
-  font-size: 17px;
-  line-height: 1.3;
-  color: var(--ink);
-}
-
 /* Span comes from js/mosaic.js, per kind of artifact. */
 .frag {
   grid-column: span var(--fc, 1);
   grid-row: span var(--fr, 1);
 }
-.frag--code pre {
-  overflow: hidden;
-  margin: 0 0 8px;
-  font-size: 11px;
-  line-height: 1.5;
-}
-.frag--code code { color: var(--ink); white-space: pre; }
-
-.frag__tag {
+.frag--work { justify-content: flex-start; }
+.frag__title {
   color: var(--ink);
-  font-size: 16px;
-  line-height: 1.25;
+  font-size: 19px;
+  font-weight: 500;
+  line-height: 1.2;
 }
+.frag__metric {
+  color: var(--accent-ink, var(--accent));
+  font-size: 15px;
+  font-weight: 500;
+}
+.frag__tagline { color: var(--ink-soft); }
+.frag--work .frag__from { margin-top: auto; }
 
 /* Two columns at phone width, so nothing may span more than both of them.
    The span is set on grid-column itself: js/mosaic.js writes --fc inline,
@@ -2526,9 +2519,6 @@ a.frag:focus-visible {
     grid-template-columns: repeat(2, 1fr);
     grid-auto-rows: 116px;
   }
-  .frag--code,
-  .frag--note { grid-column: span 2; }
-  .frag--code pre { font-size: 10px; }
 }
 
 /* --------------------------------------------------------------------------
@@ -2671,8 +2661,7 @@ body:has(dialog[open]) .cue { display: none; }
 /* --- Taking one off the shelf ----------------------------------------
    The overlay is not a panel. The dialog fills the viewport, has no ground of
    its own, and the whole site is vignetted behind it through ::backdrop — so
-   the only two things on screen are the book and the scrap of paper beside
-   it. --veil-centre / --veil-edge are the lightbox's own two values and do
+   the only thing on screen is the book. --veil-centre / --veil-edge are the lightbox's own two values and do
    not flip with the theme: a dark room around a lit object is dark in both.
    ::backdrop does not inherit custom properties in every engine, so each is
    used with its literal as a var() fallback. */
@@ -2719,6 +2708,28 @@ body:has(dialog[open]) .cue { display: none; }
   cursor: pointer;
 }
 .bookview__close:hover { background: rgb(255 255 255 / 0.18); }
+/* Previous / next along the shelf. Same glass as the close button, centred
+   on each side, clear of the book at any size the book is drawn. */
+.bookview__step {
+  position: absolute;
+  top: 50%;
+  z-index: 2;
+  width: 48px;
+  height: 48px;
+  margin-top: -24px;
+  border: 1px solid rgb(255 255 255 / 0.28);
+  border-radius: 50%;
+  background: rgb(255 255 255 / 0.08);
+  color: #fbfcfd;
+  font-size: 28px;
+  line-height: 1;
+  cursor: pointer;
+}
+.bookview__step--prev { left: clamp(10px, 3vw, 40px); }
+.bookview__step--next { right: clamp(10px, 3vw, 40px); }
+.bookview__step:hover { background: rgb(255 255 255 / 0.18); }
+.bookview__step:focus-visible,
+.bookview__close:focus-visible { outline: 2px solid #fbfcfd; outline-offset: 3px; }
 
 /* --- The book, as a box ---
    Six faces on one shared 3-D transform. --rx / --ry are written by
@@ -2768,7 +2779,8 @@ body:has(dialog[open]) .cue { display: none; }
   height: var(--h);
 }
 .book3d__face--front { transform: translateZ(calc(var(--t) / 2)); }
-.book3d__face--front img {
+.book3d__face--front img,
+.book3d__face--back img {
   display: block;
   width: 100%;
   height: 100%;
@@ -2826,62 +2838,12 @@ body:has(dialog[open]) .cue { display: none; }
   transform: rotateX(-90deg) translateZ(calc(var(--h) / 2));
 }
 
-/* --- The paper ---
-   The scrap is the image; the writing is one absolutely positioned span per
-   ruled line, put there from the geometry in js/note-data.js. Caveat is
-   already loaded for the marginalia, so the hand costs no extra request. */
-.notepaper {
-  position: relative;
-  flex: none;
-  animation: note-set 0.5s cubic-bezier(0.2, 0.7, 0.2, 1) 0.12s backwards;
-  filter: drop-shadow(0 18px 26px rgb(0 0 0 / 0.5));
-}
-.notepaper__sheet {
-  display: block;
-  width: 100%;
-  height: 100%;
-}
-.notepaper__line {
-  position: absolute;
-  /* `top` marks the rule. With line-height 1 the baseline sits about 0.82em
-     below the box's top edge, so lifting the box by that much lands the
-     writing ON the rule with its descenders hanging under it, which is what
-     handwriting on ruled paper does. */
-  transform: translateY(-0.72em);
-  white-space: nowrap;
-  overflow: hidden;
-  font-family: Caveat, cursive;
-  font-weight: 500;
-  line-height: 1;
-  color: #23303f;
-}
-/* No measured paper at all — the summary is still the point, so it is set
-   plainly rather than dropped. */
-.notepaper__fallback {
-  max-width: 44ch;
-  margin: 0;
-  color: #f2f5f8;
-  font-size: 15px;
-  line-height: 1.7;
-}
-
 @keyframes book-lift {
   from { opacity: 0; transform: translateY(26px) scale(0.94); }
   to   { opacity: 1; transform: none; }
 }
-@keyframes note-set {
-  from { opacity: 0; transform: translateX(-18px) rotate(-3deg); }
-  to   { opacity: 1; transform: none; }
-}
-
-/* Two things side by side need the width. Below that the paper goes under the
-   book, and below that again the book shrinks. */
-@media (max-width: 899.98px) {
-  .bookview__inner { flex-direction: column; gap: 22px; overflow: auto; }
-}
-
 @media (prefers-reduced-motion: reduce) {
-  .book3d, .notepaper { animation: none; }
+  .book3d { animation: none; }
 }
 
 /* --- The mode toggle is identical in every mode ----------------------

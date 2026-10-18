@@ -281,11 +281,9 @@
       </div>
 
       <!-- ---------- Mosaic (mosaic mode) ----------
-           A pinboard of real artifacts rather than a summary: a photograph out
-           of a gallery, a line of source out of a case study, a margin note,
-           a paper the work leans on, a count. Built by js/mosaic.js from
-           js/project-data.js and js/hobby-data.js, shuffled per load, at mixed
-           sizes. Real content, so unlike the graph's canvas it is not
+           The site at a glance: one tile per case study with its measured
+           figure, a count per section, a photograph per gallery. Built by
+           js/mosaic.js from the project, hobby and readings data. Real content, so unlike the graph's canvas it is not
            aria-hidden: every tile is a real link. -->
       <ul class="mosaic" role="list" data-mosaic aria-label="Mosaic"></ul>
 
@@ -529,6 +527,7 @@
      deferred script (readyState is already "interactive"), so this has to
      sit after project-data.js AND hobby-data.js, not merely be deferred. -->
 <script src="js/field.js" defer></script>
+<script src="js/readings-data.js" defer></script>
 <script src="js/mosaic.js" defer></script>
 <script src="js/hobbies.js" defer></script>
 <!-- Dev-only: fetched solely when ?edit=1 is in the URL, so real visitors
@@ -543,10 +542,6 @@ if (/[?&]edit=1/.test(location.search)) {
   });
 }
 </script>
-<!-- The ruling on every scrap of paper in public/assets/notes/, measured
-     once by tools/trace-notes.py. Must load before script.js. -->
-<script src="js/note-data.js" defer></script>
-<script src="js/readings-data.js" defer></script>
 <script src="js/cursor.js" defer></script>
 <script src="js/script.js" defer></script>
 </body>

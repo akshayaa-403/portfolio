@@ -173,9 +173,11 @@
   }
 
   /* ---------- reading list ----------
-     A shelf of spines rather than a list of titles. Each spine is drawn in a
-     colour taken from its cover (js/readings-data.js); the cover image in
-     public/assets/readings/ is only fetched when a book turns to show it.
+     A shelf of spines rather than a list of titles. The spines wear the
+     day's Wada combination, the same three colours the graph is drawn in
+     (portfolioPalette.trio()), dealt out along the shelf in turn, each book a
+     different shade of its colour; the cover image in public/assets/readings/
+     is only fetched when a book turns to show it.
 
      Computed here rather than authored: every book's size, from the
      edition's real trim and page count; the spine's type size, solved until
@@ -183,15 +185,34 @@
      luminance — the same reason js/field.js measures rather than eyeballs: a
      mid-yellow and a mid-navy have similar HSL lightness and opposite
      contrast. */
-  function spineInk(hex) {
+  function spineInk(c) {
     // The same measurement js/palette.js already does, so it is borrowed
     // rather than written again: whichever of white or near-black contrasts
     // harder against the spine wins, so every spine clears 4.5:1 by
     // construction.
-    var P = window.portfolioPalette, c = P && P.toHsl(hex);
-    if (!c) return '#10161d';
+    var P = window.portfolioPalette;
+    if (!P || !c) return '#10161d';
     var L = P.lum(P.hslRgb(c.h, c.s, c.l));
     return P.ratio(L, 1) >= P.ratio(L, 0) ? '#fbfcfd' : '#10161d';
+  }
+
+  /* Book i's spine: colour i % 3 of the day's trio, at its own lightness.
+     Hue and saturation are Wada's and never move — only lightness is
+     stepped, as in the graph — so the shelf reads as one combination, and
+     the books sharing a colour sit at evenly spaced shades from 28% to 72%
+     so no two are alike. A spine is an object rather than text on the
+     ground, so it is not stepped to a contrast bar; its ink is. */
+  function spineTone(i, n) {
+    var P = window.portfolioPalette;
+    var c = P && P.toHsl(P.trio()[i % 3]);
+    if (!c) return null;
+    var per = Math.ceil(n / 3), k = Math.floor(i / 3);
+    return { h: c.h, s: c.s, l: per > 1 ? 28 + k * 44 / (per - 1) : c.l };
+  }
+  function spineStyle(i, n) {
+    var t = spineTone(i, n);
+    return '--spine-bg:' + (t ? window.portfolioPalette.css(t) : '#d9dde2') +
+      ';--spine-ink:' + spineInk(t);
   }
 
   function renderReadings() {
@@ -247,8 +268,7 @@
         '<button class="book" type="button" data-book="' + i + '"' +
           ' aria-haspopup="dialog"' +
           ' data-cue="Take it off the shelf"' +
-          ' style="--spine-bg:' + esc(b.colour || '#d9dde2') +
-            ';--spine-ink:' + spineInk(b.colour) +
+          ' style="' + spineStyle(i, books.length) +
             ';--spine-fs:' + (Math.round(fs * 10) / 10) + 'px">' +
           /* The button fills the slot and never turns; the box inside it does.
              Rotating the button itself made its own box edge-on, so the
@@ -299,140 +319,30 @@
        A native <dialog> via showModal(), for the reason js/lightbox.js uses
        one: focus trapping, page inertness, Escape and ::backdrop come free.
        The dialog itself has no panel — the site is vignetted behind it and
-       the only two things on screen are the book and the note.
+       the only thing on screen is the book.
 
        The book is a real box, six faces on one 3-D transform, and it can be
-       tumbled on both axes with the pointer or the arrow keys. The summary is
-       handwritten onto a scrap of ruled paper, on the rules: js/note-data.js
-       carries where every rule on every scrap is, measured offline by
-       tools/trace-notes.py, so nothing is read back off a canvas here. Drop
-       another scrap in public/assets/notes/, re-run the tool, and it joins
-       the shuffle with no change to this file. */
+       tumbled on both axes by dragging, or with Shift+←/→ and ↑/↓ — which is
+       why each book carries its real back cover as well as its front: turn
+       it over and the blurb is there, as it would be in a shop.
+
+       Plain ←/→, and the two arrows at the sides, step along the shelf
+       without putting the book back first. They wrap at either end. */
 
     var dlg = document.createElement('dialog');
     dlg.className = 'bookview';
     dlg.innerHTML =
       '<button class="bookview__close" type="button" aria-label="Put it back">×</button>' +
+      '<button class="bookview__step bookview__step--prev" type="button" data-step="-1">‹</button>' +
+      '<button class="bookview__step bookview__step--next" type="button" data-step="1">›</button>' +
       '<div class="bookview__inner"></div>';
     document.body.appendChild(dlg);
     var inner = dlg.querySelector('.bookview__inner');
-
-    /* --- writing on the paper ---
-       One <span> per rule, sitting ON it. The text is measured with the same
-       font the spans are set in — a 2-D context is the only way to ask a
-       browser how wide a string will be before it draws it — and wrapped to
-       the width of the paper AT THAT RULE, which narrows where the scrap is
-       torn.
-
-       Returns null when the words do not fit the paper, which is how the
-       caller knows to try a different scrap rather than overflowing one. */
-    var ruler = document.createElement('canvas').getContext('2d');
-
-    function write(paper, text) {
-      var rules = paper.rules || [];
-      if (rules.length < 2) return null;
-
-      // The hand is sized off the gap between the rules, so it sits IN the
-      // ruling rather than across it, whatever the paper. Then the sheet is
-      // scaled until that hand is legible on screen — a scrap with tight
-      // ruling is simply shown bigger — and capped so it still fits beside
-      // the book.
-      var gaps = [];
-      for (var g = 1; g < rules.length; g++) gaps.push(rules[g].y - rules[g - 1].y);
-      gaps.sort(function (x, y) { return x - y; });
-      var gap = gaps[gaps.length >> 1];
-
-      var scale = Math.max(340 / paper.w, 15 / (gap * 0.82));
-      scale = Math.min(scale, 460 / paper.w);
-      /* Clamped at both ends. Below 14px a hand is a squiggle; above 20px a
-         generously ruled scrap eats its own capacity, because the writing
-         grows with the ruling and the sheet does not. Between the two the
-         type simply sits in whatever ruling the paper has. */
-      var fs = Math.max(14, Math.min(20, gap * scale * 0.82));
-
-      ruler.font = '500 ' + fs + 'px Caveat, cursive';
-
-      /* ONE left margin, a ragged right — which is how anyone writes on ruled
-         paper, and also what keeps the words off the paper's edges.
-
-         The margin is the rightmost point any rule starts at, so no line can
-         begin out on a torn strip or a row of punch holes while its
-         neighbours begin further in. The right-hand end stays per-rule,
-         because that is where the sheet is genuinely narrower — a tear, or a
-         doodle lying over the ruling — and holding every line to the
-         narrowest of them would waste most of the page. */
-      var left = -Infinity;
-      for (var e = 0; e < rules.length; e++) {
-        if (rules[e].x0 > left) left = rules[e].x0;
-      }
-      left *= scale;
-      var pad = Math.max(fs * 0.6, paper.w * scale * 0.035);
-      left += pad;
-      function roomAt(rule) { return rule.x1 * scale - pad - left; }
-
-      var words = String(text).split(/\s+/);
-      var lines = [], at = 0;
-      for (var r = 0; r < rules.length && at < words.length; r++) {
-        var room = roomAt(rules[r]);
-        var line = '';
-        while (at < words.length) {
-          var next = line ? line + ' ' + words[at] : words[at];
-          if (line && ruler.measureText(next).width > room) break;
-          line = next;
-          at++;
-        }
-        // A single word wider than the whole rule would otherwise loop forever.
-        if (!line) { line = words[at]; at++; }
-        lines.push({ rule: rules[r], text: line });
-      }
-      if (at < words.length) return null;          // ran out of paper
-
-      return {
-        scale: scale,
-        html: lines.map(function (l) {
-          return '<span class="notepaper__line" style="' +
-            'left:' + left.toFixed(1) + 'px;' +
-            'top:' + (l.rule.y * scale).toFixed(1) + 'px;' +
-            'width:' + roomAt(l.rule).toFixed(1) + 'px;' +
-            'font-size:' + fs.toFixed(1) + 'px">' + esc(l.text) + '</span>';
-        }).join('')
-      };
-    }
-
-    /* Shuffled, then the first scrap the summary actually fits on — so the
-       paper is different each time a book is taken off the shelf, and the
-       writing never runs off the bottom of one. If a summary has outgrown
-       every scrap, the one with the most rules takes it and the overflow is
-       dropped rather than piled on the last line; keep summaries short (see
-       js/readings-data.js). */
-    function paperFor(text) {
-      var papers = (typeof notePapers === 'undefined' ? [] : notePapers).slice();
-      if (!papers.length) return null;
-
-      for (var i = papers.length - 1; i > 0; i--) {
-        var j = Math.floor(Math.random() * (i + 1));
-        var t = papers[i]; papers[i] = papers[j]; papers[j] = t;
-      }
-
-      for (var p = 0; p < papers.length; p++) {
-        var set = write(papers[p], text);
-        if (set) return { paper: papers[p], scale: set.scale, html: set.html };
-      }
-
-      var roomiest = papers.slice().sort(function (x, y) {
-        return (y.rules || []).length - (x.rules || []).length;
-      })[0];
-      var words = text.split(/\s+/);
-      while (words.length > 4) {
-        words.pop();
-        var fit = write(roomiest, words.join(' ') + '…');
-        if (fit) return { paper: roomiest, scale: fit.scale, html: fit.html };
-      }
-      return null;
-    }
+    var steps = dlg.querySelectorAll('[data-step]');
+    var cur = -1;
 
     /* --- the book, as a box --- */
-    function box(b) {
+    function box(b, i) {
       var W = mm(b.widthMm || 135);
       var H = mm(b.heightMm || 200);
       var T = Math.max(18, mm((b.pages || 300) * 0.0575 + (b.hardback ? 5 : 2.5)));
@@ -441,17 +351,18 @@
       W *= k; H *= k; T *= k;
 
       return '<div class="book3d" data-book3d tabindex="0" role="application"' +
-          ' aria-label="' + esc(b.title) + ' — drag, or use the arrow keys, to turn it"' +
+          ' aria-label="' + esc(b.title) + ' — drag, or use Shift and the arrow keys, to turn it"' +
           ' data-cue="Drag to turn it"' +
           ' style="--w:' + W + 'px;--h:' + H + 'px;--t:' + T + 'px">' +
         '<div class="book3d__box" data-book3d-box>' +
           '<span class="book3d__face book3d__face--front">' +
             '<img src="' + safeUrl(b.cover) + '" alt="" draggable="false">' +
           '</span>' +
-          '<span class="book3d__face book3d__face--back"></span>' +
+          '<span class="book3d__face book3d__face--back">' +
+            (b.back ? '<img src="' + safeUrl(b.back) + '" alt="" draggable="false">' : '') +
+          '</span>' +
           '<span class="book3d__face book3d__face--spine"' +
-            ' style="--spine-bg:' + esc(b.colour || '#d9dde2') +
-              ';--spine-ink:' + spineInk(b.colour) + '">' +
+            ' style="' + spineStyle(i, books.length) + '">' +
             '<span class="spine__title">' + esc(b.title) + '</span>' +
             '<span class="spine__author">' + esc(b.author || '') + '</span>' +
           '</span>' +
@@ -466,28 +377,25 @@
       var b = books[i];
       if (!b || !dlg.showModal) return;
 
-      var text = b.summary || b.note || '';
-      var sheet = paperFor(text);
-
-      inner.innerHTML = box(b) +
-        (sheet
-          ? '<div class="notepaper" style="width:' + (sheet.paper.w * sheet.scale).toFixed(1) +
-              'px;height:' + (sheet.paper.h * sheet.scale).toFixed(1) + 'px">' +
-              '<img class="notepaper__sheet" src="' + safeUrl(sheet.paper.src) +
-                '" alt="" aria-hidden="true">' +
-              // The drawn lines are one sentence chopped into pieces; a screen
-              // reader gets the sentence instead, once, below.
-              '<span aria-hidden="true">' + sheet.html + '</span>' +
-              '<p class="visually-hidden">' + esc(b.title) + ' by ' +
-                esc(b.author || '') + '. ' + esc(text) + '</p>' +
-            '</div>'
-          : '<p class="notepaper__fallback">' + esc(text) + '</p>');
+      cur = i;
+      inner.innerHTML = box(b, i);
+      // Each arrow names the book it leads to, for a screen reader and the cue.
+      for (var s = 0; s < steps.length; s++) {
+        var to = books[wrap(i + +steps[s].getAttribute('data-step'))];
+        var name = (+steps[s].getAttribute('data-step') < 0 ? 'Previous: ' : 'Next: ') + to.title;
+        steps[s].setAttribute('aria-label', name);
+        steps[s].setAttribute('data-cue', name);
+      }
 
       turn(inner.querySelector('[data-book3d-box]'));
-      dlg.showModal();
+      if (!dlg.open) dlg.showModal();
+      say(i);
       var focusable = inner.querySelector('[data-book3d]');
       if (focusable) focusable.focus();
     }
+
+    function wrap(i) { return (i + books.length) % books.length; }
+    function step(d) { if (dlg.open) open(wrap(cur + d)); }
 
     /* --- tumbling it ---
        Free on both axes, as a thing you are holding rather than a thing on a
@@ -530,23 +438,34 @@
       el.parentNode.addEventListener('pointerup', drop);
       el.parentNode.addEventListener('pointercancel', drop);
 
-      // The keyboard gets the same two axes.
+      // The keyboard gets the same two axes. Plain ←/→ belong to the
+      // dialog (next/previous book), so turning sideways needs Shift.
       el.parentNode.addEventListener('keydown', function (e) {
-        var k = e.key, step = e.shiftKey ? 45 : 15;
-        if (k === 'ArrowLeft') ry -= step;
-        else if (k === 'ArrowRight') ry += step;
-        else if (k === 'ArrowUp') rx -= step;
-        else if (k === 'ArrowDown') rx += step;
+        var k = e.key, by = 15;
+        if (k === 'ArrowLeft' && e.shiftKey) ry -= by;
+        else if (k === 'ArrowRight' && e.shiftKey) ry += by;
+        else if (k === 'ArrowUp') rx -= by;
+        else if (k === 'ArrowDown') rx += by;
         else return;
         e.preventDefault();
+        e.stopPropagation();
         set();
       });
     }
 
     dlg.addEventListener('click', function (e) {
-      // The dialog IS the vignette: a click that lands on neither the book nor
-      // the paper is a click outside.
-      if (e.target === dlg || e.target.closest('.bookview__close')) dlg.close();
+      // The dialog IS the vignette: a click that lands off the book is a click
+      // outside.
+      var st = e.target.closest('[data-step]');
+      if (st) step(+st.getAttribute('data-step'));
+      else if (e.target === dlg || e.target.closest('.bookview__close')) dlg.close();
+    });
+    dlg.addEventListener('keydown', function (e) {
+      if (e.shiftKey || e.altKey || e.ctrlKey || e.metaKey) return;
+      if (e.key === 'ArrowLeft') step(-1);
+      else if (e.key === 'ArrowRight') step(1);
+      else return;
+      e.preventDefault();
     });
     dlg.addEventListener('close', function () { inner.innerHTML = ''; });
 

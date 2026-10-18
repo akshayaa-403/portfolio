@@ -261,8 +261,7 @@ for (const p of PROJECTS) {
    so the mistakes that matter are silent ones, and this is where they are
    caught: a block of no known kind, a widget name with no function behind it,
    a figure that points at no file, a margin note whose phrase was edited out
-   of its paragraph, a demo the article never places, and a home-page excerpt
-   that no longer matches the article it was copied from. */
+   of its paragraph, and a demo the article never places. */
 
 console.log('9. articles');
 const vm = require('vm');
@@ -304,8 +303,6 @@ for (const p of PROJECTS) {
 
   const ids = new Set();
   let lives = 0;
-  const notes = [];
-  const codes = [];
   for (const c of chapters) {
     if (c !== spec.closing) {
       checked++;
@@ -334,7 +331,6 @@ for (const p of PROJECTS) {
         if (!b.alt) fail(where, 'figure without alt text: ' + b.figure);
       }
       if (k === 'live') lives++;
-      if (k === 'code') codes.push(b.code);
       if (k === 'p') {
         for (const [phrase, say] of b.notes || []) {
           checked++;
@@ -344,7 +340,6 @@ for (const p of PROJECTS) {
               ' times in its paragraph (needs exactly 1): "' + phrase + '"');
           }
           if (!say || !say.trim()) fail(where, 'empty margin note on "' + phrase + '"');
-          notes.push(say);
         }
       }
     }
@@ -352,16 +347,6 @@ for (const p of PROJECTS) {
   checked++;
   if (p.demo && lives !== 1) fail(where, 'has a demo but places { live: true } ' + lives + ' times (needs exactly 1)');
   if (!p.demo && lives) fail(where, 'places a live demo but the project has no demo');
-
-  const ex = p.excerpt || {};
-  if (ex.note) {
-    checked++;
-    if (!notes.includes(ex.note)) fail(where, 'excerpt.note is not one of the article\'s margin notes: "' + ex.note + '"');
-  }
-  if (ex.code) {
-    checked++;
-    if (!codes.some((c) => c.includes(ex.code))) fail(where, 'excerpt.code does not appear in any of the article\'s code blocks');
-  }
 }
 
 /* ---------- report ---------- */

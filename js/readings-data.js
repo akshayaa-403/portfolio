@@ -3,39 +3,31 @@
 
    Rendered as a shelf (renderReadings in js/script.js): each book stands as a
    spine and turns in place to show its cover. The spine is drawn rather than
-   photographed — `colour` is an accent sampled from the book's own cover, and
-   the ink on it is chosen at run time from that colour's measured luminance,
-   so a pale spine gets dark type without anyone specifying it. The cover is
+   photographed, in a shade of the day's Wada combination (js/script.js,
+   spineTone), and the ink on it is chosen at run time from that shade's
+   measured luminance, so a pale spine gets dark type. The cover is
    the only image.
 
    Every book is drawn at its real size, on one scale, so the shelf has the
    unevenness a real shelf has. `heightMm` and `widthMm` are the trim of the
    edition whose cover is shown; `pages` drives the thickness of the spine.
-   Page counts are from Open Library. It carries no `physical_dimensions` for
-   any of these four, so the trims are the standard ones for each edition's
-   format — 6x9in for the 80,000 Hours paperback, B-format for the Hodder
-   Sceptre, US trade paperback for the St. Martin's Essentials, and
-   5.5x8.25in for the Atria hardcover of The Courage to Be Disliked. Set
-   `hardback: true` on a book bound in boards; it only thickens the spine.
+   Trims and page counts are from the retail listing the cover was taken
+   from where it states them, else Open Library, else the standard trim for
+   the edition's format. Set `hardback: true` on a book bound in boards; it
+   only thickens the spine.
 
-   Covers come from the Open Library cover archive and live in
-   public/assets/readings/.
+   Covers live in public/assets/readings/. Front and back come from one
+   listing of one edition (Amazon scans, or a seller's photographs
+   straightened to the book's outline), so they always match. `back` is the same edition's back cover, put on
+   the back face of the box when a book is taken off the shelf and turned.
 
-   Shape: { asOf, groups: [{ topic, books: [{ title, author, colour, cover,
-                              heightMm, widthMm, pages, hardback?, note?,
-                              summary?, url? }] }] }
+   Shape: { asOf, groups: [{ topic, books: [{ title, author, cover,
+                              back?, heightMm, widthMm, pages, hardback?,
+                              note?, url? }] }] }
 
-   `note` is one line, shown under the shelf. `summary` is what gets written
-   onto the scrap of paper beside the book when one is taken off the shelf,
-   condensed from the publisher's own copy on the listing in `url`.
-
-   KEEP A SUMMARY UNDER ABOUT 260 CHARACTERS. It is handwritten onto real
-   ruled paper (public/assets/notes/, measured by tools/trace-notes.py), and
-   the smallest scrap holds eleven lines at a size anyone can read. Longer
-   than that and js/script.js has to fall back to the roomiest note every
-   time, which kills the shuffle. */
+   `note` is one line, shown under the shelf. */
 var readings = {
-  asOf: '09/2026',
+  asOf: '10/2026',
   groups: [
     {
       topic: 'Work and people',
@@ -43,51 +35,201 @@ var readings = {
         {
           title: '80,000 Hours',
           author: 'Benjamin Todd',
-          colour: '#1fa39e',
           cover: 'public/assets/readings/80000-hours.webp',
-          heightMm: 229,
-          widthMm: 152,
-          pages: 342,
+          back: 'public/assets/readings/80000-hours-back.webp',
+          heightMm: 243,
+          widthMm: 153,
+          pages: 384,
+          hardback: true,
           url: 'https://www.goodreads.com/book/show/33229792-80-000-hours',
-          note: 'On spending a career on something that matters, argued from evidence rather than from feeling.',
-          summary: 'You get about 80,000 hours of working life. Todd argues that most career advice is unresearched — “follow your passion” worst of all — and replaces it with evidence: build career capital, pick problems by scale and neglect.'
+          note: 'On spending a career on something that matters, argued from evidence rather than from feeling.'
         },
         {
           title: 'The Art of Creative Thinking',
           author: 'Rod Judkins',
-          colour: '#f2c81e',
           cover: 'public/assets/readings/art-of-creative-thinking.webp',
-          heightMm: 198,
-          widthMm: 129,
+          back: 'public/assets/readings/art-of-creative-thinking-back.webp',
+          heightMm: 185,
+          widthMm: 115,
           pages: 288,
           url: 'https://www.goodreads.com/book/show/24905747-the-art-of-creative-thinking',
-          note: 'Eighty-nine short chapters, each one a way of getting unstuck. Best read out of order.',
-          summary: 'Judkins teaches creativity at Central Saint Martins. Ninety very short chapters on how creative people actually behave \u2014 Dada, Warhol\u2019s Factory, Nobel economists \u2014 on the argument that the habits are learnable rather than innate.'
+          note: 'Eighty-nine short chapters, each one a way of getting unstuck. Best read out of order.'
         },
         {
           title: 'Surrounded by Idiots',
           author: 'Thomas Erikson',
-          colour: '#d2402f',
           cover: 'public/assets/readings/surrounded-by-idiots.webp',
-          heightMm: 210,
-          widthMm: 140,
+          back: 'public/assets/readings/surrounded-by-idiots-back.webp',
+          heightMm: 241,
+          widthMm: 159,
           pages: 304,
+          hardback: true,
           url: 'https://www.goodreads.com/book/show/39101777-surrounded-by-idiots',
-          note: 'Four behaviour types, and the uncomfortable business of working out which one you are.',
-          summary: 'Erikson sorts behaviour into four types: Red is commanding, Yellow social, Green easy-going, Blue precise. Most of what reads as stupidity in other people is a mismatch of type. Treat people as they would like to be treated, not as you would.'
+          note: 'Four behaviour types, and the uncomfortable business of working out which one you are.'
         },
         {
           title: 'The Courage to Be Disliked',
           author: 'Ichiro Kishimi & Fumitake Koga',
-          colour: '#272f6e',
           cover: 'public/assets/readings/courage-to-be-disliked.webp',
-          heightMm: 210,
-          widthMm: 140,
+          back: 'public/assets/readings/courage-to-be-disliked-back.webp',
+          heightMm: 213,
+          widthMm: 139,
           pages: 288,
-          hardback: true,
           url: 'https://www.goodreads.com/book/show/43306206-the-courage-to-be-disliked',
-          note: 'Adler’s psychology as a five-night argument between a philosopher and a young man who refuses to be convinced.',
-          summary: 'A philosopher and a sceptical youth argue over five nights. Following Alfred Adler, the past does not decide who you are, all problems are interpersonal, and freedom means accepting that some people will dislike you.'
+          note: 'Adler’s psychology as a five-night argument between a philosopher and a young man who refuses to be convinced.'
+        },
+        {
+          title: 'Learned Excellence',
+          author: 'Eric Potterat & Alan Eagle',
+          cover: 'public/assets/readings/learned-excellence.webp',
+          heightMm: 240,
+          widthMm: 158,
+          pages: 256,
+          hardback: true,
+          note: 'A Navy SEAL psychologist’s mental drills, written down for people who will never go near a SEAL team.'
+        },
+        {
+          title: 'Never Split the Difference',
+          author: 'Chris Voss & Tahl Raz',
+          cover: 'public/assets/readings/never-split-the-difference.webp',
+          back: 'public/assets/readings/never-split-the-difference-back.webp',
+          heightMm: 203,
+          widthMm: 125,
+          pages: 288,
+          note: 'An FBI hostage negotiator on why splitting the difference is how both sides lose.'
+        }
+      ]
+    },
+    {
+      topic: 'Money and power',
+      books: [
+        {
+          title: 'Liar’s Poker',
+          author: 'Michael Lewis',
+          cover: 'public/assets/readings/liars-poker.webp',
+          back: 'public/assets/readings/liars-poker-back.webp',
+          heightMm: 198,
+          widthMm: 128,
+          pages: 249,
+          note: 'Salomon Brothers in the 1980s, from the trading floor, by someone who quit while he was winning.'
+        },
+        {
+          title: 'Soros on Soros',
+          author: 'George Soros',
+          cover: 'public/assets/readings/soros-on-soros.webp',
+          back: 'public/assets/readings/soros-on-soros-back.webp',
+          heightMm: 238,
+          widthMm: 169,
+          pages: 336,
+          hardback: true,
+          note: 'Soros explaining reflexivity: markets act on what people believe about them, so the beliefs move the prices.'
+        },
+        {
+          title: 'Edible Economics',
+          author: 'Ha-Joon Chang',
+          cover: 'public/assets/readings/edible-economics.webp',
+          heightMm: 243,
+          widthMm: 157,
+          pages: 224,
+          hardback: true,
+          note: 'Economics through seventeen dishes, each one a way into an argument the textbooks would rather skip.'
+        },
+        {
+          title: 'Guns, Germs, and Steel',
+          author: 'Jared Diamond',
+          cover: 'public/assets/readings/guns-germs-steel.webp',
+          back: 'public/assets/readings/guns-germs-steel-back.webp',
+          heightMm: 198,
+          widthMm: 129,
+          pages: 528,
+          note: 'Why some societies conquered others: geography, crops and animals, rather than anything about the people.'
+        },
+        {
+          title: 'Geopolitics in Health',
+          author: 'Eduardo J. Gómez',
+          cover: 'public/assets/readings/geopolitics-in-health.webp',
+          heightMm: 229,
+          widthMm: 151,
+          pages: 320,
+          note: 'How the BRICS governments handled obesity, AIDS and tuberculosis, and what their politics did to the answers.'
+        }
+      ]
+    },
+    {
+      topic: 'Ideas and identity',
+      books: [
+        {
+          title: 'Attensity!',
+          author: 'The Friends of Attention',
+          cover: 'public/assets/readings/attensity.webp',
+          heightMm: 198,
+          widthMm: 128,
+          pages: 256,
+          note: 'A manifesto for taking attention back from the businesses that sell it.'
+        },
+        {
+          title: 'Messy Cities',
+          author: 'Dylan Reid & Zahra Ebrahim (eds.)',
+          cover: 'public/assets/readings/messy-cities.webp',
+          heightMm: 203,
+          widthMm: 131,
+          pages: 300,
+          note: 'Essays on the parts of cities that work precisely because nobody planned them.'
+        },
+        {
+          title: 'Why I Write',
+          author: 'George Orwell',
+          cover: 'public/assets/readings/why-i-write.webp',
+          back: 'public/assets/readings/why-i-write-back.webp',
+          heightMm: 181,
+          widthMm: 111,
+          pages: 128,
+          note: 'Four essays, including the one that says good prose should be like a windowpane.'
+        }
+      ]
+    },
+    {
+      topic: 'Fiction',
+      books: [
+        {
+          title: 'The Vegetarian',
+          author: 'Han Kang',
+          cover: 'public/assets/readings/the-vegetarian.webp',
+          back: 'public/assets/readings/the-vegetarian-back.webp',
+          heightMm: 198,
+          widthMm: 131,
+          pages: 188,
+          note: 'A woman stops eating meat, and everyone around her takes it as an attack.'
+        },
+        {
+          title: 'The Employees',
+          author: 'Olga Ravn',
+          cover: 'public/assets/readings/the-employees.webp',
+          back: 'public/assets/readings/the-employees-back.webp',
+          heightMm: 198,
+          widthMm: 129,
+          pages: 136,
+          note: 'Statements from the crew of a spaceship, human and humanoid, filed as a workplace inquiry.'
+        },
+        {
+          title: 'The Hunger Games',
+          author: 'Suzanne Collins',
+          cover: 'public/assets/readings/hunger-games.webp',
+          back: 'public/assets/readings/hunger-games-back.webp',
+          heightMm: 203,
+          widthMm: 142,
+          pages: 374,
+          note: 'A televised fight to the death, and a girl who volunteers so her sister will not have to.'
+        },
+        {
+          title: 'Angels & Demons',
+          author: 'Dan Brown',
+          cover: 'public/assets/readings/angels-and-demons.webp',
+          back: 'public/assets/readings/angels-and-demons-back.webp',
+          heightMm: 198,
+          widthMm: 126,
+          pages: 624,
+          note: 'Robert Langdon’s first outing: a stolen antimatter canister, the Vatican, and one night to find it.'
         }
       ]
     }
