@@ -1,4 +1,5 @@
-/* The image popover on the gallery page (hobby.html).
+/* The image popover on the gallery page (hobby.html), and for desk mode's
+   Polaroids on the home page (js/desk-objects.js).
 
    Every tile on a gallery page opens it, and it is the destination the home
    page graph's image nodes point at (hobby.html?id=…&i=…). The home page's
@@ -61,7 +62,9 @@
      page the visitor is on. replaceState, not pushState: opening photographs
      should not bury the referring page under a history entry each. */
   function mark(i) {
-    if (!gid) return;
+    // The home page loads this too (the Info section's contact sheet and
+    // map), and there the URL must stay the home page's.
+    if (!gid || !/hobby(\.html)?$/i.test(location.pathname)) return;
     try {
       history.replaceState(null, '',
         'hobby.html?id=' + encodeURIComponent(gid) + (i ? '&i=' + i : ''));

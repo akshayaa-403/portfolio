@@ -17,6 +17,11 @@
    slate #485374 lit and #1a1e2c in shadow (the "option B" she picked).
    css/style.css ("Time of day, desk mode") keeps --bg in step.
 
+   Drawing the window's curtains (js/desk-objects.js, `is-shut` on .desk)
+   fades the shadows toward the lit wall and dims it a little: no sun, no
+   leaves. Not at night, when there is no daylight to dim. The theme is not
+   touched.
+
    Still under reduced motion (the first frame). Without WebGL there is no
    canvas and the wall is plain --bg. Plays only while the desk is on screen. */
 (function () {
@@ -49,9 +54,10 @@
     'uniform sampler2D tLeaves;' +
     'uniform vec2 uScale, uOff;' +
     'uniform vec3 uLit, uShadow;' +
+    'uniform float uShut;' +
     'void main() {' +
-    '  float a = texture2D(tLeaves, vUv * uScale + uOff).r;' +
-    '  gl_FragColor = vec4(mix(uLit, uShadow, a), 1.0);' +
+    '  float a = texture2D(tLeaves, vUv * uScale + uOff).r * (1.0 - 0.88 * uShut);' +
+    '  gl_FragColor = vec4(mix(uLit, uShadow, a) * (1.0 - 0.07 * uShut), 1.0);' +
     '}';
 
   function shader(type, src) {
@@ -69,7 +75,7 @@
   gl.useProgram(prog);
 
   var u = {};
-  ['tLeaves', 'uScale', 'uOff', 'uLit', 'uShadow']
+  ['tLeaves', 'uScale', 'uOff', 'uLit', 'uShadow', 'uShut']
     .forEach(function (n) { u[n] = gl.getUniformLocation(prog, n); });
 
   gl.bindBuffer(gl.ARRAY_BUFFER, gl.createBuffer());
@@ -114,6 +120,11 @@
     return [rgb(m[0]), rgb(m[1])];
   }
   var col = target();
+  // 0 open, 1 curtains drawn; eased toward shutTarget() like the colours.
+  function shutTarget() {
+    return desk.classList.contains('is-shut') && document.documentElement.getAttribute('data-time') !== 'night' ? 1 : 0;
+  }
+  var shut = shutTarget();
 
   // Size to the desk; cover-fit the video, centred.
   var W = 0, H = 0;
@@ -136,6 +147,7 @@
     if (!W) return;
     gl.uniform3fv(u.uLit, col[0]);
     gl.uniform3fv(u.uShadow, col[1]);
+    gl.uniform1f(u.uShut, shut);
     gl.drawArrays(gl.TRIANGLES, 0, 6);
   }
 
@@ -151,6 +163,7 @@
     if (!running()) { if (video) video.pause(); return; }
     var t = target();
     ease(col[0], t[0]); ease(col[1], t[1]);
+    shut += (shutTarget() - shut) * 0.04;
     upload();
     draw();
     raf = requestAnimationFrame(frame);
@@ -158,7 +171,7 @@
   function wake() {
     resize();
     if (desk.offsetWidth > 0) film();
-    if (still.matches) { if (video) video.pause(); col = target(); upload(); draw(); return; }
+    if (still.matches) { if (video) video.pause(); col = target(); shut = shutTarget(); upload(); draw(); return; }
     if (!raf && running()) {
       if (video) video.play().catch(function () {});
       raf = requestAnimationFrame(frame);
@@ -170,6 +183,7 @@
   document.addEventListener('visibilitychange', wake);
   window.addEventListener('modechange', wake);
   window.addEventListener('themechange', wake);
+  window.addEventListener('curtainchange', wake);
   if (still.addEventListener) still.addEventListener('change', wake);
   wake();
 })();

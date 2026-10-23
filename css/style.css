@@ -2545,6 +2545,62 @@ a.frag:focus-visible {
 .frag__tagline { color: var(--ink-soft); }
 .frag--work .frag__from { margin-top: auto; }
 
+/* The recipe card (js/mosaic.js): an index card, ruled like one, with the
+   day's dish in handwriting and its photograph held on by a magnet in the
+   day's accent. Ruling and margin line are drawn in the page's own line
+   tokens, so the card follows the theme. */
+.frag--recipe {
+  justify-content: flex-start;
+  background:
+    linear-gradient(to right, transparent 30px, var(--accent-pale) 30px 31px, transparent 31px),
+    repeating-linear-gradient(to bottom, transparent 0 25px, var(--line) 25px 26px),
+    var(--bg-raised);
+  background-position: 0 0, 0 12px, 0 0;
+}
+.recipe__name {
+  color: var(--ink);
+  font-family: var(--font-script);
+  font-size: clamp(19px, 1.7vw, 25px);
+  line-height: 1.05;
+  overflow-wrap: anywhere;
+}
+/* Clear of the margin line and the photograph. Scoped like the mosaic's own
+   padding rule, which would otherwise win. */
+.frag.frag--recipe,
+[data-mode='mosaic'] .frag.frag--recipe { padding: 12px 47% 12px 42px; }
+/* The footer runs under the photograph's corner; let it use the full width. */
+.frag--recipe .frag__from { margin-right: -85%; }
+.recipe__photo {
+  position: absolute;
+  top: 14%;
+  right: 6%;
+  width: 38%;
+  aspect-ratio: 4 / 5;
+  padding: 5px 5px 14px;
+  background: #fbf9f4;
+  box-shadow: 0 6px 14px -6px rgb(0 0 0 / 0.45);
+  rotate: 3deg;
+}
+.recipe__photo img { display: block; width: 100%; height: 100%; object-fit: cover; }
+/* The magnet. */
+.recipe__photo::before {
+  content: '';
+  position: absolute;
+  top: -7px;
+  left: 50%;
+  width: 16px;
+  height: 16px;
+  margin-left: -8px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 35%, rgb(255 255 255 / 0.55), transparent 45%), var(--accent-deep);
+  box-shadow: 0 2px 3px rgb(0 0 0 / 0.35);
+}
+.frag--recipe .frag__from { margin-top: auto; }
+@media (prefers-reduced-motion: no-preference) {
+  .recipe__photo { transition: rotate var(--dur) var(--ease); }
+  a.frag--recipe:hover .recipe__photo { rotate: -1deg; }
+}
+
 /* Two columns at phone width, so nothing may span more than both of them.
    The span is set on grid-column itself: js/mosaic.js writes --fc inline,
    and an inline custom property beats any rule here, so overriding --fc did

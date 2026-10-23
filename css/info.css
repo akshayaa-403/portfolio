@@ -1,0 +1,618 @@
+/* --------------------------------------------------------------------------
+   The Info section's pieces, written by js/info.js after the "Hello." intro
+   (whose own styles stay in css/style.css, §10). INFO_PIECES at the top of
+   js/info.js says which pieces render and in what order.
+
+   Colours are the site's tokens: the day's Wada accents (--accent*, the three
+   --graph-*), and the grounds and inks of whichever period is showing. The
+   one exception is the film on the contact sheet, which is black in any
+   theme, like a micrograph; what is drawn on it is measured against it in
+   js/info.js with portfolioPalette.against().
+   -------------------------------------------------------------------------- */
+:root {
+  --film: #141210;          /* film base: dark in every theme */
+  --film-ink: #e8a948;      /* edge printing, 8.9:1 on --film */
+  --pencil: #ff6f5e;        /* fallback; js/info.js measures it on --film */
+  --cs-hole: var(--surface); /* sprocket holes: the sheet showing through */
+  --cs-rim: transparent;
+}
+:root[data-theme='dark'] {
+  --film: #141210;
+  --film-ink: #e8a948;
+  --pencil: #ff6f5e;
+  /* A dark sheet is nearly the film's colour, so at night the holes are lit
+     as if on a light table, and the strip gets a faint rim. */
+  --cs-hole: rgba(214, 218, 224, 0.42);
+  --cs-rim: rgba(255, 255, 255, 0.07);
+}
+
+/* --- Draft copy ------------------------------------------------------------
+   Every line an assistant drafted wears this until the owner approves it
+   (ok() in js/info.js, or delete the class). Dashed underline, tiny tag. */
+.is-draft {
+  text-decoration-line: underline;
+  text-decoration-style: dashed;
+  text-decoration-thickness: 1px;
+  text-decoration-color: var(--accent-mid);
+  text-underline-offset: 0.24em;
+}
+.is-draft::after {
+  content: 'draft';
+  display: inline-block;     /* so the underline does not run through it */
+  margin-left: 0.45em;
+  padding: 2px 4px 1px;
+  border: 1px solid var(--line-strong);
+  border-radius: 3px;
+  color: var(--ink-muted);
+  font: 600 9px/1 var(--font-mono);
+  font-style: normal;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  vertical-align: 0.3em;
+  transform: none;
+}
+
+/* --- Frame: the pieces and their labels ------------------------------------ */
+.info-pieces {
+  display: grid;
+  gap: clamp(64px, 9vw, 104px);
+  margin-top: 8px;
+}
+/* The intro moves in here when it is listed; it keeps its own margin. */
+.info-pieces > .ip--intro .info__intro { margin-top: 40px; }
+
+.ip { min-width: 0; }
+.ip__label {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 0 0 28px;
+  color: var(--ink-muted);
+  font: 500 11px/1.4 var(--font-mono);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+.ip__label::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--line);
+}
+.ip__no { color: var(--accent-ink); }
+
+.ip a:focus-visible,
+.ip button:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+}
+
+/* --- 1. The bio, by the hour ----------------------------------------------- */
+.ip--bio .ip__body { max-width: 640px; margin: 0 auto; text-align: center; }
+.ib__text {
+  margin: 0 0 18px;
+  color: var(--ink);
+  font-family: var(--font-serif);
+  font-size: clamp(17px, 2.2vw, 21px);
+  line-height: 1.6;
+}
+/* Night is the long one: a little smaller, so it is not a wall. */
+.ip--bio [data-period='night'] .ib__text { font-size: clamp(16px, 1.9vw, 19px); text-align: left; }
+.ib__text a { color: var(--accent-ink); text-underline-offset: 0.2em; }
+.ib__text a:hover { color: var(--accent-hover); }
+.ib__note {
+  margin: 0;
+  color: var(--ink-muted);
+  font: 400 12px/1.5 var(--font-mono);
+}
+
+/* --- 4. The contact sheet --------------------------------------------------
+   One grid of frames with no column gap, so each row of cells is one strip
+   of film; the row gap is the paper between strips, where the grease-pencil
+   notes go. Sprocket holes are the sheet showing through: a band of paper
+   masked to rounded holes. */
+.ip--contact { --sheet: var(--surface); }
+.cs__head {
+  margin: 0 0 10px;
+  color: var(--ink-muted);
+  font: 500 11px/1.4 var(--font-mono);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.cs {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  row-gap: 78px;
+  margin: 0;
+  padding: 26px 22px 84px;
+  list-style: none;
+  background: var(--sheet);
+  border: 1px solid var(--line);
+  box-shadow: var(--shadow-card);
+}
+.cs__cell {
+  position: relative;
+  padding: 24px 5px;
+  background: var(--film);
+  box-shadow: 0 1px 0 var(--cs-rim), 0 -1px 0 var(--cs-rim);
+}
+.cs__cell::before,
+.cs__cell::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 9px;
+  background: var(--cs-hole);
+  -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='9'%3E%3Crect x='3' y='1' width='8' height='7' rx='1.6'/%3E%3C/svg%3E") 0 0 / 14px 9px repeat-x;
+  mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='9'%3E%3Crect x='3' y='1' width='8' height='7' rx='1.6'/%3E%3C/svg%3E") 0 0 / 14px 9px repeat-x;
+}
+.cs__cell::before { top: 3px; }
+.cs__cell::after { bottom: 3px; }
+
+.cs__edge,
+.cs__no {
+  position: absolute;
+  left: 7px;
+  color: var(--film-ink);
+  font: 500 7.5px/1 var(--font-mono);
+  letter-spacing: 0.14em;
+  white-space: nowrap;
+}
+.cs__edge { top: 13px; }
+.cs__no { bottom: 13px; }
+.cs__no span { margin-left: 3.2em; }
+
+.cs__frame {
+  position: relative;
+  display: block;
+  aspect-ratio: 3 / 2;
+  overflow: hidden;
+  background: #000;
+}
+.cs__frame img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: filter var(--dur) var(--ease);
+}
+/* A portrait on 35mm is still a landscape frame, turned on its side. */
+.cs__frame.is-portrait img {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 66.667%;
+  height: 150%;
+  transform: translate(-50%, -50%) rotate(-90deg);
+}
+.cs__frame:hover img { filter: brightness(1.12); }
+
+/* Grease pencil. The circle is drawn on the film, so its colour is measured
+   against the film (--pencil, set by js/info.js); the notes are on the
+   paper, in the accent ink measured against the page's grounds. */
+.cs__circle {
+  position: absolute;
+  left: -6px;
+  right: -6px;
+  top: 14px;
+  bottom: 14px;
+  width: calc(100% + 12px);
+  height: calc(100% - 28px);
+  overflow: visible;
+  pointer-events: none;
+  z-index: 2;
+}
+.cs__circle path {
+  fill: none;
+  stroke: var(--pencil);
+  stroke-width: 3px;
+  stroke-linecap: round;
+  vector-effect: non-scaling-stroke;
+  stroke-dasharray: 1;
+  stroke-dashoffset: 0;
+}
+@media (prefers-reduced-motion: no-preference) {
+  .js .ip--contact .ip__body:not(.is-visible) .cs__circle path { stroke-dashoffset: 1; }
+  .js .ip--contact .cs__circle path { transition: stroke-dashoffset 0.9s cubic-bezier(0.6, 0, 0.3, 1) 0.5s; }
+}
+
+.cs__note {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 6px;
+  right: -6px;
+  z-index: 3;
+  display: flex;
+  align-items: flex-start;
+  gap: 2px;
+  color: var(--accent-ink);
+  font: 600 20px/1 var(--font-script);
+  transform: rotate(-2.5deg);
+  transform-origin: left top;
+}
+.cs__note .is-draft::after { font-size: 8px; }
+.cs__arrow {
+  flex: none;
+  width: 22px;
+  height: 20px;
+  margin-top: -6px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+@media (max-width: 899.98px) {
+  .cs { grid-template-columns: repeat(4, minmax(0, 1fr)); padding: 22px 14px 84px; }
+}
+@media (max-width: 599.98px) {
+  .cs { grid-template-columns: repeat(3, minmax(0, 1fr)); row-gap: 88px; padding: 18px 10px 92px; }
+  .cs__note { font-size: 17px; }
+  .cs__edge { letter-spacing: 0.06em; }
+}
+
+/* --- 3. The map ------------------------------------------------------------ */
+.im {
+  display: grid;
+  gap: 28px;
+  align-items: center;
+}
+@media (min-width: 900px) {
+  .im { grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr); gap: 48px; }
+}
+.im__fig { position: relative; max-width: 520px; margin: 0 auto; }
+.im__note {
+  position: absolute;
+  left: 0;
+  top: 64%;
+  width: 21%;
+  margin: 0;
+  color: var(--accent-ink);
+  font: 600 19px/1 var(--font-script);
+  transform: rotate(-4deg);
+}
+.im__note .cs__arrow { display: block; margin: 0 0 2px 60%; }
+.im__svg {
+  display: block;
+  width: 100%;
+  max-width: 520px;
+  height: auto;
+  margin: 0 auto;
+  overflow: visible;
+}
+.im__grat { fill: none; stroke: var(--line); stroke-width: 1; vector-effect: non-scaling-stroke; }
+.im__land {
+  fill: var(--accent-pale);
+  fill-opacity: 0.6;
+  stroke: var(--accent-mid);
+  stroke-width: 1.2;
+  stroke-linejoin: round;
+  vector-effect: non-scaling-stroke;
+}
+.im__isles circle { fill: var(--accent-mid); }
+.im__route {
+  fill: none;
+  stroke: var(--accent);
+  stroke-width: 2.2;
+  stroke-dasharray: 2 7;
+  stroke-linecap: round;
+}
+.im__dot {
+  fill: var(--accent-deep);
+  stroke: var(--bg);
+  stroke-width: 2.5;
+  transform-box: fill-box;
+  transform-origin: center;
+}
+@media (prefers-reduced-motion: no-preference) {
+  .im__dot { transition: transform var(--dur) var(--ease); }
+}
+.im__stop.is-lit .im__dot,
+.im__stop:hover .im__dot { transform: scale(1.4); }
+.im__n {
+  fill: var(--on-accent-deep, #fff);
+  font: 600 10px var(--font-mono);
+  text-anchor: middle;
+  pointer-events: none;
+}
+.im__lab {
+  fill: var(--ink);
+  font: 400 15px var(--font-serif);
+  paint-order: stroke;
+  stroke: var(--bg);
+  stroke-width: 4px;
+  stroke-linejoin: round;
+}
+.im__credit {
+  margin-top: 10px;
+  color: var(--ink-muted);
+  font: 400 10.5px/1.4 var(--font-mono);
+  text-align: center;
+}
+@media (max-width: 699.98px) {
+  .im__note { position: static; width: auto; margin: 12px 0 0; transform: none; text-align: center; }
+  .im__note .cs__arrow { display: none; }
+  .im__lab { font-size: 19px; stroke-width: 5px; }
+  .im__n { font-size: 11px; }
+  .im__dot { r: 10; }
+}
+
+.im__intro {
+  margin: 0 0 18px;
+  color: var(--ink-soft);
+  font: 400 16px/1.6 var(--font-serif);
+}
+.im__list { margin: 0; padding: 0; list-style: none; }
+.im__item {
+  display: grid;
+  grid-template-columns: 26px minmax(0, 1fr);
+  column-gap: 14px;
+  padding: 12px 10px;
+  border-top: 1px solid var(--line);
+  border-radius: 6px;
+}
+.im__item.is-lit { background: var(--accent-tint); }
+.im__num {
+  grid-row: span 3;
+  display: grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: var(--accent-deep);
+  color: var(--on-accent-deep, #fff);
+  font: 600 11px/1 var(--font-mono);
+}
+.im__name { color: var(--ink); font: 400 18px/1.3 var(--font-serif); }
+.im__line { color: var(--ink-soft); font: 400 15px/1.5 var(--font-serif); }
+.im__shots {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  margin-top: 6px;
+  color: var(--ink-muted);
+  font: 400 11px/1 var(--font-mono);
+}
+.im__shots::first-line { letter-spacing: 0.04em; }
+.im__shot {
+  display: inline-grid;
+  place-items: center;
+  min-width: 28px;
+  height: 28px;
+  padding: 0 6px;
+  border: 1px solid var(--line-strong);
+  border-radius: 999px;
+  color: var(--ink);
+  text-decoration: none;
+  font-weight: 500;
+}
+.im__shot:hover { background: var(--pill-hover-bg); color: var(--pill-hover-ink); border-color: transparent; }
+
+/* --- 2. What I don't know yet ---------------------------------------------- */
+.iu__intro {
+  max-width: 620px;
+  margin: 0 0 22px;
+  color: var(--ink-soft);
+  font: 400 16px/1.6 var(--font-serif);
+}
+.iu {
+  display: grid;
+  gap: 0 40px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+@media (min-width: 760px) { .iu { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+.iu__item {
+  position: relative;
+  padding: 18px 0 20px 30px;
+  border-top: 1px solid var(--line);
+}
+/* An empty box: not yet ticked. */
+.iu__item::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 23px;
+  width: 13px;
+  height: 13px;
+  border: 1.5px solid var(--accent-mid);
+  border-radius: 2px;
+}
+.iu__topic { margin: 0 0 6px; color: var(--ink); font: 400 19px/1.35 var(--font-serif); }
+.iu__how { margin: 0 0 10px; color: var(--ink-body); font: 400 15px/1.55 var(--font-serif); }
+.iu__from {
+  color: var(--accent-ink);
+  font: 500 11px/1.4 var(--font-mono);
+  letter-spacing: 0.04em;
+  text-decoration: none;
+}
+.iu__from:hover { text-decoration: underline; }
+
+/* --- 5. Question cards ----------------------------------------------------- */
+.qc__stage {
+  position: relative;
+  max-width: 480px;
+  margin: 0 auto;
+  perspective: 1400px;
+}
+.qc__under {
+  position: absolute;
+  inset: 0;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: var(--surface);
+  transform: rotate(-3deg) translate(-6px, 6px);
+}
+.qc__under + .qc__under { transform: rotate(2.2deg) translate(5px, 3px); }
+.qc {
+  position: relative;
+  display: block;
+  width: 100%;
+  padding: 0;
+  border: 0;
+  border-radius: 14px;
+  background: none;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.qc__inner {
+  display: grid;
+  transform-style: preserve-3d;
+}
+@media (prefers-reduced-motion: no-preference) {
+  .js .qc__inner { transition: transform 0.6s cubic-bezier(0.3, 0.7, 0.2, 1); }
+  .js .qc { transition: opacity 0.18s var(--ease), transform 0.18s var(--ease); }
+  .js .qc.is-dealt { opacity: 0; transform: translateY(10px); }
+}
+.qc.is-flipped .qc__inner { transform: rotateY(180deg); }
+.qc__face {
+  grid-area: 1 / 1;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  min-height: 250px;
+  padding: 22px 28px 20px;
+  border: 1px solid var(--line-strong);
+  border-radius: 14px;
+  /* An index card: one rule in the accent under the heading. */
+  background:
+    linear-gradient(var(--accent-mid), var(--accent-mid)) 0 52px / 100% 1px no-repeat,
+    var(--surface);
+  box-shadow: var(--shadow-card);
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
+}
+.qc__face--a { transform: rotateY(180deg); }
+.qc__k { color: var(--accent-ink); font: 600 12px/28px var(--font-mono); letter-spacing: 0.08em; }
+.qc__q { margin-top: 8px; color: var(--ink); font: 400 clamp(22px, 3.2vw, 27px)/1.3 var(--font-serif); }
+.qc__a { margin-top: 8px; color: var(--ink-body); font: 400 17px/1.65 var(--font-serif); }
+.qc__hint {
+  margin-top: auto;
+  color: var(--ink-muted);
+  font: 500 10.5px/1 var(--font-mono);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+.qc:focus-visible { outline: 2px solid var(--accent); outline-offset: 5px; }
+.qc__bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  margin-top: 26px;
+}
+.qc__count { flex-basis: 100%; text-align: center; color: var(--ink-muted); font: 400 11px/1.4 var(--font-mono); }
+.qc__btn {
+  min-height: 36px;
+  padding: 8px 16px;
+  border: 1px solid var(--line-strong);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--ink);
+  font: 500 12px/1 var(--font-mono);
+  cursor: pointer;
+  transition: background var(--dur) var(--ease), color var(--dur) var(--ease);
+}
+.qc__btn:hover { background: var(--pill-hover-bg); color: var(--pill-hover-ink); border-color: transparent; }
+
+/* --- 6. The postcard ------------------------------------------------------- */
+.pc {
+  display: grid;
+  grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr);
+  max-width: 820px;
+  margin: 0 auto;
+  padding: 30px 32px;
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  background: var(--surface);
+  box-shadow: var(--shadow-card);
+  transform: rotate(-0.6deg);
+}
+.pc__msg { padding-right: 28px; }
+.pc__text {
+  margin: 0 0 18px;
+  color: var(--ink);
+  font: 500 clamp(22px, 2.6vw, 27px)/1.28 var(--font-script);
+}
+.pc__sign { margin: 0; color: var(--accent-ink); font: 600 32px/1 var(--font-script); transform: rotate(-3deg); }
+.pc__back {
+  position: relative;
+  min-height: 290px;
+  padding-left: 28px;
+  border-left: 1px solid var(--line-strong);
+}
+.pc__stamp {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 96px;
+  height: 120px;
+  /* Perforations: the stamp's paper with a hole at every 12px grid point,
+     so the edges come out scalloped. */
+  background: radial-gradient(circle, transparent 3.3px, var(--bg) 3.8px) -6px -6px / 12px 12px;
+  filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.18));
+}
+.pc__art {
+  position: absolute;
+  inset: 7px;
+  overflow: hidden;
+  background: var(--bg);
+  border: 1px solid var(--line);
+}
+.pc__sun { position: absolute; top: 34px; right: 10px; width: 32px; height: 32px; border-radius: 50%; background: var(--graph-projects); }
+.pc__hill { position: absolute; left: -20px; right: -12px; bottom: -44px; height: 86px; border-radius: 50%; background: var(--graph-hobbies); }
+.pc__band { position: absolute; left: 0; right: 0; bottom: 26px; height: 8px; background: var(--graph-name); }
+.pc__val, .pc__yr {
+  position: absolute;
+  left: 6px;
+  color: var(--ink);
+  font: 600 9px/1 var(--font-mono);
+  letter-spacing: 0.04em;
+}
+.pc__val { top: 6px; }
+.pc__yr { top: 18px; font-size: 7px; font-weight: 500; color: var(--ink-soft); }
+.pc__mark {
+  position: absolute;
+  top: 34px;
+  right: 66px;
+  width: 210px;
+  height: auto;
+  overflow: visible;
+  pointer-events: none;
+}
+.pc__waves, .pc__ring { fill: none; stroke: var(--ink-soft); stroke-width: 1.6; }
+.pc__waves { opacity: 0.75; }
+.pc__arc { fill: var(--ink-soft); font: 600 8.5px var(--font-mono); letter-spacing: 0.08em; }
+.pc__day, .pc__yr2, .pc__time { fill: var(--ink); font-family: var(--font-mono); text-anchor: middle; }
+.pc__day { font-size: 15px; font-weight: 600; }
+.pc__yr2 { font-size: 10px; }
+.pc__time { font-size: 13px; font-weight: 600; }
+.pc__to {
+  margin: 186px 0 0;
+  color: var(--ink);
+  font: 500 27px/1.1 var(--font-script);
+}
+.pc__line { display: block; height: 1px; margin-top: 30px; background: var(--line-strong); }
+.pc__reply {
+  display: inline-block;
+  margin-top: 18px;
+  color: var(--accent-ink);
+  font: 500 12px/1.4 var(--font-mono);
+  letter-spacing: 0.04em;
+}
+.pc__reply:hover { color: var(--accent-hover); }
+
+@media (max-width: 699.98px) {
+  .pc { grid-template-columns: minmax(0, 1fr); padding: 22px 18px; transform: none; }
+  .pc__msg { padding: 0 0 22px; }
+  .pc__back { padding: 22px 0 0; border-left: 0; border-top: 1px dashed var(--line-strong); min-height: 0; }
+  .pc__stamp { top: 22px; }
+  .pc__mark { top: 48px; right: 36px; width: 180px; }
+  .pc__to { margin-top: 170px; }
+}

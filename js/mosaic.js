@@ -29,8 +29,17 @@
   var SPAN = {
     work:  [2, 2],
     stat:  [1, 1],
-    photo: [2, 2]
+    photo: [2, 2],
+    recipe: [2, 2]
   };
+
+  /* One dish per calendar day, by the viewer's local date, the same way
+     js/palette.js picks the day's colours: everyone sees the same dish today
+     and a new one tomorrow. */
+  function today(n) {
+    var d = new Date();
+    return Math.floor((d.getTime() - d.getTimezoneOffset() * 60000) / 864e5) % n;
+  }
 
   function tile(cls, href, cue, inner) {
     var span = SPAN[cls] || [1, 1];
@@ -74,9 +83,23 @@
       '<span class="frag__title">Get in touch</span>' +
       '<span class="frag__label">email · GitHub</span>'));
 
-    /* --- one photograph per gallery, deep-linked into the popover --- */
+    /* --- one photograph per gallery, deep-linked into the popover. Cooking
+       is a recipe card instead: the day's dish, its photograph held on by a
+       magnet. The dish is the caption and nothing more — no ingredients or
+       method are invented for it. --- */
     galleries.forEach(function (id) {
       var g = hobbies[id];
+      if (id === 'cooking') {
+        var k = today(g.n) + 1;
+        var dish = g.captions[k - 1] || g.label;
+        out.push(tile('recipe', 'hobby.html?id=cooking&i=' + k, 'See the dish',
+          '<span class="frag__kicker">Today’s dish</span>' +
+          '<span class="recipe__name">' + esc(dish) + '</span>' +
+          '<span class="recipe__photo"><img src="public/assets/hobbies/cooking-' + k + '.webp"' +
+            ' alt="" loading="lazy" decoding="async"></span>' +
+          '<span class="frag__from">From the cooking gallery · ' + k + ' of ' + g.n + '</span>'));
+        return;
+      }
       var n = Math.floor(Math.random() * g.n) + 1;
       var cap = g.captions[n - 1] || g.label;
       out.push(tile('photo', 'hobby.html?id=' + encodeURIComponent(id) + '&i=' + n, 'View photograph',
