@@ -141,4 +141,5 @@
 }
 
 /* long source lines scroll inside their block, never the page */
-.a[data-form="rooms"] .a-code pre { max-width: 100%; overflow-x: auto; }
+.a[data-form="rooms"] .a-code pre, .a[data-form="rooms"] .a-code pre code { white-space: pre-wrap; overflow-wrap: anywhere; }
+.a[data-form="rooms"] .a-notes li, .a[data-form="rooms"] .a-sn, .a[data-form="rooms"] .a-sources li { overflow-wrap: anywhere; }

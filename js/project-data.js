@@ -237,7 +237,87 @@ const projects = [
       "the studio already sells this way",
       "no card form",
       "an artist, not a shop"
-    ]
+    ],
+    "projectData": {
+      "tagline": "A gallery and shop for a painter, where the cart hands you to WhatsApp instead of taking money.",
+      "summary": "The online gallery and shop of the artist Upasna: 106 one-of-one paintings in five collections, a scroll zoom, a 3D drum and a shelf that draws every frame at its stated size, and a cart that ends in a WhatsApp chat because the server, not the browser, decides the price.",
+      "glance": {
+        "problem": "A painter's originals are each one of one, from 4-inch studies to a 36-inch gold-leaf Tanjore. The site had to show that range honestly and take orders without trusting a price from the browser.",
+        "built": "The hand-written parts of a React and Supabase storefront: a scroll zoom with a solved transform-origin, a 3D drum bent by one signed angle, a shelf that sizes every frame from its stated inches, an image pipeline, and an order path locked down on the server.",
+        "result": "Live at arteza.site with 106 paintings in five collections. Checkout ends in a pre-filled WhatsApp chat; payment pages were built twice and removed twice, after 23 and 20 minutes. Commercial figures belong to the client."
+      },
+      "metric": "106 paintings, 5 collections",
+      "tech": [
+        "React",
+        "TypeScript",
+        "Vite",
+        "Tailwind CSS",
+        "shadcn/ui",
+        "TanStack Query",
+        "Supabase",
+        "Deno Edge Functions",
+        "sharp",
+        "Vercel"
+      ],
+      "tags": [
+        [
+          "transform-origin",
+          "https://developer.mozilla.org/en-US/docs/Web/CSS/transform-origin"
+        ],
+        [
+          "CSS 3D transforms",
+          "https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_transforms/Using_CSS_transforms"
+        ],
+        [
+          "Row Level Security",
+          "https://supabase.com/docs/guides/database/postgres/row-level-security"
+        ],
+        ["Supabase Edge Functions", "https://supabase.com/docs/guides/functions"],
+        ["UPI", "https://en.wikipedia.org/wiki/Unified_Payments_Interface"],
+        ["sharp", "https://sharp.pixelplumbing.com"]
+      ],
+      "fragments": [
+        "one of one",
+        "Madhubani",
+        "Mithila",
+        "Tanjore",
+        "22K gold foil",
+        "4″ × 4″",
+        "36″ × 36″",
+        "transform-origin",
+        "O = (T − s·C)/(1 − s)",
+        "78%",
+        "103.2%",
+        "arcPlacement",
+        "36°",
+        "rotateY",
+        "perspective 1800px",
+        "frameMetrics",
+        "h^0.45",
+        "MIN_SCALE 0.45",
+        "transposed",
+        "is_available",
+        "painting_title",
+        "quantity",
+        "service_role",
+        "429",
+        "wa.me",
+        "UTR",
+        "UPI",
+        "23 minutes",
+        "20 minutes",
+        "−3,804",
+        "WebP",
+        "quality 78",
+        "Sold out",
+        "Dreamscapes"
+      ],
+      "excerpt": {
+        "note": "Nothing is wrong. The fixed point just isn’t on the screen.",
+        "code": "const radius = chord / 2 / Math.sin((step / 2) * DEG);\nx = radius * Math.sin(rad);\nz = radius * Math.cos(rad) - radius;  // front card stays at z = 0"
+      }
+    },
+    "notes": "No created/updated (private repo); repo stays https://arteza.site; no demo, so no live block. Metric is as of the 2026-10-16 catalogue read. Dropped the unevidenced 'Instagram/WhatsApp threads' problem line and the quiz entirely. Server re-pricing predates the owner's commits, so the prose only claims her October additions (rate limit, revoked inserts, show-sold, UTR attempt); early checkout events are told impersonally. New measurement: 11 of 106 rows transposed, from photo pixel aspects in the arteza repo (3 rows had no local file). Skipped the optional horizontal scroll pipeline. Glance strings avoid the ″ glyph only for safety; fine to restore."
   },
   {
     "id": "habita",
@@ -307,7 +387,80 @@ const projects = [
       "collision",
       "Android",
       "no third-party sync"
-    ]
+    ],
+    "projectData": {
+      "tagline": "A priority matrix whose day view writes each block into the phone's own calendar.",
+      "summary": "An Eisenhower-matrix to-do app in plain JavaScript, wrapped for Android with Capacitor. Its day timeline (64 px per hour, 15-minute snaps) turns each scheduled task into a real event in the phone's calendar through a hand-written CalendarContract plugin, and reads the day's other events back so a tap can find the next free slot.",
+      "glance": {
+        "problem": "Time blocked out inside a to-do app is invisible in the calendar you actually check.",
+        "built": "Four quadrants (Focus, Goals, Fit In, Backburner) and a drag-to-schedule day timeline; every block owns one event in the phone's calendar, written by a local Java plugin over CalendarContract and tinted to the nearest colour the calendar allows.",
+        "result": "18/18 jsdom checks pass against the real UI (src/index.html). The browser demo runs without the calendar; the native write-through has not been captured on a device, and there is no published APK."
+      },
+      "metric": "18/18 UI checks pass",
+      "tech": [
+        "JavaScript (ES6)",
+        "CSS Grid",
+        "SVG",
+        "Capacitor",
+        "Java",
+        "Android CalendarContract",
+        "localStorage",
+        "jsdom"
+      ],
+      "tags": [
+        [
+          "Eisenhower method",
+          "https://en.wikipedia.org/wiki/Time_management#The_Eisenhower_Method"
+        ],
+        ["Capacitor", "https://capacitorjs.com/docs"],
+        [
+          "Calendar Provider",
+          "https://developer.android.com/guide/topics/providers/calendar-provider"
+        ],
+        [
+          "CalendarContract.Instances",
+          "https://developer.android.com/reference/android/provider/CalendarContract.Instances"
+        ]
+      ],
+      "fragments": [
+        "PX_PER_HOUR = 64",
+        "SNAP_MINUTES = 15",
+        "DRAG_THRESHOLD = 6",
+        "snapTime",
+        "scheduleAtNextFreeSlot",
+        "assignColumns",
+        "columnEnds",
+        "[habita:",
+        "CalendarContract",
+        "Instances",
+        "EVENT_COLOR_KEY",
+        "CALLER_IS_SYNCADAPTER",
+        "updated: false",
+        "createEvent",
+        "deleteEvent",
+        "HAS_ALARM = 0",
+        "Focus",
+        "Goals",
+        "Fit In",
+        "Backburner",
+        "Write the incident report",
+        "18/18 checks passed",
+        "jsdom",
+        "Capacitor",
+        "localStorage",
+        "fire-and-forget",
+        "tray",
+        "time-blocked",
+        "webDir: src"
+      ],
+      "created": "2026-04-19",
+      "updated": "2026-10-14",
+      "excerpt": {
+        "note": "a failed write leaves eventId null, and the next save retries",
+        "code": "for (const span of busy) {\n  if (candidate + length <= span.start) break;\n  if (candidate < span.end) candidate = app.snapTime(span.end);\n}"
+      }
+    },
+    "notes": "Files: js/articles/habita.js, css/articles/habita.css. No new assets. check.js passes for habita; consoles clean; no overflow at 390px. Re-ran Habita tests 2026-10-18: 18/18. Metric '18/18 UI checks pass' is honest but is a test count, not an outcome; drop it if the home row should carry results only. Colour-palette widget skipped (no device-read palette). Open owner items: shipped seam axis labels are transposed (styles.css:335-362); the sync-adapter insert's 'still born DIRTY' comment is likely wrong per AOSP and unverified on a device; README 'Updates are partial' claim is false end to end; repo topic 'habit-tracker' is stale. Old fragments 'no third-party sync', 'position, not a field' dropped. Mosaic no longer reads excerpt; kept per brief."
   },
   {
     "id": "ivy-slack-agent",

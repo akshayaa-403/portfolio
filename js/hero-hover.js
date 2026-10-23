@@ -3,6 +3,7 @@
         "Tidy up" puts everything back. Nothing is saved, so a reload does too.
      2. The lamp is a theme switch: lit lamp = dark room.
      3. Hovering the music card plays a track; leaving it fades the audio out.
+     4. The laptop's screen is a carousel: the name, then each case study.
 
    Hover lift is CSS: the individual `scale`/`translate`/`rotate` properties
    compose with each object's authored `transform: rotate()` rather than
@@ -224,8 +225,116 @@
     });
   }
 
+  /* The laptop's screen, after Framer's Screen Carousel and MacBook
+     Carousel: the name is the first slide, then one screenshot per live case
+     study, each a link to it. Slides move sideways on a spring; a bar along
+     the bottom fills while a slide is up and moving on when it is full, so
+     the CSS animation IS the timer — hovering the screen pauses it for free,
+     and under reduced motion there is no animation and so no autoplay. A
+     counter, dots, arrows on hover, a swipe, and ←/→ while the pointer is on
+     it. The lockup fades whenever a case study is on the screen.
+
+     Built from js/project-data.js, so it cannot show more than the site
+     holds. aria-hidden and out of the tab order, like the graph's canvas:
+     every slide is a case study already listed, as a real link, under
+     Projects. */
+  function initScreen() {
+    var host = document.querySelector('[data-screen]');
+    if (!host || typeof projects === 'undefined') return;
+    var stage = host.closest('.stage');
+    var work = projects.filter(function (p) { return !p.archived && p.screen; });
+    if (!work.length) return;
+
+    var n = work.length + 1;
+    host.innerHTML =
+      '<ul class="scr__track">' +
+        '<li class="scr__slide"></li>' +
+        work.map(function (p) {
+          var src = [].concat(p.screen)[0];
+          return '<li class="scr__slide"><a class="scr__link" tabindex="-1" data-cue="Read the case study"' +
+            ' href="work/' + encodeURIComponent(p.id) + '.html">' +
+            '<img src="' + safeUrl(src) + '" alt="" loading="lazy" decoding="async" draggable="false">' +
+            '<span class="scr__cap"><b>' + esc(p.title) + '</b>' +
+              (p.metric ? '<span>' + esc(p.metric) + '</span>' : '') + '</span>' +
+          '</a></li>';
+        }).join('') +
+      '</ul>' +
+      '<button class="scr__arrow scr__arrow--prev" type="button" tabindex="-1" data-go="-1" data-cue="Previous">‹</button>' +
+      '<button class="scr__arrow scr__arrow--next" type="button" tabindex="-1" data-go="1" data-cue="Next">›</button>' +
+      '<div class="scr__foot">' +
+        '<span class="scr__count"></span>' +
+        '<span class="scr__dots">' +
+          Array.apply(null, Array(n)).map(function (_, i) {
+            return '<button type="button" tabindex="-1" data-to="' + i + '"></button>';
+          }).join('') +
+        '</span>' +
+      '</div>' +
+      '<span class="scr__bar"><span></span></span>';
+
+    var track = host.querySelector('.scr__track');
+    var bar = host.querySelector('.scr__bar span');
+    var count = host.querySelector('.scr__count');
+    var dots = host.querySelectorAll('[data-to]');
+    var at = 0;
+
+    // A portrait screenshot (a phone app) is shown whole, not cropped to a
+    // laptop's shape.
+    Array.prototype.forEach.call(host.querySelectorAll('img'), function (img) {
+      function fit() { img.classList.toggle('is-tall', img.naturalWidth / img.naturalHeight < 1.3); }
+      if (img.complete && img.naturalWidth) fit(); else img.addEventListener('load', fit);
+    });
+
+    function go(i) {
+      at = (i + n) % n;
+      track.style.transform = 'translateX(' + (-100 * at) + '%)';
+      count.textContent = (at + 1) + ' / ' + n;
+      for (var d = 0; d < dots.length; d++) dots[d].classList.toggle('is-on', d === at);
+      if (stage) stage.classList.toggle('is-onwork', at !== 0);
+      // Restart the bar: drop the animation, force a style flush, put it back.
+      bar.style.animation = 'none';
+      void bar.offsetWidth;
+      bar.style.animation = '';
+    }
+    bar.addEventListener('animationend', function () { go(at + 1); });
+
+    host.addEventListener('click', function (e) {
+      var b = e.target.closest('[data-go], [data-to]');
+      if (!b) return;
+      go(b.hasAttribute('data-to') ? +b.getAttribute('data-to') : at + +b.getAttribute('data-go'));
+    });
+
+    // Swipe: 40px sideways is a step, and the click that ends it is not a
+    // visit to the slide under the finger.
+    var x0 = null, swiped = false;
+    host.addEventListener('pointerdown', function (e) { x0 = e.clientX; swiped = false; });
+    host.addEventListener('pointerup', function (e) {
+      if (x0 === null) return;
+      var dx = e.clientX - x0;
+      x0 = null;
+      if (Math.abs(dx) > 40) { swiped = true; go(at + (dx < 0 ? 1 : -1)); }
+    });
+    host.addEventListener('click', function (e) {
+      if (swiped && e.target.closest('a')) { e.preventDefault(); swiped = false; }
+    }, true);
+    host.addEventListener('dragstart', function (e) { e.preventDefault(); });
+
+    var over = false;
+    host.addEventListener('pointerenter', function () { over = true; });
+    host.addEventListener('pointerleave', function () { over = false; });
+    document.addEventListener('keydown', function (e) {
+      if (!over || root.getAttribute('data-mode') !== 'desk') return;
+      if (e.key === 'ArrowLeft') go(at - 1);
+      else if (e.key === 'ArrowRight') go(at + 1);
+    });
+
+    // Leaving desk mode puts the name back on the screen for next time.
+    window.addEventListener('modechange', function () { go(0); });
+    go(0);
+  }
+
   window.onReady(function () {
     initLampSwitch();
+    initScreen();
     // Under ?edit=1 js/desk-editor.js owns the pointer on the desk: no
     // visitor drag, and no track starting every time an object is moved.
     if (window.isEditing()) return;

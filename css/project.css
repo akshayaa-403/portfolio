@@ -389,6 +389,7 @@
   grid-row: span var(--rows, 22);
 }
 .hob-shot--wide { grid-column: span 2; }
+.hob-shot--pano { grid-column: 1 / -1; }
 
 /* The whole tile is the control that opens the popover. */
 .hob-shot__btn {

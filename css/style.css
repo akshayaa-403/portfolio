@@ -63,12 +63,12 @@
   /* Graph categories — Projects, Hobbies, Resources. These values are only
      the fallback: js/palette.js rebuilds all three from the day's Sanzo Wada
      combination (one per calendar day), stepped until each measures against
-     the ground. The left/right/centre split carries the distinction on its
-     own, which keeps the map readable in greyscale and to colour-blind
-     vision. */
+     the ground. The left/right split carries the distinction on its own,
+     which keeps the map readable in greyscale and to colour-blind vision.
+     The third colour is not a map: it is the name in graph mode's middle. */
   --graph-projects:  #00317a;
   --graph-hobbies:   #2f7ab5;
-  --graph-resources: #6a9fc4;
+  --graph-name:      #1e4f7a;
 
   --accent-tint: rgba(9, 78, 148, 0.09);
   --accent-tint-strong: rgba(9, 78, 148, 0.18);
@@ -176,7 +176,7 @@
   --accent-mid: #2d5878;
   --graph-projects:  #bcd9f5;
   --graph-hobbies:   #5f9fd4;
-  --graph-resources: #3f7ba8;
+  --graph-name:      #9cc3e6;
 
   --accent-tint: rgba(125, 184, 232, 0.12);
   --accent-tint-strong: rgba(125, 184, 232, 0.24);
@@ -1237,6 +1237,29 @@ body { padding-top: var(--header-h, 80px); }
   height: 100%;
   object-fit: cover;
 }
+/* A book whose cover has not been supplied yet: the spine's colour (black,
+   js/script.js) with the title set on it. */
+.book__cover {
+  background: var(--spine-bg, #111);
+  /* A hairline, so a black cover still has an edge on the dark theme. */
+  outline: 1px solid rgb(255 255 255 / 0.08);
+  outline-offset: -1px;
+}
+.cover-blank {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  padding: 12%;
+  color: var(--spine-ink, #fbfcfd);
+  font-family: var(--font-serif, serif);
+  font-size: calc(var(--w, 150px) * 0.11);
+  line-height: 1.15;
+  text-align: center;
+  text-wrap: balance;
+}
+.book__cover .cover-blank { font-size: 15px; }
 
 /* Vertical type, reading bottom-to-top as a spine on a shelf does. */
 .spine__title,
@@ -1290,11 +1313,16 @@ body { padding-top: var(--header-h, 80px); }
 
 /* With the width for it, the caption stands beside the shelf, level with the
    board, in the space the plank used to leave empty. The shelf's width already
-   allows for an open cover, so turning a book never shoves the caption. */
+   allows for an open cover, so turning a book never shoves the caption.
+   The shelf is pinned to the top of the row, not the bottom: when a long
+   note made the caption taller than the shelf, the row grew and a
+   bottom-aligned shelf rode down with it, so the books jumped as the pointer
+   moved between them. The caption keeps a floor on its width for the same
+   reason — squeezed, it is what grows tall. */
 @media (min-width: 900px) {
   .readings { display: flex; align-items: flex-end; gap: 48px; }
-  .shelf__books { flex: none; }
-  .shelf__caption { flex: 0 1 46ch; margin: 0 0 16px; }
+  .shelf__books { flex: none; align-self: flex-start; }
+  .shelf__caption { flex: 0 1 46ch; min-width: 28ch; margin: 0 0 16px; }
 }
 
 @media (max-width: 599.98px) {
@@ -1813,7 +1841,7 @@ body { padding-top: var(--header-h, 80px); }
   touch-action: none;
 }
 
-/* The three maps take the left, right and lower-centre of the stage, so the
+/* The two maps take the left and right of the stage, so the
    legend goes above the name and the readout into the bottom-left corner,
    which the Projects map stops short of. aria-live is off by omission on the
    readout: it rewrites on every hover, which would flood a screen reader with
@@ -1821,7 +1849,7 @@ body { padding-top: var(--header-h, 80px); }
 .field__legend {
   position: absolute;
   /* The top strip belongs to the mode toggle in both modes. Bottom-centre is
-     where the Resources cluster sits, so the legend goes bottom-right,
+     is kept clear under the name, so the legend goes bottom-right,
      opposite the read-me line in the other corner. */
   left: auto;
   right: 3%;
@@ -1912,6 +1940,13 @@ body { padding-top: var(--header-h, 80px); }
    widths; a halo in the ground's own colour keeps the words off the lines. */
 [data-mode='graph'] .hero__role,
 [data-mode='graph'] .hero__proof { text-shadow: 0 0 3px var(--bg), 0 0 8px var(--bg); }
+
+/* The day's third Wada colour is the lockup: Projects and Hobbies take the
+   first two either side, and the name between them takes the last. Measured
+   4.5:1 against --bg by js/palette.js, so it holds for the proof line too. */
+[data-mode='graph'] .hero__name,
+[data-mode='graph'] .hero__role,
+[data-mode='graph'] .hero__proof { color: var(--graph-name); }
 
 /* The mode toggle must always win the hit test, whatever is drawn over it. */
 .hero__actions { z-index: 60 !important; }
@@ -2521,6 +2556,33 @@ a.frag:focus-visible {
   }
 }
 
+/* At a glance means without scrolling. On a desktop the grid is six columns
+   by six rows — the name, four case studies, four counts and three
+   photographs fill it exactly (js/mosaic.js) — and the row height is what is
+   left of the viewport under the header and the toggle band, split six ways.
+   A tile that will not fit at that height trims its tagline to three lines
+   rather than pushing the grid past the fold. Below 900px the phone layout
+   scrolls, as a phone should. */
+@media (min-width: 900px) {
+  [data-mode='mosaic'] .stage {
+    --mrow: calc((100svh - var(--header-h, 80px) - 78px - var(--gap-lg) - 5 * 12px) / 6);
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+    grid-auto-rows: max(84px, var(--mrow));
+  }
+  [data-mode='mosaic'] .frag { padding: 10px 14px; gap: 4px; }
+  [data-mode='mosaic'] .frag--photo { padding: 0; }
+  [data-mode='mosaic'] .frag__num { font-size: clamp(24px, calc(var(--mrow) * 0.36), 46px); }
+  [data-mode='mosaic'] .frag__title { font-size: clamp(15px, calc(var(--mrow) * 0.15), 19px); }
+  [data-mode='mosaic'] .hero__name { font-size: clamp(1.7rem, calc(var(--mrow) * 0.36), 44px); }
+  [data-mode='mosaic'] .hero__lockup { padding: 12px 18px; }
+  [data-mode='mosaic'] .frag__tagline {
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 3;
+    overflow: hidden;
+  }
+}
+
 /* --------------------------------------------------------------------------
    Cursor cue (js/cursor.js)
    A label that follows the pointer and names what is under it. The system
@@ -2789,6 +2851,10 @@ body:has(dialog[open]) .cue { display: none; }
   pointer-events: none;
 }
 .book3d__face--back { transform: rotateY(180deg) translateZ(calc(var(--t) / 2)); }
+/* No back covers: the back, and a front still waiting for its cover, are the
+   spine's own colour. */
+.book3d__face--front,
+.book3d__face--back { background: var(--spine-bg, #111); }
 
 /* The spine and the fore-edge, hinged on the left and right edges. */
 .book3d__face--spine,

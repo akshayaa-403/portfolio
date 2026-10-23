@@ -66,13 +66,13 @@
     var photos = galleries.reduce(function (n, id) { return n + hobbies[id].n; }, 0);
     var books = typeof readings === 'undefined' ? 0 :
       readings.groups.reduce(function (n, g) { return n + g.books.length; }, 0);
-    out.push(stat('#work', 'See the work', shown.length, 'case studies, each one shown working'));
+    out.push(stat('#work', 'See the work', shown.length, 'case studies'));
     if (books) out.push(stat('#readings', 'See the shelf', books, 'books on the shelf'));
     out.push(stat('#hobbies', 'See the galleries', photos,
-      'photographs across ' + galleries.length + ' galleries'));
+      'photographs, ' + galleries.length + ' galleries'));
     out.push(tile('stat', '#contact', 'Get in touch',
       '<span class="frag__title">Get in touch</span>' +
-      '<span class="frag__label">email, GitHub, LinkedIn</span>'));
+      '<span class="frag__label">email · GitHub</span>'));
 
     /* --- one photograph per gallery, deep-linked into the popover --- */
     galleries.forEach(function (id) {

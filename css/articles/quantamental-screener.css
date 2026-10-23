@@ -50,7 +50,7 @@
 .qs-sw::before { content: ''; display: inline-block; width: 10px; height: 10px; margin-right: 5px; border-radius: 2px; background: var(--qs-c); vertical-align: -1px; }
 .qs-f0 { --qs-c: var(--graph-projects, var(--accent)); }
 .qs-f1 { --qs-c: var(--graph-hobbies, var(--accent-mid)); }
-.qs-f2 { --qs-c: var(--graph-resources, var(--ink-soft)); }
+.qs-f2 { --qs-c: var(--graph-name, var(--ink-soft)); }
 .qs-f3 { --qs-c: var(--ink-muted); }
 .qs-sum { margin: 0; padding: 0; list-style: none; }
 .qs-sum__row { display: grid; grid-template-columns: 6.5em minmax(0, 1fr) 4.5em; gap: 10px; align-items: center; padding: 5px 0; border-top: 1px solid var(--line); transition: opacity 0.2s; }

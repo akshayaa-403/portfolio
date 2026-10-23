@@ -1,21 +1,21 @@
 /* The graph — graph mode's hero.
 
    Two maps, one either side of the name: Projects on the left, Hobbies on the
-   right, and a small third, Resources, in the strip under the name. Each is
-   a force-directed graph of real destinations, drawn the way
+   right. Each is a force-directed graph of real destinations, drawn the way
    Obsidian draws a vault — nodes, edges, hover a node and its neighbourhood
    lights while the rest dims, click it and you go there.
 
-   Three categories, and only three. A project's tools belong to Projects; a
-   gallery's images belong to Hobbies; the social and résumé links are
-   Resources; nothing else is on the stage. Colour says which map you are
-   looking at, and the left/right/centre split says it again, so the graph
-   still reads in greyscale or with colour-blind vision.
+   Two categories, and every node in them goes somewhere: a hub, a case study
+   or a gallery. Tools and single photographs used to hang off them as
+   structure, and a Resources map sat under the name; both went on
+   2026-10-23 (owner's request) — a dot that leads nowhere is noise. The
+   day's third Wada colour is not a map any more: it is the name in the
+   middle (--graph-name, js/palette.js). Colour says which map you are
+   looking at, and the left/right split says it again, so the graph still
+   reads in greyscale or with colour-blind vision.
 
    Everything comes from js/project-data.js and js/hobby-data.js at run time,
-   so the graph cannot claim more than the site holds. Nothing here is a
-   decorative particle: every dot is a case study, a gallery, a photograph, or
-   a tool something was actually built with.
+   so the graph cannot claim more than the site holds.
 
    Canvas, and no library — a d3-force import would be ~80KB from a CDN for a
    spring, a repulsion and a damping term, on a site that is deliberately
@@ -32,9 +32,9 @@
 
      The three colours are no longer chosen here. js/palette.js picks one
      Sanzo Wada combination per calendar day, derives the site's whole accent
-     family from it, and writes --graph-projects / --graph-hobbies /
-     --graph-resources onto <html>. This file reads those three and ramps
-     each one by node size; the legend's swatches read the same tokens, so
+     family from it, and writes --graph-projects / --graph-hobbies onto
+     <html> (and --graph-name, which colours the lockup). This file reads the
+     first two and ramps each one by node size; the legend's swatches read the same tokens, so
      the dots and the swatches cannot disagree.
 
      See js/palette.js for why every colour is stepped by measured contrast
@@ -47,56 +47,26 @@
      sets from the day's palette, so the legend's swatches follow the dots. */
   var CATS = {
     projects:  { name: 'Projects',  token: '--graph-projects',  side: 'L' },
-    hobbies:   { name: 'Hobbies',   token: '--graph-hobbies',   side: 'R' },
-    resources: { name: 'Resources', token: '--graph-resources', side: 'C' }
+    hobbies:   { name: 'Hobbies',   token: '--graph-hobbies',   side: 'R' }
   };
-  var CAT_ORDER = ['projects', 'hobbies', 'resources'];
+  var CAT_ORDER = ['projects', 'hobbies'];
 
-  /* Within a category, what a node is decides how big it draws, whether it
-     carries a label at rest, and whether clicking it goes anywhere. Each
-     category has exactly one hub, and everything in that category hangs off
-     it — so the three names are always the three largest things on screen. */
-  var KIND_CAT = {
-    project: 'projects', tech: 'projects',
-    gallery: 'hobbies',  photo: 'hobbies',
-    resource: 'resources'
-  };
-  /* Three levels, and `lvl` is the whole hierarchy:
-
-       1  Projects, Hobbies, Resources — the three hubs, same size as each
-          other because they are the same kind of thing.
-       2  the names underneath them: each case study, each gallery, each
-          off-site link. Smaller and lighter than a hub, on purpose.
-       3  everything else — a project's tools, a gallery's photographs. They
-          are structure: they pull related level-2 nodes together and they are
-          never hovered, never labelled and never navigated to.
-
-     `hover: false` is what keeps a level-3 node out of the hit test, so
-     hovering a project lights the project and not the twelve tools hanging
-     off it. */
+  /* Within a category, what a node is decides how big it draws. Each
+     category has exactly one hub, and everything in it hangs off the hub —
+     so the two names are always the two largest things on screen. */
+  var KIND_CAT = { project: 'projects', gallery: 'hobbies' };
   var KIND = {
-    hub:      { lvl: 1, r: 10.0, label: true,  nav: true,  hover: true,  dim: 1.00 },
-    project:  { lvl: 2, r: 5.6,  label: true,  nav: true,  hover: true,  dim: 0.72 },
-    gallery:  { lvl: 2, r: 5.6,  label: true,  nav: true,  hover: true,  dim: 0.72 },
-    resource: { lvl: 2, r: 5.6,  label: true,  nav: true,  hover: true,  dim: 0.72 },
-    tech:     { lvl: 3, r: 2.6,  label: false, nav: false, hover: false, dim: 0.34 },
-    photo:    { lvl: 3, r: 2.2,  label: false, nav: false, hover: false, dim: 0.34 }
+    hub:     { lvl: 1, r: 10.0, dim: 1.00 },
+    project: { lvl: 2, r: 5.6,  dim: 0.80 },
+    gallery: { lvl: 2, r: 5.6,  dim: 0.80 }
   };
 
-  /* Where each category's map is drawn. Projects left, Hobbies right, and
-     Resources in the band under the name — it is five nodes, so it needs a
-     strip rather than a half. Nothing is allowed into the name's own band. */
+  /* Where each map is drawn. Inset from the name's band by more than the
+     drift (below) can carry a dot, so a drifting node never crosses it. */
   var RECT = {
-    L: { x0: 0.020, x1: 0.300, y0: 0.100, y1: 0.860 },
-    R: { x0: 0.700, x1: 0.980, y0: 0.100, y1: 0.860 },
-    C: { x0: 0.305, x1: 0.695, y0: 0.790, y1: 0.945 }
+    L: { x0: 0.030, x1: 0.270, y0: 0.140, y1: 0.820 },
+    R: { x0: 0.730, x1: 0.970, y0: 0.140, y1: 0.820 }
   };
-
-  /* "JavaScript (ES6)" and "JavaScript (ES modules)" are one tool wearing two
-     labels; as separate nodes they split a cluster that should be one. */
-  function normTech(t) {
-    return String(t).replace(/\s*\([^)]*\)\s*$/, '').trim();
-  }
 
   function build() {
     var nodes = [], links = [], byId = {};
@@ -121,14 +91,13 @@
        and it goes to the section of the page that holds the same things. */
     var hubs = {
       projects:  add({ id: 'hub:projects',  label: 'Projects',  href: '#work',    kind: 'hub', cat: 'projects' }),
-      hobbies:   add({ id: 'hub:hobbies',   label: 'Hobbies',   href: '#hobbies', kind: 'hub', cat: 'hobbies' }),
-      resources: add({ id: 'hub:resources', label: 'Resources', href: '#contact', kind: 'hub', cat: 'resources' })
+      hobbies:   add({ id: 'hub:hobbies',   label: 'Hobbies',   href: '#hobbies', kind: 'hub', cat: 'hobbies' })
     };
 
-    /* Left: the case studies, bridged by the tools they share. Archived ones
-       are left out — their pages are still live and still linked from the
-       "Also built" line, but the graph is a map of what this page shows, and
-       a map that includes what the page deliberately demoted is not one. */
+    /* Left: the case studies. Archived ones are left out — their pages are
+       still live and still linked from the "Also built" line, but the graph
+       is a map of what this page shows, and a map that includes what the
+       page deliberately demoted is not one. */
     if (typeof projects !== 'undefined') {
       var shown = projects.filter(function (x) { return !x.archived; });
       for (var i = 0; i < shown.length; i++) {
@@ -140,17 +109,10 @@
           kind: 'project'
         });
         link(pn, hubs.projects);
-
-        var tech = p.tech || [];
-        for (var t = 0; t < tech.length; t++) {
-          var name = normTech(tech[t]);
-          if (!name) continue;
-          link(pn, add({ id: 'tech:' + name.toLowerCase(), label: name, kind: 'tech' }));
-        }
       }
     }
 
-    // Right: the three galleries and every image in them.
+    // Right: the galleries, and nothing under them.
     if (typeof hobbies !== 'undefined') {
       for (var key in hobbies) {
         if (!Object.prototype.hasOwnProperty.call(hobbies, key)) continue;
@@ -162,34 +124,8 @@
           kind: 'gallery'
         });
         link(gn, hubs.hobbies);
-
-        var caps = h.captions || [];
-        for (var c = 0; c < caps.length; c++) {
-          /* Straight to that image's popover on its gallery page — `i` is
-             one-based and js/hobby-page.js opens the dialog on load. Not a
-             link to the bare .webp: that is a picture with no caption, no
-             neighbours and no way back into the site. */
-          link(gn, add({
-            id: 'photo:' + key + ':' + c,
-            label: caps[c],
-            href: 'hobby.html?id=' + encodeURIComponent(key) + '&i=' + (c + 1),
-            kind: 'photo'
-          }));
-        }
       }
     }
-
-    /* Centre: where the work and the person actually live. Three real
-       destinations, all off-site except the PDF. The Substack node is gone
-       with the Substack links: the publication has no posts, and a node
-       promising writing that leads to an empty page is worse than no node. */
-    [
-      ['github',   'GitHub',   'https://github.com/akshayaa-403'],
-      ['linkedin', 'LinkedIn', 'https://linkedin.com/in/akshayaa-kashyap'],
-      ['resume',   'Résumé',   'public/assets/resume.pdf']
-    ].forEach(function (r) {
-      link(add({ id: 'res:' + r[0], label: r[1], href: r[2], kind: 'resource' }), hubs.resources);
-    });
 
     return { nodes: nodes, links: links };
   }
@@ -241,7 +177,6 @@
       var K = KIND[n.kind];
       n.rad = K.r + Math.min(n.deg, 30) * 0.22;
       if (K.lvl === 2) n.rad = Math.min(n.rad, KIND.project.r + 1.6);
-      else if (K.lvl === 3) n.rad = Math.min(n.rad, KIND.tech.r + 0.8);
     }
 
     var adj = {};
@@ -362,13 +297,16 @@
     /* Each node drifts around wherever it settled. The offset is applied at
        draw time only and never written back into x/y: folded into the
        positions it would compound frame over frame and the maps would slowly
-       wander. Per-node phase and frequency, so the dots breathe independently
-       rather than pulsing as one organism — and small, because the first
-       version moved a 2px image dot further than its own hit target. */
+       wander. Per-node phase and frequency, so the dots move independently
+       rather than pulsing as one organism, and two summed waves per axis so
+       each path wanders instead of tracing an ellipse. Every dot is a real
+       destination of at least 5.6px now, so they can travel: up to ~20px
+       either way, hubs less, so each map keeps its anchor. */
     for (i = 0; i < nodes.length; i++) {
       nodes[i].ph = rnd() * 6.2832;
-      nodes[i].fq = 0.55 + rnd() * 0.75;
-      nodes[i].am = 0.0009 + rnd() * 0.0011;
+      nodes[i].ph2 = rnd() * 6.2832;
+      nodes[i].fq = 0.35 + rnd() * 0.45;
+      nodes[i].am = (nodes[i].kind === 'hub' ? 0.010 : 0.016) + rnd() * 0.006;
     }
 
     /* ---------- colours ----------
@@ -477,8 +415,14 @@
        edges, nodes and labels all read these, so a dot is always clickable
        exactly where it is drawn. */
     var now = 0;
-    function px(n) { return (n.x + Math.sin(now * n.fq + n.ph) * n.am * 1.6) * w; }
-    function py(n) { return (n.y + Math.cos(now * n.fq * 0.85 + n.ph) * n.am) * h; }
+    function px(n) {
+      return (n.x + (Math.sin(now * n.fq + n.ph) * 0.7 +
+                     Math.sin(now * n.fq * 2.3 + n.ph2) * 0.3) * n.am / ASPECT) * w;
+    }
+    function py(n) {
+      return (n.y + (Math.cos(now * n.fq * 0.85 + n.ph) * 0.7 +
+                     Math.cos(now * n.fq * 1.9 + n.ph2) * 0.3) * n.am) * h;
+    }
 
     /* ---------- pointer ---------- */
     var hover = null, held = null, downAt = null, moved = 0;
@@ -489,7 +433,6 @@
         var n = nodes[i];
         var dx = px(n) - mx, dy = py(n) - my;
         var d = Math.sqrt(dx * dx + dy * dy);
-        if (!KIND[n.kind].hover) continue;
         if (d < n.rad + 9 && d < bestD) { best = n; bestD = d; }
       }
       return best;
@@ -513,7 +456,7 @@
       var n = nodeAt(m.x, m.y);
       if (n !== hover) {
         hover = n;
-        canvas.style.cursor = (n && KIND[n.kind].nav) ? 'pointer' : 'default';
+        canvas.style.cursor = n ? 'pointer' : 'default';
         say(n);
         tick();
       }
@@ -547,11 +490,7 @@
     });
 
     function go(n) {
-      /* Tools are structure, not destinations. They exist so two projects
-         sharing PyTorch sit near each other, and no page on this site shows
-         "PyTorch" — so the node hovers and names itself but goes nowhere, and
-         never claims otherwise with a pointer cursor. */
-      if (!n.href || !KIND[n.kind].nav) return;
+      if (!n.href) return;
       if (/^https?:/i.test(n.href) || /\.pdf$/i.test(n.href)) {
         window.open(n.href, '_blank', 'noopener,noreferrer');
       } else {
@@ -577,14 +516,9 @@
       }, { threshold: 0 }).observe(stage);
     }
 
-    /* A neighbour only counts if it is a name. Hovering a case study used to
-       light the dozen tools in its stack, which is the sub-graph the reader
-       did not ask for; now it lights the hub it belongs to and nothing else
-       below it. */
     function isNear(n) {
       if (!hover) return true;
       if (n === hover) return true;
-      if (KIND[n.kind].lvl > 2) return false;
       return (adj[hover.id] || []).indexOf(n) !== -1;
     }
 
@@ -636,12 +570,10 @@
 
         // A ring in the page's own ground separates overlapping dots, the way
         // Obsidian's node borders do.
-        if (n.rad > 3.2) {
-          ctx.globalAlpha = hover ? (near ? 0.9 : 0.08) : 0.85;
-          ctx.strokeStyle = C.ground;
-          ctx.lineWidth = 1.4;
-          ctx.stroke();
-        }
+        ctx.globalAlpha = hover ? (near ? 0.9 : 0.08) : 0.85;
+        ctx.strokeStyle = C.ground;
+        ctx.lineWidth = 1.4;
+        ctx.stroke();
       }
 
       drawLabels();
@@ -661,8 +593,7 @@
        A label that cannot be placed is dropped rather than nudged: moving it
        breaks the one thing a label has to do, which is sit unambiguously
        under its own dot. */
-    /* The name's band. It stops at the Resources strip, which is the one
-       place in the centre column where labels are wanted. */
+    /* The name's band. No label may enter it. */
     var CENTRE = { x0: 0.302, x1: 0.698, y0: 0.04, y1: 0.775 };
 
     function drawLabels() {
@@ -682,11 +613,9 @@
       var queue = [];
       if (hover) {
         queue.push(hover);
-        (adj[hover.id] || []).forEach(function (n) {
-          if (KIND[n.kind].lvl <= 2) queue.push(n);
-        });
+        queue = queue.concat(adj[hover.id] || []);
       } else {
-        nodes.forEach(function (n) { if (KIND[n.kind].label) queue.push(n); });
+        queue = nodes.slice();
         queue.sort(function (x, y) { return y.rad - x.rad; });
       }
 
@@ -760,8 +689,6 @@
       var count = {};
       nodes.forEach(function (n) { count[n.cat] = (count[n.cat] || 0) + 1; });
       box.innerHTML = CAT_ORDER.filter(function (k) { return count[k]; }).map(function (k) {
-        // No count: it was the number of nodes, tools and photographs
-        // included, and "Projects 34" read as thirty-four projects.
         return '<li><span class="field__swatch" style="background:var(' + CATS[k].token + ')"></span>' +
                esc(CATS[k].name) + '</li>';
       }).join('');

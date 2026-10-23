@@ -221,8 +221,8 @@
       '--accent-tint-strong': rgbaOf(accent, 0.18),
       '--on-accent-deep': onDeep,
       '--on-photo-accent': css(onPhoto),
-      // The graph's three keep their own names so field.js and the legend
-      // need no special case: they are simply the same three. 4.5:1 is the
+      // The graph's two maps keep their own names so field.js and the legend
+      // need no special case; the third colour is graph mode's lockup. 4.5:1 is the
       // hub's bar, and field.js ramps the smaller dots down from it to 3:1 —
       // so the swatch in the legend is exactly the hub it stands for.
       // Bands swapped, to match shade() in js/field.js: the graph wears the
@@ -232,7 +232,7 @@
       // never the contrast.
       '--graph-projects': css(meet(a, 4.5, g.dark, g.gl, g.dark ? 26 : 46, g.dark ? 46 : 66)),
       '--graph-hobbies': css(meet(b, 4.5, g.dark, g.gl, g.dark ? 26 : 46, g.dark ? 46 : 66)),
-      '--graph-resources': css(meet(c, 4.5, g.dark, g.gl, g.dark ? 26 : 46, g.dark ? 46 : 66))
+      '--graph-name': css(meet(c, 4.5, g.dark, g.gl, g.dark ? 26 : 46, g.dark ? 46 : 66))
     };
 
     written = Object.keys(out);

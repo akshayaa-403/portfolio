@@ -169,13 +169,10 @@
     <div class="stage" style="--lap-dx:0vw; --lap-dy:0svh; --lap-s:1;">
 
       <!-- ---------- The graph (graph mode) ----------
-           Every destination on this site as a node, every real relationship
-           as an edge, laid out by a force simulation in js/field.js: section
-           hubs, the case studies, each tool in their stacks, the galleries and
-           every photograph in them, and the off-site links. Two projects
-           sharing a tool are two hops apart, so the clusters that form are the
-           real ones. Hover lights a neighbourhood and dims the rest; clicking
-           a node goes there; nodes can be dragged.
+           Two maps laid out by a force simulation in js/field.js: Projects
+           and its case studies on the left, Hobbies and its galleries on the
+           right. Every node goes somewhere. Hover lights a neighbourhood and
+           dims the rest; clicking a node goes there; nodes can be dragged.
 
            Built from js/project-data.js and js/hobby-data.js, so it cannot
            claim more than the site holds.
@@ -189,7 +186,7 @@
         <!-- Both filled by js/field.js from the same category map the dots are
              drawn from, so neither can fall out of step with the graph. -->
         <ul class="field__legend" data-field-legend></ul>
-        <p class="field__read" data-field-read>Every page, project, image and tool on this site — hover a node, click to go there</p>
+        <p class="field__read" data-field-read>Every project and hobby on this site — hover a node, click to go there</p>
       </div>
 
       <!-- ---------- Desk mode ----------
@@ -210,9 +207,10 @@
              references, with its glass cut out (tools/build-desk-props.py) so
              the page paints the screen behind it. Placed in the stage's
              coordinates round the lockup, so not draggable: the text is not
-             part of the desk and would stay put. -->
+             part of the desk and would stay put. The screen is a carousel
+             (the name, then each case study), filled by js/hero-hover.js. -->
         <div class="laptop" aria-hidden="true">
-          <div class="laptop__screen"></div>
+          <div class="laptop__screen"><div class="scr" data-screen></div></div>
           <img class="laptop__img" src="public/assets/desk/laptop.webp" alt="" width="710" height="432" decoding="async">
         </div>
 

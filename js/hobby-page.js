@@ -122,7 +122,8 @@
   /* ---------- mosaic sizing ----------
      Each tile spans however many 10px grid rows its own aspect ratio needs, so
      photos keep their proportions instead of being cropped to one shape.
-     Landscape shots also claim two columns. Recomputed on resize because the
+     Landscape shots also claim two columns, and a panorama (a diptych, say)
+     the whole row, or it would be a thin strip. Recomputed on resize because the
      column width — and therefore the row count for a given ratio — changes. */
   function sizeMosaic(root) {
     var ROW = 10, GAP = 10;
@@ -134,6 +135,7 @@
       var ar = parseFloat(fig.style.getPropertyValue('--ar'));
       if (!ar) return;
       fig.classList.toggle('hob-shot--wide', ar > 1.2);
+      fig.classList.toggle('hob-shot--pano', ar > 2.2);
       // Height the tile would take at its current rendered width, converted
       // to a whole number of grid rows (gaps count toward the span).
       var h = fig.clientWidth / ar;

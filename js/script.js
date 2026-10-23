@@ -173,11 +173,11 @@
   }
 
   /* ---------- reading list ----------
-     A shelf of spines rather than a list of titles. The spines wear the
-     day's Wada combination, the same three colours the graph is drawn in
-     (portfolioPalette.trio()), dealt out along the shelf in turn, each book a
-     different shade of its colour; the cover image in public/assets/readings/
-     is only fetched when a book turns to show it.
+     A shelf of spines rather than a list of titles. Each spine is its own
+     cover's colour (`spine`, sampled by tools/spine-colours.py, so it costs
+     no image fetch), and so is the back of the book; the cover image in
+     public/assets/readings/ is only fetched when a book turns to show it. A
+     book with no cover yet is black all round, its title on the front.
 
      Computed here rather than authored: every book's size, from the
      edition's real trim and page count; the spine's type size, solved until
@@ -196,23 +196,19 @@
     return P.ratio(L, 1) >= P.ratio(L, 0) ? '#fbfcfd' : '#10161d';
   }
 
-  /* Book i's spine: colour i % 3 of the day's trio, at its own lightness.
-     Hue and saturation are Wada's and never move — only lightness is
-     stepped, as in the graph — so the shelf reads as one combination, and
-     the books sharing a colour sit at evenly spaced shades from 28% to 72%
-     so no two are alike. A spine is an object rather than text on the
-     ground, so it is not stepped to a contrast bar; its ink is. */
-  function spineTone(i, n) {
+  var NO_COVER = '#111111';
+  function spineStyle(b) {
+    var bg = b.spine || NO_COVER;
     var P = window.portfolioPalette;
-    var c = P && P.toHsl(P.trio()[i % 3]);
-    if (!c) return null;
-    var per = Math.ceil(n / 3), k = Math.floor(i / 3);
-    return { h: c.h, s: c.s, l: per > 1 ? 28 + k * 44 / (per - 1) : c.l };
+    return '--spine-bg:' + bg + ';--spine-ink:' + spineInk(P && P.toHsl(bg));
   }
-  function spineStyle(i, n) {
-    var t = spineTone(i, n);
-    return '--spine-bg:' + (t ? window.portfolioPalette.css(t) : '#d9dde2') +
-      ';--spine-ink:' + spineInk(t);
+  // Where a book has no cover yet, its front is the spine's colour with the
+  // title set on it, on the shelf and off it.
+  function front(b, lazy) {
+    return b.cover
+      ? '<img src="' + safeUrl(b.cover) + '" alt="" draggable="false"' +
+          (lazy ? ' loading="lazy" decoding="async"' : '') + '>'
+      : '<span class="cover-blank">' + esc(b.title) + '</span>';
   }
 
   function renderReadings() {
@@ -268,7 +264,7 @@
         '<button class="book" type="button" data-book="' + i + '"' +
           ' aria-haspopup="dialog"' +
           ' data-cue="Take it off the shelf"' +
-          ' style="' + spineStyle(i, books.length) +
+          ' style="' + spineStyle(b) +
             ';--spine-fs:' + (Math.round(fs * 10) / 10) + 'px">' +
           /* The button fills the slot and never turns; the box inside it does.
              Rotating the button itself made its own box edge-on, so the
@@ -284,10 +280,7 @@
             // alt="": the button already announces the title and author, and
             // the caption below announces the rest. The cover is a picture of
             // information the page has already given.
-            '<span class="book__cover">' +
-              '<img src="' + safeUrl(b.cover) + '" alt="" draggable="false"' +
-                ' loading="lazy" decoding="async">' +
-            '</span>' +
+            '<span class="book__cover">' + front(b, true) + '</span>' +
           '</span>' +
         '</button>' +
       '</li>';
@@ -322,9 +315,8 @@
        the only thing on screen is the book.
 
        The book is a real box, six faces on one 3-D transform, and it can be
-       tumbled on both axes by dragging, or with Shift+←/→ and ↑/↓ — which is
-       why each book carries its real back cover as well as its front: turn
-       it over and the blurb is there, as it would be in a shop.
+       tumbled on both axes by dragging, or with Shift+←/→ and ↑/↓. The back
+       is plain, in the spine's colour.
 
        Plain ←/→, and the two arrows at the sides, step along the shelf
        without putting the book back first. They wrap at either end. */
@@ -354,15 +346,10 @@
           ' aria-label="' + esc(b.title) + ' — drag, or use Shift and the arrow keys, to turn it"' +
           ' data-cue="Drag to turn it"' +
           ' style="--w:' + W + 'px;--h:' + H + 'px;--t:' + T + 'px">' +
-        '<div class="book3d__box" data-book3d-box>' +
-          '<span class="book3d__face book3d__face--front">' +
-            '<img src="' + safeUrl(b.cover) + '" alt="" draggable="false">' +
-          '</span>' +
-          '<span class="book3d__face book3d__face--back">' +
-            (b.back ? '<img src="' + safeUrl(b.back) + '" alt="" draggable="false">' : '') +
-          '</span>' +
-          '<span class="book3d__face book3d__face--spine"' +
-            ' style="' + spineStyle(i, books.length) + '">' +
+        '<div class="book3d__box" data-book3d-box style="' + spineStyle(b) + '">' +
+          '<span class="book3d__face book3d__face--front">' + front(b) + '</span>' +
+          '<span class="book3d__face book3d__face--back"></span>' +
+          '<span class="book3d__face book3d__face--spine">' +
             '<span class="spine__title">' + esc(b.title) + '</span>' +
             '<span class="spine__author">' + esc(b.author || '') + '</span>' +
           '</span>' +
