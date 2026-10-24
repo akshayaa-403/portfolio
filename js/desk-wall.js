@@ -18,9 +18,10 @@
    css/style.css ("Time of day, desk mode") keeps --bg in step.
 
    Drawing the window's curtains (js/desk-objects.js, `is-shut` on .desk)
-   fades the shadows toward the lit wall and dims it a little: no sun, no
-   leaves. Not at night, when there is no daylight to dim. The theme is not
-   touched.
+   takes the leaf shadows away entirely, and opening them fades the shadows
+   back in. By day the wall goes to its lit colour, dimmed a little: no sun,
+   no leaves. At night it goes to its shadow colour, since the window was
+   the only light reaching it. The theme is not touched.
 
    Still under reduced motion (the first frame). Without WebGL there is no
    canvas and the wall is plain --bg. Plays only while the desk is on screen. */
@@ -55,9 +56,10 @@
     'uniform vec2 uScale, uOff;' +
     'uniform vec3 uLit, uShadow;' +
     'uniform float uShut;' +
+    'uniform float uFlat;' +
     'void main() {' +
-    '  float a = texture2D(tLeaves, vUv * uScale + uOff).r * (1.0 - 0.88 * uShut);' +
-    '  gl_FragColor = vec4(mix(uLit, uShadow, a) * (1.0 - 0.07 * uShut), 1.0);' +
+    '  float a = mix(texture2D(tLeaves, vUv * uScale + uOff).r, uFlat, uShut);' +
+    '  gl_FragColor = vec4(mix(uLit, uShadow, a) * (1.0 - 0.07 * uShut * (1.0 - uFlat)), 1.0);' +
     '}';
 
   function shader(type, src) {
@@ -75,7 +77,7 @@
   gl.useProgram(prog);
 
   var u = {};
-  ['tLeaves', 'uScale', 'uOff', 'uLit', 'uShadow', 'uShut']
+  ['tLeaves', 'uScale', 'uOff', 'uLit', 'uShadow', 'uShut', 'uFlat']
     .forEach(function (n) { u[n] = gl.getUniformLocation(prog, n); });
 
   gl.bindBuffer(gl.ARRAY_BUFFER, gl.createBuffer());
@@ -120,10 +122,10 @@
     return [rgb(m[0]), rgb(m[1])];
   }
   var col = target();
-  // 0 open, 1 curtains drawn; eased toward shutTarget() like the colours.
-  function shutTarget() {
-    return desk.classList.contains('is-shut') && document.documentElement.getAttribute('data-time') !== 'night' ? 1 : 0;
-  }
+  // 0 open, 1 curtains drawn; eased toward shutTarget() like the colours,
+  // so the shadows go in about a second and fade back in over about two.
+  function shutTarget() { return desk.classList.contains('is-shut') ? 1 : 0; }
+  function isNight() { return document.documentElement.getAttribute('data-time') === 'night'; }
   var shut = shutTarget();
 
   // Size to the desk; cover-fit the video, centred.
@@ -148,6 +150,7 @@
     gl.uniform3fv(u.uLit, col[0]);
     gl.uniform3fv(u.uShadow, col[1]);
     gl.uniform1f(u.uShut, shut);
+    gl.uniform1f(u.uFlat, isNight() ? 1 : 0);
     gl.drawArrays(gl.TRIANGLES, 0, 6);
   }
 
@@ -163,7 +166,8 @@
     if (!running()) { if (video) video.pause(); return; }
     var t = target();
     ease(col[0], t[0]); ease(col[1], t[1]);
-    shut += (shutTarget() - shut) * 0.04;
+    var to = shutTarget();
+    shut += (to - shut) * (to > shut ? 0.06 : 0.025);
     upload();
     draw();
     raf = requestAnimationFrame(frame);
@@ -181,7 +185,6 @@
   new IntersectionObserver(function (es) { onScreen = es[0].isIntersecting; wake(); }).observe(desk);
   new ResizeObserver(wake).observe(desk);
   document.addEventListener('visibilitychange', wake);
-  window.addEventListener('modechange', wake);
   window.addEventListener('themechange', wake);
   window.addEventListener('curtainchange', wake);
   if (still.addEventListener) still.addEventListener('change', wake);

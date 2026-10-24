@@ -8,8 +8,8 @@
    day's Sanzo Wada combination by js/palette.js; the navy values below are
    only the fallback.
 
-   Three view modes (graph / desk / mosaic) are set as a `data-mode`
-   attribute on <html> — see section 14; desk mode's rules are css/desk.css.
+   The home page is the desk: index.html carries data-mode="desk" on <html>,
+   and the desk's rules are css/desk.css. The other pages have no data-mode.
    ========================================================================== */
 
 /* --------------------------------------------------------------------------
@@ -60,12 +60,12 @@
      caption sits on it in white in both themes. */
   --veil-centre: rgba(6, 12, 20, 0.62);
   --veil-edge:   rgba(4, 8, 14, 0.95);
-  /* Graph categories — Projects, Hobbies, Resources. These values are only
-     the fallback: js/palette.js rebuilds all three from the day's Sanzo Wada
-     combination (one per calendar day), stepped until each measures against
-     the ground. The left/right split carries the distinction on its own,
-     which keeps the map readable in greyscale and to colour-blind vision.
-     The third colour is not a map: it is the name in graph mode's middle. */
+  /* The day's three Wada colours, named for what they first coloured (the
+     graph's Projects and Hobbies maps, and the name between them). The graph
+     is gone; they now colour the bracelet's beads, the desk's paint chip and
+     the Info pieces. These values are only the fallback: js/palette.js
+     rebuilds all three from the day's combination, stepped until each
+     measures against the ground. */
   --graph-projects:  #00317a;
   --graph-hobbies:   #2f7ab5;
   --graph-name:      #1e4f7a;
@@ -215,10 +215,11 @@
    Time of day
    js/boot.js writes data-time from the viewer's clock (or the visitor's pick
    from the greeting's menu): morning 5-10, day 10-17, evening 17-20, night
-   20-5. Graph and mosaic show only two of them: a light theme for morning
-   and day, a dark one for evening and night (data-theme="dark"). Both are
-   near-neutral greys with the mildest cool tint, no gradients, and do not
-   follow desk mode's palette (the block after this one). The accent family
+   20-5. The pages other than the home page show only two of them: a light
+   theme for morning and day, a dark one for evening and night
+   (data-theme="dark"). Both are near-neutral greys with the mildest cool
+   tint, no gradients, and do not follow the desk's palette (the block after
+   this one). The accent family
    is the day's Wada palette (js/palette.js), re-measured against whichever
    ground is showing. The base :root and [data-theme='dark'] values above
    remain the fallback when data-time is missing.
@@ -271,8 +272,8 @@
 
 /* --------------------------------------------------------------------------
    Time of day, desk mode
-   Desk mode alone wears the colours of emilycampbell.co at the same time of
-   day; graph and mosaic keep the plain light and dark above. That site multiplies
+   The desk (the home page) wears the colours of emilycampbell.co at the same
+   time of day; the other pages keep the plain light and dark above. That site multiplies
    a shader's light and shadow onto one ground per period (morning #f9dcc3,
    midday #f9f7f6, golden #fbcbbc, moonlight #66718f); --bg here is what it
    actually RENDERS on lit wall, mix(bg, bg * output, blendLight), checked
@@ -810,21 +811,19 @@ main:focus-visible { outline: none; }
 .nav-burger[aria-expanded='true'] span:nth-child(3) { transform: translateY(-5.4px) rotate(-45deg); }
 
 /* The bar is out of the flow, so every page needs the height back. The hero
-   cancels it again below, which is what puts the graph under the bar. */
+   cancels it again below, which is what puts the desk under the bar. */
 body { padding-top: var(--header-h, 80px); }
 
 /* --------------------------------------------------------------------------
    5. Hero — a full-viewport stage
-   One stage, three arrangements (section 14): the graph drawn behind a
-   centred lockup, the desk around it (css/desk.css), or the mosaic's grid
-   with the lockup as one of its tiles.
+   One stage: the desk (css/desk.css), with the lockup on its laptop.
    -------------------------------------------------------------------------- */
 .hero {
   position: relative;
   overflow: hidden;
   /* The fixed header sits over this section. Pulling the hero up under it by
      the header's height gives a true full-viewport stage anchored at y=0,
-     which is what the graph and the desk are laid out against. */
+     which is what the desk is laid out against. */
   margin-top: calc(-1 * var(--header-h, 80px));
 }
 
@@ -881,7 +880,7 @@ body { padding-top: var(--header-h, 80px); }
 }
 
 /* --- Narrow screens ----------------------------------------------------
-   The graph needs width to read. Below 900px the lockup returns to normal
+   The desk needs width to read. Below 900px the lockup returns to normal
    flow so the hero stays readable rather than becoming a pile of overlaps. */
 @media (max-width: 899.98px) {
   .stage { min-height: 0; padding-bottom: var(--gap-lg); }
@@ -1653,15 +1652,12 @@ body { padding-top: var(--header-h, 80px); }
 
   .js .hero__role,
 
-  .js .hero__proof,
-
-  .js .hero__actions {
+  .js .hero__proof {
     animation: appear 0.62s var(--ease) backwards;
   }
   .js .hero__name { animation-delay: 0.05s; }
   .js .hero__role { animation-delay: 0.14s; }
   .js .hero__proof { animation-delay: 0.22s; }
-  .js .hero__actions { animation-delay: 0.34s; }
 }
 
 @keyframes appear {
@@ -1708,73 +1704,15 @@ body { padding-top: var(--header-h, 80px); }
 }
 
 /* --------------------------------------------------------------------------
-   14. View modes
-   Set as data-mode on <html> by js/modes.js; persisted to localStorage and
-   applied by js/boot.js before first paint so there's no flash.
-
-     graph  — the default. The latent field: every page, project, image and
-              tool as a node, laid out by a force simulation.
-     desk   — a desk round the lockup, with the lockup on a laptop's screen
-              (css/desk.css). Hidden below 900px.
-     mosaic — the same material as a pinboard: real artifacts at mixed sizes,
-              with the lockup as one of the tiles.
+   14. The hero lockup
+   The name, role and proof line, set on the laptop's screen in the desk
+   (css/desk.css). Below 900px there is no desk and they stack in the flow.
    -------------------------------------------------------------------------- */
 
-/* Mode switcher control. Hidden without JS, where the buttons would do
-   nothing — the CSS default (graph) still applies. */
-.modes { display: none; }
-.js .modes {
-  display: inline-flex;
-  align-items: center;
-  flex: none;
-  flex-wrap: nowrap;
-  white-space: nowrap;
-  gap: 2px;
-  padding: 3px 3px 3px 10px;
-  background: var(--bg-sunken);
-  border: 1px solid var(--line);
-  border-radius: var(--radius-pill);
-}
-/* Says what the three words are for. Decorative duplication of the group's
-   aria-label, so it is hidden from the accessibility tree in the markup. */
-.modes__label {
-  margin-right: 6px;
-  color: var(--ink-muted);
-  font-size: 10px;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-}
-.modes button {
-  padding: 5px 11px;
-  border: 0;
-  border-radius: var(--radius-pill);
-  background: transparent;
-  color: var(--ink-muted);
-  font-size: 11px;
-  font-weight: 500;
-  letter-spacing: 0.02em;
-  cursor: pointer;
-  transition: color var(--dur) var(--ease), background var(--dur) var(--ease);
-}
-.modes button:hover { color: var(--accent); }
-/* Ghost, not filled: this is a viewing preference, and filled in
-   --accent-deep it out-shouted the name and the call to action. */
-.modes button[aria-checked='true'] {
-  background: var(--surface);
-  color: var(--accent-ink);
-  box-shadow: inset 0 0 0 1px var(--line-strong);
-}
-/* Desk mode's desk is hidden below 900px, so on a phone its button only
-   recoloured the page. Offer the two arrangements a phone can show. */
-@media (max-width: 899.98px) {
-  .modes [data-mode-btn='desk'] { display: none; }
-}
-
 /* --- Lockup position ---
-   Graph centres the name over the field. The left offset is a percentage, so
-   the block must also be told it can never exceed the space remaining to its
-   right — otherwise the lockup runs off the viewport on narrow screens.
-   Mosaic overrides all of this further down. */
+   The left offset is a percentage, so the block must also be told it can
+   never exceed the space remaining to its right — otherwise the lockup runs
+   off the viewport on narrow screens. */
 .hero__lockup {
   left: 39.514%;
   top: 24.111%;
@@ -1783,128 +1721,14 @@ body { padding-top: var(--header-h, 80px); }
   width: min(590px, calc(100vw - 39.514% - 24px));
 }
 
-/* The mode toggle sits in the SAME place in both modes: it is a control, not
-   scenery, so it must not appear to jump when the arrangement changes. It is
-   centred on the stage at a fixed fraction of the VIEWPORT — the one measure
-   both modes share, because the graph's stage is exactly one screen while the
-   mosaic's grows with its tiles. It replaced the "See the work / Get in touch"
-   pair, so it is also the only thing to press above the fold.
-
-   Directly under the header is the one strip both arrangements can keep clear:
-   the graph moves its legend down for it, and the mosaic starts its grid below
-   it. Anywhere lower and the mosaic would have to leave a hole in the middle
-   of itself. */
-.hero__actions {
-  position: absolute;
-  left: 50%;
-  top: calc(var(--header-h, 80px) + 16px);
-  width: max-content;
-  transform: translateX(-50%);
-  display: flex;
-  justify-content: center;
-}
-
-/* ---------- graph mode: the latent field ----------
-   The default mode: the stage is a 2-D projection of the work, drawn to a
-   canvas by js/field.js. The lockup is centred on the mode toggle's axis,
-   its lines placed as % of the stage, so it reads as the centroid of the
-   field. Desk mode shares those coordinates. */
-
-/* --- The graph ----------------------------------------------------------
-   Every destination on the site as a node, every real relationship as an
-   edge, laid out by a force simulation in js/field.js. Node labels are drawn
-   onto the canvas rather than set as elements: ~90 of them as DOM nodes would
-   mean 90 layout boxes moved every frame.
-
-   Hidden in desk and mosaic, which use the same stage for their own
-   arrangements. */
-.field {
-  position: absolute;
-  inset: 0;
-  z-index: 1;
-  display: none;
-  pointer-events: none;
-}
-[data-mode='graph'] .field { display: block; }
-
-/* The canvas takes pointer events — nodes are hovered, dragged and clicked.
-   It stays aria-hidden and unfocusable: every node's destination is also a
-   real link further down the page, so nothing here is the only route to
-   anything. */
-.field__canvas {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  display: block;
-  pointer-events: auto;
-  touch-action: none;
-}
-
-/* The two maps take the left and right of the stage, so the
-   legend goes above the name and the readout into the bottom-left corner,
-   which the Projects map stops short of. aria-live is off by omission on the
-   readout: it rewrites on every hover, which would flood a screen reader with
-   names it can already reach as links. */
-.field__legend {
-  position: absolute;
-  /* The top strip belongs to the mode toggle in both modes. Bottom-centre is
-     is kept clear under the name, so the legend goes bottom-right,
-     opposite the read-me line in the other corner. */
-  left: auto;
-  right: 3%;
-  top: auto;
-  bottom: 7%;
-  transform: none;
-  margin: 0;
-  padding: 0;
-  list-style: none;
-  display: flex;
-  gap: 18px;
-  font-family: var(--font-mono);
-  font-size: 11px;
-  line-height: 1.4;
-  color: var(--ink-soft);
-  pointer-events: none;
-  white-space: nowrap;
-}
-.field__legend li { display: flex; align-items: center; gap: 7px; }
-.field__swatch { width: 9px; height: 9px; border-radius: 50%; flex: none; }
-
-.field__read {
-  position: absolute;
-  left: 3%;
-  top: 91%;
-  margin: 0;
-  max-width: 26%;
-  font-family: var(--font-mono);
-  font-size: 12px;
-  line-height: 1.5;
-  color: var(--ink-muted);
-  pointer-events: none;
-}
-.field__read b { color: var(--ink); font-weight: 600; display: block; }
-
-/* Below 900px the stage stops being a stage: min-height drops to 0 and the
-   lockup returns to normal flow, so there is no canvas to lay the graph out
-   on and the nodes would pile up behind the name. The phone hero is the
-   lockup and the mode switcher, which is the right hero for a phone anyway.
-   The selector matches [data-mode='graph'] .field so it wins without
-   !important. */
-@media (max-width: 899.98px) {
-  [data-mode='graph'] .field { display: none; }
-}
-
-[data-mode='graph'] .hero__lockup,
 [data-mode='desk'] .hero__lockup {
   left: 0 !important; right: auto !important; top: 0 !important;
   width: 100% !important; max-width: none !important;
   height: 100% !important;
 }
-[data-mode='graph'] .hero__name,
 [data-mode='desk'] .hero__name {
   position: absolute !important;
-  /* Centred on the toggle axis. width:max-content + translateX(-50%)
+  /* Centred. width:max-content + translateX(-50%)
      keeps it one line whatever the string length. */
   left: 50.000% !important; top: 42.000% !important;
   right: auto !important; bottom: auto !important; margin: 0 !important;
@@ -1913,7 +1737,6 @@ body { padding-top: var(--header-h, 80px); }
   text-align: center !important;
   transform: translateX(-50%) !important;
 }
-[data-mode='graph'] .hero__role,
 [data-mode='desk'] .hero__role {
   position: absolute !important;
   left: 50.000% !important; top: 53.600% !important;
@@ -1924,9 +1747,7 @@ body { padding-top: var(--header-h, 80px); }
 }
 /* A fixed 18px under the role (whose line box is 27px), rather than a stage
    percentage: at 60.5% it sat twice as far from the role as the role from
-   the name, and read as a caption for the graph rather than the third line
-   of the lockup. */
-[data-mode='graph'] .hero__proof,
+   the name, and read as a caption rather than the third line of the lockup. */
 [data-mode='desk'] .hero__proof {
   position: absolute !important;
   left: 50.000% !important; top: calc(53.600% + 45px) !important;
@@ -1936,24 +1757,6 @@ body { padding-top: var(--header-h, 80px); }
   transform: translateX(-50%) !important;
 }
 
-/* Over the graph the lockup's smaller lines can cross an edge at narrower
-   widths; a halo in the ground's own colour keeps the words off the lines. */
-[data-mode='graph'] .hero__role,
-[data-mode='graph'] .hero__proof { text-shadow: 0 0 3px var(--bg), 0 0 8px var(--bg); }
-
-/* The day's third Wada colour is the lockup: Projects and Hobbies take the
-   first two either side, and the name between them takes the last. Measured
-   4.5:1 against --bg by js/palette.js, so it holds for the proof line too. */
-[data-mode='graph'] .hero__name,
-[data-mode='graph'] .hero__role,
-[data-mode='graph'] .hero__proof { color: var(--graph-name); }
-
-/* The mode toggle must always win the hit test, whatever is drawn over it. */
-.hero__actions { z-index: 60 !important; }
-.hero__actions .modes,
-
-.hero__actions button { pointer-events: auto !important; }
-
 @media print {
   .site-header,
 
@@ -1961,9 +1764,7 @@ body { padding-top: var(--header-h, 80px); }
 
   .strip,
 
-  .nav-burger,
-
-  .modes { display: none !important; }
+  .nav-burger { display: none !important; }
   body { background: #fff; color: #000; background-image: none; padding-top: 0; }
 }
 
@@ -2111,11 +1912,6 @@ body { padding-top: var(--header-h, 80px); }
   }
   .site-footer__social { gap: 2px; }
 
-  .modes button {
-    padding: 11px 14px;      /* was 5px 11px -> 28px tall */
-    font-size: 12px;
-  }
-
   .detail__back {
     display: inline-flex;
     align-items: center;
@@ -2127,8 +1923,6 @@ body { padding-top: var(--header-h, 80px); }
 
   /* --- legibility ------------------------------------------------------ */
   /* Nothing below 13px: iOS also zooms the page when tapped text is smaller. */
-  .frag__label,
-  .frag__from { font-size: 12px; }
   .rm__desc { font-size: 13.5px; }
   .dd--table th,
 
@@ -2147,13 +1941,13 @@ body { padding-top: var(--header-h, 80px); }
 }
 
 /* --------------------------------------------------------------------------
-   Hero: force natural flow on mobile, in EVERY view mode.
+   Hero: force natural flow on mobile.
 
-   The [data-mode='graph'] block pins the lockup text with
+   The [data-mode='desk'] block pins the lockup text with
    `position: absolute !important` and no media guard, so below 900px it
    overlapped the base mobile reset (which had no !important). This block wins
    by coming later with matching specificity plus !important, so the hero
-   stacks: name -> role -> proof line -> toggle.
+   stacks: name -> role -> proof line.
    -------------------------------------------------------------------------- */
 @media (max-width: 899.98px) {
   [data-mode] .hero__lockup {
@@ -2185,20 +1979,11 @@ body { padding-top: var(--header-h, 80px); }
   [data-mode] .hero__name { margin: 0 auto 14px !important; }
   [data-mode] .hero__role { margin: 0 auto 16px !important; }
   [data-mode] .hero__proof { margin: 0 auto 20px !important; text-align: center !important; }
-
-  [data-mode] .hero__actions {
-    position: static !important;
-    left: auto !important; top: auto !important;
-    width: auto !important;
-    margin: 4px auto 0 !important;
-    transform: none !important;
-  }
 }
 
 /* Very narrow (<=360px): the smallest phone still in real use. */
 @media (max-width: 360px) {
   .rm__title { font-size: 15px; }
-  .modes button { padding: 10px 10px; font-size: 11.5px; }
   .hob-card__label { font-size: 22px; }
 }
 
@@ -2207,7 +1992,6 @@ body { padding-top: var(--header-h, 80px); }
    each selector. */
 @media (max-width: 599.98px) {
   .nav a { padding: 12px; min-height: 44px; display: flex; align-items: center; }
-  .modes button { padding: 13px 14px; }
   .contact__links .btn,
 
   .notfound__actions .btn { min-height: 46px; }
@@ -2268,7 +2052,7 @@ body:has(.notfound) main { flex: 1; }
 @media (max-width: 899.98px) {
   :root[data-mode] .stage { position: relative; }
 
-  /* The lockup must sit above the graph. */
+  /* The lockup must sit above the desk. */
   [data-mode] .hero__lockup { position: relative !important; z-index: 2; }
 }
 
@@ -2377,269 +2161,6 @@ body:has(.notfound) main { flex: 1; }
 }
 
 /* --------------------------------------------------------------------------
-   Mosaic mode
-   The stage becomes one grid: the name lockup is the first cell and the
-   artifacts from js/mosaic.js flow after it. Everything is in normal flow,
-   so nothing is placed by hand and the stage grows to its content. The mode
-   switcher keeps its place above the grid (section 14).
-   -------------------------------------------------------------------------- */
-
-[data-mode='mosaic'] .stage {
-  /* The stage IS the mosaic: the name is a tile in it like everything else,
-     spanning enough cells to hold its own prose. (It used to be a block above
-     the grid; as a one-row grid item it printed over the tiles, which is why
-     the span below is explicit.) */
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-  grid-auto-rows: 132px;
-  grid-auto-flow: row dense;
-  gap: 12px;
-  align-content: start;
-  /* The same container the site header uses, so the first tile's left edge and
-     the name both line up with the brand and the nav rather than with the
-     window. */
-  max-width: var(--measure);
-  margin-inline: auto;
-  /* Top padding clears the header plus the toggle's band. */
-  padding: calc(var(--header-h, 80px) + 78px) var(--gap-lg) var(--gap-lg);
-  overflow: visible;
-}
-
-/* The name, as a tile: two columns by two rows. It was three rows, sized for
-   a headline that has since been removed, which left the tile mostly empty
-   round three short lines. */
-[data-mode='mosaic'] .hero__lockup {
-  position: static !important;
-  order: -1;
-  grid-column: span 2;
-  grid-row: span 2;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  width: auto;
-  max-width: none;
-  height: auto;
-  margin: 0;
-  padding: 18px 20px;
-  border: 1px solid var(--line);
-  border-radius: var(--radius);
-  background: var(--bg-raised);
-  transform: none !important;
-  text-align: left;
-  pointer-events: auto;
-}
-/* Inside a tile the name has to fit the tile, not the viewport. */
-[data-mode='mosaic'] .hero__name {
-  margin: 0 0 10px;
-  font-size: clamp(1.9rem, 3vw, 44px);
-  line-height: 1.05;
-}
-[data-mode='mosaic'] .hero__role { font-size: 13px; }
-[data-mode='mosaic'] .hero__role { margin-bottom: 12px; }
-/* The base styles centre these two inside the lockup; the mosaic lockup is
-   a left-aligned block, so they come back to the left edge with it. */
-[data-mode='mosaic'] .hero__role,
-[data-mode='mosaic'] .hero__proof {
-  margin-left: 0;
-  margin-right: auto;
-  text-align: left;
-}
-[data-mode='mosaic'] .hero__proof { font-size: 12.5px; margin-bottom: 0; }
-
-/* The mosaic. A fixed row height, not minmax(...,auto): a row that grows to
-   its content makes every span mean something different and the tiles stop
-   interlocking. `dense` back-fills the holes a mixed-span run leaves, which is
-   the difference between a mosaic and a grid with gaps in it. */
-.mosaic {
-  display: none;
-  list-style: none;
-  margin: 0;
-  padding: 0;
-}
-/* A pass-through: the tiles are the stage grid's own items, so the lockup can
-   sit among them. */
-[data-mode='mosaic'] .mosaic { display: contents; }
-/* The <li> is a wrapper the grid should not see; its .frag is the tile. */
-.mosaic > li { display: contents; }
-
-.frag {
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  justify-content: flex-end;
-  gap: 6px;
-  overflow: hidden;
-  padding: 14px;
-  border: 1px solid var(--line);
-  border-radius: var(--radius);
-  background: var(--bg-raised);
-  color: var(--ink-soft);
-  font-size: 13px;
-  line-height: 1.4;
-  text-decoration: none;
-  transition: border-color var(--dur) var(--ease), background var(--dur) var(--ease),
-              transform var(--dur) var(--ease);
-}
-a.frag:hover,
-a.frag:focus-visible {
-  border-color: var(--line-strong);
-  background: var(--surface);
-}
-@media (prefers-reduced-motion: no-preference) {
-  a.frag:hover { transform: translateY(-2px); }
-}
-
-.frag__num {
-  color: var(--accent);
-  font-size: clamp(2rem, 4.4vw, 46px);
-  font-weight: 500;
-  line-height: 1;
-  letter-spacing: -0.03em;
-}
-.frag__label,
-.frag__from,
-.frag__kicker {
-  color: var(--ink-soft);
-  font-size: 11.5px;
-  letter-spacing: 0.04em;
-}
-.frag__from,
-.frag__kicker { text-transform: uppercase; }
-
-/* A photograph fills its tile; the caption sits on a scrim so it stays
-   readable over any exposure, in either theme. */
-.frag--photo { padding: 0; }
-.frag--photo img {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-.frag__cap {
-  position: relative;
-  padding: 24px 12px 10px;
-  background: linear-gradient(to top, rgb(0 0 0 / 0.72), rgb(0 0 0 / 0));
-  color: #fff;
-  font-size: 11.5px;
-  line-height: 1.35;
-}
-
-/* Span comes from js/mosaic.js, per kind of artifact. */
-.frag {
-  grid-column: span var(--fc, 1);
-  grid-row: span var(--fr, 1);
-}
-.frag--work { justify-content: flex-start; }
-.frag__title {
-  color: var(--ink);
-  font-size: 19px;
-  font-weight: 500;
-  line-height: 1.2;
-}
-.frag__metric {
-  color: var(--accent-ink, var(--accent));
-  font-size: 15px;
-  font-weight: 500;
-}
-.frag__tagline { color: var(--ink-soft); }
-.frag--work .frag__from { margin-top: auto; }
-
-/* The recipe card (js/mosaic.js): an index card, ruled like one, with the
-   day's dish in handwriting and its photograph held on by a magnet in the
-   day's accent. Ruling and margin line are drawn in the page's own line
-   tokens, so the card follows the theme. */
-.frag--recipe {
-  justify-content: flex-start;
-  background:
-    linear-gradient(to right, transparent 30px, var(--accent-pale) 30px 31px, transparent 31px),
-    repeating-linear-gradient(to bottom, transparent 0 25px, var(--line) 25px 26px),
-    var(--bg-raised);
-  background-position: 0 0, 0 12px, 0 0;
-}
-.recipe__name {
-  color: var(--ink);
-  font-family: var(--font-script);
-  font-size: clamp(19px, 1.7vw, 25px);
-  line-height: 1.05;
-  overflow-wrap: anywhere;
-}
-/* Clear of the margin line and the photograph. Scoped like the mosaic's own
-   padding rule, which would otherwise win. */
-.frag.frag--recipe,
-[data-mode='mosaic'] .frag.frag--recipe { padding: 12px 47% 12px 42px; }
-/* The footer runs under the photograph's corner; let it use the full width. */
-.frag--recipe .frag__from { margin-right: -85%; }
-.recipe__photo {
-  position: absolute;
-  top: 14%;
-  right: 6%;
-  width: 38%;
-  aspect-ratio: 4 / 5;
-  padding: 5px 5px 14px;
-  background: #fbf9f4;
-  box-shadow: 0 6px 14px -6px rgb(0 0 0 / 0.45);
-  rotate: 3deg;
-}
-.recipe__photo img { display: block; width: 100%; height: 100%; object-fit: cover; }
-/* The magnet. */
-.recipe__photo::before {
-  content: '';
-  position: absolute;
-  top: -7px;
-  left: 50%;
-  width: 16px;
-  height: 16px;
-  margin-left: -8px;
-  border-radius: 50%;
-  background: radial-gradient(circle at 35% 35%, rgb(255 255 255 / 0.55), transparent 45%), var(--accent-deep);
-  box-shadow: 0 2px 3px rgb(0 0 0 / 0.35);
-}
-.frag--recipe .frag__from { margin-top: auto; }
-@media (prefers-reduced-motion: no-preference) {
-  .recipe__photo { transition: rotate var(--dur) var(--ease); }
-  a.frag--recipe:hover .recipe__photo { rotate: -1deg; }
-}
-
-/* Two columns at phone width, so nothing may span more than both of them.
-   The span is set on grid-column itself: js/mosaic.js writes --fc inline,
-   and an inline custom property beats any rule here, so overriding --fc did
-   nothing and a three-wide snippet would have added a phantom column. */
-@media (max-width: 599.98px) {
-  [data-mode='mosaic'] .stage {
-    grid-template-columns: repeat(2, 1fr);
-    grid-auto-rows: 116px;
-  }
-}
-
-/* At a glance means without scrolling. On a desktop the grid is six columns
-   by six rows — the name, four case studies, four counts and three
-   photographs fill it exactly (js/mosaic.js) — and the row height is what is
-   left of the viewport under the header and the toggle band, split six ways.
-   A tile that will not fit at that height trims its tagline to three lines
-   rather than pushing the grid past the fold. Below 900px the phone layout
-   scrolls, as a phone should. */
-@media (min-width: 900px) {
-  [data-mode='mosaic'] .stage {
-    --mrow: calc((100svh - var(--header-h, 80px) - 78px - var(--gap-lg) - 5 * 12px) / 6);
-    grid-template-columns: repeat(6, minmax(0, 1fr));
-    grid-auto-rows: max(84px, var(--mrow));
-  }
-  [data-mode='mosaic'] .frag { padding: 10px 14px; gap: 4px; }
-  [data-mode='mosaic'] .frag--photo { padding: 0; }
-  [data-mode='mosaic'] .frag__num { font-size: clamp(24px, calc(var(--mrow) * 0.36), 46px); }
-  [data-mode='mosaic'] .frag__title { font-size: clamp(15px, calc(var(--mrow) * 0.15), 19px); }
-  [data-mode='mosaic'] .hero__name { font-size: clamp(1.7rem, calc(var(--mrow) * 0.36), 44px); }
-  [data-mode='mosaic'] .hero__lockup { padding: 12px 18px; }
-  [data-mode='mosaic'] .frag__tagline {
-    display: -webkit-box;
-    -webkit-box-orient: vertical;
-    -webkit-line-clamp: 3;
-    overflow: hidden;
-  }
-}
-
-/* --------------------------------------------------------------------------
    Cursor cue (js/cursor.js)
    A label that follows the pointer and names what is under it. The system
    cursor is left alone; this sits beside it.
@@ -2670,7 +2191,7 @@ body:has(dialog[open]) .cue { display: none; }
 
 
 /* ==========================================================================
-   17. The project grid, the screen, the shelf overlay and the mosaic toggle
+   17. The project grid, the screen, and the shelf overlay
    ========================================================================== */
 
 /* --- The grid ---------------------------------------------------------
@@ -2966,22 +2487,4 @@ body:has(dialog[open]) .cue { display: none; }
 }
 @media (prefers-reduced-motion: reduce) {
   .book3d { animation: none; }
-}
-
-/* --- The mode toggle is identical in every mode ----------------------
-   Same pill, same place: it chooses the arrangement, so nothing about it may
-   change when the arrangement does. Below 900px it is in normal flow under
-   the lockup; in the mosaic that flow is the grid, where it would otherwise
-   land after the last tile, so it takes the full-width row straight after
-   the name tile instead. */
-@media (max-width: 899.98px) {
-  /* The stage's top padding reserves the desktop toggle band; down here the
-     toggle is in the flow, so the band would only be an empty gap. */
-  [data-mode='mosaic'] .stage { padding-top: var(--gap-lg); }
-  [data-mode='mosaic'] .hero__actions {
-    order: -1;
-    grid-column: 1 / -1;
-    align-self: center;
-    justify-self: center;
-  }
 }

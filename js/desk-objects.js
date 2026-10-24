@@ -7,13 +7,9 @@
      the window            curtains that draw; the daylight and the leaf
                            shadows (js/desk-wall.js) dim behind them
      the paint chip        today's Wada combination
-     sticky notes          a "What I'd do differently" line each; peel to see
-                           which case study
      Polaroids             pull one off the pile and it develops; click opens it
-     the notebook          one margin note a day, linking to its case study
-     the phone             Habita, linking to its case study (markup only)
      the mug               a drink a weekday; steam by the clock; rings
-     the card holder       take a card, get a vCard
+     the card holder       take a card, see it on the page
      the plant             wilts as the newest live repo goes stale
      the night             only the lamp and the screen light the desk
      the mess              the longer you stay, the more the desk drifts
@@ -36,17 +32,6 @@
   var H = typeof hobbies !== 'undefined' ? hobbies : {};
   var live = P.filter(function (p) { return !p.archived; });
 
-  function isDesk() { return root.getAttribute('data-mode') === 'desk'; }
-  function project(id) {
-    for (var i = 0; i < P.length; i++) if (P[i].id === id) return P[i];
-    return null;
-  }
-  // Days since the epoch in the viewer's own time zone, as js/palette.js
-  // counts them, so "a different one each day" turns at local midnight.
-  function dayNo() {
-    var d = new Date();
-    return Math.floor((d.getTime() - d.getTimezoneOffset() * 60000) / 864e5);
-  }
   function caption(g, i) {
     var h = H[g];
     return (h && h.captions && h.captions[i - 1]) || ((h ? h.label : g) + ' ' + i);
@@ -145,7 +130,7 @@
     glass.addEventListener('pointerenter', function () { over = true; });
     glass.addEventListener('pointerleave', function () { over = false; });
     document.addEventListener('keydown', function (e) {
-      if (!over || !isDesk() || !termForm || !termForm.hidden) return;
+      if (!over || !termForm || !termForm.hidden) return;
       if (e.target.closest && e.target.closest('input, textarea, select, [contenteditable]')) return;
       if (e.key === 'ArrowLeft') go(at - 1);
       else if (e.key === 'ArrowRight') go(at + 1);
@@ -157,7 +142,6 @@
     });
 
     // Leaving desk mode puts the name back on the screen for next time.
-    window.addEventListener('modechange', function () { build(); go(0); });
     new ResizeObserver(build).observe(desk);
     build();
   }
@@ -319,7 +303,6 @@
     // A click anywhere on the terminal (not a link) goes to the prompt.
     form.addEventListener('click', function (e) { if (!e.target.closest('a')) input.focus({ preventScroll: true }); });
     if (door) door.addEventListener('click', function () { openTerm(''); });
-    window.addEventListener('modechange', function () { if (!isDesk()) closeTerm(); });
   }
 
   /* ---------- the window and its curtains ----------
@@ -356,33 +339,6 @@
     if (chip) chip.setAttribute('data-cue', 'Wada combination No. ' + (pal.index() + 1) + ', today');
   }
 
-  /* ---------- sticky notes ---------- */
-  function flip(note, on) {
-    note.classList.toggle('is-flipped', on);
-    var front = note.querySelector('.sticky__front'), back = note.querySelector('.sticky__back');
-    front.setAttribute('aria-expanded', on ? 'true' : 'false');
-    if (on) { front.setAttribute('inert', ''); back.removeAttribute('inert'); }
-    else { back.setAttribute('inert', ''); front.removeAttribute('inert'); }
-  }
-  function initSticky() {
-    var notes = desk.querySelectorAll('.sticky');
-    var lines = D.sticky.filter(function (l) { return project(l[0]); });
-    if (!lines.length) return;
-    var start = dayNo() % lines.length;
-    Array.prototype.forEach.call(notes, function (note, k) {
-      var l = lines[(start + k) % lines.length], p = project(l[0]);
-      note.querySelector('[data-sticky-line]').textContent = l[1];
-      var a = note.querySelector('[data-sticky-link]');
-      a.textContent = p.title;
-      a.href = 'work/' + encodeURIComponent(p.id) + '.html';
-      note.querySelector('.sticky__front').addEventListener('click', function () { flip(note, true); });
-      // Pressing the back (not its link) sticks it down again.
-      note.querySelector('.sticky__back').addEventListener('click', function (e) {
-        if (!e.target.closest('a')) flip(note, false);
-      });
-    });
-  }
-
   /* ---------- Polaroids ---------- */
   function initPolaroids() {
     var picks = D.polaroids.filter(real);
@@ -404,33 +360,201 @@
     });
   }
 
-  /* ---------- the notebook ---------- */
-  function initNotebook() {
-    var nb = desk.querySelector('[data-notebook]');
-    var notes = D.margin.filter(function (m) { return project(m[0]); });
-    if (!nb || !notes.length) return;
-    var m = notes[dayNo() % notes.length], p = project(m[0]);
-    nb.href = 'work/' + encodeURIComponent(p.id) + '.html';
-    nb.querySelector('[data-nb-phrase]').textContent = m[1];
-    nb.querySelector('[data-nb-note]').textContent = m[2];
-    nb.querySelector('[data-nb-from]').textContent = '— ' + p.title;
-    nb.setAttribute('data-cue', 'Read ' + p.title);
-  }
-
   /* ---------- the mug ---------- */
   var DAYS = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+  /* The drink is the owner's photograph of it, cut out
+     (public/assets/drinks/<id>.webp), with steam or condensation laid over it
+     by CSS. DRINKS below are the drawn versions, kept as the fallback if a
+     photograph fails to load: in the mug's old 64 x 70 box, base on y = 66,
+     liquids as paint, glass and ice as tokens in css/desk.css. */
+  var STEAM = function (x, y) {
+    return '<g class="mug__steam" fill="none" stroke-width="2.2" stroke-linecap="round" transform="translate(' + x + ' ' + y + ')">' +
+      '<path d="M-10 14c-4-5 4-8 0-14"/><path d="M0 12c-4-5 4-8 0-14"/><path d="M10 14c-4-5 4-8 0-14"/></g>';
+  };
+  // A liquid surface that never sits still: a wave twice the glass's width,
+  // slid sideways by CSS one period at a time, so the loop has no seam.
+  function wave(y, amp, fill, cls) {
+    var d = 'M-64 ' + y + ' q8 ' + (-amp) + ' 16 0';
+    for (var x = -48; x < 128; x += 16) d += ' t16 0';
+    return '<path class="drink__wave ' + (cls || '') + '" fill="' + fill + '" d="' + d + ' V90 H-64Z"/>';
+  }
+  function clip(id, d) { return '<clipPath id="' + id + '"><path d="' + d + '"/></clipPath>'; }
+  function ice(x, y, s, cls) {
+    return '<rect class="drink__ice ' + (cls || '') + '" x="' + x + '" y="' + y + '" width="' + s + '" height="' + s + '" rx="' + (s / 6).toFixed(1) + '"/>';
+  }
+  function bubbles(xs) {
+    return '<g class="drink__fizz">' + xs.map(function (x, i) {
+      return '<circle cx="' + x + '" cy="62" r="' + (0.9 + (i % 3) * 0.4) + '" style="animation-delay:' + (-i * 0.53).toFixed(2) + 's"/>';
+    }).join('') + '</g>';
+  }
+  var DRINKS = {
+    'hazelnut-mocha': function () {
+      return STEAM(31, 4) +
+        '<path class="mug__handle" d="M50 34h4a8 8 0 0 1 0 16h-5" fill="none" stroke-width="5"/>' +
+        '<path class="mug__body" d="M10 26h42v30a10 10 0 0 1-10 10H20a10 10 0 0 1-10-10z"/>' +
+        '<g class="drink__liquid"><ellipse cx="31" cy="28.5" rx="18.5" ry="3.2" fill="#5b3420"/>' +
+        '<ellipse cx="31" cy="28.4" rx="15" ry="2.4" fill="#d8b38a"/>' +
+        '<path d="M22 28.6l3-1.2 3 1.2 3-1.2 3 1.2 3-1.2 3 1.2" fill="none" stroke="#4a2a18" stroke-width="0.9" stroke-linecap="round"/></g>' +
+        '<path class="mug__shine" d="M16 32v20" fill="none" stroke-width="2.5" stroke-linecap="round"/>' +
+        // a hazelnut on the desk beside it
+        '<ellipse cx="58" cy="63" rx="4.2" ry="3.4" fill="#8a5a32"/><path d="M54 61.5q4-3.4 8 0" fill="#5e3a1c"/>';
+    },
+    'ube-matcha-latte': function () {
+      var g = 'M14 -16H50L46.5 63Q46.2 66 43.5 66H20.5Q17.8 66 17.5 63Z';
+      return clip('dk-ube', g) + '<path class="drink__back" d="' + g + '"/>' +
+        '<path class="drink__straw" d="M38 -30L30 40" stroke-width="3.2" stroke-linecap="round"/>' +
+        '<g clip-path="url(#dk-ube)">' +
+          '<g class="drink__liquid"><rect x="0" y="-6" width="64" height="80" fill="#7fa94e"/>' +
+          wave(10, 2.2, '#efe8f1', 'drink__wave--slow') + wave(36, 2.6, '#8a5cb4', 'drink__wave--rev') + '</g>' +
+          ice(20, -12, 11, 'drink__ice--bob') + ice(32, -9, 10, 'drink__ice--bob2') +
+        '</g>' +
+        '<path class="drink__glass" d="' + g + '"/><path class="drink__glint" d="M19 -10L21.5 56" fill="none" stroke-width="2" stroke-linecap="round"/>';
+    },
+    'zen-garden': function () {
+      var g = 'M10 16H54L51.5 63Q51.2 66 48.5 66H15.5Q12.8 66 12.5 63Z';
+      return clip('dk-zen', g) + '<path class="drink__back" d="' + g + '"/>' +
+        '<g clip-path="url(#dk-zen)">' +
+          '<g class="drink__liquid"><rect x="0" y="22" width="64" height="60" fill="#f2d36a"/>' +
+          '<path d="M0 22H64V36H0Z" fill="#6c5fd6"/>' +
+          wave(34, 2.4, '#f2d36a', 'drink__wave--slow') + '</g>' +
+          ice(21, 20, 22, 'drink__ice--bob drink__ice--big') +
+        '</g>' +
+        '<path class="drink__glass" d="' + g + '"/><path class="drink__glint" d="M15 22L17 58" fill="none" stroke-width="2" stroke-linecap="round"/>' +
+        // the skewer through a basil leaf, resting on the rim
+        '<path class="drink__skewer" d="M46 -6L30 48" stroke-width="1.8" stroke-linecap="round"/>' +
+        '<path d="M48 8c-8-2-12 6-10 10 6 1 11-4 10-10z" fill="var(--leaf)"/><path d="M48 8l-9 9.5" stroke="var(--leaf-deep)" stroke-width="0.8" fill="none"/>';
+    },
+    'diet-coke': function () {
+      var g = 'M12 6H40L38 63Q37.8 66 35 66H17Q14.2 66 14 63Z';
+      return clip('dk-coke', g) + '<path class="drink__back" d="' + g + '"/>' +
+        '<g clip-path="url(#dk-coke)">' +
+          '<g class="drink__liquid"><rect x="0" y="14" width="64" height="60" fill="#2a140c"/>' +
+          wave(14, 1.2, '#2a140c', '') + '<rect x="0" y="12.6" width="64" height="1.6" fill="#7a4a30" opacity="0.7"/></g>' +
+          ice(16, 12, 10, 'drink__ice--bob') + ice(26, 15, 9, 'drink__ice--bob2') +
+          bubbles([18, 22, 27, 31, 35, 20, 29]) +
+        '</g>' +
+        '<path class="drink__glass" d="' + g + '"/><path class="drink__glint" d="M16.5 12L18 58" fill="none" stroke-width="2" stroke-linecap="round"/>' +
+        // a silver can beside it, red band, no lettering
+        '<g class="drink__can"><rect x="43" y="32" width="15" height="34" rx="2.5" fill="#d7dadd"/>' +
+        '<rect x="43" y="32" width="4" height="34" rx="2" fill="#f4f6f7" opacity="0.8"/>' +
+        '<path d="M43 46q7.5-5 15 0v6q-7.5-5-15 0z" fill="#d42a2a"/>' +
+        '<ellipse cx="50.5" cy="32.5" rx="7.5" ry="1.6" fill="#b9bdc1"/></g>';
+    },
+    'citron-tea': function () {
+      var g = 'M12 24H46V56A10 10 0 0 1 36 66H22A10 10 0 0 1 12 56Z';
+      return STEAM(29, 2) + clip('dk-cit', g) + '<path class="drink__back" d="' + g + '"/>' +
+        '<path class="drink__glass drink__handle" d="M46 34h4a8 8 0 0 1 0 16h-4" fill="none" stroke-width="3"/>' +
+        '<g clip-path="url(#dk-cit)">' +
+          '<g class="drink__liquid"><rect x="0" y="30" width="64" height="50" fill="#e9952f"/>' +
+          wave(30, 1.4, '#f0ad4a', 'drink__wave--slow') + '</g>' +
+          '<g class="drink__peel"><path d="M18 34q6-3 11 1" /><path d="M31 37q5 2 9-2"/><path d="M22 44q4 3 9 0"/></g>' +
+        '</g>' +
+        '<path class="drink__glass" d="' + g + '"/><path class="drink__glint" d="M16 30V56" fill="none" stroke-width="2" stroke-linecap="round"/>';
+    },
+    'lemon-tea': function () {
+      var g = 'M15 18H47L44.5 63Q44.2 66 41.5 66H20.5Q17.8 66 17.5 63Z';
+      var seg = '';
+      for (var k = 0; k < 8; k++) {
+        var a = k / 8 * 2 * Math.PI;
+        seg += 'M47 18L' + (47 + 7 * Math.cos(a)).toFixed(1) + ' ' + (18 + 7 * Math.sin(a)).toFixed(1);
+      }
+      return STEAM(29, -4) + clip('dk-lem', g) + '<path class="drink__back" d="' + g + '"/>' +
+        '<g clip-path="url(#dk-lem)">' +
+          '<g class="drink__liquid"><rect x="0" y="26" width="64" height="60" fill="#d9a23a"/>' +
+          wave(26, 1.4, '#e6b851', 'drink__wave--slow') + '</g>' +
+          '<ellipse class="drink__float" cx="27" cy="28" rx="6.5" ry="1.8" fill="#f6dc5a"/>' +
+        '</g>' +
+        '<path class="drink__glass" d="' + g + '"/><path class="drink__glint" d="M19.5 24L21.5 58" fill="none" stroke-width="2" stroke-linecap="round"/>' +
+        // a lemon wheel on the rim
+        '<circle cx="47" cy="18" r="8.5" fill="#f2d03b"/><circle cx="47" cy="18" r="7" fill="#f8e57a"/>' +
+        '<path d="' + seg + '" stroke="#fffbe0" stroke-width="0.8"/>';
+    },
+    'ginger-chai': function () {
+      // a cutting-chai glass: small, fluted, wider at the top
+      var g = 'M16 30H44L41.5 63Q41.2 66 38.5 66H21.5Q18.8 66 18.5 63Z';
+      return STEAM(30, 8) + clip('dk-chai', g) + '<path class="drink__back" d="' + g + '"/>' +
+        '<g clip-path="url(#dk-chai)">' +
+          '<g class="drink__liquid"><rect x="0" y="34" width="64" height="40" fill="#b07a46"/>' +
+          wave(34, 1.2, '#d6b088', 'drink__wave--slow') + '</g>' +
+        '</g>' +
+        '<path class="drink__glass" d="' + g + '"/>' +
+        '<path class="drink__flute" d="M22 32L23.5 64M27 32L27.8 64M32 32V64M37 32L36.2 64M42 32L40.5 64" fill="none" stroke-width="0.8"/>' +
+        // a knob of ginger beside it
+        '<path d="M46 66c-1-4 2-6 5-5 1-3 5-3 6 0 3 0 4 3 2 5z" fill="#d9b679" stroke="#a8823f" stroke-width="0.8"/>';
+    }
+  };
+
+  /* Where the effects sit on each photograph, as fractions of it: steam
+     rises from the mouth of a hot drink ([x, y] of the rim's centre, and the
+     width of the plume as a fraction of the photograph), and
+     condensation beads on the glass of a cold one ([x0, y0, x1, y1]). */
+  var FX = {
+    'ginger-chai': { steam: [0.57, 0.04, 0.5] },
+    'citron-tea': { steam: [0.62, 0.05, 0.3] },
+    'lemon-tea': { steam: [0.42, 0.1, 0.55] },
+    'hazelnut-mocha': { dew: [0.08, 0.12, 0.92, 0.96] },
+    'ube-matcha-latte': { dew: [0.06, 0.08, 0.94, 0.96] },
+    'zen-garden': { dew: [0.1, 0.22, 0.92, 0.96] },
+    'diet-coke': { dew: [0.08, 0.15, 0.6, 0.97] }
+  };
+  var OLD_MUG_CM = 9;   // what the old drawn mug stood for
+
+  function steamFx(at) {
+    return '<span class="drink__steam" style="left:' + at[0] * 100 + '%;top:' + at[1] * 100 + '%;width:' + at[2] * 100 + '%">' +
+      '<svg viewBox="-20 -2 40 22" aria-hidden="true" focusable="false">' + STEAM(0, 0) + '</svg></span>';
+  }
+  // Beads scattered over the glass at random each load, each on its own
+  // slow loop: it forms, swells, slides a little way down and is gone.
+  function dewFx(box) {
+    var beads = '';
+    for (var i = 0; i < 12; i++) {
+      beads += '<i style="left:' + (Math.random() * 92).toFixed(1) + '%;top:' + (Math.random() * 80).toFixed(1) + '%;' +
+        '--s:' + (0.6 + Math.random() * 0.9).toFixed(2) + ';animation-delay:' + (-Math.random() * 9).toFixed(2) + 's;' +
+        'animation-duration:' + (7 + Math.random() * 5).toFixed(2) + 's"></i>';
+    }
+    return '<span class="drink__dew" aria-hidden="true" style="left:' + box[0] * 100 + '%;top:' + box[1] * 100 + '%;' +
+      'width:' + (box[2] - box[0]) * 100 + '%;height:' + (box[3] - box[1]) * 100 + '%">' + beads + '</span>';
+  }
+
   function initMug() {
     var mug = desk.querySelector('[data-mug]');
     if (!mug) return;
+    var d = new Date().getDay(), drink = D.drinks[d] || ['ginger-chai', 'ginger chai', true, 9.5];
+    var id = drink[0], fx = FX[id] || {};
+    // Real sizes: the inline --w is the old 9 cm mug's width, its height
+    // 70/64 of that; this drink is scaled by its own height in cm, and lifted
+    // by the difference so it stands where the mug stood.
+    var base = parseFloat(mug.style.getPropertyValue('--w')) || 4.2;
+    var refH = base * 70 / 64, h = refH * (drink[3] || OLD_MUG_CM) / OLD_MUG_CM;
+    var img = new Image();
+    img.className = 'drink__img';
+    img.alt = '';
+    img.draggable = false;
+    img.decoding = 'async';
+    img.onload = function () {
+      mug.style.setProperty('--dw', (h * img.naturalWidth / img.naturalHeight).toFixed(3) + '%');
+      mug.style.marginTop = (refH - h).toFixed(3) + '%';
+    };
+    img.onerror = function () {
+      if (!DRINKS[id]) return;
+      mug.innerHTML = '<svg viewBox="0 0 64 70" aria-hidden="true" focusable="false">' + DRINKS[id]() + '</svg>';
+      mug.style.removeProperty('--dw');
+      mug.style.marginTop = '';
+    };
+    img.src = 'public/assets/drinks/' + encodeURIComponent(id) + '.webp';
+    mug.innerHTML = '';
+    mug.appendChild(img);
+    mug.insertAdjacentHTML('beforeend', fx.steam ? steamFx(fx.steam) : fx.dew ? dewFx(fx.dew) : '');
+    mug.setAttribute('data-drink', id);
+    mug.classList.toggle('is-iced', !drink[2]);
+
     function sync() {
-      var d = new Date().getDay(), drink = D.drinks[d] || ['tea', '#b9824f'];
       var t = root.getAttribute('data-time');
-      var cold = t === 'night';
-      mug.style.setProperty('--drink', /^#[0-9a-f]{6}$/i.test(drink[1]) ? drink[1] : '#b9824f');
+      var cold = drink[2] && t === 'night';
       mug.classList.toggle('is-cold', cold);
-      var say = DAYS[d] + '’s ' + drink[0] + (cold ? ', gone cold' : t === 'morning' ? ', fresh' : '');
+      var say = DAYS[d] + '’s ' + drink[1] + (cold ? ', gone cold' : drink[2] && t === 'morning' ? ', fresh' : '');
       mug.setAttribute('data-cue', say);
-      mug.setAttribute('aria-label', 'A mug: ' + say);
+      mug.setAttribute('aria-label', 'A drink: ' + say);
     }
     window.addEventListener('themechange', sync);
     sync();
@@ -466,30 +590,52 @@
   }
 
   /* ---------- the card holder ----------
-     A vCard made here, from what the page already shows. */
+     Taking a card shows it, full size, on the page: a native <dialog>, as the
+     photo popover is, so Escape, focus trapping and the backdrop come free.
+     Nothing is downloaded (owner's request, 2026-10-24). Every field is
+     already on the page. */
   function initCards() {
     var btn = desk.querySelector('[data-cards]');
     if (!btn) return;
     var holder = btn.closest('.cards');
+    var dlg = null;
+
+    function build() {
+      var c = D.card;
+      var role = (document.querySelector('.hero__role') || { textContent: '' }).textContent.trim();
+      dlg = document.createElement('dialog');
+      dlg.className = 'bizcard';
+      dlg.setAttribute('aria-label', 'Business card: ' + c.name);
+      dlg.innerHTML =
+        '<div class="bizcard__card">' +
+          '<p class="bizcard__name">' + esc(c.name) + '</p>' +
+          (role ? '<p class="bizcard__role">' + esc(role) + '</p>' : '') +
+          '<ul class="bizcard__lines">' +
+            '<li><a href="' + safeUrl('mailto:' + c.email) + '">' + esc(c.email) + '</a></li>' +
+            c.urls.map(function (u) {
+              return '<li><a href="' + safeUrl(u) + '" target="_blank" rel="noopener noreferrer">' +
+                esc(u.replace(/^https?:\/\//, '')) + '</a></li>';
+            }).join('') +
+          '</ul>' +
+          '<button class="bizcard__close" type="button" aria-label="Put the card back">×</button>' +
+        '</div>';
+      document.body.appendChild(dlg);
+      dlg.querySelector('.bizcard__close').addEventListener('click', function () { dlg.close(); });
+      // A click on the backdrop, outside the card, puts it back too.
+      dlg.addEventListener('click', function (e) { if (e.target === dlg) dlg.close(); });
+      dlg.addEventListener('close', function () { holder.classList.remove('is-taken'); btn.focus(); });
+    }
+
     btn.addEventListener('click', function () {
-      var c = D.card, names = c.name.split(' ');
-      var vcf = [
-        'BEGIN:VCARD', 'VERSION:3.0',
-        'N:' + names.slice(1).join(' ') + ';' + names[0] + ';;;',
-        'FN:' + c.name,
-        'TITLE:' + (document.querySelector('.hero__role') || { textContent: '' }).textContent.trim(),
-        'EMAIL;TYPE=INTERNET:' + c.email
-      ].concat(c.urls.map(function (u) { return 'URL:' + u; }), ['END:VCARD']).join('\r\n') + '\r\n';
-      var url = URL.createObjectURL(new Blob([vcf], { type: 'text/vcard' }));
-      var a = document.createElement('a');
-      a.href = url;
-      a.download = c.name.toLowerCase().replace(/\s+/g, '-') + '.vcf';
-      document.body.appendChild(a);
-      a.click();
-      a.remove();
-      window.setTimeout(function () { URL.revokeObjectURL(url); }, 4000);
+      if (!dlg) build();
+      // The card is pale paper in both themes, but --accent-deep goes pale at
+      // night; measure the day's colour against the paper itself instead.
+      var P = window.portfolioPalette;
+      var paper = getComputedStyle(document.documentElement).getPropertyValue('--paper').trim();
+      if (P && P.against && paper) dlg.style.setProperty('--biz-accent', P.against(1, 3, paper));
       holder.classList.add('is-taken');
       api.moved();
+      if (dlg.showModal) dlg.showModal(); else dlg.setAttribute('open', '');
     });
   }
 
@@ -520,26 +666,23 @@
       desk.style.setProperty('--scr-h', (r.height * 1.1) + 'px');
     }
     new ResizeObserver(place).observe(desk);
-    window.addEventListener('modechange', place);
     place();
   }
 
   /* ---------- the mess ----------
      Every 45 s that the desk is on screen in desk mode, two things drift a
-     little, the mug creeps, and every other time a sticky note comes
-     unstuck and falls to the desk. "Tidy up" puts it all back. Never under
+     little and the mug creeps. "Tidy up" puts it all back. Never under
      reduced motion. */
   var MESS_MS = 45000;
   function initMess() {
     if (reduce) return;
-    var seen = true, tick = 0;
+    var seen = true;
     new IntersectionObserver(function (es) { seen = es[0].isIntersecting; }).observe(desk);
     function rand(a, b) { return a + Math.random() * (b - a); }
     window.setInterval(function () {
-      if (!seen || document.hidden || !isDesk() || !desk.offsetWidth) return;
-      tick++;
+      if (!seen || document.hidden || !desk.offsetWidth) return;
       var all = Array.prototype.filter.call(desk.querySelectorAll('[data-drag]'), function (el) {
-        return !el.classList.contains('is-held') && !el.classList.contains('sticky');
+        return !el.classList.contains('is-held');
       });
       for (var k = 0; k < 2 && all.length; k++) {
         var el = all.splice(Math.floor(Math.random() * all.length), 1)[0];
@@ -547,30 +690,16 @@
       }
       var mug = desk.querySelector('[data-mug]');
       if (mug) { ring(mug.getBoundingClientRect()); api.nudge(mug, rand(6, 16), rand(-2, 2), 0); }
-      if (tick % 2 === 0) {
-        var up = desk.querySelector('.sticky:not(.is-fallen)');
-        if (up) {
-          var d = desk.getBoundingClientRect(), r = up.getBoundingClientRect();
-          up.classList.add('is-fallen', 'is-falling');
-          api.nudge(up, rand(-30, 30), d.top + d.height * 0.9 - r.bottom, rand(-28, 28));
-          window.setTimeout(function () { up.classList.remove('is-falling'); }, 1000);
-        }
-      }
     }, MESS_MS);
   }
 
   /* ---------- drops and tidying ---------- */
   api.on('drop', function (el, from) {
     if (el.matches('[data-mug]')) ring(from);
-    else if (el.classList.contains('sticky')) flip(el, true);
     else if (el.classList.contains('pola')) el.classList.add('is-developed');
   });
   api.on('tidy', function () {
     if (rings) rings.innerHTML = '';
-    Array.prototype.forEach.call(desk.querySelectorAll('.sticky'), function (s) {
-      s.classList.remove('is-fallen', 'is-falling');
-      flip(s, false);
-    });
     Array.prototype.forEach.call(desk.querySelectorAll('.pola'), function (p) { p.classList.remove('is-developed'); });
     var holder = desk.querySelector('.cards');
     if (holder) holder.classList.remove('is-taken');
@@ -581,9 +710,7 @@
     initScreen();
     initWindow();
     initChip();
-    initSticky();
     initPolaroids();
-    initNotebook();
     initMug();
     initPlant();
     initCards();

@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-mode="desk">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -157,43 +157,22 @@
 <main id="main" tabindex="-1">
 
   <!-- ===================== Hero =====================
-       Three arrangements of the same stage, chosen by data-mode on <html>:
-       `graph` (the default) draws the latent field behind a centred lockup,
-       `desk` puts the lockup on a laptop's screen on a desk (900px and up),
-       and `mosaic` makes the lockup one tile in a grid of real artifacts.
+       The desk: the lockup on a laptop's screen, with things around it
+       (900px and up). Below that, the lockup alone. data-mode="desk" on
+       <html> is what css/style.css and css/desk.css key the desk's colours
+       and layout on; there are no other modes.
   -->
   <section class="hero" id="home" aria-labelledby="hero-name">
 
     <!-- --lap-dx/--lap-dy/--lap-s: how far desk mode's laptop, and the
          lockup on its screen with it, sits from its default place and at what
          scale (css/desk.css). Set with the ?edit=1 desk editor. -->
-    <div class="stage" style="--lap-dx:0vw; --lap-dy:0svh; --lap-s:0.62;">
-
-      <!-- ---------- The graph (graph mode) ----------
-           Two maps laid out by a force simulation in js/field.js: Projects
-           and its case studies on the left, Hobbies and its galleries on the
-           right. Every node goes somewhere. Hover lights a neighbourhood and
-           dims the rest; clicking a node goes there; nodes can be dragged.
-
-           Built from js/project-data.js and js/hobby-data.js, so it cannot
-           claim more than the site holds.
-
-           Decorative by contract — the canvas is aria-hidden and takes no
-           keyboard focus, because every node's destination is also a real,
-           focusable link further down this page. CSS hides this block in
-           mosaic mode. -->
-      <div class="field" aria-hidden="true" data-cue="Hover a node · click to go there">
-        <canvas class="field__canvas" data-field></canvas>
-        <!-- Both filled by js/field.js from the same category map the dots are
-             drawn from, so neither can fall out of step with the graph. -->
-        <ul class="field__legend" data-field-legend></ul>
-        <p class="field__read" data-field-read>Every project and hobby on this site — hover a node, click to go there</p>
-      </div>
+    <div class="stage" style="--lap-dx:-0.431vw; --lap-dy:-6.939svh; --lap-s:0.62;">
 
       <!-- ---------- Desk mode ----------
            A desk around the lockup: a photographed lamp, a music card, an
            AirDrop card, and the drawn objects js/desk-objects.js fills. Every [data-drag] child can be picked up and moved; "Tidy up" (and a reload) puts them all back.
-           Hidden in every other mode and below 900px. The desk starts below
+           Hidden below 900px. The desk starts below
            the header and clips to it, so nothing on it can reach into the nav;
            every --x/--y is a percentage of the desk, not the stage, and is the
            starting layout tidy-up returns to. Rules in css/desk.css; dragging,
@@ -258,7 +237,7 @@
              Lit whenever the dark theme is on, previewed while hovered. -->
         <button class="prop prop--lamp-btn" type="button" data-drag data-cue="Turn the lights off!"
                 aria-pressed="false" aria-label="Turn on the lamp (dark theme)"
-                style="--x:-0.5%; --y:37%; --w:14%; --h:51%; --r:0deg; --z:4;">
+                style="--x:1.841%; --y:37.207%; --w:14.000%; --h:51.000%; --r:0deg; --z:4;">
           <span class="lamp__fig">
             <img class="lamp__glow" src="public/assets/props/lamp-light.webp" alt="" aria-hidden="true"
                  width="600" height="599" loading="lazy" decoding="async" fetchpriority="low">
@@ -270,7 +249,7 @@
         <audio id="hero-audio" preload="none" loop
                src="public/assets/audio/track.mp3"></audio>
         <article class="obj obj--player" data-drag data-cue="Drag"
-                 style="--x:85.4%; --y:6%; --w:10.2%; --r:2deg; --z:6;">
+                 style="--x:85.400%; --y:6.000%; --w:10.200%; --r:2deg; --z:6;">
           <div class="player__disc" aria-hidden="true">
             <img src="public/assets/props/vinyl.webp" alt="" aria-hidden="true" width="760" height="760"
                  loading="lazy" decoding="async">
@@ -286,7 +265,7 @@
         </article>
 
         <article class="obj obj--share" data-drag data-cue="Drag"
-                 style="--x:73%; --y:7%; --w:10%; --r:-2deg; --z:7;">
+                 style="--x:70.931%; --y:34.715%; --w:10.000%; --r:-2deg; --z:7;">
           <p class="share__title">AirDrop</p>
           <p class="share__sub">Akshayaa would like to share a file</p>
           <div class="share__thumb" aria-hidden="true"></div>
@@ -302,60 +281,22 @@
 
         <!-- A paint chip: the day's Wada combination. -->
         <div class="obj chip" data-drag data-cue="Today's palette"
-             style="--x:30.5%; --y:13%; --w:7.4%; --r:-3deg; --z:6;">
+             style="--x:29.956%; --y:6.899%; --w:7.400%; --r:-3deg; --z:6;">
           <p class="chip__title">Today's Palette</p>
           <p class="chip__no" data-chip-no></p>
           <span class="chip__sw" data-chip-sw aria-hidden="true"><i></i><i></i><i></i></span>
         </div>
 
-        <!-- Sticky notes: one line each from a case study's "What I'd do
-             differently". Peel one (click, or pull it off) and it turns over
-             to say which project it came from. -->
-        <div class="sticky" data-drag style="--x:54.5%; --y:17%; --w:6.4%; --r:-4deg; --z:5;">
-          <div class="sticky__card">
-            <button class="sticky__front" type="button" data-cue="Peel it off" aria-expanded="false"><span data-sticky-line></span></button>
-            <p class="sticky__back" inert><span>from</span> <a data-sticky-link href="#work"></a></p>
-          </div>
-        </div>
-        <div class="sticky" data-drag style="--x:61.4%; --y:20%; --w:6.4%; --r:3deg; --z:5;">
-          <div class="sticky__card">
-            <button class="sticky__front" type="button" data-cue="Peel it off" aria-expanded="false"><span data-sticky-line></span></button>
-            <p class="sticky__back" inert><span>from</span> <a data-sticky-link href="#work"></a></p>
-          </div>
-        </div>
-        <div class="sticky" data-drag style="--x:57.8%; --y:32%; --w:6.4%; --r:-1deg; --z:5;">
-          <div class="sticky__card">
-            <button class="sticky__front" type="button" data-cue="Peel it off" aria-expanded="false"><span data-sticky-line></span></button>
-            <p class="sticky__back" inert><span>from</span> <a data-sticky-link href="#work"></a></p>
-          </div>
-        </div>
-
         <!-- A Polaroid stack from the galleries, top last. Pull the top one
              off and it develops; click any to open the photograph. -->
-        <button class="pola" type="button" data-drag data-pola="3" style="--x:21%; --y:63%; --w:6.4%; --r:7deg; --z:5;"></button>
-        <button class="pola" type="button" data-drag data-pola="2" style="--x:21.4%; --y:63.4%; --w:6.4%; --r:-5deg; --z:5;"></button>
-        <button class="pola" type="button" data-drag data-pola="1" style="--x:21%; --y:63%; --w:6.4%; --r:3deg; --z:5;"></button>
-        <button class="pola" type="button" data-drag data-pola="0" style="--x:21.2%; --y:62.6%; --w:6.4%; --r:-2deg; --z:5;"></button>
-
-        <!-- An open notebook: one margin note from a case study, a different
-             one each day. -->
-        <a class="notebook" data-drag data-notebook href="#work" data-cue="Read the case study"
-           style="--x:16%; --y:83%; --w:15%; --r:-3deg; --z:6;">
-          <span class="notebook__page notebook__page--l"><q data-nb-phrase></q></span>
-          <span class="notebook__page notebook__page--r"><span data-nb-note></span><span class="notebook__from" data-nb-from></span></span>
-        </a>
-
-        <!-- Habita, the Android app, running on a phone in a stand. -->
-        <a class="phone" data-drag href="work/habita.html" data-cue="Habita, on Android"
-           style="--x:73.2%; --y:66%; --w:4%; --r:0deg; --z:6;">
-          <img src="public/assets/projects/habita-phone-matrix.webp" width="210" height="432"
-               alt="Habita's priority matrix on an Android phone: the case study" decoding="async" loading="lazy">
-          <span class="phone__stand" aria-hidden="true"></span>
-        </a>
+        <button class="pola" type="button" data-drag data-pola="3" style="--x:67.815%; --y:10.156%; --w:6.400%; --r:7deg; --z:5;"></button>
+        <button class="pola" type="button" data-drag data-pola="2" style="--x:63.806%; --y:8.695%; --w:6.400%; --r:-5deg; --z:5;"></button>
+        <button class="pola" type="button" data-drag data-pola="1" style="--x:66.291%; --y:6.020%; --w:6.400%; --r:3deg; --z:5;"></button>
+        <button class="pola" type="button" data-drag data-pola="0" style="--x:65.620%; --y:9.343%; --w:6.400%; --r:-2deg; --z:5;"></button>
 
         <!-- The mug: a drink for each weekday, hot in the morning, cold at
              night. Leaves a ring where it stood when moved. -->
-        <div class="mug" data-drag role="img" data-mug style="--x:68.6%; --y:82%; --w:4.2%; --r:0deg; --z:7;">
+        <div class="mug" data-drag role="img" data-mug style="--x:70.723%; --y:71.348%; --w:4.200%; --r:0deg; --z:7;">
           <svg viewBox="0 0 64 70" aria-hidden="true" focusable="false">
             <g class="mug__steam" fill="none" stroke-width="2.2" stroke-linecap="round">
               <path d="M22 18c-4-5 4-8 0-14"/><path d="M32 16c-4-5 4-8 0-14"/><path d="M42 18c-4-5 4-8 0-14"/>
@@ -367,10 +308,10 @@
           </svg>
         </div>
 
-        <!-- A business-card holder: take a card, get a contact file. -->
-        <div class="cards" data-drag style="--x:79%; --y:84%; --w:6%; --r:0deg; --z:6;">
+        <!-- A business-card holder: take a card and it is shown on the page. -->
+        <div class="cards" data-drag style="--x:22.930%; --y:71.281%; --w:6.000%; --r:0deg; --z:6;">
           <button class="cards__take" type="button" data-cards data-cue="Take a card"
-                  aria-label="Take a business card (downloads a contact file)">
+                  aria-haspopup="dialog" aria-label="Take a business card">
             <span class="cards__card cards__card--3" aria-hidden="true"></span>
             <span class="cards__card cards__card--2" aria-hidden="true"></span>
             <span class="cards__card cards__card--1" aria-hidden="true"></span>
@@ -380,7 +321,7 @@
 
         <!-- A plant that wilts as the repos go stale: health from the newest
              `updated` date among the live projects. -->
-        <div class="plant" data-drag role="img" data-plant style="--x:87%; --y:51%; --w:9%; --r:0deg; --z:5;">
+        <div class="plant" data-drag role="img" data-plant style="--x:87.000%; --y:51.000%; --w:9.000%; --r:0deg; --z:5;">
           <svg viewBox="0 0 100 150" aria-hidden="true" focusable="false">
             <g class="plant__leaves">
               <path class="plant__stem" d="M50 108C50 84 48 62 50 30" fill="none" stroke-width="3"/>
@@ -407,35 +348,13 @@
       <div class="hero__lockup">
         <h1 class="hero__name" id="hero-name">Akshayaa Kashyap</h1>
         <p class="hero__role">AI Engineer</p>
-        <!-- The one line that has to survive a five-second visit. The graph
-             behind it is the most interesting thing on the page and the least
-             legible on arrival, so name, role and a proof point are stated
-             plainly over the top of it. Every figure here is on the page
-             below: four case studies in the list (the count the mosaic
-             derives too), and three tools out of their stacks. -->
+        <!-- The one line that has to survive a five-second visit: name, role
+             and a proof point, stated plainly. Every figure here is on the
+             page below: four case studies in the list, and three tools out
+             of their stacks. -->
         <p class="hero__proof">
           4 case studies, each shown working &middot; Python, PyTorch, React
         </p>
-      </div>
-
-      <!-- ---------- Mosaic (mosaic mode) ----------
-           The site at a glance: one tile per case study with its measured
-           figure, a count per section, a photograph per gallery. Built by
-           js/mosaic.js from the project, hobby and readings data. Real content, so unlike the graph's canvas it is not
-           aria-hidden: every tile is a real link. -->
-      <ul class="mosaic" role="list" data-mosaic aria-label="Mosaic"></ul>
-
-      <!-- The one control above the fold, in the slot the call-to-action pair
-           used to hold. It is pinned to the same place in every mode: it
-           chooses the arrangement, so it must not move when the arrangement
-           does. -->
-      <div class="hero__actions">
-        <span class="modes" role="radiogroup" aria-label="View mode">
-          <span class="modes__label" aria-hidden="true">View</span>
-          <button type="button" role="radio" data-mode-btn="graph"    aria-checked="true">graph</button>
-          <button type="button" role="radio" data-mode-btn="desk"   aria-checked="false">desk</button>
-          <button type="button" role="radio" data-mode-btn="mosaic"   aria-checked="false">mosaic</button>
-        </span>
       </div>
 
     </div>
@@ -612,8 +531,8 @@
         <p class="info__sig">Akshayaa</p>
       </div>
 
-      <!-- The Info pieces (bio by the hour, contact sheet, map, cards,
-           postcard…), written by js/info.js. INFO_PIECES at its top picks
+      <!-- The Info pieces after the intro (the charm bracelet),
+           written by js/info.js. INFO_PIECES at its top picks
            them and their order, and all their draft copy lives there. -->
       <div class="info-pieces" data-info-pieces></div>
     </div>
@@ -658,20 +577,14 @@
 <script src="js/project-data.js" defer></script>
 <script src="js/theme.js" defer></script>
 <script src="js/nav.js" defer></script>
-<script src="js/modes.js" defer></script>
 <script src="js/hero-hover.js" defer></script>
 <!-- ?v= forces a fresh copy after a change; bump it when desk-wall.js or
      its video changes, or browsers keep showing the old wall. -->
-<script src="js/desk-wall.js?v=7" defer></script>
+<script src="js/desk-wall.js?v=8" defer></script>
 <!-- Must load before script.js: it injects .reveal elements, and script.js
      registers the reveal observer over whatever is in the DOM at that point. -->
 <script src="js/hobby-data.js" defer></script>
-<!-- field.js reads both data files. onReady fires synchronously for a
-     deferred script (readyState is already "interactive"), so this has to
-     sit after project-data.js AND hobby-data.js, not merely be deferred. -->
-<script src="js/field.js" defer></script>
 <script src="js/readings-data.js" defer></script>
-<script src="js/mosaic.js" defer></script>
 <script src="js/hobbies.js" defer></script>
 <!-- Desk mode's objects: after project-, hobby- and readings-data.js, which
      they read, and after hero-hover.js, whose drag they hook into. -->

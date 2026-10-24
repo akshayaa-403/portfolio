@@ -254,6 +254,92 @@
     return rows ? '<dl class="detail__glance">' + rows + '</dl>' : '';
   }
 
+  /* ---------- the matryoshka ----------
+     The project as nested dolls, outermost first (`nest` in project-data.js):
+     the thing you see, then what it is made of, down to the smallest unit it
+     handles, which is the solid doll that does not open. Opening one lifts
+     its head off and stands the next beside it; the list under the row says
+     in words what each doll is, so the drawing is aria-hidden.
+
+     One doll shape, drawn at 0.8x per layer, painted in the day's three Wada
+     colours (the --graph-* tokens), turned one step per doll. */
+  var DOLL_TOP = 'M50 4C30 4 22 20 24 36C26 46 20 52 17 64L16 72H84L83 64C80 52 74 46 76 36C78 20 70 4 50 4Z';
+  var DOLL_BOT = 'M16 72C9 92 8 122 14 140C18 152 30 156 50 156C70 156 82 152 86 140C92 122 91 92 84 72Z';
+  var TONES = ['var(--graph-projects)', 'var(--graph-hobbies)', 'var(--graph-name)'];
+  function doll(i, solid) {
+    var petals = '';
+    for (var k = 0; k < 5; k++) {
+      var a = k / 5 * 2 * Math.PI - Math.PI / 2;
+      petals += '<circle cx="' + (50 + 7 * Math.cos(a)).toFixed(1) + '" cy="' + (108 + 7 * Math.sin(a)).toFixed(1) + '" r="5"/>';
+    }
+    return '<span class="nest__doll' + (solid ? ' is-solid' : '') + '" data-doll="' + i + '"' +
+        ' style="--h:' + Math.round(190 * Math.pow(0.8, i)) + 'px; --doll-a:' + TONES[i % 3] + '; --doll-b:' + TONES[(i + 1) % 3] + '; --doll-c:' + TONES[(i + 2) % 3] + '">' +
+      '<svg viewBox="0 -40 100 200" aria-hidden="true" focusable="false">' +
+        '<g class="nest__bot"><path class="nest__shell" d="' + DOLL_BOT + '"/>' +
+          '<ellipse class="nest__apron" cx="50" cy="110" rx="23" ry="32"/>' +
+          '<g class="nest__flower">' + petals + '</g><circle class="nest__heart" cx="50" cy="108" r="3.4"/></g>' +
+        '<g class="nest__top"><path class="nest__shell" d="' + DOLL_TOP + '"/>' +
+          (solid ? '' : '<rect class="nest__band" x="16" y="68" width="68" height="5" rx="2"/>') +
+          '<ellipse class="nest__face" cx="50" cy="37" rx="14" ry="15"/>' +
+          '<path class="nest__hair" d="M36 33Q50 18 64 33"/>' +
+          '<circle class="nest__eye" cx="45" cy="38" r="1.7"/><circle class="nest__eye" cx="55" cy="38" r="1.7"/>' +
+          '<circle class="nest__cheek" cx="41" cy="44" r="3"/><circle class="nest__cheek" cx="59" cy="44" r="3"/>' +
+          '<path class="nest__mouth" d="M47 47Q50 49.5 53 47"/></g>' +
+      '</svg></span>';
+  }
+  function nest(p) {
+    if (!p.nest || !p.nest.length) return '';
+    var n = p.nest.length;
+    var items = p.nest.map(function (l, i) {
+      var last = i === n - 1;
+      return '<li class="nest__item"' + (i ? ' hidden' : '') + '><b>' + esc(l[0]) + '</b> ' + esc(l[1]) +
+        (last ? ' <em>This one doesn’t open.</em>' : '') + '</li>';
+    }).join('');
+    return '<section class="nest" aria-labelledby="nest-h" data-nest>' +
+      '<h2 class="nest__h" id="nest-h">All the way down</h2>' +
+      '<div class="nest__row" data-nest-row data-cue="Open it">' + doll(0, n === 1) + '</div>' +
+      '<ol class="nest__list">' + items + '</ol>' +
+      '<button type="button" class="nest__btn" data-nest-btn></button>' +
+    '</section>';
+  }
+  function initNest(root, p) {
+    var box = root.querySelector('[data-nest]');
+    if (!box) return;
+    var row = box.querySelector('[data-nest-row]'), btn = box.querySelector('[data-nest-btn]');
+    var items = box.querySelectorAll('.nest__item');
+    var n = p.nest.length, at = 0;   // index of the innermost doll standing
+    var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    function label() {
+      btn.textContent = at < n - 1 ? 'Open ' + p.nest[at][0].replace(/^The /, 'the ') : 'Put them back';
+    }
+    function open() {
+      if (at >= n - 1) {
+        // The solid one: a shake, then everything goes back inside.
+        var last = row.lastElementChild;
+        if (!reduce && !last.classList.contains('is-shaking')) {
+          last.classList.add('is-shaking');
+          setTimeout(function () { last.classList.remove('is-shaking'); }, 500);
+        }
+        return;
+      }
+      row.lastElementChild.classList.add('is-open');
+      at++;
+      row.insertAdjacentHTML('beforeend', doll(at, at === n - 1));
+      if (!reduce) row.lastElementChild.classList.add('is-new');
+      items[at].hidden = false;
+      label();
+    }
+    function reset() {
+      row.innerHTML = doll(0, n === 1);
+      for (var i = 1; i < items.length; i++) items[i].hidden = true;
+      at = 0;
+      label();
+    }
+    btn.addEventListener('click', function () { if (at >= n - 1) reset(); else open(); });
+    row.addEventListener('click', open);
+    label();
+  }
+
   /* "2025-04-04" -> "4 April 2025". Built from the parts rather than
      toLocaleDateString(new Date(s)): parsing a bare date string gives UTC
      midnight, which renders as the previous day for anyone west of London. */
@@ -339,6 +425,7 @@
       '</header>' +
       '<div class="detail__body">' +
         glance(p) +
+        nest(p) +
         '<p class="detail__dek" data-dek hidden></p>' +
       '</div>' +
       '<article class="a" id="article" aria-busy="true"></article>' +
@@ -346,6 +433,7 @@
 
     initCopy(root);
     initLive(root);
+    initNest(root, p);
 
     loadArticle(p.id, function (spec) {
       var art = document.getElementById('article');

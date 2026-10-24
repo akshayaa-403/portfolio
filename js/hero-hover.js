@@ -90,7 +90,6 @@
       root.style.setProperty('--lamp-y', ((r.top + r.height * 0.42 - d.top) / d.height * 100).toFixed(1) + '%');
     }
     new ResizeObserver(lampLight).observe(desk);
-    window.addEventListener('modechange', lampLight);
 
     function swallow(e) { e.preventDefault(); e.stopPropagation(); }
 
@@ -266,15 +265,6 @@
     function leave() { if (!userControlled) pause(); }
     card.addEventListener('pointerleave', leave);
     card.addEventListener('pointercancel', leave);
-
-    // The card is hidden in every other mode, so nothing could stop it there.
-    window.addEventListener('modechange', function () {
-      if (root.getAttribute('data-mode') !== 'desk') {
-        window.clearInterval(fade);
-        audio.pause();
-        audio.volume = 0;
-      }
-    });
   }
 
   window.onReady(function () {

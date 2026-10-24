@@ -19,7 +19,7 @@
    navigating, and tomorrow is a new one.
 
    WHEN IT APPLIES
-   In every mode — graph, desk and mosaic all wear the day's combination.
+   On every page — the desk and every other page wear the day's combination.
 
    HOW IT STAYS READABLE
    Nothing here is used at the value Wada wrote down. Every token is stepped
@@ -33,7 +33,7 @@
    Which way to step is decided from the ground's own measured luminance, not
    from `data-theme`, which is absent when the OS is deciding.
 
-   Loaded on every page, after js/util.js and before js/field.js. */
+   Loaded on every page, straight after js/boot.js. */
 (function () {
   'use strict';
 
@@ -42,7 +42,7 @@
   var root = document.documentElement;
 
   /* ---------- colour maths ----------
-     Small, exact, and shared: js/field.js and the case-study widgets (js/article.js) read these
+     Small, exact, and shared: the case-study widgets (js/article.js) read these
      off window.portfolioPalette rather than keeping a second copy that can
      drift. */
 
@@ -221,11 +221,9 @@
       '--accent-tint-strong': rgbaOf(accent, 0.18),
       '--on-accent-deep': onDeep,
       '--on-photo-accent': css(onPhoto),
-      // The graph's two maps keep their own names so field.js and the legend
-      // need no special case; the third colour is graph mode's lockup. 4.5:1 is the
-      // hub's bar, and field.js ramps the smaller dots down from it to 3:1 —
-      // so the swatch in the legend is exactly the hub it stands for.
-      // Bands swapped, to match shade() in js/field.js: the graph wears the
+      // Named for the graph that first used them (it is gone): two map
+      // colours and the name's. 4.5:1 is the bar, so each reads as text too.
+      // Bands swapped, as the old graph's shade() did: these wear the
       // dark theme's lightness band on paper and the light theme's on a dark
       // ground. `meet` still walks each one until it measures 4.5:1 against
       // the ground it is actually on, so the swap changes the colour and
@@ -296,8 +294,8 @@
                       dark ? 46 : 26, dark ? 78 : 46));
     },
 
-    /* Called whenever the palette is re-applied — a theme flip or a mode
-       change. Fires immediately with the current state so a caller never has
+    /* Called whenever the palette is re-applied — a theme flip or a change
+       of period. Fires immediately with the current state so a caller never has
        to handle "not yet". */
     on: function (fn) {
       listeners.push(fn);
@@ -307,9 +305,9 @@
 
   apply();
 
-  // The ground moves when the theme flips, the time of day changes, or desk
-  // mode swaps in its own grounds, so every measured step is walked again.
+  // The ground moves when the theme flips or the time of day changes, so
+  // every measured step is walked again.
   new MutationObserver(apply).observe(root, {
-    attributes: true, attributeFilter: ['data-theme', 'data-time', 'data-mode']
+    attributes: true, attributeFilter: ['data-theme', 'data-time']
   });
 })();

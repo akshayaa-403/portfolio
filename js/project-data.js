@@ -19,6 +19,9 @@
      tags                           [[label, https url]] — the paper or spec
      glance                         { problem, built, result } at the top of
                                     the case study
+     nest                           [[name, note]], outermost first: the
+                                    matryoshka under "At a glance". Each doll
+                                    opens to the one inside; the last is solid
      metric                         the one measured figure on the home row
      screen                         what the home row's hover screen shows;
                                     .mp4/.webm play, anything else is a still
@@ -68,6 +71,13 @@ const projects = [
       "built": "A daily cross-sectional model: four factors z-scored per date, clipped to ±3 and summed with weights; a weekly backtest that trades yesterday's signal and only the names that change, at 10 bps; a 2,000-portfolio significance test; a Streamlit dashboard; 39 tests.",
       "result": "Re-run on 2026-10-16 over Oct 2025 to Oct 2026: +70.1% against SPY's +18.7%, but random ten-name portfolios from the same 50 stocks made +43.8% at the median, and p = 0.067. Most of the beat is survivorship in the universe."
     },
+    "nest": [
+      ["The dashboard", "A Streamlit page that ranks the 50 largest liquid S&P 500 stocks, every day."],
+      ["The backtest", "Trades yesterday's ranking once a week, only the names that change, at 10 bps, against SPY and 2,000 random portfolios."],
+      ["The ranking", "A weighted sum of four factors, each z-scored across the 50 stocks on every date."],
+      ["The factors", "12-minus-1 momentum, signed volume, volatility, and VADER/TextBlob headline sentiment."],
+      ["One z-score", "One stock, one factor, one date, clipped so it never sits more than 3 from the mean."]
+    ],
     "metric": "Beat SPY, p = 0.07",
     "screen": "public/assets/projects/quant-current.webp",
     "fragments": [
@@ -135,6 +145,13 @@ const projects = [
       "built": "A seeded generator of 100 paired frames; a classical path (difference of Gaussians, then CLAHE); a hybrid path that adds a residual U-Net, with fp16 weights committed; and a browser port of the classical half.",
       "result": "On the 20 held-out frames, PSNR goes from 11.46 to 20.26 dB and improves on all 20. Otsu Dice moves only from 0.894 to 0.907, but the worst frame rises from 0.556 to 0.808. Writing this up, I found that the CLAHE clip limit had no effect in 16-bit."
     },
+    "nest": [
+      ["The app", "A Gradio app, and a browser port of the classical half that agrees with OpenCV to about 50 dB."],
+      ["The pipeline", "A classical path, difference of Gaussians then CLAHE, and a hybrid path that adds a U-Net."],
+      ["The model", "A 31M-parameter residual U-Net, its fp16 weights committed to the repo."],
+      ["The frame", "One of 100 seeded synthetic frames, 20 of them held out for testing."],
+      ["One pixel", "One pixel that halo, uneven light and noise push across the threshold segmentation starts from."]
+    ],
     "metric": "PSNR 11.46 → 20.26 dB",
     "screen": "public/assets/projects/phase-demo-metrics.webp",
     "fragments": [
@@ -205,6 +222,13 @@ const projects = [
       "built": "A React and Supabase storefront for 106 originals across five collections, with a five-question style quiz, online class booking, and a cart that records the order and hands the buyer to WhatsApp — where the sales were already happening.",
       "result": "A live site the studio sells from. Commercial figures belong to the client and are not mine to publish."
     },
+    "nest": [
+      ["The shop", "A live React and Supabase storefront the studio sells from."],
+      ["The catalogue", "106 original paintings across five collections."],
+      ["The cart", "Records the order, then hands the buyer to WhatsApp, where the sales were already happening."],
+      ["The order", "One row in Supabase, priced on the server, which takes nothing the browser says on trust."],
+      ["One painting", "An original. There is only one of it, so it can only be sold once."]
+    ],
     "metric": "106 paintings, 5 collections",
     "screen": "public/assets/projects/arteza-home.webp",
     "fragments": [
@@ -354,6 +378,13 @@ const projects = [
       "built": "An Android task manager on the Eisenhower matrix — four urgency/importance quadrants — with a drag-to-schedule day timeline that writes real events into the phone's own calendar.",
       "result": "Working Android app, no published APK. The browser preview runs the matrix and the day view on GitHub Pages, without calendar sync. What the app demonstrates is the calendar write: time blocked in Habita shows up in the calendar the rest of the phone already reads."
     },
+    "nest": [
+      ["The app", "An Android task manager built on the Eisenhower matrix."],
+      ["The matrix", "Four quadrants of urgency and importance."],
+      ["The day", "A timeline you drag tasks onto."],
+      ["The block", "One stretch of time, written into the phone's own calendar as a real event."],
+      ["One calendar row", "A single entry in Android's CalendarContract, which every other app on the phone can already read."]
+    ],
     "screen": [
       "public/assets/projects/habita-phone-matrix.webp",
       "public/assets/projects/habita-phone-tilt.webp"
@@ -506,6 +537,13 @@ const projects = [
       "built": "An event-driven agent on AWS — API Gateway to Lambda to SQS to Lex V2 — with DynamoDB session state per issue, a Claude fallback on Bedrock, OCR over pasted screenshots, and automatic Jira ticket creation with capacity-aware assignment.",
       "result": "Four OCR engines benchmarked against hand-written ground truth. Mistral OCR was the most accurate (100%, 823 ms), but PaddleOCR (98.9%, 1,075 ms) was the engine packaged for Lambda. Seven test files cover the locking, on-call and dispatch paths."
     },
+    "nest": [
+      ["The Slack DM", "Where an IT ticket arrives, often as a message and a screenshot."],
+      ["The pipeline", "API Gateway to Lambda to SQS to Lex V2, with session state per issue in DynamoDB."],
+      ["The fallback", "A Bedrock knowledge base, then Claude, for whatever Lex cannot answer."],
+      ["The screenshot", "Read by OCR. Four engines were benchmarked; PaddleOCR was the one packaged for Lambda."],
+      ["One ticket", "One Jira ticket, assigned to whichever human is on shift and has room."]
+    ],
     "metric": "4 OCR engines benchmarked",
     "thumb": false,
     "fragments": [
@@ -578,6 +616,13 @@ const projects = [
       "built": "A browser visualiser that reframes a day as a routing problem — a true travelling-salesman tour for errands, a sequencing problem for a workday — and runs ant colony optimisation over it live, with two formulations, dependency constraints, every parameter exposed, and a convergence chart.",
       "result": "Runs entirely in the tab — no backend, no build step. On the sample day it cuts the cost of the order as entered by about a quarter, and a Node test suite checks that against the shipped file in CI."
     },
+    "nest": [
+      ["The visualiser", "Runs entirely in the browser tab, with no backend and no build step."],
+      ["The day, as a route", "Errands as a travelling-salesman tour, a workday as a sequencing problem."],
+      ["The colony", "Virtual ants converging on an order, with every parameter on a slider."],
+      ["One ant", "Builds one order, task by task, weighing the pheromone on each step against how good it looks."],
+      ["One pheromone value", "One number on the edge between two tasks, laid down by ants and evaporating."]
+    ],
     "fragments": [
       "ant colony optimisation",
       "pheromone",
@@ -636,6 +681,13 @@ const projects = [
       "built": "A static, dependency-free browser app that runs four extractive summarisers over any Wikipedia article at once and scores each with ROUGE against the article's own lead section. The lead cut to the same 150-word budget sets a human ceiling.",
       "result": "MMR reaches ROUGE-1 0.400 on Penguin against a human ceiling of 0.709 — 56% of it. The winner changes with the article, which is the finding. TextRank, the slowest of the four, takes about 60 ms on a 4,300-word article, entirely in the tab."
     },
+    "nest": [
+      ["The app", "Static and dependency-free: everything runs in the tab."],
+      ["The article", "Any Wikipedia article, fetched through the MediaWiki API."],
+      ["The summarisers", "Four extractive algorithms, run side by side on the same 150-word budget."],
+      ["The score", "ROUGE against the article's own lead section, the summary its editors wrote."],
+      ["One word", "One overlapping word: the unit ROUGE-1 counts."]
+    ],
     "metric": "ROUGE-1 0.400, 56% of the human ceiling",
     "fragments": [
       "extractive",

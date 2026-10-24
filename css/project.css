@@ -78,6 +78,73 @@
   .detail__glance dt { margin-top: 12px; }
 }
 
+/* ---------- all the way down: the matryoshka ----------
+   The project as nested dolls (`nest` in project-data.js, drawn by
+   js/project-detail.js). Painted in the day's three Wada colours; the face
+   is --surface and the lines are --ink, so it follows the theme. The words
+   are the list under the row, which is what a screen reader gets. */
+.nest { margin: 0 0 var(--gap-xl, 48px); }
+.nest__h {
+  margin: 0 0 18px;
+  color: var(--ink-muted);
+  font: 500 11px/1.4 var(--font-mono);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+.nest__row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 4px 14px;
+  min-height: 236px;
+  cursor: pointer;
+}
+.nest__doll { display: block; flex: none; width: calc(var(--h) * 0.5 * var(--k, 1)); height: calc(var(--h) * 1.25 * var(--k, 1)); }
+/* Five dolls side by side on a phone: smaller, so the last one does not wrap. */
+@media (max-width: 599.98px) { .nest__row { --k: 0.78; gap: 4px 8px; min-height: 190px; } }
+.nest__doll svg { display: block; width: 100%; height: 100%; overflow: visible; }
+.nest__shell { fill: var(--doll-a); stroke: var(--ink); stroke-width: 1.6; }
+.nest__apron { fill: var(--doll-b); }
+.nest__flower circle { fill: var(--doll-c); }
+.nest__heart { fill: var(--surface); }
+.nest__band { fill: var(--doll-c); }
+.nest__face { fill: var(--surface); stroke: var(--ink); stroke-width: 1.2; }
+.nest__hair { fill: none; stroke: var(--ink); stroke-width: 1.4; stroke-linecap: round; }
+.nest__eye { fill: var(--ink); }
+.nest__cheek { fill: var(--doll-c); opacity: 0.55; }
+.nest__mouth { fill: none; stroke: var(--ink); stroke-width: 1.2; stroke-linecap: round; }
+/* Opened: the head lifted off and tipped back. */
+.nest__top { transform-box: fill-box; transform-origin: 15% 100%; }
+.nest__doll.is-open .nest__top { transform: translateY(-22px) rotate(-12deg); }
+.nest__doll.is-solid .nest__top { transform: none; }
+@media (prefers-reduced-motion: no-preference) {
+  .nest__top { transition: transform 0.55s cubic-bezier(0.3, 1.4, 0.5, 1); }
+  .nest__doll.is-new { animation: nest-out 0.6s cubic-bezier(0.2, 0.8, 0.3, 1) 0.15s backwards; }
+  .nest__doll.is-shaking { animation: nest-shake 0.45s ease-in-out; transform-origin: 50% 100%; }
+}
+@keyframes nest-out {
+  from { opacity: 0; transform: translateX(-60%) scale(0.85); }
+}
+@keyframes nest-shake {
+  25% { transform: rotate(-7deg); }
+  75% { transform: rotate(7deg); }
+}
+.nest__list { display: grid; gap: 8px; margin: 18px 0 16px; padding-left: 2.2em; color: var(--ink-body); font-size: 14.5px; line-height: 1.55; }
+.nest__list b { color: var(--ink); font-weight: 600; }
+.nest__list em { color: var(--ink-muted); }
+.nest__btn {
+  min-height: 40px;
+  padding: 8px 16px;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius-pill);
+  background: var(--surface);
+  color: var(--ink);
+  font: 500 13px/1.2 var(--font-mono);
+  cursor: pointer;
+}
+.nest__btn:hover { border-color: var(--accent); color: var(--accent-ink); }
+.nest__btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+
 .detail__facts {
   display: flex;
   flex-wrap: wrap;

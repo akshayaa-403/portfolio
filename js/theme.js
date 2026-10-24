@@ -175,8 +175,6 @@
     settle();
     // Check the clock once a minute, so evening arrives on an open page.
     setInterval(function () { if (!override()) settle(); }, 60000);
-    // Evening is dark everywhere but desk mode, so a mode change can flip it.
-    window.addEventListener('modechange', settle);
     initHeaderHeight();
     initToggle();
     initPicker();

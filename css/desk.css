@@ -6,7 +6,7 @@
    over the resume, and the drawn objects of js/desk-objects.js (window,
    notes, Polaroids, mug, plant...). Every [data-drag] object can be
    picked up and moved. Every element here exists only in [data-mode='desk'] at
-   >= 900px; the lockup itself shares graph mode's placement in style.css.
+   >= 900px; the lockup's placement is in style.css (section 14).
    Behaviour lives in js/hero-hover.js.
 
    Each prop is placed with percentage --x/--y/--w/--h against the .desk box
@@ -614,9 +614,8 @@
 
 /* ==========================================================================
    The things on the desk (js/desk-objects.js)
-   Window, paint chip, sticky notes, Polaroids, notebook, phone, mug, card
-   holder, plant, the mug's rings and the night. All drawn here, except the
-   photographs and the phone's screenshot. Colours that are only paint (the
+   Window, paint chip, Polaroids, mug, card holder, plant, the mug's rings
+   and the night. All drawn here, except the photographs. Colours that are only paint (the
    plant, the wood, the paper) are tokens below with a dark counterpart;
    nothing that carries text sits on a Wada colour.
    ========================================================================== */
@@ -628,11 +627,8 @@
   --rod: #7b6550;
   --beam: rgba(255, 250, 236, 0.75);
   --paper: #fbfaf6;
-  --paper-line: rgba(70, 110, 160, 0.22);
   --paper-ink: #24211c;
   --paper-ink-soft: #4a443b;
-  --sticky: #fde98b;
-  --sticky-back: #f6dd70;
   --milky: #dcdfd6;
   --leaf: #4f8a3c;
   --leaf-deep: #3b6e2d;
@@ -657,9 +653,6 @@
   --rod: #232a40;
   --beam: transparent;
   --paper: #ecebe6;
-  --paper-line: rgba(70, 110, 160, 0.2);
-  --sticky: #eedb80;
-  --sticky-back: #e3cd66;
   --milky: #c9ccc4;
   --leaf: #4a7f39;
   --leaf-deep: #375f2a;
@@ -670,7 +663,7 @@
 }
 
 /* Shared placement: percentages of the desk, as for the props. */
-.window, .chip, .sticky, .pola, .notebook, .phone, .mug, .cards, .plant {
+.window, .chip, .pola, .mug, .cards, .plant {
   position: absolute;
   left: var(--x);
   top: var(--y);
@@ -678,7 +671,7 @@
   z-index: var(--z, 5);
   transform: rotate(var(--r, 0deg));
 }
-.js .desk :is(.chip, .sticky, .pola, .notebook, .phone, .mug, .cards, .plant).is-held {
+.js .desk :is(.chip, .pola, .mug, .cards, .plant).is-held {
   filter: drop-shadow(0 16px 18px var(--prop-shadow-held));
 }
 
@@ -775,47 +768,6 @@
 .chip__title { margin: 0; font-size: 10.5px; font-weight: 600; line-height: 1.25; }
 .chip__no { margin: 2px 0 0; color: var(--paper-ink-soft); font-size: 10px; }
 
-/* --- Sticky notes ------------------------------------------------------- */
-.sticky { aspect-ratio: 1; perspective: 700px; }
-.sticky__card { position: relative; width: 100%; height: 100%; transform-style: preserve-3d; }
-.sticky__front,
-.sticky__back {
-  position: absolute;
-  inset: 0;
-  margin: 0;
-  padding: 11% 10%;
-  border: 0;
-  border-radius: 1px 1px 2px 14px / 1px 1px 2px 8px;
-  background: var(--sticky);
-  box-shadow: 0 3px 5px var(--prop-shadow);
-  color: var(--paper-ink);
-  font-family: var(--font-script);
-  font-size: clamp(13px, 1.02vw, 18px);
-  line-height: 1.05;
-  text-align: left;
-  overflow: hidden;
-  backface-visibility: hidden;
-  -webkit-backface-visibility: hidden;
-}
-.sticky__front { display: block; width: 100%; cursor: inherit; }
-.sticky__front:focus-visible,
-.sticky__back a:focus-visible { outline: 2px solid var(--paper-ink); outline-offset: 2px; }
-.sticky__back {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  gap: 2px;
-  background: var(--sticky-back);
-  transform: rotateY(180deg);
-}
-.sticky__back span { color: var(--paper-ink-soft); font-size: 0.85em; }
-.sticky__back a { color: var(--paper-ink); font-weight: 600; text-decoration: underline; text-underline-offset: 2px; }
-.sticky.is-flipped .sticky__card { transform: rotateY(180deg); }
-@media (prefers-reduced-motion: no-preference) {
-  .sticky__card { transition: transform 0.6s cubic-bezier(0.3, 0.7, 0.2, 1); }
-  .js .desk .sticky.is-falling { transition: translate 0.9s cubic-bezier(0.5, 0, 0.75, 0), rotate 0.9s ease-in; }
-}
-
 /* --- Polaroids --------------------------------------------------------- */
 .pola {
   display: flex;
@@ -852,75 +804,8 @@
   text-overflow: ellipsis;
 }
 
-/* --- The notebook ------------------------------------------------------- */
-.notebook {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  aspect-ratio: 2.05;
-  padding: 3px;
-  border-radius: 4px;
-  background: #5b4636;
-  box-shadow: 0 3px 8px var(--prop-shadow);
-  color: var(--paper-ink);
-  text-decoration: none;
-}
-.notebook:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
-.notebook__page {
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  padding: 9% 9% 7%;
-  overflow: hidden;
-  background:
-    repeating-linear-gradient(to bottom, transparent 0 15px, var(--paper-line) 15px 16px) 0 10px / 100% 100% no-repeat,
-    var(--paper);
-}
-.notebook__page--l { border-radius: 2px 0 0 2px; box-shadow: inset -10px 0 12px -8px rgb(0 0 0 / 0.18); }
-.notebook__page--r { border-radius: 0 2px 2px 0; box-shadow: inset 10px 0 12px -8px rgb(0 0 0 / 0.18); }
-.notebook__page q {
-  color: var(--paper-ink-soft);
-  font-family: var(--font-serif);
-  font-size: clamp(10px, 0.72vw, 13px);
-  font-style: italic;
-  line-height: 1.45;
-}
-.notebook__page--r > span:first-child {
-  font-family: var(--font-script);
-  font-size: clamp(14px, 1.1vw, 20px);
-  line-height: 1.02;
-}
-.notebook__from {
-  margin-top: auto;
-  color: var(--paper-ink-soft);
-  font-family: var(--font-script);
-  font-size: clamp(12px, 0.9vw, 16px);
-}
-
-/* --- The phone, in a stand ------------------------------------------------ */
-.phone { display: block; }
-.phone img {
-  position: relative;
-  z-index: 1;
-  display: block;
-  width: 100%;
-  height: auto;
-  filter: drop-shadow(0 3px 4px var(--prop-shadow));
-  -webkit-user-drag: none;
-}
-.phone__stand {
-  position: absolute;
-  left: -14%;
-  right: -14%;
-  bottom: -7%;
-  height: 16%;
-  border-radius: 4px 4px 2px 2px;
-  background: linear-gradient(to bottom, color-mix(in srgb, var(--stand) 80%, #fff), var(--stand));
-  box-shadow: 0 3px 4px var(--prop-shadow);
-}
-.phone:focus-visible { outline: 2px solid var(--accent); outline-offset: 4px; }
-
 /* --- The mug ---------------------------------------------------------- */
-.mug svg { display: block; width: 100%; height: auto; overflow: visible; filter: drop-shadow(0 3px 3px var(--prop-shadow)); }
+.mug > svg { display: block; width: 100%; height: auto; overflow: visible; filter: drop-shadow(0 3px 3px var(--prop-shadow)); }
 .mug__body, .mug__handle { fill: var(--accent-deep); stroke: var(--accent-deep); }
 .mug__body { stroke: none; }
 .mug__handle { fill: none; }
@@ -941,6 +826,105 @@
   35% { opacity: 1; }
   100% { translate: 0 -6px; opacity: 0; }
 }
+
+/* --- The drinks (js/desk-objects.js, DRINKS) ----------------------------
+   One a weekday, drawn in the mug's box. Liquids are paint written in the
+   drawing; glass, ice, straw and skewer are tokens here. Every motion below
+   is decoration and stops under reduced motion. */
+:root {
+  --glass: rgba(255, 255, 255, 0.28);
+  --glass-edge: rgba(120, 140, 160, 0.55);
+  --glass-glint: rgba(255, 255, 255, 0.7);
+  --ice: rgba(255, 255, 255, 0.55);
+  --ice-edge: rgba(255, 255, 255, 0.9);
+  --straw: #f3eee4;
+  --skewer: #b98b57;
+  --dew: rgba(255, 255, 255, 0.18);
+  --dew-hi: rgba(255, 255, 255, 0.95);
+}
+:root[data-theme='dark'] {
+  --glass: rgba(210, 225, 245, 0.12);
+  --glass-edge: rgba(210, 225, 245, 0.5);
+  --glass-glint: rgba(255, 255, 255, 0.45);
+  --ice: rgba(220, 235, 250, 0.35);
+  --ice-edge: rgba(235, 245, 255, 0.7);
+  --straw: #cfc9bd;
+  --skewer: #9c754a;
+  --dew: rgba(215, 230, 250, 0.14);
+  --dew-hi: rgba(240, 248, 255, 0.8);
+}
+/* The photographed drink, sized in real centimetres by js/desk-objects.js
+   (--dw), with steam or condensation over it. */
+.mug { width: var(--dw, var(--w)); }
+.drink__img {
+  display: block;
+  width: 100%;
+  height: auto;
+  filter: drop-shadow(0 3px 3px var(--prop-shadow));
+  -webkit-user-drag: none;
+  pointer-events: none;
+}
+.drink__steam {
+  position: absolute;
+  translate: -50% -88%;
+  pointer-events: none;
+}
+.drink__steam svg { display: block; width: 100%; height: auto; overflow: visible; }
+.drink__dew { position: absolute; pointer-events: none; }
+/* A bead of water: clear, with a bright point where the light catches it
+   and a darker lip underneath, not a white dot. */
+.drink__dew i {
+  position: absolute;
+  width: calc(2.4px * var(--s, 1));
+  height: calc(3px * var(--s, 1));
+  border-radius: 50% 50% 50% 50% / 42% 42% 58% 58%;
+  background: radial-gradient(circle at 38% 30%, var(--dew-hi) 0 16%, transparent 34%), var(--dew);
+  box-shadow: inset 0 -0.6px 0.6px rgb(0 0 0 / 0.18);
+  opacity: 0.7;
+}
+@media (prefers-reduced-motion: no-preference) {
+  .drink__dew i { opacity: 0; animation: dew 9s ease-in infinite; }
+}
+@keyframes dew {
+  0% { opacity: 0; scale: 0.3; translate: 0 0; }
+  18% { opacity: 0.75; scale: 1; translate: 0 0; }
+  70% { opacity: 0.75; scale: 1.15; translate: 0 1px; }
+  100% { opacity: 0; scale: 1.2; translate: 0 14px; }
+}
+
+/* The glass's tint goes behind the drink and only its outline in front,
+   or every drink reads milky. */
+.drink__back { fill: var(--glass); }
+.drink__glass { fill: none; stroke: var(--glass-edge); stroke-width: 1.4; }
+.drink__handle { fill: none; }
+.drink__glint { stroke: var(--glass-glint); }
+.drink__flute { stroke: var(--glass-glint); }
+.drink__ice { fill: var(--ice); stroke: var(--ice-edge); stroke-width: 0.9; }
+.drink__straw { stroke: var(--straw); fill: none; }
+.drink__skewer { stroke: var(--skewer); fill: none; }
+.drink__peel path { fill: none; stroke: #e0701a; stroke-width: 2.6; stroke-linecap: round; }
+.drink__fizz circle { fill: rgba(255, 255, 255, 0.55); opacity: 0; }
+.mug.is-cold .drink__liquid { filter: brightness(0.75) saturate(0.7); }
+.drink__ice, .drink__peel, .drink__float { transform-box: fill-box; transform-origin: 50% 50%; }
+@media (prefers-reduced-motion: no-preference) {
+  .drink__wave { animation: drink-wave 6s linear infinite; }
+  .drink__wave--slow { animation-duration: 9s; }
+  .drink__wave--rev { animation-direction: reverse; animation-duration: 11s; }
+  .drink__ice--bob { animation: drink-bob 4.2s ease-in-out infinite; }
+  .drink__ice--bob2 { animation: drink-bob 5.1s ease-in-out -1.7s infinite; }
+  .drink__ice--big { animation-duration: 6s; }
+  .drink__fizz circle { animation: drink-fizz 2.6s ease-in infinite; }
+  .drink__peel { animation: drink-drift 7s ease-in-out infinite; }
+  .drink__float { animation: drink-drift 6s ease-in-out infinite; }
+}
+@keyframes drink-wave { to { translate: -32px 0; } }
+@keyframes drink-bob { 50% { translate: 0 1.6px; rotate: 4deg; } }
+@keyframes drink-fizz {
+  0% { translate: 0 0; opacity: 0; }
+  15% { opacity: 1; }
+  100% { translate: 0 -46px; opacity: 0; }
+}
+@keyframes drink-drift { 50% { translate: 2px 0.6px; rotate: 6deg; } }
 
 /* --- The business-card holder ----------------------------------------- */
 .cards__take {
@@ -993,6 +977,79 @@
   .cards__card--1 { transition: translate 0.5s cubic-bezier(0.2, 0.8, 0.3, 1.2), rotate 0.5s ease, box-shadow 0.5s ease; }
   .cards__take:hover .cards__card--1 { translate: 0 -14%; }
   .cards.is-taken .cards__take:hover .cards__card--1 { translate: 0 -78%; }
+}
+
+/* The card, taken out and held up to the screen (js/desk-objects.js). A
+   <dialog> on <body>, outside the desk, so it is never clipped by it. Paper
+   is pale in both themes, so its ink is the dark --paper-ink in both. */
+.bizcard {
+  inset: 0;
+  margin: auto;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  overflow: visible;
+}
+.bizcard::backdrop {
+  background: var(--veil-centre, rgba(6, 12, 20, 0.62));
+  backdrop-filter: blur(6px);
+}
+.bizcard__card {
+  position: relative;
+  width: min(420px, 88vw);
+  aspect-ratio: 1.75;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  padding: 26px 28px 24px;
+  border-radius: 4px;
+  background: var(--paper, #fbfaf6);
+  color: var(--paper-ink, #24211c);
+  box-shadow: 0 24px 48px -16px rgb(0 0 0 / 0.55);
+  rotate: -2deg;
+}
+.bizcard__card::before {
+  content: '';
+  position: absolute;
+  left: 28px;
+  top: 26px;
+  width: 40px;
+  height: 4px;
+  border-radius: 2px;
+  background: var(--biz-accent, var(--accent-deep));
+}
+.bizcard__name { margin: 0; font-family: var(--font-serif); font-size: 26px; line-height: 1.1; }
+.bizcard__role { margin: 4px 0 14px; color: var(--paper-ink-soft, #4a443b); font-size: 13px; letter-spacing: 0.04em; }
+.bizcard__lines { margin: 0; padding: 0; list-style: none; font-family: var(--font-mono); font-size: 12.5px; line-height: 1.7; }
+.bizcard__lines a {
+  color: var(--paper-ink, #24211c);
+  text-decoration: underline;
+  text-decoration-color: var(--biz-accent, var(--accent-deep));
+  text-underline-offset: 3px;
+}
+.bizcard__lines a:focus-visible,
+.bizcard__close:focus-visible { outline: 2px solid var(--biz-accent, var(--accent-deep)); outline-offset: 2px; }
+.bizcard__close {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  width: 30px;
+  height: 30px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--paper-ink, #24211c);
+  font-size: 20px;
+  line-height: 1;
+  cursor: pointer;
+}
+.bizcard__close:hover { background: rgb(0 0 0 / 0.06); }
+@media (prefers-reduced-motion: no-preference) {
+  .bizcard[open] .bizcard__card { animation: bizcard-in 0.45s cubic-bezier(0.2, 0.8, 0.3, 1.15); }
+}
+@keyframes bizcard-in {
+  from { translate: 0 60px; rotate: -9deg; opacity: 0; }
 }
 
 /* --- The plant -------------------------------------------------------
@@ -1107,11 +1164,11 @@
 @media (prefers-reduced-motion: no-preference) {
   .js .stage .prop,
   .js .stage .obj,
-  .js .stage :is(.window, .sticky, .pola, .notebook, .phone, .mug, .cards, .plant) {
+  .js .stage :is(.window, .pola, .mug, .cards, .plant) {
     animation: appear 0.62s var(--ease) 0.40s backwards;
   }
   .js .stage .obj,
-  .js .stage :is(.sticky, .pola, .notebook, .phone, .mug, .cards, .plant) { animation-delay: 0.62s; }
+  .js .stage :is(.pola, .mug, .cards, .plant) { animation-delay: 0.62s; }
 
   .js .desk [data-drag] {
     transition: translate 0.55s cubic-bezier(0.2, 0.7, 0.3, 1),
