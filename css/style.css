@@ -922,7 +922,9 @@ body { padding-top: var(--header-h, 80px); }
 .strip__track {
   display: flex;
   width: max-content;
-  animation: strip-drift 38s linear infinite;
+  /* Duration scales with the set's width to hold ~26px/s: 38s for the old
+     12 skills (~1000px), 180s for the résumé's 48 (~4740px). */
+  animation: strip-drift 180s linear infinite;
 }
 .strip:hover .strip__track { animation-play-state: paused; }
 
