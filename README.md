@@ -8,7 +8,7 @@ Live Site: [akshayaa-403.github.io/portfolio](https://akshayaa-403.github.io/por
 
 ## About Me
 
-I am an AI Engineer based in India, working primarily at the intersection of data analysis and model development. The common thread across my work is turning messy data—noisy microscopy images, for one—into clear, readable, and actionable decisions.
+I am an AI Engineer based in India, working primarily with data analysis and model development. The common thread across my work is turning messy data—noisy microscopy images, for one—into clear, readable, and actionable decisions.
 
 - Education: B.Tech in Robotics & Automation, Symbiosis Institute of Technology
 - Certifications: IBM SkillsBuild AI Literacy, HarvardX STAT110x Probability, UiPath RPA
