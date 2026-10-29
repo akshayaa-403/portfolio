@@ -225,10 +225,6 @@ ol.a-list li::marker { font-family: var(--font-mono); font-size: 0.8em; }
 .a-table td { color: var(--ink-body); }
 .a-table tbody tr:last-child > * { border-bottom: 0; }
 
-/* The live demo sits in the article like any other figure. */
-.a .live { margin: 12px 0 40px; }
-.a .live .a-h { margin-top: 0; }
-
 /* ---------- widgets ----------
    The frame every interactive figure shares. A widget draws inside
    .a-widget__stage; the caption under it is the claim in words, because a
@@ -273,7 +269,7 @@ ol.a-list li::marker { font-family: var(--font-mono); font-size: 0.8em; }
   font-variant-numeric: tabular-nums;
   text-align: right;
 }
-.k-slider input[type=range] { width: 100%; min-width: 0; margin: 0; accent-color: var(--accent); }
+.k-slider input[type=range] { width: 100%; min-width: 0; height: 24px; margin: 0; accent-color: var(--accent); }
 
 .k-choice {
   display: inline-flex;
@@ -538,12 +534,16 @@ ol.a-list li::marker { font-family: var(--font-mono); font-size: 0.8em; }
    and again in the list at the end, which is where a phone reader gets it. */
 .a-fn { position: relative; line-height: 0; font-size: 0.62em; }
 .a-fn > a {
+  position: relative;
   padding: 0 0.15em;
   color: var(--accent-ink) !important;
   font-family: var(--font-mono);
   font-weight: 600;
   text-decoration: none !important;
 }
+/* A footnote number is ~10x14px of type. Its hit area is 24px either way
+   (WCAG 2.5.8), drawn as an invisible box so the line spacing is untouched. */
+.a-fn > a::after { content: ''; position: absolute; inset: 50% auto auto 50%; width: 26px; height: 26px; translate: -50% -50%; }
 .a-fn__pop {
   position: absolute;
   left: 50%;
@@ -575,61 +575,12 @@ ol.a-list li::marker { font-family: var(--font-mono); font-size: 0.8em; }
 .a-fn:hover .a-fn__pop, .a-fn:focus-within .a-fn__pop { display: block; opacity: 1; visibility: visible; }
 @media (hover: none) { .a-fn__pop { display: none; } }
 
-.a-notes { margin-top: 72px; padding-top: 24px; border-top: 1px solid var(--line); }
-.a-notes + .a-sources { margin-top: 32px; }
-.a-notes h2 {
-  margin: 0 0 14px;
-  color: var(--ink-soft);
-  font-family: var(--font-mono);
-  font-size: 12px;
-  font-weight: 600;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-}
-.a-notes ol {
-  margin: 0;
-  padding-left: 1.4em;
-  color: var(--ink-body);
-  font-family: var(--font-mono);
-  font-size: 12.5px;
-  line-height: 1.65;
-}
-.a-notes li { margin-bottom: 8px; }
-.a-notes li:target { background: var(--accent-tint); }
-.a-notes__back { text-decoration: none !important; }
-
-/* ---------- closing + sources ---------- */
+/* ---------- closing ---------- */
 .a-ch--closing { padding-top: 96px; }
 .a-ch--closing > .a-ch__head {
   padding-top: 28px;
   border-top: 1px solid var(--line-strong);
 }
-
-.a-sources {
-  margin-top: 72px;
-  padding-top: 24px;
-  border-top: 1px solid var(--line);
-}
-.a-sources h2 {
-  margin: 0 0 14px;
-  color: var(--ink-soft);
-  font-family: var(--font-mono);
-  font-size: 12px;
-  font-weight: 600;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-}
-.a-sources ol {
-  margin: 0;
-  padding-left: 1.4em;
-  color: var(--ink-soft);
-  font-family: var(--font-mono);
-  font-size: 12px;
-  line-height: 1.65;
-}
-.a-sources li { margin-bottom: 8px; }
-.a-sources li::marker { color: var(--ink-muted); }
-.a-sources strong { color: var(--ink-body); font-weight: 600; }
 
 /* ---------- reading progress ----------
    Under the header: one segment per chapter, each a link to it. */
@@ -654,7 +605,7 @@ ol.a-list li::marker { font-family: var(--font-mono); font-size: 0.8em; }
   background: var(--line);
 }
 /* A taller hit area than the 3px it draws. */
-.a-progress__seg::before { content: ''; position: absolute; inset: -6px 0 -10px; }
+.a-progress__seg::before { content: ''; position: absolute; inset: -10px 0 -11px; }
 .a-progress__fill {
   position: absolute;
   inset: 0;
@@ -673,7 +624,7 @@ ol.a-list li::marker { font-family: var(--font-mono); font-size: 0.8em; }
 .opener:not(:empty) + .detail {
   position: relative;
   z-index: 1;
-  margin-top: -20svh;
+  margin-top: -12svh;
   padding-top: 44px;
   border-radius: 28px 28px 0 0;
   background: var(--bg);
@@ -741,7 +692,6 @@ ol.a-list li::marker { font-family: var(--font-mono); font-size: 0.8em; }
 .a-sheet ol { margin: 0; padding-left: 1.4em; }
 .a-sheet li { margin-bottom: 8px; padding: 4px 6px; border-radius: 6px; }
 .a-sheet li.is-hl { background: var(--accent-tint-strong); color: var(--ink); }
-.a-sheet .a-notes__back { display: none; }
 
 /* ---------- the page around the article ----------
    The article needs the whole width for its full-bleed figures, so the page

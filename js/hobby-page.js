@@ -1,7 +1,8 @@
 /* Renders one hobby gallery from ?id= on hobby.html.
    Gallery copy, photo counts and captions come from js/hobby-data.js.
 
-   Layout is a mosaic — see sizeMosaic below. */
+   Layout is a masonry mosaic, all in CSS (.hob-shots in css/project.css): each
+   tile carries its aspect ratio as --ar and that is all the layout needs. */
 (function () {
   'use strict';
 
@@ -23,7 +24,7 @@
       root.innerHTML =
         '<div class="detail__missing">' +
           '<h1>No such gallery</h1>' +
-          '<p>Try photography, artwork or cooking.</p>' +
+          '<p>Try photography or artwork.</p>' +
           '<a class="btn btn--primary" href="index.html#hobbies">Back to hobbies</a>' +
         '</div>';
       document.title = 'Not found — Akshayaa Kashyap';
@@ -63,7 +64,7 @@
         '<img src="' + base + '"' +
              (small
                ? ' srcset="' + small + ' 600w, ' + base + ' ' + dim[0] + 'w"' +
-                 ' sizes="(max-width: 599.98px) 100vw, (max-width: 899.98px) 50vw, 33vw"'
+                 ' sizes="(max-width: 899.98px) 50vw, 33vw"'
                : '') +
              ' alt="' + esc(cap || (g.label + ' photograph ' + i)) + '"' +
              (dim ? ' width="' + dim[0] + '" height="' + dim[1] + '"' : '') +
@@ -72,9 +73,6 @@
         (cap ? '<figcaption>' + esc(cap) + '</figcaption>' : '') +
       '</figure>';
     }
-
-    // The mosaic spans are set from each image's aspect ratio, after the
-    // markup is in (see sizeMosaic below).
 
     // prev / next around the three galleries, wrapping at both ends
     var at = ORDER.indexOf(id);
@@ -98,7 +96,6 @@
         '<a href="hobby.html?id=' + esc(next) + '">' + esc(GROUPS[next].label) + ' &rarr;</a>' +
       '</nav>';
 
-    sizeMosaic(root);
     initLightbox(root, id, g);
   }
 
@@ -117,44 +114,6 @@
     if (want >= 1 && want <= g.n && window.portfolioLightbox) {
       window.portfolioLightbox.open(id, want);
     }
-  }
-
-  /* ---------- mosaic sizing ----------
-     Each tile spans however many 10px grid rows its own aspect ratio needs, so
-     photos keep their proportions instead of being cropped to one shape.
-     Landscape shots also claim two columns, and a panorama (a diptych, say)
-     the whole row, or it would be a thin strip. Recomputed on resize because the
-     column width — and therefore the row count for a given ratio — changes. */
-  function sizeMosaic(root) {
-    var ROW = 10, GAP = 10;
-
-    function size(fig) {
-      // The ratio is baked in at render time from js/hobby-dims.js, which the
-      // build regenerates for every file in the gallery directory — so it is
-      // always present and nothing here has to wait on a decode.
-      var ar = parseFloat(fig.style.getPropertyValue('--ar'));
-      if (!ar) return;
-      fig.classList.toggle('hob-shot--wide', ar > 1.2);
-      fig.classList.toggle('hob-shot--pano', ar > 2.2);
-      // Height the tile would take at its current rendered width, converted
-      // to a whole number of grid rows (gaps count toward the span).
-      var h = fig.clientWidth / ar;
-      fig.style.setProperty('--rows', Math.max(9, Math.round((h + GAP) / (ROW + GAP))));
-    }
-
-    var figs = root.querySelectorAll('.hob-shot');
-
-    function all() {
-      for (var i = 0; i < figs.length; i++) size(figs[i]);
-    }
-
-    all();   // sized before a single image has been fetched
-
-    var t;
-    window.addEventListener('resize', function () {
-      clearTimeout(t);
-      t = setTimeout(all, 120);
-    });
   }
 
   window.onReady(render);

@@ -63,7 +63,7 @@
   /* The day's three Wada colours, named for what they first coloured (the
      graph's Projects and Hobbies maps, and the name between them). The graph
      is gone; they now colour the bracelet's beads, the desk's paint chip and
-     the Info pieces. These values are only the fallback: js/palette.js
+     the About pieces. These values are only the fallback: js/palette.js
      rebuilds all three from the day's combination, stepped until each
      measures against the ground. */
   --graph-projects:  #00317a;
@@ -400,6 +400,28 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
+/* Three families, no more: Libre Caslon for anything read as a sentence,
+   IBM Plex Mono for labels, data and code (the body default, since most of
+   what is not a sentence here is one of those), and Caveat for the name and
+   the handwriting. Prose that would otherwise inherit the mono is listed
+   here. */
+.rm__desc,
+.rm-group__note,
+.hobbies__intro,
+.readings__intro,
+.shelf__caption,
+.contact p,
+.hero__proof,
+.bz__intro,
+.bz__skills,
+.detail__tagline,
+.detail__glance dd,
+.hobby__blurb,
+.notfound p {
+  font-family: var(--font-serif);
+  letter-spacing: 0;
+}
+
 h1,
 
 h2,
@@ -597,17 +619,8 @@ main:focus-visible { outline: none; }
 }
 
 /* 12px, 1px of tracking, uppercase, and only the colour changes — over
-   0.6s, which is slow enough to read as a fade rather than a flick. */
-/* The reference sets its nav in the system UI face rather than in its own
-   body type, and this bar is a copy of that bar. It is the one place on the
-   site that is not in IBM Plex Mono. */
-.nav a,
-.nav-clock,
-.timepick__btn {
-  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
-               "Helvetica Neue", Arial, ui-sans-serif, sans-serif;
-}
-
+   0.6s, which is slow enough to read as a fade rather than a flick. In the
+   body's mono: the reference's system UI face was a fourth family. */
 .nav a {
   display: grid;
   color: var(--nav-color);
@@ -708,7 +721,7 @@ main:focus-visible { outline: none; }
   border-radius: 6px;
   background: none;
   color: var(--ink);
-  font: 13px/1.2 system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif;
+  font: 13px/1.2 var(--font-mono);
   text-align: left;
   cursor: pointer;
 }
@@ -898,62 +911,15 @@ body { padding-top: var(--header-h, 80px); }
 }
 
 /* --------------------------------------------------------------------------
-   6. Skills marquee
-
-   Sits directly below the hero, headed like every other section. The strip
-   itself runs full-bleed and drifts on its own, CSS only; hovering pauses it.
-   Its ends fade out rather than cutting a word in half at the window edge.
+   6. Outside work
+   Hobbies and Readings, after Contact, as two parts of one section. The
+   skills are the bracelet in About (css/info.css).
    -------------------------------------------------------------------------- */
-.strip-section {
-  padding: var(--section-gap) 0;
-}
-.strip {
-  border-top: 1px solid var(--line);
-  border-bottom: 1px solid var(--line);
-  background: var(--bg-sunken);
-  overflow: hidden;
-  -webkit-mask-image: linear-gradient(90deg, transparent, #000 6%, #000 94%, transparent);
-  mask-image: linear-gradient(90deg, transparent, #000 6%, #000 94%, transparent);
-}
-/* The marquee. One set of words and an aria-hidden copy of it, side by side
-   inside a track twice the width of the strip; translating the track by
-   exactly -50% lands the copy where the original started, so the loop has no
-   seam and no JavaScript measures anything. */
-.strip__track {
-  display: flex;
-  width: max-content;
-  /* Duration scales with the set's width to hold ~26px/s: 38s for the old
-     12 skills (~1000px), 180s for the résumé's 48 (~4740px). */
-  animation: strip-drift 180s linear infinite;
-}
-.strip:hover .strip__track { animation-play-state: paused; }
-
-.strip__set {
-  display: flex;
-  align-items: center;
-  flex: none;
-  /* The gap is the separator. A drawn glyph between items dangles at the end
-     of the set, and the loop would show it. */
-  gap: 34px;
-  list-style: none;
-  margin: 0;
-  padding: 14px 17px;
-  color: var(--ink-soft);
-  font-size: 13px;
-  white-space: nowrap;
-}
-
-@keyframes strip-drift {
-  from { transform: translateX(0); }
-  to   { transform: translateX(-50%); }
-}
-
-/* Under `reduce` the drift is dropped rather than slowed, and the duplicate
-   set is taken out of the flow so the twelve words simply wrap. */
-@media (prefers-reduced-motion: reduce) {
-  .strip__track { width: auto; animation: none; }
-  .strip__set { flex-wrap: wrap; gap: 10px 34px; }
-  .strip__set[aria-hidden="true"] { display: none; }
+.outside__part + .outside__part { margin-top: calc(var(--section-gap) * 1.2); }
+.outside__h {
+  margin-bottom: 8px;
+  font-size: 19px;
+  font-weight: 500;
 }
 
 /* --------------------------------------------------------------------------
@@ -1061,6 +1027,9 @@ body { padding-top: var(--header-h, 80px); }
   text-transform: uppercase;
 }
 .rm-archive a {
+  /* 17px of text in a 28px target (WCAG 2.5.8 asks for 24). */
+  display: inline-block;
+  padding: 5px 0;
   color: var(--ink-soft);
   text-decoration: underline;
   text-decoration-color: var(--line-strong);
@@ -1155,6 +1124,11 @@ body { padding-top: var(--header-h, 80px); }
      and drew the plank as an empty box. */
   width: var(--shelf-w, fit-content);
   max-width: 100%;
+  /* Longer than a phone is wide: the shelf scrolls inside itself rather
+     than widening the page (it made a 390px screen 537px wide). */
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  scrollbar-width: thin;
   border-bottom: 3px solid var(--line-strong);
   box-shadow: 0 8px 6px -6px rgb(0 0 0 / 0.45);
 }
@@ -1218,6 +1192,8 @@ body { padding-top: var(--header-h, 80px); }
   padding: 12px 0;
   background: var(--spine-bg, #d9dde2);
   color: var(--spine-ink, #10161d);
+  /* renderReadings() fits each title by mono advance widths. */
+  font-family: var(--font-mono);
   /* The head-band and the shadow in the gutter, as two gradients rather than
      two more elements. */
   box-shadow:
@@ -1507,16 +1483,11 @@ body { padding-top: var(--header-h, 80px); }
   outline-offset: 3px;
 }
 
-/* The signature alone is set in Halimun, self-hosted. */
-@font-face {
-  font-family: 'Halimun';
-  src: url('../public/assets/fonts/Halimun.ttf') format('truetype');
-  font-display: swap;
-}
+/* The signature is in the name's hand, Caveat. */
 .info__sig {
   margin-top: 0.4em;
-  font-family: 'Halimun', var(--font-script);
-  font-size: 1.7em;
+  font-family: var(--font-script);
+  font-size: 1.9em;
   line-height: 1;
   transform: rotate(-4deg);
   transform-origin: center;
@@ -1764,17 +1735,15 @@ body { padding-top: var(--header-h, 80px); }
 
   .stage,
 
-  .strip,
-
   .nav-burger { display: none !important; }
   body { background: #fff; color: #000; background-image: none; padding-top: 0; }
 }
 
 /* --------------------------------------------------------------------------
-   15. Hobbies — three cards in one row
+   15. Hobbies — one card per gallery, in one row
 
    Each links to its own gallery; on hover js/hobbies.js paints a neural-net
-   mesh over the card. Three across down to 600px, one column below that.
+   mesh over the card. Side by side down to 600px, one column below that.
    -------------------------------------------------------------------------- */
 .hobbies__intro {
   max-width: var(--measure-narrow);
@@ -1789,7 +1758,7 @@ body { padding-top: var(--header-h, 80px); }
    the block had three left edges, none of them the column's. */
 .hob-tri {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 18px;
 }
 

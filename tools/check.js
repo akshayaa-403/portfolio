@@ -178,34 +178,6 @@ for (const p of PROJECTS) {
   }
 }
 
-/* ---------- 6b. live-demo embeds ---------- */
-
-console.log('6b. live demo embeds');
-{
-  // Every demo origin the data references must be allowed by project.html's
-  // frame-src, or the embed is silently blocked at runtime.
-  const csp = (read('project.html').match(/Content-Security-Policy"\s+content="([^"]+)"/) || [, ''])[1];
-  const frameSrc = (csp.match(/frame-src ([^;]+)/) || [, ''])[1].split(/\s+/).filter(Boolean);
-
-  for (const p of PROJECTS) {
-    if (!p.demo) continue;
-    checked++;
-    let origin;
-    try { origin = new URL(p.demo).origin; } catch (e) { origin = null; }
-    if (!origin) {
-      fail('embeds', p.id + ' has an unparseable demo URL: ' + p.demo);
-    } else if (!frameSrc.includes(origin)) {
-      fail('embeds', p.id + ' demo origin not in project.html frame-src: ' + origin);
-    }
-  }
-
-  // The escape-hatch link is the only guarantee when a frame comes up blank.
-  checked++;
-  if (!read('js/project-detail.js').includes('live__caption')) {
-    fail('embeds', 'live embed lost its open-in-new-tab caption link');
-  }
-}
-
 /* ---------- 7. generated share pages are current ---------- */
 
 console.log('7. generated pages');
@@ -260,13 +232,13 @@ for (const p of PROJECTS) {
    js/article.js. The engine drops what it cannot render rather than failing,
    so the mistakes that matter are silent ones, and this is where they are
    caught: a block of no known kind, a widget name with no function behind it,
-   a figure that points at no file, a margin note whose phrase was edited out
-   of its paragraph, and a demo the article never places. */
+   a figure that points at no file, and a margin note whose phrase was
+   edited out of its paragraph. */
 
 console.log('9. articles');
 const vm = require('vm');
 const KINDS = ['p', 'h', 'quote', 'callout', 'list', 'figure', 'code', 'tex',
-               'table', 'widget', 'scrolly', 'live'];
+               'table', 'widget', 'scrolly'];
 
 function loadArticle(id) {
   const file = path.join(ROOT, 'js', 'articles', id + '.js');
@@ -302,7 +274,6 @@ for (const p of PROJECTS) {
   if (spec.closing) chapters.push(spec.closing);
 
   const ids = new Set();
-  let lives = 0;
   for (const c of chapters) {
     if (c !== spec.closing) {
       checked++;
@@ -330,7 +301,6 @@ for (const p of PROJECTS) {
         if (!fs.existsSync(path.join(ROOT, b.figure.split('?')[0]))) fail(where, 'figure file missing: ' + b.figure);
         if (!b.alt) fail(where, 'figure without alt text: ' + b.figure);
       }
-      if (k === 'live') lives++;
       if (k === 'p') {
         for (const [phrase, say] of b.notes || []) {
           checked++;
@@ -344,9 +314,6 @@ for (const p of PROJECTS) {
       }
     }
   }
-  checked++;
-  if (p.demo && lives !== 1) fail(where, 'has a demo but places { live: true } ' + lives + ' times (needs exactly 1)');
-  if (!p.demo && lives) fail(where, 'places a live demo but the project has no demo');
 }
 
 /* ---------- report ---------- */

@@ -1,4 +1,4 @@
-/* The case-study page: header, facts row, at-a-glance and the demo embed,
+/* The case-study page: header, facts row and at-a-glance,
    from the summary in js/project-data.js; then the article itself, which
    js/article.js renders from js/articles/<id>.js. Sets per-project
    title/description/OG metadata. */
@@ -75,124 +75,6 @@
     });
   }
 
-  /* ---------- live demo embed ----------
-     Click-to-activate, never auto-loaded: six case studies each pulling a
-     whole third-party app on page load would cost more than the case study
-     itself, and Streamlit apps wake slowly from idle.
-
-     The iframe is sandboxed and the src is only set on activation. If the
-     remote refuses to be framed (X-Frame-Options / frame-ancestors) or is
-     simply asleep, nothing paints — so a timer reveals a fallback with a
-     direct link rather than leaving an empty box. */
-  function liveEmbed(p) {
-    if (!p.demo) return '';
-    return '<section class="live" data-live>' +
-      '<h3 class="a-h">See it running</h3>' +
-      '<div class="live__frame">' +
-        '<div class="live__chrome" aria-hidden="true">' +
-          '<span class="live__dot"></span><span class="live__dot"></span><span class="live__dot"></span>' +
-          '<span class="live__url">' + esc(p.demo.replace(/^https?:\/\//, '')) + '</span>' +
-        '</div>' +
-        '<div class="live__stage">' +
-          '<button class="live__start" type="button" data-live-start ' +
-                  'aria-label="Load the live demo of ' + esc(p.title) + ' in this page">' +
-            '<span class="live__play" aria-hidden="true">▶</span>' +
-            '<span class="live__label">Load live demo</span>' +
-            '<span class="live__note">Loads ' + esc(p.demo.replace(/^https?:\/\//, '').split('/')[0]) + '</span>' +
-          '</button>' +
-          '<div class="live__fallback" data-live-fallback hidden>' +
-            '<p>This demo can’t be shown inside the page.</p>' +
-            '<a class="btn btn--primary" href="' + safeUrl(p.demo) + '" ' +
-               'target="_blank" rel="noopener noreferrer">Open it in a new tab ↗</a>' +
-          '</div>' +
-        '</div>' +
-      '</div>' +
-      '<p class="live__caption">Running the real deployment. ' +
-        '<a href="' + safeUrl(p.demo) + '" target="_blank" rel="noopener noreferrer">' +
-        'Open in a new tab ↗</a></p>' +
-    '</section>';
-  }
-
-  /* Wire up the activation button. One delegated listener, like initCopy. */
-  function initLive(root) {
-    root.addEventListener('click', function (e) {
-      var btn = e.target.closest && e.target.closest('[data-live-start]');
-      if (!btn) return;
-
-      var section = btn.closest('[data-live]');
-      var stage = btn.parentNode;
-      var fallback = section.querySelector('[data-live-fallback]');
-      var url = section.querySelector('.live__caption a').href;
-
-      var frame = document.createElement('iframe');
-      frame.className = 'live__iframe';
-      frame.title = 'Live demo';
-      frame.loading = 'lazy';
-      frame.referrerPolicy = 'no-referrer';
-      /* allow-scripts without allow-same-origin: the two together let a frame
-         escape its own sandbox (the browser warns about it) and also made
-         contentDocument readable, which broke the load check below. Scripts,
-         forms and target=_blank links are all these demos need. */
-      frame.setAttribute('sandbox', 'allow-scripts allow-forms allow-popups');
-      frame.setAttribute('allow', 'clipboard-write');
-
-      /* Whether a cross-origin frame actually rendered is not observable from
-         this side: a refusal, an abort and a real page all end up as one
-         opaque frame, and all of them may fire `load`. So confirm out of band
-         with a no-cors fetch of the same URL — it resolves for a reachable
-         origin and rejects when the network or the host says no. That does not
-         prove the frame was allowed to paint, so the visitor always keeps the
-         "open in a new tab" link in the caption as an escape hatch. */
-      function giveUp() {
-        if (section.classList.contains('is-live')) return;
-        frame.remove();
-        section.classList.remove('is-loading');
-        if (fallback) fallback.hidden = false;
-      }
-
-      function succeed() {
-        if (!frame.parentNode) return;          // already given up
-        section.classList.add('is-live');
-        section.classList.remove('is-loading');
-      }
-
-      var decided = false;
-      function decide(ok) {
-        if (decided) return;
-        decided = true;
-        if (ok) succeed(); else giveUp();
-      }
-
-      /* The frame's own `load` is the primary signal: it fires for anything
-         the browser actually rendered. It cannot distinguish a real page from
-         an error page, but the probe below cannot be trusted to do that either
-         — a no-cors fetch rejects for hosts that embed perfectly well (a
-         redirecting Streamlit app, for one), so treating a rejection as
-         failure hid a working demo. So: `load` wins, and the probe only acts
-         when the frame stays silent. Either way the caption keeps a direct
-         link, so a blank frame is never a dead end. */
-      /* Whether an opaque cross-origin frame really painted is not knowable
-         from this side: refusals, aborts and real pages all look alike, and
-         all of them can fire `load`. A no-cors probe is no better — Streamlit
-         rejects it while embedding perfectly well.
-
-         So trust `load`, and keep the escape hatch permanent: the caption
-         under every embed carries a direct link, so even a frame that comes
-         up blank is one click from the real thing. `error` and the timeout
-         still catch the cases the browser does report. */
-      frame.addEventListener('load', function () { decide(true); });
-      frame.addEventListener('error', function () { decide(false); });
-
-      // Backstop: nothing above resolved, so stop showing a spinner forever.
-      window.setTimeout(function () { decide(false); }, 12000);
-
-      btn.remove();
-      section.classList.add('is-loading');
-      stage.appendChild(frame);
-      frame.src = url;
-    });
-  }
-
   /* ---------- header facts ----------
      One horizontal row under the tagline: when the repo was started, when it
      was last touched, what it was built with, and the concepts it leans on.
@@ -259,7 +141,9 @@
      the thing you see, then what it is made of, down to the smallest unit it
      handles, which is the solid doll that does not open. Opening one lifts
      its head off and stands the next beside it; the list under the row says
-     in words what each doll is, so the drawing is aria-hidden.
+     in words what each doll is, so the drawing is aria-hidden. It lives in
+     the margin, small, and only where there is a margin (css/project.css):
+     under the glance box it pushed the article 400px down.
 
      One doll shape, drawn at 0.8x per layer, painted in the day's three Wada
      colours (the --graph-* tokens), turned one step per doll. */
@@ -356,7 +240,7 @@
      css/articles/<id>.css, fetched for this page only — the home page loads
      the summaries in js/project-data.js and nothing else. The version tag
      travels with both so a deploy is never half old, half new. */
-  var ARTICLE_V = '1';
+  var ARTICLE_V = '2';
 
   function loadArticle(id, done) {
     var css = document.createElement('link');
@@ -424,15 +308,16 @@
         facts(p, tech) +
       '</header>' +
       '<div class="detail__body">' +
-        glance(p) +
+        // First, so its top lines up with the glance box it sits beside in
+        // the margin (css/project.css).
         nest(p) +
+        glance(p) +
         '<p class="detail__dek" data-dek hidden></p>' +
       '</div>' +
       '<article class="a" id="article" aria-busy="true"></article>' +
       '<nav class="detail__nav" aria-label="Project navigation">' + navPrev + navNext + '</nav>';
 
     initCopy(root);
-    initLive(root);
     initNest(root, p);
 
     loadArticle(p.id, function (spec) {
@@ -448,7 +333,7 @@
         dek.innerHTML = window.Article.inline(spec.dek);
         dek.hidden = false;
       }
-      window.Article.render(art, p, spec, { live: liveEmbed(p) });
+      window.Article.render(art, p, spec);
       if (typeof window.initOpener === 'function') window.initOpener(p, spec);
     });
   }

@@ -19,23 +19,12 @@ var deskData = {
     ['lemon-tea', 'lemon tea', true, 7.5]
   ],
 
-  /* The laptop's screen carousel: gallery highlights, in order.
-     [gallery id, photo number (one-based, as in hobby.html?id=&i=)]. */
-  screen: [
-    ['photography', 1],
-    ['photography', 2],
-    ['artwork', 2],
-    ['photography', 10],
-    ['photography', 14],
-    ['photography', 8]
-  ],
-
   /* The Polaroid stack, top first. */
   polaroids: [
-    ['photography', 15],
+    ['photography', 7],
     ['artwork', 1],
-    ['cooking', 3],
-    ['photography', 16]
+    ['photography', 9],
+    ['artwork', 4]
   ],
 
   /* The business card, shown on the page when taken. Every field is

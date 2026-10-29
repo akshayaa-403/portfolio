@@ -10,7 +10,7 @@
      Polaroids             pull one off the pile and it develops; click opens it
      the mug               a drink a weekday; steam by the clock; rings
      the card holder       take a card, see it on the page
-     the plant             wilts as the newest live repo goes stale
+     the plant             one leaf per project, each wilting as its repo goes stale
      the night             only the lamp and the screen light the desk
      the mess              the longer you stay, the more the desk drifts
 
@@ -41,110 +41,6 @@
   }
   function photoHref(g, i) { return 'hobby.html?id=' + encodeURIComponent(g) + '&i=' + i; }
   function real(pair) { return H[pair[0]] && pair[1] >= 1 && pair[1] <= H[pair[0]].n; }
-
-  /* ---------- the screen carousel ----------
-     After Framer's Screen Carousel: media in a set order, sliding a whole
-     screen at a time, a 2px progress line and 4px indicators (css/desk.css).
-     The progress line's CSS animation is the timer, so hovering pauses it,
-     and under reduced motion there is none and nothing moves by itself.
-     ←/→ while the pointer is on it, a swipe, or the indicators step it.
-     aria-hidden, like the graph's canvas: every photograph is in the gallery
-     pages already, as a real link. Built on first sight of the desk, so
-     graph and mosaic never fetch the photographs. */
-  var screen = { go: function () {}, pause: function () {} };
-  function initScreen() {
-    var host = desk.querySelector('[data-screen]');
-    if (!host) return;
-    var shots = D.screen.filter(real);
-    var n = shots.length + 1;
-    var at = 0, built = false, track, bar, dots;
-
-    function build() {
-      if (built || !desk.offsetWidth) return;
-      built = true;
-      host.innerHTML =
-        '<ul class="scr__track"><li class="scr__slide"></li>' +
-          shots.map(function (s) {
-            var c = caption(s[0], s[1]);
-            return '<li class="scr__slide"><a class="scr__link" tabindex="-1" data-cue="Open the photograph"' +
-              ' href="' + safeUrl(photoHref(s[0], s[1])) + '">' +
-              '<img src="' + safeUrl(shot(s[0], s[1])) + '" srcset="' + safeUrl(shot(s[0], s[1], 600)) + ' 600w, ' +
-                safeUrl(shot(s[0], s[1])) + ' 1200w" sizes="(min-width: 1700px) 560px, 420px"' +
-                ' alt="" decoding="async" draggable="false">' +
-              '<span class="scr__cap">' + esc(c) + '</span>' +
-            '</a></li>';
-          }).join('') +
-        '</ul>' +
-        '<span class="scr__bar"><span></span></span>' +
-        '<span class="scr__dots">' +
-          shots.concat([0]).map(function (_, i) {
-            return '<button type="button" tabindex="-1" data-to="' + i + '"></button>';
-          }).join('') +
-        '</span>';
-      track = host.querySelector('.scr__track');
-      bar = host.querySelector('.scr__bar span');
-      dots = host.querySelectorAll('[data-to]');
-      bar.addEventListener('animationend', function () { go(at + 1); });
-      go(0);
-    }
-
-    function go(i) {
-      if (!built) return;
-      at = (i + n) % n;
-      track.style.transform = 'translateX(' + (-100 * at) + '%)';
-      for (var d = 0; d < dots.length; d++) dots[d].classList.toggle('is-on', d === at);
-      host.classList.toggle('is-blank', at === 0);
-      if (stage) stage.classList.toggle('is-onwork', at !== 0);
-      // Restart the line: drop the animation, force a style flush, put it back.
-      bar.style.animation = 'none';
-      void bar.offsetWidth;
-      bar.style.animation = '';
-    }
-    screen.go = go;
-    screen.pause = function (on) { host.classList.toggle('is-paused', on); };
-
-    host.addEventListener('click', function (e) {
-      var b = e.target.closest('[data-to]');
-      if (b) { go(+b.getAttribute('data-to')); return; }
-      // The name's slide is the terminal's door.
-      if (at === 0 && !e.target.closest('a')) openTerm('');
-    });
-
-    // Swipe: 40px sideways is a step, and the click that ends it is not a
-    // visit to the slide under the finger.
-    var x0 = null, swiped = false;
-    host.addEventListener('pointerdown', function (e) { x0 = e.clientX; swiped = false; });
-    host.addEventListener('pointerup', function (e) {
-      if (x0 === null) return;
-      var dx = e.clientX - x0;
-      x0 = null;
-      if (Math.abs(dx) > 40) { swiped = true; go(at + (dx < 0 ? 1 : -1)); }
-    });
-    host.addEventListener('click', function (e) {
-      if (swiped) { e.preventDefault(); e.stopPropagation(); swiped = false; }
-    }, true);
-    host.addEventListener('dragstart', function (e) { e.preventDefault(); });
-
-    var over = false;
-    var glass = host.parentNode;
-    glass.addEventListener('pointerenter', function () { over = true; });
-    glass.addEventListener('pointerleave', function () { over = false; });
-    document.addEventListener('keydown', function (e) {
-      if (!over || !termForm || !termForm.hidden) return;
-      if (e.target.closest && e.target.closest('input, textarea, select, [contenteditable]')) return;
-      if (e.key === 'ArrowLeft') go(at - 1);
-      else if (e.key === 'ArrowRight') go(at + 1);
-      // Typing at the screen opens the terminal with what was typed.
-      else if (e.key.length === 1 && !e.ctrlKey && !e.metaKey && !e.altKey) {
-        e.preventDefault();
-        openTerm(e.key);
-      }
-    });
-
-    // Leaving desk mode puts the name back on the screen for next time.
-    new ResizeObserver(build).observe(desk);
-    build();
-  }
 
   /* ---------- the terminal ----------
      A real form with a labelled input, over the carousel. Every line it
@@ -270,7 +166,6 @@
       form.hidden = false;
       if (door) door.hidden = true;
       if (stage) stage.classList.add('is-term');
-      screen.pause(true);
       if (!out.childNodes.length) print('type ' + key('help') + ' for commands, ' + key('exit') + ' or Esc to close');
       input.value = seed || '';
       input.focus({ preventScroll: true });
@@ -281,7 +176,6 @@
       form.hidden = true;
       if (door) door.hidden = false;
       if (stage) stage.classList.remove('is-term');
-      screen.pause(false);
       if (had && door) door.focus({ preventScroll: true });
     };
 
@@ -561,32 +455,59 @@
   }
 
   /* ---------- the plant ----------
-     Its health is the newest `pushed_at` among the live case studies
-     (`updated` in js/project-data.js), against today. */
+     One leaf per project, archived ones included, stacked oldest at the
+     bottom (by `created`) and newest at the top; a project with no dates
+     (Arteza: no public repo) goes on top. Each leaf wilts by how long ago
+     its own repo was last pushed (`updated` in js/project-data.js, which is
+     transcribed, not fetched, so the leaves only freshen when those dates
+     are re-copied from GitHub). Hovering a leaf names its project and state;
+     hovering the pot or stem gives the whole plant's count. */
+  var LEAF_STATES = [
+    [14, '', 'healthy', 0],
+    [30, 'is-tired', 'tired', 16],
+    [60, 'is-thirsty', 'thirsty', 38],
+    [Infinity, 'is-wilted', 'wilted', 68]
+  ];
   function initPlant() {
     var plant = desk.querySelector('[data-plant]');
-    if (!plant) return;
-    var newest = 0;
-    live.forEach(function (p) {
-      var t = p.updated ? Date.parse(p.updated + 'T00:00:00') : NaN;
-      if (t > newest) newest = t;
+    var host = plant && plant.querySelector('.plant__leaves');
+    if (!host) return;
+    var NS = 'http://www.w3.org/2000/svg';
+    var order = P.slice().sort(function (x, y) {
+      return (x.created || '9999') < (y.created || '9999') ? -1 : 1;
     });
-    var say, state, droop = 0, lean = 0;
-    if (!newest) {
-      say = 'No repo dates to go on'; state = '';
-    } else {
-      var days = Math.max(0, Math.floor((Date.now() - newest) / 864e5));
-      say = 'Last repo update ' + (days === 0 ? 'today' : days === 1 ? '1 day ago' : days + ' days ago');
-      if (days < 14) state = '';
-      else if (days < 30) { state = 'is-tired'; droop = 16; lean = 2; }
-      else if (days < 60) { state = 'is-thirsty'; droop = 38; lean = 5; }
-      else { state = 'is-wilted'; droop = 68; lean = 9; }
-    }
-    if (state) plant.classList.add(state);
-    plant.style.setProperty('--droop', droop + 'deg');
-    plant.style.setProperty('--lean', lean + 'deg');
-    plant.setAttribute('data-cue', say);
-    plant.setAttribute('aria-label', 'A desk plant. ' + say);
+    var n = order.length, top = 36, bottom = 100, counts = {}, sum = 0;
+    var labels = [];
+    order.forEach(function (proj, i) {
+      var y = Math.round(bottom - (bottom - top) * i / Math.max(1, n - 1));
+      var side = i === n - 1 ? 't' : i % 2 ? 'r' : 'l';
+      var d = side === 'l' ? 'M50 ' + y + 'c-12-1.5-21-10.5-24-21 12 0 21 7.5 24 21z'
+        : side === 'r' ? 'M50 ' + y + 'c12-1.5 21-10.5 24-21-12 0-21 7.5-24 21z'
+        : 'M50 ' + y + 'c-3-6-1.5-13.5 3-19.5 3 6 1.5 13.5-3 19.5z';
+      var t = proj.updated ? Date.parse(proj.updated + 'T00:00:00') : NaN;
+      var days = isNaN(t) ? null : Math.max(0, Math.floor((Date.now() - t) / 864e5));
+      var st = days === null ? ['', '', 'no dates', 0]
+        : LEAF_STATES.filter(function (x) { return days < x[0]; })[0];
+      counts[st[2]] = (counts[st[2]] || 0) + 1;
+      sum += st[3];
+      var say = proj.title + ' · ' + st[2] + ' · ' + (days === null ? 'no public repo, so no update date'
+        : 'last updated ' + (days === 0 ? 'today' : days === 1 ? '1 day ago' : days + ' days ago'));
+      labels.push(say);
+      var g = document.createElementNS(NS, 'g');
+      g.setAttribute('class', 'plant__leaf plant__leaf--' + side + (st[1] ? ' ' + st[1] : ''));
+      g.setAttribute('data-cue', say);
+      g.style.setProperty('--droop', st[3] + 'deg');
+      var path = document.createElementNS(NS, 'path');
+      path.setAttribute('d', d);
+      g.appendChild(path);
+      host.appendChild(g);
+    });
+    var summary = LEAF_STATES.map(function (x) { return x[2]; }).concat(['no dates'])
+      .filter(function (k) { return counts[k]; })
+      .map(function (k) { return counts[k] + ' ' + k; }).join(', ');
+    plant.style.setProperty('--lean', (sum / n / 8).toFixed(1) + 'deg');
+    plant.setAttribute('data-cue', 'One leaf per project: ' + summary);
+    plant.setAttribute('aria-label', 'A desk plant with one leaf per project. ' + labels.join('. ') + '.');
   }
 
   /* ---------- the card holder ----------
@@ -707,7 +628,6 @@
 
   window.onReady(function () {
     initTerm();
-    initScreen();
     initWindow();
     initChip();
     initPolaroids();

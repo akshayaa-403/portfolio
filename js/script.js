@@ -203,11 +203,13 @@
     return '--spine-bg:' + bg + ';--spine-ink:' + spineInk(P && P.toHsl(bg));
   }
   // Where a book has no cover yet, its front is the spine's colour with the
-  // title set on it, on the shelf and off it.
+  // title set on it, on the shelf and off it. On the shelf (`lazy`) the cover
+  // is fetched only when its book is first pointed at or focused (say()):
+  // loading="lazy" fetched all of them, ~900 KB, the moment the shelf
+  // scrolled into view, for covers that are hidden until a book turns.
   function front(b, lazy) {
     return b.cover
-      ? '<img src="' + safeUrl(b.cover) + '" alt="" draggable="false"' +
-          (lazy ? ' loading="lazy" decoding="async"' : '') + '>'
+      ? '<img ' + (lazy ? 'data-src' : 'src') + '="' + safeUrl(b.cover) + '" alt="" draggable="false" decoding="async">'
       : '<span class="cover-blank">' + esc(b.title) + '</span>';
   }
 
@@ -240,7 +242,9 @@
 
     var spines = books.map(function (b, i) {
       var thickMm = (b.pages || 300) * 0.0575 + (b.hardback ? 5 : 2.5);
-      var t = Math.max(18, mm(thickMm));
+      // 24px floor: a spine is a button, and 24px is the smallest target
+      // WCAG 2.5.8 allows. Only the thinnest books are drawn thicker for it.
+      var t = Math.max(24, mm(thickMm));
       var w = mm(b.widthMm || 135);
       var h = mm(b.heightMm || 200);
 
@@ -302,6 +306,8 @@
     function say(i) {
       if (i === at || !books[i]) return;
       at = i;
+      var img = buttons[i].querySelector('img[data-src]');
+      if (img) { img.src = img.getAttribute('data-src'); img.removeAttribute('data-src'); }
       var b = books[i];
       caption.innerHTML =
         '<b>' + esc(b.title) + '</b> · ' + esc(b.author || '') +

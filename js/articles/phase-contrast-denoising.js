@@ -235,7 +235,6 @@
           { p: 'Two copies of the same maths drift apart quietly, so the port is measured rather than assumed. `scripts/verify_web_pipeline.py` sends the same pixels through both and fails below 40 dB. Re-run for this page, they agree to between 49.1 and 51.7 dB, and the JavaScript PSNR and SSIM match scikit-image exactly.^[python scripts/verify_web_pipeline.py, re-run 2026-10-16: 49.12 to 51.70 dB over the six samples, metric gap 0.00000.]' },
           { p: 'That faithfulness has a funny side: the port copied the clip-limit bug too, line for line. The U-Net column on the demo is precomputed, and the page says so. Uploads get the classical half and two measures that need no clean target: edge energy and background variance.',
             notes: [['copied the clip-limit bug too', 'faithful to a fault']] },
-          { live: true }
         ] }
     ],
 

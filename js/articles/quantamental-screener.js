@@ -234,7 +234,6 @@
           { p: 'The tests are the witnesses. Each pins one guarantee: the lag, the shocked future, sentiment ignored, only changed names traded. They run on Python 3.10 and 3.11 on every push, without Streamlit or torch installed, so they stay fast.',
             notes: [['The tests are the witnesses.', 'thirty-nine of them, and none for the CLI']] },
           { p: 'The hosted app runs on Streamlit Community Cloud, which puts an idle app to sleep. A GitHub Actions job opens it in headless Chrome every ten hours to keep it awake.' },
-          { live: true },
           { callout: 'The universe was alphabetical and the trades were free. Fixed on 12 October 2026, with a test for each fix.', label: 'Verdict' }
         ] },
 

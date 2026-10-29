@@ -82,26 +82,39 @@
    The project as nested dolls (`nest` in project-data.js, drawn by
    js/project-detail.js). Painted in the day's three Wada colours; the face
    is --surface and the lines are --ink, so it follows the theme. The words
-   are the list under the row, which is what a screen reader gets. */
-.nest { margin: 0 0 var(--gap-xl, 48px); }
+   are the list under the row, which is what a screen reader gets.
+
+   It sits in the left margin beside "At a glance", at a third of its old
+   size, and only from 1180px, where there is a margin to sit in. In the
+   column it pushed the article 400px down and read as a toy. */
+.nest { display: none; }
+@media (min-width: 1180px) {
+  .detail__body { position: relative; }
+  .nest {
+    display: block;
+    position: absolute;
+    top: 0;
+    right: calc(100% + 8px);
+    width: 168px;
+  }
+}
 .nest__h {
-  margin: 0 0 18px;
+  margin: 0 0 8px;
   color: var(--ink-muted);
-  font: 500 11px/1.4 var(--font-mono);
+  font: 500 10px/1.4 var(--font-mono);
   letter-spacing: 0.12em;
   text-transform: uppercase;
 }
 .nest__row {
+  --k: 0.34;
   display: flex;
   flex-wrap: wrap;
   align-items: flex-end;
-  gap: 4px 14px;
-  min-height: 236px;
+  gap: 2px 6px;
+  min-height: 84px;
   cursor: pointer;
 }
 .nest__doll { display: block; flex: none; width: calc(var(--h) * 0.5 * var(--k, 1)); height: calc(var(--h) * 1.25 * var(--k, 1)); }
-/* Five dolls side by side on a phone: smaller, so the last one does not wrap. */
-@media (max-width: 599.98px) { .nest__row { --k: 0.78; gap: 4px 8px; min-height: 190px; } }
 .nest__doll svg { display: block; width: 100%; height: 100%; overflow: visible; }
 .nest__shell { fill: var(--doll-a); stroke: var(--ink); stroke-width: 1.6; }
 .nest__apron { fill: var(--doll-b); }
@@ -115,7 +128,7 @@
 .nest__mouth { fill: none; stroke: var(--ink); stroke-width: 1.2; stroke-linecap: round; }
 /* Opened: the head lifted off and tipped back. */
 .nest__top { transform-box: fill-box; transform-origin: 15% 100%; }
-.nest__doll.is-open .nest__top { transform: translateY(-22px) rotate(-12deg); }
+.nest__doll.is-open .nest__top { transform: translateY(-8px) rotate(-12deg); }
 .nest__doll.is-solid .nest__top { transform: none; }
 @media (prefers-reduced-motion: no-preference) {
   .nest__top { transition: transform 0.55s cubic-bezier(0.3, 1.4, 0.5, 1); }
@@ -129,17 +142,17 @@
   25% { transform: rotate(-7deg); }
   75% { transform: rotate(7deg); }
 }
-.nest__list { display: grid; gap: 8px; margin: 18px 0 16px; padding-left: 2.2em; color: var(--ink-body); font-size: 14.5px; line-height: 1.55; }
+.nest__list { display: grid; gap: 6px; margin: 10px 0; padding-left: 1.4em; color: var(--ink-body); font-size: 12px; line-height: 1.45; }
 .nest__list b { color: var(--ink); font-weight: 600; }
 .nest__list em { color: var(--ink-muted); }
 .nest__btn {
-  min-height: 40px;
-  padding: 8px 16px;
+  min-height: 28px;
+  padding: 4px 10px;
   border: 1px solid var(--line-strong);
   border-radius: var(--radius-pill);
   background: var(--surface);
   color: var(--ink);
-  font: 500 13px/1.2 var(--font-mono);
+  font: 500 11px/1.2 var(--font-mono);
   cursor: pointer;
 }
 .nest__btn:hover { border-color: var(--accent); color: var(--accent-ink); }
@@ -430,33 +443,27 @@
   line-height: 1.65;
 }
 
-/* Mosaic: a dense-packed grid on fixed 10px rows. Each figure spans a number
-   of rows proportional to its own aspect ratio (set inline by js/hobby-page.js
-   once the image decodes), and landscape shots also span two columns — so
-   portraits and landscapes interlock instead of being cropped to a common
-   shape. grid-auto-flow:dense backfills the gaps a mixed-span grid leaves. */
+/* A mosaic: masonry columns. Each photograph keeps its own proportions
+   (aspect-ratio from --ar, written by js/hobby-page.js from
+   js/hobby-dims.js, so the box is right before the file arrives) and stacks
+   in the shortest column, so portraits and landscapes interlock with no
+   holes and no crop. Three columns, two on a tablet or phone. It replaced
+   justified rows (2026-10-30), whose rows all shared one height. */
 .hob-shots {
-  display: grid;
-  /* An even count, so two-column landscapes pair up. auto-fill gave five
-     tracks at full width, and the leftover fifth became a half-width
-     column down the right-hand side. */
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  grid-auto-rows: 10px;
-  grid-auto-flow: row dense;
-  gap: 10px;
+  columns: 3;
+  column-gap: 10px;
   margin-bottom: 40px;
 }
 .hob-shot {
   position: relative;
-  margin: 0;
+  display: block;
+  aspect-ratio: var(--ar, 1);
+  margin: 0 0 10px;
   overflow: hidden;
+  break-inside: avoid;
   border-radius: 3px;
   background: var(--bg-sunken);
-  /* Fallback span before JS measures; replaced by the inline --rows. */
-  grid-row: span var(--rows, 22);
 }
-.hob-shot--wide { grid-column: span 2; }
-.hob-shot--pano { grid-column: 1 / -1; }
 
 /* The whole tile is the control that opens the popover. */
 .hob-shot__btn {
@@ -501,12 +508,11 @@
   white-space: normal;
 }
 @media (max-width: 899.98px) {
-  .hob-shots { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .hob-shots { columns: 2; }
 }
-/* One column cannot hold a two-column span. */
-@media (max-width: 519.98px) {
-  .hob-shots { grid-template-columns: 1fr; }
-  .hob-shot--wide { grid-column: span 1; }
+@media (max-width: 599.98px) {
+  .hob-shots { column-gap: 8px; }
+  .hob-shot { margin-bottom: 8px; }
 }
 @media (prefers-reduced-motion: no-preference) {
   .js .hob-shot img { transition: transform 0.4s var(--ease); }
@@ -539,168 +545,15 @@
   .detail__nav { flex-direction: column; gap: 10px; }
   .detail__nav a { min-height: 44px; display: inline-flex; align-items: center; }
 
-  .hob-shots { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 8px; }
   .hobby__blurb { font-size: 15px; }
-}
-
-/* ==========================================================================
-   Live demo embed (js/project-detail.js)
-
-   Click-to-activate: the iframe's src is only set once the visitor asks for
-   it, so a case study never pulls a whole third-party app on load. The frame
-   keeps a fixed aspect ratio so activating it causes no layout shift.
-   ========================================================================== */
-.live { margin: 0 0 32px; }
-
-.live__frame {
-  overflow: hidden;
-  border: 1px solid var(--line-strong);
-  border-radius: var(--radius);
-  background: var(--bg-sunken);
-  box-shadow: var(--shadow-card);
-}
-
-/* Browser-chrome bar, so the embed reads as "a site" rather than a panel. */
-.live__chrome {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  padding: 9px 12px;
-  border-bottom: 1px solid var(--line);
-  background: var(--bg-raised);
-}
-.live__dot {
-  width: 9px;
-  height: 9px;
-  border-radius: 50%;
-  background: var(--line-strong);
-  flex: none;
-}
-.live__url {
-  margin-left: 8px;
-  overflow: hidden;
-  color: var(--ink-muted);
-  font-family: var(--font-mono);
-  font-size: 11.5px;
-  white-space: nowrap;
-  text-overflow: ellipsis;
-}
-
-/* The stage holds the placeholder, then the iframe. A fixed ratio here is what
-   keeps activation from shifting the page. */
-.live__stage {
-  position: relative;
-  aspect-ratio: 16 / 10;
-  background: var(--bg-sunken);
-}
-
-.live__start {
-  position: absolute;
-  inset: 0;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  width: 100%;
-  background: transparent;
-  border: 0;
-  color: var(--ink-body);
-  cursor: pointer;
-  transition: background var(--dur) var(--ease);
-}
-.live__start:hover { background: var(--accent-tint); }
-
-.live__play {
-  display: grid;
-  place-items: center;
-  width: 46px;
-  height: 46px;
-  padding-left: 3px;               /* optical centring of the triangle */
-  border-radius: 50%;
-  background: var(--accent-deep);
-  color: var(--on-accent-deep, #fff);
-  font-size: 15px;
-}
-.live__label { font-size: 14px; font-weight: 500; }
-.live__note { color: var(--ink-muted); font-size: 12px; }
-
-.live__iframe {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  border: 0;
-  background: #fff;                /* a transparent app should not show through */
-  opacity: 0;
-  transition: opacity 0.4s var(--ease);
-}
-.live.is-live .live__iframe { opacity: 1; }
-
-/* Spinner while the remote app wakes up. */
-.live.is-loading .live__stage::after {
-  content: '';
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  width: 26px;
-  height: 26px;
-  margin: -13px 0 0 -13px;
-  border: 2px solid var(--line-strong);
-  border-top-color: var(--accent);
-  border-radius: 50%;
-  animation: live-spin 0.8s linear infinite;
-}
-.live.is-live .live__stage::after { content: none; }
-@keyframes live-spin { to { transform: rotate(360deg); } }
-
-/* [hidden] must win over the display below, or the invisible overlay keeps
-   swallowing clicks meant for the activation button underneath it. */
-.live__fallback[hidden] { display: none; }
-.live__fallback {
-  position: absolute;
-  inset: 0;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: var(--gap);
-  padding: var(--gap-lg);
-  text-align: center;
-}
-.live__fallback p { color: var(--ink-soft); font-size: 14px; margin: 0; }
-
-.live__caption {
-  margin: 10px 0 0;
-  color: var(--ink-muted);
-  font-size: 12.5px;
-}
-/* Underlined, not just recoloured: a link inside a block of text must be
-   distinguishable without relying on colour (WCAG 1.4.1). */
-.live__caption a {
-  color: var(--accent-ink);
-  text-decoration: underline;
-  text-underline-offset: 2px;
-}
-
-/* Phones: a 16/10 frame of a desktop app is unreadable, so go taller and
-   trade width for legibility. */
-@media (max-width: 599.98px) {
-  .live__stage { aspect-ratio: 3 / 4; }
-  .live__url { font-size: 10.5px; }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .live__iframe { transition: none; }
-  .live.is-loading .live__stage::after { animation: none; }
 }
 
 /* --------------------------------------------------------------------------
    The opener (js/opener.js)
 
-   The first screen of a case study, after altermag.com: a textured ground with
-   the project's own vocabulary strewn across it, one drawn figure in the
-   middle, and a chevron into the article. Scroll thins it out.
+   The first screen of a case study, after altermag.com: a textured ground,
+   one drawn figure in the middle, and a chevron into the article. 62svh, so
+   the project's title is on the first screen. Scroll sinks the figure.
 
    The ground is procedural — two layered repeating gradients at low opacity
    over the theme's own paper, so it costs no image and inverts with the theme
@@ -709,8 +562,8 @@
 
 .opener {
   position: relative;
-  height: 100svh;
-  min-height: 520px;
+  height: 62svh;
+  min-height: 380px;
   margin-top: calc(-1 * var(--header-h, 58px));
   overflow: hidden;
   background: var(--bg);
@@ -726,39 +579,6 @@
   position: absolute;
   inset: 0;
   --p: 0;
-}
-
-/* Each fragment sits where the seeded scatter put it and drifts at its own
-   depth as the page moves: --fd is how much of the scroll it takes, so the
-   near ones leave first and the field opens up rather than sliding as a
-   sheet. */
-.op-frag {
-  position: absolute;
-  left: var(--fx);
-  top: var(--fy);
-  color: var(--ink-soft);
-  font-family: var(--font-mono, ui-monospace, monospace);
-  font-size: 11px;
-  letter-spacing: 0.02em;
-  white-space: nowrap;
-  opacity: calc((1 - var(--p) * 1.35) * 0.62);
-  transform: translate3d(0, calc(var(--p) * var(--fd) * -180px), 0);
-  will-change: transform, opacity;
-  pointer-events: none;
-}
-/* Every third one is set in the accent, so the field has a pulse rather than
-   being one even grey. */
-.op-frag:nth-child(3n) { color: var(--accent); opacity: calc((1 - var(--p) * 1.35) * 0.5); }
-.op-frag:nth-child(7n) { font-size: 13px; letter-spacing: 0.01em; }
-
-@media (prefers-reduced-motion: no-preference) {
-  .js .op-frag {
-    animation: op-in 1.1s var(--ease, ease) backwards;
-    animation-delay: var(--fdelay, 0s);
-  }
-}
-@keyframes op-in {
-  from { opacity: 0; }
 }
 
 .op-figure {
@@ -794,14 +614,6 @@
   50%      { transform: translateY(5px); opacity: 1; }
 }
 
-/* A phone gets a shorter opener: one screen of scattered nouns is a charming
-   pause on a desktop and an obstacle on a commute. */
-@media (max-width: 599.98px) {
-  .opener { height: 62svh; min-height: 380px; }
-  .op-frag { font-size: 10px; }
-  .op-frag:nth-child(7n) { font-size: 11px; }
-}
-
 /* ---------- opener centrepieces (js/opener.js PIECES) ----------
    Two case studies swap the small drawing for an object: a microscope whose
    eyepiece view is the real frame under a movable lens, and a till that
@@ -833,7 +645,6 @@
   top: 43%;
   container-type: size;
 }
-.op-frag.is-under { visibility: hidden; }
 
 /* The microscope. The SVG and the view share one 320×340 box. */
 .op-piece--scope { height: 54%; aspect-ratio: 320 / 340; }

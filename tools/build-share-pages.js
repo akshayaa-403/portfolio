@@ -97,11 +97,15 @@ function writeAll() {
   fs.mkdirSync(outWork, { recursive: true });
   fs.mkdirSync(outHob, { recursive: true });
 
+  // The preview cards are JPEG (tools/build-og-images.py): LinkedIn has been
+  // unreliable with WebP. A page without one gets the site card.
+  const og = (name) => {
+    const f = 'public/assets/og/' + name + '.jpg';
+    return fs.existsSync(path.join(ROOT, f)) ? BASE + f : OG_FALLBACK;
+  };
+
   for (const p of loadProjects()) {
-    // Prefer the project's own thumbnail for the preview card; fall back to
-    // the site card when there is no image for it.
-    const thumb = 'public/assets/work/' + p.id + '-thumb.webp';
-    const image = p.thumb !== false && fs.existsSync(path.join(ROOT, thumb)) ? BASE + thumb : OG_FALLBACK;
+    const image = og(p.id);
     const file = path.join(outWork, p.id + '.html');
     fs.writeFileSync(file, page({
       title: p.title + ' — Akshayaa Kashyap',
@@ -118,8 +122,7 @@ function writeAll() {
   const groups = loadHobbies();
   for (const id of Object.keys(groups)) {
     const g = groups[id];
-    const shot = 'public/assets/hobbies/' + id + '-1.webp';
-    const image = fs.existsSync(path.join(ROOT, shot)) ? BASE + shot : OG_FALLBACK;
+    const image = og('hobby-' + id);
     const file = path.join(outHob, id + '.html');
     fs.writeFileSync(file, page({
       title: g.label + ' — Akshayaa Kashyap',

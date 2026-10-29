@@ -11,7 +11,8 @@
        rail:     'ledger',              // optional: a widget pinned in the margin
        chapters: [{ id, label, title, blocks: [...] }, ...],
        closing:  { title?, blocks },    // "What I'd do differently"
-       sources:  [[label, detail], ...],// where every number came from
+       sources:  [[label, detail], ...],// where every number came from; kept
+                                        // on file and checked, not shown
        widgets:  { name: function (host, kit) { ...; return { set: fn } } }
      });
 
@@ -29,7 +30,6 @@
      { table: { head, rows }, caption }
      { widget: 'name', caption, size?, data? }
      { scrolly: 'name', steps: [{ p, state }], caption, data? }
-     { live: true }                          the project's click-to-load demo
 
    size is 'column' (the default), 'wide' or 'full'.
 
@@ -73,12 +73,13 @@
             (ext ? ' target="_blank" rel="noopener noreferrer"' : '') + '>' + label + '</a>';
         })
         // ^[a footnote]: a numbered superscript that shows its note on hover
-        // or focus, and the same note in the list at the end.
+        // or focus, as a side note in a free right gutter, and in a sheet on
+        // touch. There is no list at the end (removed 2026-10-30).
         .replace(/\^\[([^\]]+)\]/g, function (m, note) {
           if (!FN) return '';
           FN.push(note);
           var n = FN.length;
-          return '<sup class="a-fn"><a href="#fn-' + n + '" id="fnref-' + n + '" aria-describedby="fnpop-' + n + '">' + n +
+          return '<sup class="a-fn"><a href="#fnref-' + n + '" id="fnref-' + n + '" aria-describedby="fnpop-' + n + '">' + n +
             '</a><span class="a-fn__pop" id="fnpop-' + n + '" role="tooltip">' + note + '</span></sup>';
         });
     }).join('');
@@ -190,7 +191,6 @@
           '<div class="a-widget__stage"></div>' + cap(b.caption) + '</figure></div>' +
         '<div class="a-scrolly__steps">' + steps + '</div></section>';
     }
-    if (b.live) return ctx.live || '';
     return '';
   }
 
@@ -236,9 +236,9 @@
   /* Footnotes as side notes: numbered, set in the right gutter level with the
      line that cites them, pushed down when two would touch. Only where that
      gutter is free — the rail owns it otherwise, and below 1180px there is no
-     gutter at all, so the hover popover and the list at the end do the job.
-     On touch, a number opens every note at once in a sheet. */
-  function sidenotes(root, enabled) {
+     gutter at all, so the hover popover does the job. On touch, a number
+     opens every note at once in a sheet, built from `notes`. */
+  function sidenotes(root, enabled, notes) {
     var sups = root.querySelectorAll('.a-fn');
     if (!sups.length) return;
 
@@ -247,24 +247,19 @@
     root.addEventListener('click', function (e) {
       var a = e.target.closest && e.target.closest('.a-fn > a');
       if (!a || !touch.matches || typeof HTMLDialogElement === 'undefined') return;
-      var list = root.querySelector('.a-notes ol');
-      if (!list) return;
       e.preventDefault();
       if (!sheet) {
         sheet = el('dialog', { class: 'a-sheet', 'aria-label': 'Notes' });
         var close = el('button', { type: 'button', class: 'k-btn', text: 'Close',
           on: { click: function () { sheet.close(); } } });
         sheet.appendChild(el('div', { class: 'a-sheet__head' }, el('h2', { text: 'Notes' }), close));
-        var ol = list.cloneNode(true);
-        Array.prototype.forEach.call(ol.querySelectorAll('[id]'), function (n) {
-          n.setAttribute('data-n', n.id.replace('fn-', ''));
-          n.removeAttribute('id');
-        });
+        var ol = el('ol');
+        ol.innerHTML = notes.map(function (n, i) { return '<li data-n="' + (i + 1) + '">' + n + '</li>'; }).join('');
         sheet.appendChild(ol);
         sheet.addEventListener('click', function (ev) { if (ev.target === sheet) sheet.close(); });
         document.body.appendChild(sheet);
       }
-      var n = a.getAttribute('href').replace('#fn-', '');
+      var n = a.getAttribute('href').replace('#fnref-', '');
       Array.prototype.forEach.call(sheet.querySelectorAll('li'), function (li) {
         li.classList.toggle('is-hl', li.getAttribute('data-n') === n);
       });
@@ -746,13 +741,12 @@
 
   /* ---------- render ---------- */
 
-  function render(root, project, spec, opts) {
-    opts = opts || {};
+  function render(root, project, spec) {
     // Footnotes take the right gutter as side notes unless a rail has it; in
     // either case the handwritten notes give it up and all go left.
     var hasFn = /\^\[/.test(JSON.stringify([spec.chapters, spec.closing]));
     var ctx = {
-      root: root, blocks: [], n: 0, ch: '', live: opts.live || '', arts: [],
+      root: root, blocks: [], n: 0, ch: '', arts: [],
       noteSide: spec.rail || hasFn ? 'l' : null,
       themeListeners: [], chapterFns: [], current: null,
       say: el('p', { class: 'visually-hidden', 'aria-live': 'polite' })
@@ -782,21 +776,6 @@
           }).join('') + '</ol></nav>';
     }
 
-    if (notesList.length) {
-      html += '<section class="a-notes" aria-labelledby="a-notes-h"><h2 id="a-notes-h">Notes</h2><ol>' +
-        notesList.map(function (n, i) {
-          return '<li id="fn-' + (i + 1) + '">' + n +
-            ' <a class="a-notes__back" href="#fnref-' + (i + 1) + '" aria-label="Back to note ' + (i + 1) + '">↩</a></li>';
-        }).join('') + '</ol></section>';
-    }
-    if (spec.sources && spec.sources.length) {
-      html += '<section class="a-sources" aria-labelledby="a-sources-h">' +
-        '<h2 id="a-sources-h">Where the numbers come from</h2><ol>' +
-        spec.sources.map(function (s) {
-          return '<li><strong>' + inline(s[0]) + '</strong> ' + inline(s[1] || '') + '</li>';
-        }).join('') + '</ol></section>';
-    }
-
     root.setAttribute('data-form', KEY_RE.test(spec.form || '') ? spec.form : 'plain');
     root.classList.toggle('has-rail', !!spec.rail);
     root.innerHTML =
@@ -817,7 +796,7 @@
     drawArt(root, ctx);
     mountWidgets(root, spec, ctx);
     alignNotes(root);
-    sidenotes(root, !spec.rail);
+    sidenotes(root, !spec.rail, notesList);
     progress(root, ctx);
     if (spec.scramble) {
       var titles = Array.prototype.slice.call(root.querySelectorAll('.a-ch__title'));

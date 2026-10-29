@@ -1,4 +1,4 @@
-/* Hobbies — three cards in one row.
+/* Hobbies — one card per gallery, in one row.
 
    Each card is a plain link to its own gallery (hobby.html?id=...) and
    nothing intercepts it. It used to open the shared popover on the spot
@@ -114,7 +114,8 @@
       '<div class="hob-tri">' +
         GROUPS.map(function (g) {
           return '<a class="hob-card" data-cue="Open the gallery" href="hobby.html?id=' + esc(g.id) + '">' +
-            '<img src="public/assets/hobbies/' + esc(g.id) + '-1.webp" alt=""' +
+            // The 600px variant: the card is a third of the column.
+            '<img src="public/assets/hobbies/' + esc(g.id) + '-1-600.webp" alt=""' +
                  ' aria-hidden="true" width="600" height="450" loading="lazy" decoding="async">' +
             '<span class="hob-card__body">' +
               '<span class="hob-card__label">' + esc(g.label) + '</span>' +

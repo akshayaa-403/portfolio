@@ -181,7 +181,6 @@
           { p: '**Deny permission** shows the worst case. Unschedule now and the delete is skipped, but the task still forgets its `eventId`, so the event is orphaned in the calendar for good.^[tasks.js:175-184 with calendar.js:169.]' },
           { p: 'The colour has a catch too. The event is tinted to the nearest colour the calendar allows, not to the quadrant’s colour. Accounts publish a small palette of event colours, and the plugin picks the slot with the smallest squared RGB distance, which its own comment calls “crude, but enough”.^[CalendarPlugin.java:429-514; the comment at :508.] Two quadrants can land on the same slot. I haven’t read a real account’s palette off a phone, so I won’t guess which.' },
           { p: 'The browser demo has none of this. Its Day view says so in its own status line: *Browser preview — device calendar unavailable*.^[timeline.js:252-254.]' },
-          { live: true }
         ] },
 
       { id: 'unproven', label: '? no check covers this', title: 'The fix I can’t prove',

@@ -222,145 +222,12 @@
   background: var(--mon-screen);
 }
 
-/* --- The screen carousel (js/hero-hover.js) -------------------------------
-   After Framer's Screen Carousel (Ahmet Loca, framer.com/marketplace): one
-   clean screen, media in a set order, slides that move sideways on a smooth
-   ease, a 2px progress line 28px off the bottom between 6% insets, and a row
-   of 4px indicators under it, the current one stretched to 20px. Values are
-   the component's own, read from its live preview; they are written in the
-   laptop's unscaled pixels, which are close to the component's 680px demo,
-   and --lap-s scales them with the screen.
-
-   Slide 1 is empty, so the lockup shows through; there the line and the
-   indicators take the ink, since white would vanish on a light screen. The
-   progress line is the autoplay timer: its animation ending moves the
-   carousel on, so hovering the screen pauses it for free and under reduced
-   motion nothing moves by itself. Hover also lifts the photograph a touch
-   and brightens the caption. The terminal (js/desk-objects.js) opens over
-   all of it. */
-.scr {
-  position: absolute;
-  inset: 0;
-  overflow: hidden;
-  pointer-events: auto;
-  touch-action: pan-y;
-  user-select: none;
-  cursor: pointer;
-  background: var(--mon-screen);
-}
-.scr__track {
-  display: flex;
-  height: 100%;
-  margin: 0;
-  padding: 0;
-  list-style: none;
-}
-.scr__slide { flex: 0 0 100%; height: 100%; overflow: hidden; background: #000; }
-.scr__slide:first-child { background: none; }
-.scr__link { position: relative; display: block; height: 100%; }
-.scr__link img {
-  display: block;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  -webkit-user-drag: none;
-}
-.scr__cap {
-  position: absolute;
-  left: 6%;
-  right: 6%;
-  bottom: 44px;
-  color: rgb(255 255 255 / 0.86);
-  font-size: 17px;
-  line-height: 1.3;
-  letter-spacing: 0.01em;
-  text-shadow: 0 1px 2px rgb(0 0 0 / 0.6);
-}
-/* The shade the caption, line and indicators sit on: a photograph can be
-   white at the bottom, and white on white is nothing. */
-.scr__link::after {
-  content: '';
-  position: absolute;
-  inset: 45% 0 0;
-  background: linear-gradient(to top, rgb(0 0 0 / 0.72), rgb(0 0 0 / 0.38) 45%, rgb(0 0 0 / 0));
-  pointer-events: none;
-}
-.scr__cap { z-index: 1; }
-/* The screen's own sheen, as on the component. */
-.scr::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  z-index: 9;
-  background: radial-gradient(ellipse at 50% 50%, rgb(255 255 255 / 0.09) 0%, transparent 60%);
-  pointer-events: none;
-}
-
-.scr__bar {
-  position: absolute;
-  left: 6%;
-  right: 6%;
-  bottom: 28px;
-  z-index: 8;
-  height: 2px;
-  border-radius: 1px;
-  background: rgb(255 255 255 / 0.2);
-  pointer-events: none;
-}
-.scr__bar span {
-  display: block;
-  width: 0;
-  height: 100%;
-  border-radius: 1px;
-  background: #fff;
-}
-.scr__dots {
-  position: absolute;
-  left: 50%;
-  bottom: 10px;
-  z-index: 8;
-  display: flex;
-  gap: 6px;
-  translate: -50% 0;
-}
-.scr__dots button {
-  width: 4px;
-  height: 4px;
-  padding: 0;
-  border: 0;
-  border-radius: 3px;
-  background: rgb(255 255 255 / 0.4);
-  cursor: pointer;
-  transition: all 0.25s;
-}
-.scr__dots button.is-on { width: 20px; background: #fff; }
-.scr.is-blank .scr__bar { background: color-mix(in srgb, var(--ink) 16%, transparent); }
-.scr.is-blank .scr__bar span,
-.scr.is-blank .scr__dots button.is-on { background: var(--ink-soft); }
-.scr.is-blank .scr__dots button:not(.is-on) { background: color-mix(in srgb, var(--ink) 30%, transparent); }
-
-@media (prefers-reduced-motion: no-preference) {
-  .scr__track { transition: transform 0.9s cubic-bezier(0.65, 0, 0.35, 1); }
-  .scr__link img { transition: scale 0.8s cubic-bezier(0.22, 1, 0.36, 1); }
-  .scr:hover .scr__link img { scale: 1.035; }
-  .scr__cap { transition: color 0.4s ease-out, translate 0.4s ease-out; }
-  .scr:hover .scr__cap { color: #fff; translate: 0 -2px; }
-  .scr__bar span { animation: scr-fill 5s linear forwards; }
-  .scr:hover .scr__bar span,
-  .scr.is-paused .scr__bar span { animation-play-state: paused; }
-}
-@media (prefers-reduced-motion: reduce) {
-  .scr__bar { display: none; }
-}
-@keyframes scr-fill { to { width: 100%; } }
-
-/* A photograph on the screen, or the terminal open: the name steps off it. */
+/* The terminal open: the name steps off the screen. */
 [data-mode='desk'] .stage .hero__lockup > * { transition: opacity 0.4s var(--ease); }
-[data-mode='desk'] .stage.is-onwork .hero__lockup > *,
 [data-mode='desk'] .stage.is-term .hero__lockup > * { opacity: 0; }
 
 /* --- The terminal (js/desk-objects.js) ------------------------------------
-   Over the carousel, on the same screen. Sizes are divided by --lap-s so the
+   On the laptop's screen. Sizes are divided by --lap-s so the
    type lands at 11px whatever the laptop's scale. */
 .lterm-open {
   position: absolute;
@@ -1060,13 +927,14 @@
 .plant__rim { fill: var(--pot-rim); }
 .plant__stem { stroke: var(--leaf-deep); }
 .plant__leaf { fill: var(--leaf); transform-box: fill-box; }
-.plant__leaf--1, .plant__leaf--3 { transform-origin: 100% 100%; rotate: calc(-1 * var(--droop, 0deg)); }
-.plant__leaf--2, .plant__leaf--4 { transform-origin: 0% 100%; rotate: var(--droop, 0deg); }
-.plant__leaf--5 { transform-origin: 50% 100%; rotate: calc(var(--droop, 0deg) * 1.4); }
+/* Each leaf droops about where it meets the stem, by its own --droop. */
+.plant__leaf--l { transform-origin: 100% 100%; rotate: calc(-1 * var(--droop, 0deg)); }
+.plant__leaf--r { transform-origin: 0% 100%; rotate: var(--droop, 0deg); }
+.plant__leaf--t { transform-origin: 50% 100%; rotate: calc(var(--droop, 0deg) * 1.4); }
 .plant__leaves { transform-box: fill-box; transform-origin: 50% 100%; rotate: var(--lean, 0deg); }
-.plant.is-tired { --leaf: #7f9a3f; --leaf-deep: #5f7a2d; }
-.plant.is-thirsty { --leaf: #a8a046; --leaf-deep: #7e7633; }
-.plant.is-wilted { --leaf: #8d7140; --leaf-deep: #6c5632; }
+.plant__leaf.is-tired { --leaf: #7f9a3f; }
+.plant__leaf.is-thirsty { --leaf: #a8a046; }
+.plant__leaf.is-wilted { --leaf: #8d7140; }
 
 /* --- Rings the mug left ------------------------------------------------ */
 .desk__rings { position: absolute; inset: 0; z-index: 1; pointer-events: none; }

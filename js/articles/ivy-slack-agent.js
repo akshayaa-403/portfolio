@@ -1,7 +1,5 @@
 /* Project IVY — "The ladder, and who climbs it".
    One request from the demo script followed down IVY's escalation ladder.
-   Two authors: a teammate wrote the pipeline, locks, dispatcher, on-call sync
-   and timeout handler; this article is about the other half.
 
    Shared state: whatever the reader types into "Ask IVY something" lives in
    ASK, and every rung widget re-evaluates it. KB is the local knowledge base
@@ -197,33 +195,11 @@
     big: { label: 'Biggest intent wins', removed: 57, emptied: 13 }
   };
 
-  /* ---------- the ownership strip: git blame at bbdf83a ---------- */
-  var OWN = [
-    ['lambda_o3_slack_worker.py', 8049, 772, 'the worker: sessions, Lex, every path; my 772 lines are the ladder and the local KB'],
-    ['lambda_o3_live_agent.py', 4075, 0, 'the live-agent handoff'],
-    ['agents/*.py', 0, 1805, 'the learning loop: ingest, cluster, label, review'],
-    ['kb-connect/js', 0, 1481, 'knowledge-source connection UI (prototype)'],
-    ['lambda_o3_slack_summarizer.py', 1456, 0, 'conversation summaries'],
-    ['live_agent_capacity.py', 1392, 0, 'the capacity-reserving dispatcher'],
-    ['lambda_o3_admin_api.py', 0, 937, 'multi-tenant admin API (prototype)'],
-    ['lambda_o3_slack_handler.py', 826, 125, 'Slack events in, dedupe, SQS'],
-    ['chat_locks.py', 731, 0, 'per-agent chat locks'],
-    ['scripts/*.py', 0, 663, 'offline intent generation and loading'],
-    ['load_lex_intents_from_excel.py', 421, 220, 'the Lex loader; my 220 include the dedupe'],
-    ['lambda_o3_jsm_oncall_user.py', 625, 0, 'on-call sync from Jira Service Management'],
-    ['lambda_o3_slack_timeout_handler.py', 496, 0, 'the 30-second inactivity timeout'],
-    ['ocr/', 0, 471, 'the OCR Lambda: engine registry and container'],
-    ['lambda_o3_claude_fallback.py', 241, 42, 'the LLM fallback; my 42 are the prompt rewrite and Converse API'],
-    ['lambda_o3_intents.py', 0, 279, '/generate-intents and the Approve/Deny buttons'],
-    ['lambda_kb_connect_oauth.py', 0, 207, 'Atlassian OAuth for kb-connect (prototype)'],
-    ['lambda_o3_lex_intent_loader.py', 0, 97, 'loads approved intents into Lex']
-  ];
-
   Article.register('ivy-slack-agent', {
     form: 'ladder',
     scramble: 'L1L2L3L4→↓▮▯#@',
     rail: 'ask',
-    dek: 'IVY was a Slack bot for internal IT questions at InnovyQ, built by two of us in the summer of 2026. A teammate built the pipe every message travels through. I built what happens when the first answer isn’t good enough: a ladder from a fixed intent model, down through a knowledge base and a language model, to a person. This piece follows one question down it.',
+    dek: 'IVY was a Slack bot for internal IT questions at InnovyQ, built in the summer of 2026. I built what happens when the first answer isn’t good enough: a ladder from a fixed intent model, down through a knowledge base and a language model, to a person. This piece follows one question down it.',
 
     opener: function (c) {
       var s = '';
@@ -239,28 +215,18 @@
 
     chapters: [
       {
-        id: 'lex', label: 'Rung 1 · Lex', title: 'Two authors, one question',
-        art: function (c) {
-          return '<rect x="20" y="40" width="88" height="14" fill="none" stroke="' + c.l + '"/>' +
-            '<rect x="20" y="40" width="70" height="14" fill="' + c.p + '"/>' +
-            '<rect x="20" y="66" width="120" height="14" fill="' + c.a + '"/>' +
-            '<text x="20" y="34" font-size="10" font-family="monospace" fill="' + c.i + '">git blame</text>';
-        },
+        id: 'lex', label: 'Rung 1 · Lex', title: 'One question',
         blocks: [
-          { p: 'Before the question, the credits. IVY has two authors, and git blame splits the code cleanly. [[A teammate|them]] wrote the pipe: the Slack handler, the 8,821-line worker that holds every conversation, the ticket lock, the live-agent dispatcher, on-call sync and the timeout handler. [[I|me]] wrote the parts in the other colour.^[Line counts from git blame --line-porcelain, per file, at bbdf83a, the last commit in my local clone.]',
-            notes: [['the other colour', 'so "I" in this piece means only these lines']] },
-          { widget: 'owners', size: 'wide', caption: 'Lines per file by author, from git blame at bbdf83a. Hatched bars are a teammate’s, solid bars are mine. Press either total to grey out the other author. Vendored packages and tests are left out on both sides.' },
-          { p: 'So when I write "I" below, I mean those files and the line ranges inside the worker that run the ladder. Everything else is the system my work plugs into, and I’ll say so when we cross into it.' },
           { p: 'The question comes from the demo script I wrote for showing IVY off: "My timesheet won’t submit and the deadline is in an hour." I picked it because it is vague in the way real requests are. It names a symptom, not a system, and it has a clock on it.' },
           { p: 'You can change it. The box labelled "Ask IVY something" holds the question, and every figure below re-runs on whatever you type there.' },
           { scrolly: 'ladder', caption: 'The ladder as the worker decides it, with the real flags. The bot’s lines are the strings in lambda_o3_slack_worker.py. Lex, the LLM and the human are not run here; the knowledge-base rung is, on your question.',
             steps: [
-              { p: 'A message leaves Slack, goes through API Gateway to the handler, is deduplicated by `event_id` and lands on SQS. The worker picks it up. All of that is my teammate’s, and it is why a slow reply never becomes two replies.', state: { at: 0, ladder: true, kb: true, lex: false } },
+              { p: 'A message leaves Slack, goes through API Gateway to the handler, is deduplicated by `event_id` and lands on SQS. The worker picks it up. That is why a slow reply never becomes two replies.', state: { at: 0, ladder: true, kb: true, lex: false } },
               { p: 'The worker asks **Lex V2** first. Lex is deterministic: it only knows the intents it was given, 333 in the full export, 65 of which run a Lambda and actually do something. For the timesheet question it has nothing confident.^[333 intents and 65 Lambda-backed: data/lex_full_export_preview.json. The demo script expects Lex to miss this question.]', state: { at: 1, ladder: true, kb: true, lex: false } },
-              { p: 'Here is the first decision that is mine. When Lex misses and a knowledge base exists, IVY does **not** run it straight away. It says so and asks: *"Want me to search the knowledge base?"* The user presses a button to go down a rung, so each layer reads as its own step.', state: { at: 2, ladder: true, kb: true, lex: false } },
+              { p: 'Here is the first decision I made. When Lex misses and a knowledge base exists, IVY does **not** run it straight away. It says so and asks: *"Want me to search the knowledge base?"* The user presses a button to go down a rung, so each layer reads as its own step.', state: { at: 2, ladder: true, kb: true, lex: false } },
               { p: 'If no knowledge base is provisioned, there is nothing to offer. The worker skips the rung silently and runs the next one in the background, stopping at the first that gives a real answer. Untick the knowledge base and watch the rung grey out.', state: { at: 2, ladder: true, kb: false, lex: false } },
               { p: 'Every button carries its own state: the next rung and the question, cut to 1,500 characters. The ladder needs no extra session record to know where it is. Rung 3 is the LLM; the last button hands over to a person.', state: { at: 4, ladder: true, kb: true, lex: false } },
-              { p: 'One honest caveat. The whole ladder sits behind `ENABLE_ESCALATION_LADDER`, which defaults to off. With it off, the worker runs my teammate’s original path and none of these buttons appear.', state: { at: 1, ladder: false, kb: true, lex: false } }
+              { p: 'One honest caveat. The whole ladder sits behind `ENABLE_ESCALATION_LADDER`, which defaults to off. With it off, the worker runs its original path and none of these buttons appear.', state: { at: 1, ladder: false, kb: true, lex: false } }
             ] },
           { h: 'Lex’s one hard rule' },
           { p: 'Lex earns its place at the top because it is cheap and cannot make things up. It also has a rule that bit me when I loaded the full export: a Lex V2 build fails if one sample utterance belongs to two intents. The export had 2,672 utterances, of which 2,615 were distinct. Fifty-four strings were shared, and 57 copies had to go.^[Computed read-only over data/intent_kb.json with the loader’s own dedupe function.]' },
@@ -295,8 +261,8 @@
       {
         id: 'llm', label: 'Rung 3 · LLM', title: 'The sentence that never changed',
         blocks: [
-          { p: 'When the user presses "Try another solution", the question goes to rung 3, a language model. The provider is a setting: Claude on Bedrock by default, through the fallback Lambda my teammate wrote, or Mistral, or Gemini. Rung 3 is the first rung that can make something up, so it is the one that needs the most rules.' },
-          { p: 'The fallback’s original prompt told the model to ask one clarifying question when a request was ambiguous. In a helpdesk, a clarifying question is often a dead end. So when I wired it into the ladder I rewrote the prompt to lead with the most likely fix, raised the answer budget from 500 to 800 tokens, and moved the call to Bedrock’s model-agnostic Converse API.^[git blame on lambda_o3_claude_fallback.py: lines 13 and 18–22 are mine (5a4e40e, 2026-07-27); the original prompt is at 61fe183.]' },
+          { p: 'When the user presses "Try another solution", the question goes to rung 3, a language model. The provider is a setting: Claude on Bedrock by default, through a fallback Lambda, or Mistral, or Gemini. Rung 3 is the first rung that can make something up, so it is the one that needs the most rules.' },
+          { p: 'The fallback’s original prompt told the model to ask one clarifying question when a request was ambiguous. In a helpdesk, a clarifying question is often a dead end. So when I wired it into the ladder I rewrote the prompt to lead with the most likely fix, raised the answer budget from 500 to 800 tokens, and moved the call to Bedrock’s model-agnostic Converse API.^[lambda_o3_claude_fallback.py lines 13 and 18–22, commit 5a4e40e (2026-07-27); the original prompt is at 61fe183.]' },
           { code: '"You are IVY, an IT and support assistant. "\n"Give a clear, concrete, step-by-step solution the user can act on right away, "\n"using short numbered steps and leading with the most likely fix. "\n"Only ask a clarifying question if you genuinely cannot give any useful "\n"guidance without more detail; otherwise provide the best actionable steps. "\n"Do not claim that a ticket was created."', lang: 'python',
             caption: 'The rewritten system prompt, lambda_o3_claude_fallback.py at bbdf83a. The last line is the one line I kept from the original.' },
           { p: 'The last sentence is the one that never moved: *Do not claim that a ticket was created.* The model may be helpful, but only the deterministic code is allowed to say that something happened.',
@@ -305,11 +271,10 @@
         ]
       },
       {
-        id: 'human', label: 'Rung 4 · A human', title: 'Handing off to code I didn’t write',
+        id: 'human', label: 'Rung 4 · A human', title: 'Handing off to a person',
         blocks: [
-          { p: 'The bottom rung is a button, "Talk to a support agent". My code draws it and sets the session state its handler needs. What happens after the press is my teammate’s work, and it is the most carefully built part of IVY.' },
-          { p: 'His dispatcher picks the least-loaded agent who is enabled and on call or on shift. It reserves that agent with a conditional write that only succeeds while the agent has fewer than 5 open chats. If two requests race for the same person, one write fails and that request moves on to the next agent. If nobody has room, the ticket queues instead of being forced onto someone.^[live_agent_capacity.py, 1,392 of 1,392 lines by a teammate; MAX_ACTIVE_CHATS_PER_AGENT defaults to 5.]' },
-          { callout: 'An earlier version of this case study described that dispatcher, and the ticket lock, in the first person. That was wrong. They are a teammate’s, and so are the seven test files it cited.', label: 'Correction' }
+          { p: 'The bottom rung is a button, "Talk to a support agent". The ladder draws it and sets the session state its handler needs. What happens after the press is the most carefully built part of IVY.' },
+          { p: 'The dispatcher picks the least-loaded agent who is enabled and on call or on shift. It reserves that agent with a conditional write that only succeeds while the agent has fewer than 5 open chats. If two requests race for the same person, one write fails and that request moves on to the next agent. If nobody has room, the ticket queues instead of being forced onto someone.^[live_agent_capacity.py; MAX_ACTIVE_CHATS_PER_AGENT defaults to 5.]' }
         ]
       },
       {
@@ -359,13 +324,12 @@
     },
 
     sources: [
-      ['Authorship', 'git blame --line-porcelain per file at bbdf83a (local clone); commit counts from git shortlog --all. My commits run 2026-07-13 to 2026-08-10.'],
       ['Ladder', 'lambda_o3_slack_worker.py lines 148–176, 1396–1587, 5330–5390, 7675–7733: ESCALATION_LEVELS, ESCALATION_MAX_QUERY_CHARS = 1500, ENABLE_ESCALATION_LADDER default false, LLM_CHAT_MAX_MESSAGES = 50, LLM_CHAT_HISTORY_MAX_CHARS = 6000.'],
       ['Lex intents', 'data/lex_full_export_preview.json: 333 intents, 65 Lambda-backed.'],
       ['Knowledge base', 'data/intent_kb.json: 330 intents, 2,672 utterances, 13 categories; matcher lambda_o3_slack_worker.py lines 2847–2973, LOCAL_KB_MIN_SCORE = 0.30. Scores (Workday queries 0.439, BluetoothIssue 0.469, VsphereorVcloudIssues 0.777, idf pcq 6.11, access 1.79) re-run over the file in October 2026 with a mirror of invoke_local_kb.'],
       ['Dedupe', 'load_lex_intents_from_excel.py lines 335–356 run read-only over data/intent_kb.json under each ordering: 2,615 distinct of 2,672, 54 shared strings, 57 removals; 4, 12 and 13 intents emptied; ApplicationLicenses 51 → 23.'],
       ['Fallback prompt', 'lambda_o3_claude_fallback.py at 61fe183 (original, max tokens 500) and bbdf83a (rewrite in 5a4e40e, max tokens 800, Converse API).'],
-      ['Dispatcher', 'live_agent_capacity.py (a teammate’s), MAX_ACTIVE_CHATS_PER_AGENT = 5.'],
+      ['Dispatcher', 'live_agent_capacity.py, MAX_ACTIVE_CHATS_PER_AGENT = 5.'],
       ['OCR', 'ocr/results/result-*.json and benchmark_results.md at 61fe183, generated 2026-07-17: char accuracy 97.4 / 98.9 / 99.9 / 100%, mean latency 2,184 / 1,075 / 1,551 / 823 ms, load 12,142 / 10,594 / 38 / 1,420 ms (EasyOCR / PaddleOCR / Textract / Mistral OCR). Cold container 4,280.5 ms: ocr/DEPLOY.md. Crossovers are arithmetic on those means.'],
       ['Learning loop', 'agents/ingest.py, synthesize.py (threshold 0.3, 40 utterances), store.py (7-day TTL), review.py; lambda_o3_intents.py. Jaccard 0.25 vs 0.50 and the 4-cluster result re-run with agents.synthesize.cluster_interactions and MockLLMClient.'],
       ['Tests', 'python -m pytest tests, 2026-10-16: tests/test_agents_*.py 38 passed, 1 failed.']
@@ -395,7 +359,7 @@
           items[0].v.textContent = 'runs in AWS; not simulated here';
           items[1].v.textContent = m.best ? (m.best.score >= MIN ? m.best.name + ' · ' + f3(m.best.score) : 'below 0.30 · miss') : 'no match';
           items[2].v.textContent = 'always available';
-          items[3].v.textContent = 'a teammate’s dispatcher';
+          items[3].v.textContent = 'the on-shift dispatcher';
           chars.textContent = 'The button carries ' + Math.min(ASK.q.length, 1500) + ' of 1,500 characters.';
         }
         input.addEventListener('input', function () { ASK.set(input.value, 'rail'); });
@@ -404,38 +368,6 @@
           items.forEach(function (it) { it.li.classList.toggle('is-on', it.ch === ch); });
         });
         update();
-      },
-
-      /* ---- the ownership strip ---- */
-      owners: function (host, kit) {
-        var them = 0, me = 0, max = 0;
-        OWN.forEach(function (r) { them += r[1]; me += r[2]; max = Math.max(max, r[1] + r[2]); });
-        var focus = null;
-        var bT = kit.el('button', { type: 'button', class: 'iv-tot__seg iv-them', 'aria-pressed': 'false',
-          style: { flexGrow: String(them) } }, 'a teammate · ' + kit.fmt(them) + ' lines');
-        var bM = kit.el('button', { type: 'button', class: 'iv-tot__seg iv-me', 'aria-pressed': 'false',
-          style: { flexGrow: String(me) } }, 'me · ' + kit.fmt(me));
-        host.appendChild(kit.el('div', { class: 'iv-tot', role: 'group', 'aria-label': 'Lines by author' }, bT, bM));
-        var rows = kit.el('ul', { class: 'iv-own' });
-        OWN.forEach(function (r) {
-          var bar = kit.el('span', { class: 'iv-own__bar', style: { width: ((r[1] + r[2]) / max * 100).toFixed(2) + '%' } },
-            r[1] ? kit.el('span', { class: 'iv-them', style: { flexGrow: String(r[1]) } }) : null,
-            r[2] ? kit.el('span', { class: 'iv-me', style: { flexGrow: String(r[2]) } }) : null);
-          rows.appendChild(kit.el('li', { class: 'iv-own__row', title: r[3] },
-            kit.el('span', { class: 'iv-own__f', text: r[0] }),
-            kit.el('span', { class: 'iv-own__track' }, bar),
-            kit.el('span', { class: 'iv-own__n', text: (r[1] ? kit.fmt(r[1]) : '–') + ' / ' + (r[2] ? kit.fmt(r[2]) : '–') })));
-        });
-        host.appendChild(rows);
-        host.appendChild(kit.el('p', { class: 'iv-key', text: 'File · lines (a teammate / me)' }));
-        function show(k) {
-          host.setAttribute('data-focus', k || '');
-          bT.setAttribute('aria-pressed', String(k === 'them'));
-          bM.setAttribute('aria-pressed', String(k === 'me'));
-        }
-        bT.addEventListener('click', function () { focus = focus === 'them' ? null : 'them'; show(focus); });
-        bM.addEventListener('click', function () { focus = focus === 'me' ? null : 'me'; show(focus); });
-        kit.onKey(function (k) { show(k === 'them' || k === 'me' ? k : focus); });
       },
 
       /* ---- the ladder, as a scrolly ---- */
@@ -455,8 +387,8 @@
         var say = kit.el('div', { class: 'iv-say', 'aria-live': 'polite' });
         host.appendChild(say);
         host.appendChild(kit.el('div', { class: 'k-row' }, next, reset));
-        var NAMES = [['pipe', '·', 'Slack → handler → SQS → worker', 'a teammate’s'],
-          ['lex', 'L1', 'Lex V2', ''], ['kb', 'L2', 'Knowledge base', 'mine'], ['llm', 'L3', 'LLM', 'prompt mine'], ['human', 'L4', 'A human', 'a teammate’s']];
+        var NAMES = [['pipe', '·', 'Slack → handler → SQS → worker'],
+          ['lex', 'L1', 'Lex V2'], ['kb', 'L2', 'Knowledge base'], ['llm', 'L3', 'LLM'], ['human', 'L4', 'A human']];
 
         // The sequence of events the worker produces for these flags.
         function trace() {
@@ -475,7 +407,7 @@
               : '“I couldn’t find anything specific in the knowledge base for this. Want me to try our AI assistant?”', b: 'Try another solution' });
           }
           ev.push({ r: 'llm', t: 'An LLM answer (not called here). From now on follow-ups stay with the model, up to 50 turns.', b: 'Talk to a support agent' });
-          ev.push({ r: 'human', t: 'Handed to a teammate’s dispatcher: an on-shift agent with room, or the queue.' });
+          ev.push({ r: 'human', t: 'Handed to the dispatcher: an on-shift agent with room, or the queue.' });
           return ev;
         }
         function draw() {
@@ -489,7 +421,6 @@
             rungs.appendChild(kit.el('li', { class: 'iv-rung' + (cur.r === n[0] ? ' is-here' : '') + (seen[n[0]] ? ' is-seen' : '') + (off ? ' is-off' : '') },
               kit.el('span', { class: 'iv-rung__n', text: n[1] }),
               kit.el('span', { class: 'iv-rung__t', text: n[2] + (off ? ' — not provisioned, skipped' : '') }),
-              kit.el('span', { class: 'iv-rung__o', text: n[3] }),
               kit.el('span', { class: 'iv-rung__m', 'aria-hidden': 'true', text: cur.r === n[0] ? '◀' : '' })));
           });
           say.textContent = '';

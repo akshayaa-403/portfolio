@@ -1,5 +1,5 @@
 /* --------------------------------------------------------------------------
-   The Info section's pieces, written by js/info.js after the "Hello." intro
+   The About section's pieces, written by js/info.js after the "Hello." intro
    (whose own styles stay in css/style.css, §10). INFO_PIECES at the top of
    js/info.js says which pieces render and in what order.
 
@@ -113,34 +113,90 @@
 .eb__lifted { margin: 10px 0 0; color: var(--ink-muted); font: italic 13px/1.4 var(--font-serif); text-align: right; }
 .eb__bar { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-top: 14px; }
 
-/* --- The bracelet: this visit -----------------------------------------------
-   One charm per thing the visitor touched (js/info.js). Each wears its
-   kind's colour: the work, galleries and shelf the --graph-* colours that
-   palette.js has measured as marks on --bg, and everything done on the desk
-   or in these pieces --accent-deep. The face is cut out of it in ground. */
-.bz {
-  --bz-ground: var(--bg);
-  display: grid;
-  gap: 32px;
-  align-items: start;
-}
-@media (min-width: 900px) { .bz { grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr); gap: 48px; } }
-.bz__svg { display: block; width: 100%; height: auto; overflow: visible; }
-.bz__link, .bz__hole { fill: none; }
-.bz__link { stroke: var(--ink-soft); stroke-width: 8; stroke-linecap: round; stroke-dasharray: 11 11; }
-.bz__hole { stroke: var(--bz-ground); stroke-width: 3; stroke-linecap: round; stroke-dasharray: 11 11; }
-.bz__clasp, .bz__ring { fill: none; stroke: var(--ink-soft); stroke-width: 2.5; }
-.bz__bail { stroke: var(--ink-soft); stroke-width: 2; }
-.bz__face { fill: var(--charm); }
-.bz__icon { fill: none; stroke: var(--bz-ground); stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
-.bz__initial { fill: var(--bz-ground); font-family: var(--font-serif); font-weight: 700; text-anchor: middle; }
-.bz__tag rect { fill: var(--bz-ground); stroke: var(--ink-soft); stroke-width: 2; }
-.bz__engraved { fill: var(--ink); font: 600 9px/1 var(--font-mono); letter-spacing: 0.1em; text-anchor: middle; }
+/* --- The bracelet: skills ---------------------------------------------------
+   The group toggles, then the chain: one charm per skill in each selected
+   group (js/info.js), as real text in a list, so the names are read out and
+   wrap on their own. Each charm is a medal in one of four shapes, with an
+   icon for its skill cut out of it in ground colour, and the skill's full
+   name engraved under it. Each group wears its own colour, --skill-0 … 6,
+   measured by js/info.js to 4.5:1 against --bg; --accent-deep is the
+   fallback. The chain is drawn per charm (a run of links across its top),
+   so a row that wraps is simply a second strand. */
+.bz { display: grid; gap: 28px; }
 
-/* A charm hung while the bracelet was off screen swings in once it is seen. */
-.bz__charm { transform-box: fill-box; transform-origin: 50% 0; }
+.bz__groups { display: flex; flex-wrap: wrap; gap: 10px; margin: 0; padding: 0; list-style: none; }
+.bz__toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  min-height: 36px;
+  padding: 4px 14px 4px 10px;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius-pill);
+  background: none;
+  color: var(--ink);
+  font: 500 13px/1.2 var(--font-mono);
+  cursor: pointer;
+}
+.bz__toggle:hover { border-color: var(--charm); }
+.bz__toggle[aria-pressed='true'] { border-color: var(--charm); background: var(--bg-raised); }
+.bz__toggle:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+/* A ring when off, filled when on: the state is in the shape, not the hue alone. */
+.bz__dot { flex: none; width: 14px; height: 14px; border: 2px solid var(--charm); border-radius: 50%; }
+.bz__toggle[aria-pressed='true'] .bz__dot { background: var(--charm); }
+.bz__n { color: var(--ink-muted); font-weight: 400; }
+
+/* The chain. An empty one still shows its strand. */
+.bz__chain { display: flex; flex-wrap: wrap; row-gap: 22px; min-height: 30px; margin: 0; padding: 0; list-style: none; }
+.bz__chain:empty { border-top: 6px dotted var(--ink-soft); }
+.bz__charm {
+  --link: var(--ink-soft);
+  position: relative;
+  width: 124px;
+  padding-top: 8px;
+  /* The links: rings drawn as a dotted run of 8px beads across the top. */
+  background: radial-gradient(circle at 4px 4px, transparent 2px, var(--link) 2.4px, var(--link) 4px, transparent 4.4px) 0 0 / 9px 8px repeat-x;
+}
+.bz__hang { display: flex; flex-direction: column; align-items: center; transform-origin: 50% 0; }
+/* The bail: a jump ring and a wire down to the medal, two lengths so
+   neighbours hang at different heights. */
+.bz__hang::before { content: ''; width: 9px; height: 9px; border: 2px solid var(--link); border-radius: 50%; }
+.bz__hang::after { content: ''; order: 1; width: 2px; height: var(--drop, 10px); background: var(--link); }
+.bz__charm:nth-child(even) { --drop: 26px; }
+.bz__medal {
+  order: 2;
+  display: grid;
+  place-items: center;
+  width: 62px;
+  height: 62px;
+  background: var(--charm);
+  filter: drop-shadow(0 2px 2px rgb(0 0 0 / 0.25));
+}
+.bz__medal--round { border-radius: 50%; }
+.bz__medal--square { border-radius: 16px; }
+.bz__medal--hex { clip-path: polygon(25% 3%, 75% 3%, 100% 50%, 75% 97%, 25% 97%, 0 50%); }
+.bz__medal--shield { clip-path: polygon(8% 4%, 92% 4%, 92% 58%, 50% 98%, 8% 58%); }
+.bz__medal svg { width: 30px; height: 30px; overflow: visible; }
+.bz__medal--shield svg { margin-top: -8px; }
+.bz__icon { fill: none; stroke: var(--bg); stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.bz__glyph { fill: var(--bg); font: 700 10px var(--font-mono); text-anchor: middle; dominant-baseline: central; }
+.bz__name {
+  order: 3;
+  max-width: 116px;
+  margin-top: 8px;
+  color: var(--ink);
+  font: 500 12px/1.3 var(--font-mono);
+  text-align: center;
+  overflow-wrap: anywhere;
+}
+@media (max-width: 599.98px) {
+  .bz__charm { width: 108px; }
+  .bz__name { max-width: 100px; font-size: 11.5px; }
+}
+
+/* A charm swings in when its group is switched on. */
 @media (prefers-reduced-motion: no-preference) {
-  .js .bz__charm.is-fresh { animation: bz-swing 1.6s cubic-bezier(0.3, 0.6, 0.4, 1) backwards; }
+  .js .bz__charm.is-fresh .bz__hang { animation: bz-swing 1.6s cubic-bezier(0.3, 0.6, 0.4, 1) backwards; }
 }
 @keyframes bz-swing {
   0% { transform: translateY(-14px) rotate(22deg); opacity: 0; }
@@ -149,8 +205,3 @@
   70% { transform: rotate(-3deg); }
   100% { transform: none; }
 }
-
-.bz__empty { margin: 0; color: var(--ink-soft); font-size: 16px; line-height: 1.6; }
-.bz__list { display: grid; gap: 8px; margin: 0; padding: 0; list-style: none; }
-.bz__item { display: flex; align-items: center; gap: 10px; color: var(--ink); font-size: 14px; line-height: 1.35; }
-.bz__dot { flex: none; width: 22px; height: 22px; }

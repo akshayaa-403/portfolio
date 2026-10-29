@@ -956,7 +956,6 @@
               ['August 2026', 'One index.html, 1,393 lines, no dependencies, two test suites with 104 assertions', 'Kilometres for errands, and four penalties you can read for a workday']] },
             caption: 'Commits 063f43d, 3265c28 and e052c5b. The August commit changed 90 files.' },
           { p: 'The April version looked like ant colony optimisation, but its distances meant nothing. The June version put a database and a task queue behind a to-do list. In August I cut it back to one file, where every number is either a kilometre or a penalty with a line of code behind it. It runs in the page below, with the same defaults as the article.' },
-          { live: true }
         ]
       }
     ],

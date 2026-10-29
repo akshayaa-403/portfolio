@@ -9,7 +9,9 @@
    laid side by side with a 150px cross-fade (the second from 398px higher and
    running backwards) to spread the leaves across the wall, levelled so white
    is shadow (lum 245 -> 0, 100 -> 255), greyscale, silent, and played forward
-   then backward so the 5s clip loops without a seam.
+   then backward so the 5s clip loops without a seam. Re-encoded on
+   2026-10-30 at 854px wide, CRF 33, 180 KB (it was 1280px and 551 KB): the
+   wall only uses it as a soft mix factor, and the frames compare equal.
 
    Each pixel is a straight mix from the period's lit wall to its shadow by
    how deep the video's shadow is there. The day colours are what
@@ -106,7 +108,7 @@
     video.playsInline = true;
     video.preload = 'auto';
     video.addEventListener('loadeddata', function () { upload(); draw(); });
-    video.src = 'public/assets/desk/leaves.mp4?v=6';
+    video.src = 'public/assets/desk/leaves.mp4?v=7';
   }
   function upload() {
     if (!video || video.readyState < 2) return;
