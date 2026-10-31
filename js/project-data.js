@@ -292,6 +292,54 @@ const projects = [
     "notes": "Files: js/articles/habita.js, css/articles/habita.css. No new assets. check.js passes for habita; consoles clean; no overflow at 390px. Re-ran Habita tests 2026-10-18: 18/18. Metric '18/18 UI checks pass' is honest but is a test count, not an outcome; drop it if the home row should carry results only. Colour-palette widget skipped (no device-read palette). Open owner items: shipped seam axis labels are transposed (styles.css:335-362); the sync-adapter insert's 'still born DIRTY' comment is likely wrong per AOSP and unverified on a device; README 'Updates are partial' claim is false end to end; repo topic 'habit-tracker' is stale. Old fragments 'no third-party sync', 'position, not a field' dropped. Mosaic no longer reads excerpt; kept per brief."
   },
   {
+    "id": "outbound-pipeline",
+    "title": "Outbound Sales Pipeline",
+    "tagline": "From a Google Maps search to a salesperson’s phone: find the business, find a number, let an AI agent make the call.",
+    "summary": "The outbound pipeline I built at Sygnius Digital in 2025 for a web-design studio selling to vacation-rental agencies around Miami: Google Places search for any query, a website scrape for the contacts listings leave out, Bland AI and Retell AI voice agents that hang up on voicemail and phone menus and transfer interested owners to sales, and a domain check for the email follow-up.",
+    "context": "Sygnius Digital",
+    "role": "AI Specialist, Sygnius Digital",
+    "year": "2025",
+    "group": "products",
+    "tech": [
+      "Python",
+      "Bland AI",
+      "Retell AI",
+      "Google Places API",
+      "BeautifulSoup",
+      "Selenium",
+      "requests",
+      "dnspython",
+      "Hugging Face Transformers",
+      "FLAN-T5",
+      "DistilGPT2"
+    ],
+    "repo": "https://github.com/akshayaa-403/outbound-pipeline",
+    "tags": [
+      ["Places API Text Search", "https://developers.google.com/maps/documentation/places/web-service/text-search"],
+      ["Bland AI", "https://docs.bland.ai"],
+      ["Retell AI", "https://docs.retellai.com"],
+      ["E.164", "https://en.wikipedia.org/wiki/E.164"],
+      ["SPF", "https://datatracker.ietf.org/doc/html/rfc7208"],
+      ["DKIM", "https://datatracker.ietf.org/doc/html/rfc6376"],
+      ["DMARC", "https://datatracker.ietf.org/doc/html/rfc7489"],
+      ["FLAN-T5", "https://arxiv.org/abs/2210.11416"]
+    ],
+    "glance": {
+      "problem": "A web-design studio wanted to sell booking websites to vacation-rental agencies, and needed someone to find the agencies and get an interested owner on the phone with a salesperson.",
+      "built": "A Python pipeline: Google Places search for any query, a website scrape (BeautifulSoup, with Selenium for JavaScript-only sites) for the contacts listings leave out, Bland AI and Retell AI agents that hang up on voicemail and phone menus and transfer interested owners to sales, and a report of answer and transfer rate per prompt.",
+      "result": "600+ qualified leads. Calls reached a 65% answer rate, and re-tuning the agent’s tone lifted successful transfers by 12%. Written as Colab notebooks in 2025, rebuilt as a tested package in 2026."
+    },
+    "nest": [
+      ["The campaign", "Outbound calls for a web-design studio selling to vacation-rental agencies around Miami."],
+      ["The pipeline", "A Places search, a website scrape, an AI voice agent and a transfer to a salesperson."],
+      ["The lead list", "600+ qualified leads, one row per business, deduplicated by Places ID."],
+      ["The call", "A Bland AI or Retell AI agent that hangs up on machines and transfers anyone interested."],
+      ["One phone number", "Found on the listing or the business’s own site, normalised to E.164 before anyone dials it."]
+    ],
+    "metric": "600+ qualified leads",
+    "thumb": false
+  },
+  {
     "id": "ivy-slack-agent",
     "title": "Project IVY",
     "tagline": "A Slack support agent that reads screenshots and files its own tickets.",

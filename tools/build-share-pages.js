@@ -159,7 +159,7 @@ const GROUPS = [
   { key: 'research', title: 'Research',
     note: 'Systems that measure something and report the number, including when the number is bad.' },
   { key: 'products', title: 'Products',
-    note: 'Things built for someone else to open — a shop and a phone app.' }
+    note: 'Things built for someone else to use — a shop, a phone app and a sales pipeline.' }
 ];
 
 function rowHtml(p, n, lead) {
@@ -172,7 +172,7 @@ function rowHtml(p, n, lead) {
   const meta = [p.context || p.role, years].filter(Boolean).map(esc).join(' · ');
 
   return '          <a class="rm' + (lead ? ' rm--lead' : '') +
-      '" href="work/' + encodeURIComponent(p.id) + '.html">' +
+      '" href="work/' + encodeURIComponent(p.id) + '.html" data-group="' + esc(p.group) + '">' +
       '<span class="rm__num" aria-hidden="true">' + (n < 10 ? '0' : '') + n + '</span>' +
       '<span class="rm__text">' +
         '<span class="rm__title">' + esc(p.title) + '</span>' +
@@ -193,7 +193,7 @@ function projectListHtml(projects) {
   for (const g of GROUPS) {
     const rows = shown.filter((p) => p.group === g.key);
     if (!rows.length) continue;
-    out.push('          <div class="rm-group">' +
+    out.push('          <div class="rm-group" data-group="' + esc(g.key) + '">' +
       '<h3 class="rm-group__title">' + esc(g.title) + '</h3>' +
       '<p class="rm-group__note">' + esc(g.note) + '</p></div>');
     for (const p of rows) { n++; out.push(rowHtml(p, n, n === 1)); }

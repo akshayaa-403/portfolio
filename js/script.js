@@ -30,7 +30,7 @@
     { key: 'research', title: 'Research',
       note: 'Systems that measure something and report the number, including when the number is bad.' },
     { key: 'products', title: 'Products',
-      note: 'Things built for someone else to open — a shop and a phone app.' }
+      note: 'Things built for someone else to use — a shop, a phone app and a sales pipeline.' }
   ];
 
   function row(p) {

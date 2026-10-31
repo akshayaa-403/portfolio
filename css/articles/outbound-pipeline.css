@@ -1,0 +1,57 @@
+/* Outbound Sales Pipeline — the scrape and the call. Every colour is a token. */
+
+
+/* ---------- the scrape ---------- */
+.ob-scrape { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 16px; }
+.ob-src { display: grid; gap: 12px; align-content: start; }
+.ob-src__page[hidden], .ob-listing[hidden] { display: none; }
+.ob-src__k { display: block; margin: 0 0 4px; color: var(--ink-soft); font-size: 11px; overflow-wrap: anywhere; }
+.ob-src__in {
+  box-sizing: border-box; width: 100%; padding: 9px 11px; resize: vertical;
+  border: 1px solid var(--line-strong); border-radius: var(--radius-sm);
+  background: var(--bg); color: var(--ink); font: 11.5px/1.55 var(--font-mono); white-space: pre;
+}
+.ob-src__in:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+.ob-listing {
+  display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 6px 12px; margin: 0; padding: 12px;
+  border: 1px solid var(--line); border-radius: var(--radius-sm); background: var(--bg);
+}
+.ob-listing dt { color: var(--ink-muted); }
+.ob-listing dd { margin: 0; color: var(--ink); overflow-wrap: anywhere; }
+
+.ob-cols { width: 100%; border-collapse: collapse; }
+.ob-cols th, .ob-cols td { padding: 6px 6px; border-bottom: 1px solid var(--line); text-align: left; vertical-align: top; }
+.ob-cols th { color: var(--ink-soft); font-weight: 400; white-space: nowrap; }
+.ob-cols td { color: var(--ink); overflow-wrap: anywhere; }
+.ob-cols tr.is-empty td { color: var(--ink-muted); }
+.ob-cols tr.is-new { background: var(--accent-tint); }
+.ob-cols tr.is-new th { color: var(--ink); }
+.ob-cols__m { width: 1%; color: var(--ink-muted); font-size: 11px; text-align: right; white-space: nowrap; }
+.ob-cols tr.is-new .ob-cols__m { color: var(--accent-ink); font-weight: 600; }
+.ob-q { margin: 12px 0 0; color: var(--ink-body); }
+.ob-q b { color: var(--ink); }
+.ob-note { margin: 10px 0 0; padding: 8px 10px; border-left: 3px solid var(--accent); background: var(--accent-tint); color: var(--ink); }
+.ob-sub { margin: 16px 0 6px; color: var(--ink-muted); font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; }
+.ob-drop { margin: 0; padding: 0; list-style: none; }
+.ob-drop li { padding: 3px 0; color: var(--ink-body); overflow-wrap: anywhere; }
+.ob-drop code { color: var(--ink); text-decoration: line-through; text-decoration-color: var(--ink-muted); }
+
+/* ---------- the call ---------- */
+.ob-path { margin: 0 0 16px; padding: 0; list-style: none; border-left: 2px solid var(--line-strong); }
+.ob-step { display: grid; grid-template-columns: 2em minmax(0, 1fr); gap: 8px; padding: 6px 0 6px 10px; color: var(--ink-muted); }
+.ob-step.is-on { color: var(--ink-body); }
+.ob-step.is-end { margin-left: -2px; border-left: 3px solid var(--accent); background: var(--accent-tint-strong); color: var(--ink); }
+.ob-step__n { color: var(--ink-muted); text-align: right; }
+.ob-step.is-on .ob-step__n { color: var(--accent-ink); font-weight: 600; }
+
+.ob-recs { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 12px; }
+.ob-rec { padding: 10px 12px; border: 1px solid var(--line); border-radius: var(--radius-sm); background: var(--bg); }
+.ob-rec__h { margin: 0 0 6px; color: var(--ink-soft); font-size: 11.5px; }
+.ob-rec__f { margin: 0 0 8px; color: var(--ink); font: 12px/1.6 var(--font-mono); white-space: pre-wrap; overflow-wrap: anywhere; }
+.ob-rec__o { margin: 0; color: var(--ink-body); }
+.ob-rec__o b { color: var(--accent-ink); }
+.ob-rec__none { margin: 0; color: var(--ink-body); }
+
+@media (max-width: 699.98px) {
+  .ob-scrape, .ob-recs { grid-template-columns: minmax(0, 1fr); }
+}

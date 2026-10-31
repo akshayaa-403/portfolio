@@ -33,3 +33,5 @@ dist-ssr
 # Original artwork and photographs. The web-sized copies under
 # public/assets/ are what ship; these are the masters and stay local.
 text.md
+# Raw Sygnius Colab exports: contain live API keys and real phone numbers. Never commit.
+sygnius work/

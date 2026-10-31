@@ -2167,21 +2167,24 @@ body:has(dialog[open]) .cue { display: none; }
 
 /* --- The grid ---------------------------------------------------------
    Two columns, one per group, with that group's projects beneath its heading.
-   Both renderers emit the same flat run — heading, row, row, heading, row,
-   row — so `grid-auto-flow: column` over three explicit rows lands each
-   heading at the top of its own column without either renderer having to
-   grow a wrapper. A third group wants a third column here; a third project
-   in a group wants a fourth row. */
+   Both renderers emit one flat run — heading, rows, heading, rows — with
+   data-group on every item, so each item is pinned to its group's column and
+   `row dense` stacks it at the first free row there. The groups can then hold
+   different numbers of projects (Products has three, Research two) without
+   either renderer growing a wrapper. One row per project in the longest
+   group; a third group wants a third column here. */
 .rm-list {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  grid-template-rows: auto 1fr 1fr;
-  grid-auto-flow: column;
+  grid-template-rows: auto repeat(3, 1fr);
+  grid-auto-flow: row dense;
   gap: 14px 20px;
 }
+.rm-list > [data-group="research"] { grid-column: 1; }
+.rm-list > [data-group="products"] { grid-column: 2; }
 .rm-list .rm-group { margin-top: 0; }
 /* One quiet line, under both columns. */
-.rm-list .rm-archive { grid-column: 1 / -1; grid-row: 4; margin-top: 6px; }
+.rm-list .rm-archive { grid-column: 1 / -1; grid-row: 5; margin-top: 6px; }
 
 /* Each row is name, year, one line, the measured result where there is one,
    and the stack. The description is not clamped: the grid's rows are 1fr, so
@@ -2195,6 +2198,7 @@ body:has(dialog[open]) .cue { display: none; }
     grid-template-rows: none;
     grid-auto-flow: row;
   }
+  .rm-list > [data-group] { grid-column: auto; }
   .rm-list .rm-archive { grid-row: auto; }
 }
 
