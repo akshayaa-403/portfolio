@@ -1,15 +1,16 @@
 /* ==========================================================================
-   Desk mode — the old chaos mode, restored from c515873.
+   Desk mode: the home page's hero.
 
-   A desk around the lockup: a lamp that switches the theme and
-   its glow, a music card that plays on hover, an AirDrop card that hands
-   over the resume, and the drawn objects of js/desk-objects.js (window,
-   notes, Polaroids, mug, plant...). Every [data-drag] object can be
-   picked up and moved. Every element here exists only in [data-mode='desk'] at
-   >= 900px; the lockup's placement is in style.css (section 14).
-   Behaviour lives in js/hero-hover.js.
+   A desk under the name: a lamp that switches the theme, a record player
+   that plays when pressed, a phone that AirDrops the résumé, a paint chip
+   that explains the day's colours, the drink of the day, a card holder, a
+   window, and a laptop whose screen lists the case studies. Every
+   [data-drag] object can be picked up and moved. Everything here exists
+   only in [data-mode='desk'] at >= 900px, except the screen's list, which
+   stacks under the name below that. Behaviour lives in js/hero-hover.js
+   and js/desk-objects.js.
 
-   Each prop is placed with percentage --x/--y/--w/--h against the .desk box
+   Each object is placed with percentage --x/--y/--w against the .desk box
    (inline in index.html), so the composition scales with the viewport.
    ========================================================================== */
 
@@ -139,31 +140,23 @@
 }
 
 /* --- The laptop ------------------------------------------------------------
-   The MacBook from the owner's references in the middle of the desk, with
-   the lockup shown on its screen. Its glass was cut out of the photograph
-   (tools/build-desk-props.py), so the page paints the screen behind it.
+   The MacBook from the owner's references in the middle of the desk. Its
+   glass was cut out of the photograph (tools/build-desk-props.py), so the
+   page paints the screen behind it (--mon-screen: lighter than the page by
+   day, darker at night, so text on it only ever gains contrast).
 
-   The lockup's lines are placed as percentages of the STAGE (style.css), so
-   the glass is sized and placed in stage terms too: it must run from 31% of
-   the stage's height to at least 75%, round the name (42%) and the proof line
-   (60.5%), and be wide enough for the proof line. From the photograph: the glass
-   is 80.3% of the laptop's width and 85.4% of its height, starting 3.24% down,
-   and the laptop is 710/432 = 1.6435 wide to high. Hence --lw, the larger of
-   what the width and the height each require (and never under 700px, which
-   keeps the proof line, a fixed ~520px, inside it), and a top that lands the glass
-   at 31%: f * (desk + header) - header, less the frame above the glass.
+   From the photograph: the glass is 80.3% of the laptop's width and 85.4%
+   of its height, starting 3.24% down, and the laptop is 710/432 = 1.6435
+   wide to high. --lw is its width before scaling; the laptop's top is set so
+   the glass starts at 31% of the stage. It is then scaled by --lap-s (0.62
+   inline on .stage) about the centre of its glass, and moved by --lap-seat
+   so its base sits on the tabletop at about 89% of the stage: the glass
+   centre is 31% + 0.2598 * lw down, the base 0.329 * s * lw below that.
+   --lap-dx/--lap-dy (the editor's nudge) are added on top.
 
-   The screen is lighter than the page by day and darker at night
-   (--mon-screen), so every line of text on it measures higher contrast than
-   it does on --bg, never lower. */
-/* --lw lives on the stage, so the lockup can find the screen's centre too.
-
-   The laptop is drawn at --lw and then scaled by --lap-s (0.62 inline on
-   .stage), so it is a laptop on a desk rather than a monitor filling the
-   room. --lap-seat is how far down that moves it so its base sits on the
-   tabletop, at about 89% of the stage: the glass centre is 31% + 0.2598 * lw
-   down, the base 0.329 * s * lw below that once scaled. --lap-dy (the editor's
-   nudge) is added on top. */
+   What the screen shows is .hero__work, outside the desk (the desk is its
+   own stacking context under the name, and hidden below 900px), placed on
+   the same numbers so it lands exactly on the glass. */
 .stage {
   --lw: max(54vw, 85svh, 700px);
   --lap-seat: calc(58svh - var(--lw) * (0.2598 + 0.329 * var(--lap-s, 1)));
@@ -182,32 +175,6 @@
   pointer-events: none;
   filter: var(--prop-filter);
 }
-/* The lockup rides on the laptop's screen: whatever offset and scale move
-   the laptop (--lap-dx/--lap-dy/--lap-s on .stage, set with ?edit=1) move
-   the text with it, about the same point -- the centre of the glass, which
-   is 31% of the stage plus half the glass: 31% + --lw * 0.2596. */
-[data-mode='desk'] .hero__lockup {
-  translate: var(--lap-dx, 0vw) calc(var(--lap-dy, 0svh) + var(--lap-seat, 0px));
-  scale: var(--lap-s, 1);
-  transform-origin: 50% calc(31% + var(--lw) * 0.2596);
-}
-/* Scaled to 0.62 the role and proof line would set at 11px and 8.7px, so
-   they are drawn larger before the scale (24px and 19px land at ~15px and
-   ~12px), and the proof line wraps to the glass instead of running past it. */
-@media (min-width: 900px) {
-  :root[data-mode='desk'] .stage .hero__role { font-size: 24px; }
-  :root[data-mode='desk'] .stage .hero__proof {
-    top: calc(53.6% + 54px) !important;
-    max-width: calc(var(--lw) * 0.62) !important;
-    font-size: 19px;
-    line-height: 1.45;
-    text-wrap: balance;
-  }
-}
-@media (max-width: 899.98px) {
-  [data-mode='desk'] .hero__lockup { translate: none; scale: none; }
-}
-
 .laptop__img {
   position: relative;
   display: block;
@@ -222,12 +189,81 @@
   background: var(--mon-screen);
 }
 
-/* The terminal open: the name steps off the screen. */
-[data-mode='desk'] .stage .hero__lockup > * { transition: opacity 0.4s var(--ease); }
-[data-mode='desk'] .stage.is-term .hero__lockup > * { opacity: 0; }
+/* --- The laptop's screen: the case studies --------------------------------
+   At 900px and up, exactly the glass (31% of the stage down, 0.803 lw wide,
+   0.5196 lw high), moved and scaled as the laptop is. Type is divided by
+   --lap-s so it lands at its stated size whatever the laptop's scale.
+   Below 900px, a plain list under the name. */
+.hero__work { position: relative; padding: 22px var(--gap-lg) 0; }
+/* No laptop below 900px, and #work lists the same four right after. */
+@media (max-width: 899.98px) { .hero__work { display: none; } }
+.screen__list { display: grid; gap: 10px; margin: 0; padding: 0; list-style: none; }
+.screen__list a {
+  display: block;
+  padding: 12px 14px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--surface);
+  color: var(--ink-body);
+  text-decoration: none;
+}
+.screen__list b { display: block; color: var(--ink); font-size: 15px; font-weight: 600; }
+.screen__list span { display: block; margin-top: 2px; font-family: var(--font-serif); font-size: 14px; line-height: 1.4; }
+.screen__list a:hover b { color: var(--link); text-decoration: underline; text-underline-offset: 3px; }
+.screen__list a:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.lterm-open, .lterm { display: none; }
+
+@media (min-width: 900px) {
+  [data-mode='desk'] .hero__work {
+    /* 1px on screen at --lw 777 (1440 x 900), larger with a larger laptop */
+    --k: calc(max(1px, var(--lw) / 777) / var(--lap-s, 1));
+    position: absolute;
+    left: 50%;
+    top: 31%;
+    z-index: 20;
+    width: calc(var(--lw) * 0.803);
+    height: calc(var(--lw) * 0.5196);
+    padding: 0;
+    translate: calc(-50% + var(--lap-dx, 0vw)) calc(var(--lap-dy, 0svh) + var(--lap-seat, 0px));
+    scale: var(--lap-s, 1);
+    pointer-events: none;
+  }
+  [data-mode='desk'] .screen {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    height: 100%;
+    padding: calc(14 * var(--k)) calc(14 * var(--k)) calc(12 * var(--k));
+    overflow: hidden;
+  }
+  [data-mode='desk'] .screen__list { gap: calc(3 * var(--k)); }
+  [data-mode='desk'] .screen__list a {
+    padding: calc(4 * var(--k)) calc(8 * var(--k));
+    border: 0;
+    border-radius: calc(4 * var(--k));
+    background: none;
+    pointer-events: auto;
+  }
+  [data-mode='desk'] .screen__list a:hover { background: color-mix(in srgb, var(--ink) 6%, transparent); }
+  [data-mode='desk'] .screen__list a:focus-visible { outline-width: calc(2 * var(--k)); }
+  [data-mode='desk'] .screen__list b { font-size: calc(13 * var(--k)); }
+  [data-mode='desk'] .screen__list span {
+    margin-top: calc(1 * var(--k));
+    font-size: calc(12 * var(--k));
+    line-height: 1.35;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+  [data-mode='desk'] .lterm-open { display: block; top: auto; bottom: 3%; }
+  [data-mode='desk'] .lterm:not([hidden]) { display: flex; }
+}
+/* The terminal open: the list steps off the screen. */
+.stage.is-term .screen { visibility: hidden; }
 
 /* --- The terminal (js/desk-objects.js) ------------------------------------
-   On the laptop's screen. Sizes are divided by --lap-s so the
+   On the laptop's screen (.hero__work). Sizes are divided by --lap-s so the
    type lands at 11px whatever the laptop's scale. */
 .lterm-open {
   position: absolute;
@@ -252,7 +288,6 @@
   position: absolute;
   inset: 0;
   z-index: 11;
-  display: flex;
   flex-direction: column;
   padding: 6% 5% 4%;
   background: var(--term-bg, #0a0a0a);
@@ -261,7 +296,6 @@
   pointer-events: auto;
   cursor: text;
 }
-.lterm[hidden] { display: none; }
 /* The input's own outline is replaced by one round the whole terminal, so
    focus stays visible. */
 .lterm:focus-within { box-shadow: inset 0 0 0 calc(2px / var(--lap-s, 1)) var(--on-photo-accent, #8fb8e8); }
@@ -374,116 +408,159 @@
 .prop--lamp-btn:hover .lamp__glow,
 :root[data-theme='dark'] .lamp__glow { opacity: 1; }
 
-/* --- Cards ---------------------------------------------------------------- */
-.obj {
-  position: absolute;
-  left: var(--x);
-  top: var(--y);
-  width: var(--w);
-  z-index: var(--z, 6);
-  padding: 12px;
-  background: var(--surface);
-  border: 1px solid var(--line);
-  border-radius: var(--radius);
-  box-shadow: var(--shadow-card);
-  transform: rotate(var(--r, 0deg));
-  transition: box-shadow var(--dur) var(--ease), border-color var(--dur) var(--ease);
-}
-.obj__title {
-  color: var(--ink);
-  font-size: 12px;
-  font-weight: 500;
-  line-height: 1.4;
-}
-.obj__meta {
-  color: var(--ink-muted);
-  font-size: 11px;
-}
-
-/* Music player */
-.obj--player { text-align: center; padding: 14px 14px 16px; }
-.player__disc { width: 100%; aspect-ratio: 1; margin-bottom: 12px; }
-.player__disc img { width: 100%; height: 100%; object-fit: contain; }
-.player__artist { margin: 0; }
-.player__track { margin: 0 0 10px; }
-.player__bar {
-  position: relative;
-  height: 3px;
-  border-radius: 2px;
-  background: var(--surface-muted);
-  overflow: hidden;
-}
-.player__bar span {
-  position: absolute;
-  /* Empty at rest: the time beside it reads 0:00. js/hero-hover.js writes
-     `right` as the track plays. */
-  inset: 0 100% 0 0;
-  background: var(--ink-soft);
-}
-.player__times {
-  display: flex;
-  justify-content: center;
-  gap: 5px;
-  margin-top: 6px;
-  color: var(--ink-muted);
-  font-size: 10px;
-}
-.player__play {
+/* --- The record player ----------------------------------------------------
+   public/assets/desk/turntable.webp: "A turntable with a record player
+   inside of it" by Bhautik Patel (a 3D render), Unsplash License,
+   https://unsplash.com/photos/LnGU5KjbBpM . Cut out of its dark ground with
+   OpenCV (the ground is a warm near-black, the record a cool one), the
+   maker's name on the lid covered with leather cloned from above it, lifted
+   and warmed a little to sit with the laptop. Lit from the left, as the
+   room is. Pressed, it plays (js/hero-hover.js) and the record spins: a
+   sheen turning in an ellipse laid exactly over the record (measured off
+   the image: 7.8% / 56.8%, 58.5% x 15.4% of it). */
+.tt {
   display: block;
-  width: 30px;
-  height: 30px;
-  margin: 0 auto 6px;
   padding: 0;
-  border: 1px solid var(--line-strong);
-  border-radius: 50%;
-  background: var(--bg-raised);
-  color: var(--ink);
+  border: 0;
+  background: none;
+  text-align: center;
   cursor: pointer;
-  transition: background var(--dur) var(--ease), border-color var(--dur) var(--ease);
 }
-.player__play:hover { background: var(--accent-deep); border-color: var(--accent-deep); }
-/* The glyph is swapped by js/hero-hover.js: U+25B6 play, U+23F8 pause. */
-.player__icon {
-  display: grid;
-  place-items: center;
+.tt__fig { position: relative; display: block; }
+.tt__img {
+  display: block;
   width: 100%;
-  height: 100%;
-  font-size: 12px;
-  line-height: 1;
-  padding-left: 1px;   /* the play triangle reads left-heavy */
+  height: auto;
+  filter: var(--prop-filter, ) drop-shadow(-2px 6px 6px var(--prop-shadow));
+  -webkit-user-drag: none;
 }
-.player__play[aria-pressed='true'] .player__icon { padding-left: 0; }
-.player__play:hover .player__icon { color: var(--on-accent-deep, #fff); }
+.tt__spin {
+  position: absolute;
+  left: 7.8%;
+  top: 56.8%;
+  width: 58.5%;
+  height: 15.4%;
+  border-radius: 50%;
+  overflow: hidden;
+  opacity: 0;
+  transition: opacity 0.6s ease;
+}
+/* A square turning inside the ellipse, squashed to it: light catching the
+   grooves on two opposite sides, as on a real record. */
+.tt__spin::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 50%;
+  width: 100%;
+  aspect-ratio: 1;
+  translate: 0 -50%;
+  scale: 1 0.234;
+  background: conic-gradient(from 0deg, transparent 0 8%, rgb(255 255 255 / 0.22) 13%, transparent 20% 58%, rgb(255 255 255 / 0.16) 63%, transparent 70%);
+  border-radius: 50%;
+}
+.tt.is-playing .tt__spin { opacity: 1; }
+.tt__label {
+  display: inline-block;
+  margin-top: 4px;
+  padding: 3px 8px 4px;
+  border-radius: 2px;
+  background: var(--paper);
+  box-shadow: 0 1px 3px var(--prop-shadow);
+  color: var(--paper-ink-soft);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  line-height: 1.35;
+}
+.tt__label span { display: block; color: var(--paper-ink); font-weight: 600; }
+.tt.is-playing .tt__label span::before { content: '♪ '; }
+.tt:focus-visible { outline: 2px solid var(--accent); outline-offset: 4px; border-radius: 4px; }
 
-/* AirDrop-style share card */
-.obj--share { padding: 10px; text-align: center; }
-.share__title { margin: 0 0 2px; color: var(--ink); font-size: 12px; font-weight: 600; }
-.share__sub { margin: 0 0 8px; color: var(--ink-muted); font-size: 11px; line-height: 1.4; text-wrap: balance; }
-.share__thumb {
-  height: 88px;
-  margin-bottom: 8px;
+/* --- The phone ---------------------------------------------------------------
+   public/assets/desk/phone.webp: "Smartphone with blank screen on wood" by
+   Vojtech Bruzek, Unsplash License,
+   https://unsplash.com/photos/J82GxqnwKSs . Shot from straight above; cut
+   out with OpenCV, turned 68 degrees as a phone put down by hand lies, then
+   laid back in perspective (far edge 8% narrower each side, depth
+   foreshortened to 36%) so it lies flat on the desk as the laptop stands
+   on it. Its own lit screen is the cue to press it. */
+.phone__btn {
+  display: block;
+  width: 100%;
+  padding: 0;
+  border: 0;
+  background: none;
+  cursor: pointer;
+}
+/* The first shadow is the phone's own edge, seen from the front. */
+.phone__btn img {
+  display: block;
+  width: 100%;
+  height: auto;
+  filter: var(--prop-filter, ) drop-shadow(0 1.5px 0 #17181a) drop-shadow(0 3px 3px var(--prop-shadow));
+  -webkit-user-drag: none;
+}
+.phone__btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 4px; border-radius: 4px; }
+
+/* The AirDrop card, left of the phone and past the drink beside it (right:
+   160% of the phone's width), so it covers neither the drink nor the laptop. Its picture is the day's three accent
+   tiers, drifting slowly (still under reduced motion). */
+.airdrop {
+  position: absolute;
+  right: 160%;
+  bottom: 0;
+  width: 144px;
+  padding: 9px 9px 7px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--surface);
+  box-shadow: var(--shadow-card-hover);
+  text-align: center;
+  cursor: default;
+}
+.airdrop[hidden] { display: none; }
+.phone:has(.airdrop:not([hidden])) { z-index: 90; }
+.airdrop__title { margin: 0 0 1px; color: var(--ink); font-size: 11.5px; font-weight: 600; }
+.airdrop__sub { margin: 0 0 6px; color: var(--ink-muted); font-size: 11px; line-height: 1.3; text-wrap: balance; }
+.airdrop__thumb {
+  height: 54px;
+  margin-bottom: 6px;
   border-radius: 6px;
   background:
     radial-gradient(circle at 34% 44%, var(--accent-pale) 0%, transparent 46%),
     radial-gradient(circle at 62% 58%, var(--accent) 0%, transparent 50%),
     linear-gradient(135deg, var(--accent-deep), var(--accent-mid) 55%, var(--accent-pale));
-  filter: saturate(1.1);
+  background-size: 200% 200%, 200% 200%, 100% 100%;
 }
-.share__actions {
-  display: flex;
-  justify-content: space-between;
-  gap: 6px;
-  padding-top: 6px;
-  border-top: 1px solid var(--line);
+.airdrop__actions { display: flex; gap: 4px; padding-top: 4px; border-top: 1px solid var(--line); }
+.airdrop__btn {
+  flex: 1;
+  min-height: 24px;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--link);
+  font: inherit;
+  font-size: 11px;
+  line-height: 24px;
+  cursor: pointer;
 }
-.share__btn { flex: 1; color: var(--link); font-size: 11px; }
-.share__btn--go { font-weight: 600; }
+.airdrop__btn--go { font-weight: 600; }
+.airdrop__btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; border-radius: 4px; }
+@media (prefers-reduced-motion: no-preference) {
+  .airdrop:not([hidden]) { animation: airdrop-in 0.35s cubic-bezier(0.2, 0.8, 0.3, 1.15); }
+  .airdrop__thumb { animation: airdrop-drift 9s ease-in-out infinite alternate; }
+}
+@keyframes airdrop-in { from { opacity: 0; translate: 12px 0; scale: 0.92; } }
+@keyframes airdrop-drift {
+  to { background-position: 100% 70%, 0% 30%, 0 0; filter: hue-rotate(-14deg) saturate(1.15); }
+}
 
 /* ==========================================================================
    The things on the desk (js/desk-objects.js)
-   Window, paint chip, Polaroids, mug, card holder, plant, the mug's rings
-   and the night. All drawn here, except the photographs. Colours that are only paint (the
-   plant, the wood, the paper) are tokens below with a dark counterpart;
+   Window, paint chip, drink, card holder, the drink's rings and the night.
+   All drawn here, except the photographs. Colours that are only paint (the
+   wood, the paper) are tokens below with a dark counterpart;
    nothing that carries text sits on a Wada colour.
    ========================================================================== */
 :root {
@@ -496,11 +573,8 @@
   --paper: #fbfaf6;
   --paper-ink: #24211c;
   --paper-ink-soft: #4a443b;
-  --milky: #dcdfd6;
   --leaf: #4f8a3c;
   --leaf-deep: #3b6e2d;
-  --pot: #b9653f;
-  --pot-rim: #c97a52;
   --stand: #8c7863;
   --ring: rgba(110, 72, 40, 0.28);
 }
@@ -520,17 +594,14 @@
   --rod: #232a40;
   --beam: transparent;
   --paper: #ecebe6;
-  --milky: #c9ccc4;
   --leaf: #4a7f39;
   --leaf-deep: #375f2a;
-  --pot: #a65a39;
-  --pot-rim: #b46c49;
   --stand: #6e5f4f;
   --ring: rgba(0, 0, 0, 0.35);
 }
 
 /* Shared placement: percentages of the desk, as for the props. */
-.window, .chip, .pola, .mug, .cards, .plant {
+.window, .chip, .mug, .cards, .tt, .phone {
   position: absolute;
   left: var(--x);
   top: var(--y);
@@ -538,7 +609,7 @@
   z-index: var(--z, 5);
   transform: rotate(var(--r, 0deg));
 }
-.js .desk :is(.chip, .pola, .mug, .cards, .plant).is-held {
+.js .desk :is(.chip, .mug, .cards, .tt, .phone).is-held {
   filter: drop-shadow(0 16px 18px var(--prop-shadow-held));
 }
 
@@ -622,66 +693,30 @@
 }
 
 /* --- Today's Palette: a paint chip ----------------------------------------
-   Its ground is paper in both themes, so its inks are the paper's. */
+   Pinned to the wall; a button that opens the palette card. Its ground is
+   paper in both themes, so its inks are the paper's. */
 .chip {
+  display: block;
   padding: 6px 6px 8px;
+  border: 0;
   border-radius: 3px;
   background: var(--paper);
   box-shadow: 0 2px 6px var(--prop-shadow);
   color: var(--paper-ink);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
 }
+.chip:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
 .chip__sw { display: grid; margin-bottom: 7px; }
 .chip__sw i { display: block; height: 0; padding-bottom: 34%; }
-.chip__title { margin: 0; font-size: 10.5px; font-weight: 600; line-height: 1.25; }
-.chip__no { margin: 2px 0 0; color: var(--paper-ink-soft); font-size: 10px; }
-
-/* --- Polaroids --------------------------------------------------------- */
-.pola {
-  display: flex;
-  flex-direction: column;
-  padding: 7px 7px 0;
-  border: 0;
-  border-radius: 1px;
-  background: var(--paper);
-  box-shadow: 0 2px 5px var(--prop-shadow);
-  color: var(--paper-ink);
-  cursor: grab;
-}
-.pola:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
-.pola__img { position: relative; display: block; aspect-ratio: 1; overflow: hidden; background: var(--milky); }
-.pola__img img { display: block; width: 100%; height: 100%; object-fit: cover; -webkit-user-drag: none; }
-/* Undeveloped: a milky sheet over a washed-out image. */
-.pola__img::after { content: ''; position: absolute; inset: 0; background: var(--milky); }
-.pola__img img { filter: grayscale(1) brightness(1.5) contrast(0.6); opacity: 0.25; }
-.pola.is-developed .pola__img::after { opacity: 0; }
-.pola.is-developed .pola__img img { filter: none; opacity: 1; }
-@media (prefers-reduced-motion: no-preference) {
-  .pola__img::after { transition: opacity 3.2s ease-in; }
-  .pola__img img { transition: filter 5s ease-out, opacity 2.4s ease-out; }
-}
-.pola__cap {
-  display: block;
-  padding: 6% 2% 8%;
-  overflow: hidden;
-  font-family: var(--font-script);
-  font-size: clamp(12px, 0.95vw, 16px);
-  line-height: 1;
-  text-align: center;
-  white-space: nowrap;
-  text-overflow: ellipsis;
-}
+.chip__title { display: block; font-size: 10.5px; font-weight: 600; line-height: 1.25; }
+.chip__no { display: block; margin-top: 2px; color: var(--paper-ink-soft); font-size: 10px; }
 
 /* --- The mug ---------------------------------------------------------- */
-.mug > svg { display: block; width: 100%; height: auto; overflow: visible; filter: drop-shadow(0 3px 3px var(--prop-shadow)); }
-.mug__body, .mug__handle { fill: var(--accent-deep); stroke: var(--accent-deep); }
-.mug__body { stroke: none; }
-.mug__handle { fill: none; }
-.mug__drink { fill: var(--drink, #6b4226); }
-.mug__shine { stroke: rgb(255 255 255 / 0.28); }
 .mug__steam { stroke: color-mix(in srgb, var(--ink) 30%, transparent); opacity: 0; }
 :root[data-time='morning'] .mug__steam { opacity: 1; }
 :root[data-time='day'] .mug__steam { opacity: 0.45; }
-.mug.is-cold .mug__drink { filter: brightness(0.7) saturate(0.6); }
 .mug.is-cold .mug__steam { opacity: 0; }
 @media (prefers-reduced-motion: no-preference) {
   .mug__steam path { animation: steam 3.4s ease-in-out infinite; }
@@ -694,35 +729,87 @@
   100% { translate: 0 -6px; opacity: 0; }
 }
 
-/* --- The drinks (js/desk-objects.js, DRINKS) ----------------------------
-   One a weekday, drawn in the mug's box. Liquids are paint written in the
-   drawing; glass, ice, straw and skewer are tokens here. Every motion below
-   is decoration and stops under reduced motion. */
+/* --- The drinks: condensation tokens ----------------------------------- */
 :root {
-  --glass: rgba(255, 255, 255, 0.28);
-  --glass-edge: rgba(120, 140, 160, 0.55);
-  --glass-glint: rgba(255, 255, 255, 0.7);
-  --ice: rgba(255, 255, 255, 0.55);
-  --ice-edge: rgba(255, 255, 255, 0.9);
-  --straw: #f3eee4;
-  --skewer: #b98b57;
   --dew: rgba(255, 255, 255, 0.18);
   --dew-hi: rgba(255, 255, 255, 0.95);
 }
 :root[data-theme='dark'] {
-  --glass: rgba(210, 225, 245, 0.12);
-  --glass-edge: rgba(210, 225, 245, 0.5);
-  --glass-glint: rgba(255, 255, 255, 0.45);
-  --ice: rgba(220, 235, 250, 0.35);
-  --ice-edge: rgba(235, 245, 255, 0.7);
-  --straw: #cfc9bd;
-  --skewer: #9c754a;
   --dew: rgba(215, 230, 250, 0.14);
   --dew-hi: rgba(240, 248, 255, 0.8);
 }
 /* The photographed drink, sized in real centimetres by js/desk-objects.js
-   (--dw), with steam or condensation over it. */
+   (--dw), with steam or condensation over it. The photograph is a button:
+   pressed, the drink's ingredients float up out of the cup and settle on an
+   arc over it (--tx/--ty from js/desk-objects.js), each with a small mark
+   in its own colour and its name in handwriting. */
 .mug { width: var(--dw, var(--w)); }
+.mug__btn {
+  position: relative;
+  display: block;
+  width: 100%;
+  padding: 0;
+  border: 0;
+  background: none;
+  cursor: pointer;
+}
+.mug__btn > svg { display: block; width: 100%; height: auto; overflow: visible; filter: drop-shadow(0 3px 3px var(--prop-shadow)); }
+.mug__btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 4px; border-radius: 4px; }
+.ings {
+  position: absolute;
+  left: 50%;
+  top: 8%;
+  width: 0;
+  height: 0;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-family: var(--font-script);
+  font-size: 19px;
+  line-height: 1;
+  color: var(--ink);
+  pointer-events: none;
+}
+.ings li {
+  position: absolute;
+  left: 0;
+  top: 0;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  white-space: nowrap;
+  translate: -50% -50%;
+  scale: 0.4;
+  opacity: 0;
+  visibility: hidden;
+  /* A halo of the wall's own colour, so the name reads over leaf shadow,
+     wood or the window alike. */
+  text-shadow: 0 0 3px var(--bg), 0 0 6px var(--bg), 0 0 10px var(--bg);
+}
+.ings i {
+  flex: none;
+  width: 10px;
+  height: 10px;
+  border: 1.5px solid currentColor;
+  border-radius: 50% 45% 55% 50%;
+  rotate: -12deg;
+}
+.mug.is-open .ings li {
+  translate: calc(-50% + var(--tx)) calc(-50% + var(--ty));
+  scale: 1;
+  opacity: 1;
+  visibility: visible;
+}
+@media (prefers-reduced-motion: no-preference) {
+  .ings li {
+    transition: translate 0.5s ease-in var(--d, 0ms), scale 0.5s ease-in var(--d, 0ms),
+                opacity 0.35s ease-in var(--d, 0ms), visibility 0s linear calc(var(--d, 0ms) + 0.5s);
+  }
+  .mug.is-open .ings li {
+    transition: translate 0.9s cubic-bezier(0.2, 0.9, 0.25, 1.1) var(--d, 0ms), scale 0.9s cubic-bezier(0.2, 0.9, 0.25, 1.1) var(--d, 0ms),
+                opacity 0.5s ease-out var(--d, 0ms), visibility 0s linear var(--d, 0ms);
+  }
+}
 .drink__img {
   display: block;
   width: 100%;
@@ -758,40 +845,6 @@
   70% { opacity: 0.75; scale: 1.15; translate: 0 1px; }
   100% { opacity: 0; scale: 1.2; translate: 0 14px; }
 }
-
-/* The glass's tint goes behind the drink and only its outline in front,
-   or every drink reads milky. */
-.drink__back { fill: var(--glass); }
-.drink__glass { fill: none; stroke: var(--glass-edge); stroke-width: 1.4; }
-.drink__handle { fill: none; }
-.drink__glint { stroke: var(--glass-glint); }
-.drink__flute { stroke: var(--glass-glint); }
-.drink__ice { fill: var(--ice); stroke: var(--ice-edge); stroke-width: 0.9; }
-.drink__straw { stroke: var(--straw); fill: none; }
-.drink__skewer { stroke: var(--skewer); fill: none; }
-.drink__peel path { fill: none; stroke: #e0701a; stroke-width: 2.6; stroke-linecap: round; }
-.drink__fizz circle { fill: rgba(255, 255, 255, 0.55); opacity: 0; }
-.mug.is-cold .drink__liquid { filter: brightness(0.75) saturate(0.7); }
-.drink__ice, .drink__peel, .drink__float { transform-box: fill-box; transform-origin: 50% 50%; }
-@media (prefers-reduced-motion: no-preference) {
-  .drink__wave { animation: drink-wave 6s linear infinite; }
-  .drink__wave--slow { animation-duration: 9s; }
-  .drink__wave--rev { animation-direction: reverse; animation-duration: 11s; }
-  .drink__ice--bob { animation: drink-bob 4.2s ease-in-out infinite; }
-  .drink__ice--bob2 { animation: drink-bob 5.1s ease-in-out -1.7s infinite; }
-  .drink__ice--big { animation-duration: 6s; }
-  .drink__fizz circle { animation: drink-fizz 2.6s ease-in infinite; }
-  .drink__peel { animation: drink-drift 7s ease-in-out infinite; }
-  .drink__float { animation: drink-drift 6s ease-in-out infinite; }
-}
-@keyframes drink-wave { to { translate: -32px 0; } }
-@keyframes drink-bob { 50% { translate: 0 1.6px; rotate: 4deg; } }
-@keyframes drink-fizz {
-  0% { translate: 0 0; opacity: 0; }
-  15% { opacity: 1; }
-  100% { translate: 0 -46px; opacity: 0; }
-}
-@keyframes drink-drift { 50% { translate: 2px 0.6px; rotate: 6deg; } }
 
 /* --- The business-card holder ----------------------------------------- */
 .cards__take {
@@ -875,6 +928,12 @@
   box-shadow: 0 24px 48px -16px rgb(0 0 0 / 0.55);
   rotate: -2deg;
 }
+/* The palette card is the same paper with more to say. */
+.wada .bizcard__card { width: min(460px, 90vw); aspect-ratio: auto; justify-content: flex-start; padding-top: 44px; }
+.wada__sw { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin: 2px 0 14px; padding: 0; list-style: none; }
+.wada__sw i { display: block; height: 46px; margin-bottom: 4px; border-radius: 2px; box-shadow: inset 0 0 0 1px rgb(0 0 0 / 0.08); }
+.wada__sw code { font-family: var(--font-mono); font-size: 12px; }
+.wada__p { margin: 0 0 8px; font-family: var(--font-serif); font-size: 14.5px; line-height: 1.5; }
 .bizcard__card::before {
   content: '';
   position: absolute;
@@ -918,23 +977,6 @@
 @keyframes bizcard-in {
   from { translate: 0 60px; rotate: -9deg; opacity: 0; }
 }
-
-/* --- The plant -------------------------------------------------------
-   js/desk-objects.js sets --droop (degrees each leaf hangs) and a health
-   class from how long ago the newest live repo was pushed. */
-.plant svg { display: block; width: 100%; height: auto; overflow: visible; filter: drop-shadow(0 3px 3px var(--prop-shadow)); }
-.plant__pot { fill: var(--pot); }
-.plant__rim { fill: var(--pot-rim); }
-.plant__stem { stroke: var(--leaf-deep); }
-.plant__leaf { fill: var(--leaf); transform-box: fill-box; }
-/* Each leaf droops about where it meets the stem, by its own --droop. */
-.plant__leaf--l { transform-origin: 100% 100%; rotate: calc(-1 * var(--droop, 0deg)); }
-.plant__leaf--r { transform-origin: 0% 100%; rotate: var(--droop, 0deg); }
-.plant__leaf--t { transform-origin: 50% 100%; rotate: calc(var(--droop, 0deg) * 1.4); }
-.plant__leaves { transform-box: fill-box; transform-origin: 50% 100%; rotate: var(--lean, 0deg); }
-.plant__leaf.is-tired { --leaf: #7f9a3f; }
-.plant__leaf.is-thirsty { --leaf: #a8a046; }
-.plant__leaf.is-wilted { --leaf: #8d7140; }
 
 /* --- Rings the mug left ------------------------------------------------ */
 .desk__rings { position: absolute; inset: 0; z-index: 1; pointer-events: none; }
@@ -982,7 +1024,7 @@
   --ink-muted: var(--ink);
   --link: var(--ink);
 }
-:root[data-mode='desk'][data-theme='dark'] .desk .share__btn { text-decoration: underline; text-underline-offset: 2px; }
+:root[data-mode='desk'][data-theme='dark'] .desk .airdrop__btn { text-decoration: underline; text-underline-offset: 2px; }
 
 /* --- Dragging -------------------------------------------------------------
    js/hero-hover.js moves an object with the individual `translate` property
@@ -1005,7 +1047,6 @@
      invalid and would drop the whole declaration. */
   filter: var(--prop-filter, ) drop-shadow(0 18px 26px var(--prop-shadow-held));
 }
-.js .desk .obj.is-held { box-shadow: var(--shadow-card-hover), 0 18px 34px var(--prop-shadow-held); }
 
 .desk__tidy {
   position: absolute;
@@ -1030,13 +1071,8 @@
    All of it motion-safe only; with reduced motion objects still move with
    the pointer, and tidy-up puts them back at once. */
 @media (prefers-reduced-motion: no-preference) {
-  .js .stage .prop,
-  .js .stage .obj,
-  .js .stage :is(.window, .pola, .mug, .cards, .plant) {
-    animation: appear 0.62s var(--ease) 0.40s backwards;
-  }
-  .js .stage .obj,
-  .js .stage :is(.pola, .mug, .cards, .plant) { animation-delay: 0.62s; }
+  .js .stage :is(.prop, .window, .chip, .tt) { animation: appear 0.62s var(--ease) 0.4s backwards; }
+  .js .stage :is(.mug, .cards, .phone) { animation: appear 0.62s var(--ease) 0.62s backwards; }
 
   .js .desk [data-drag] {
     transition: translate 0.55s cubic-bezier(0.2, 0.7, 0.3, 1),
@@ -1053,19 +1089,16 @@
   .js .desk .prop:hover:not(.is-held) {
     filter: var(--prop-filter, ) drop-shadow(0 10px 20px var(--prop-shadow));
   }
-  .js .desk .obj:hover:not(.is-held) { box-shadow: var(--shadow-card-hover); }
-
-  .js .player__disc img { animation: vinyl-spin 5s linear infinite; }
+  .tt__spin::before { animation: tt-spin 1.8s linear infinite; }
 }
 
 @media (prefers-reduced-motion: reduce) {
   .lamp__glow { transition: none; }
 }
 
-@keyframes vinyl-spin {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
-}
+/* The record turns at 33 1/3 rpm: one turn in 1.8 s. The sheen is
+   squashed by `scale`, so `rotate` turns it in the record's own plane. */
+@keyframes tt-spin { to { rotate: 360deg; } }
 
 @media print {
   .desk { display: none !important; }

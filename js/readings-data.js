@@ -85,7 +85,7 @@ var readings = {
           title: 'Never Split the Difference',
           author: 'Chris Voss & Tahl Raz',
           cover: 'public/assets/readings/never-split-the-difference.webp',
-          spine: '#e4313a',
+          spine: '#c8232c',
           heightMm: 203,
           widthMm: 125,
           pages: 288,

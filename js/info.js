@@ -1,47 +1,17 @@
-/* The About section's pieces, after the "Hello." intro.
+/* The About section's skills bracelet, written into [data-info-pieces]
+   after the static "Hello." intro in index.html.
 
-   EVERY PIECE IS SWITCHABLE. INFO_PIECES below is the whole list, in the
-   order they render: delete a name and that piece is gone; move one and it
-   moves. 'intro' is the static "Hello." prose already in index.html (the
-   only piece that reads with JavaScript off); every other piece is written
-   by this file into [data-info-pieces].
-
-   ARCHIVED: 'marble' (ebru, Turkish paper marbling) is built and works, but
-   the owner set it aside on 2026-10-24 as off the site's purpose. Its code,
-   copy and styles stay; add 'marble' back to INFO_PIECES to show it.
-
-   ALL PERSONAL COPY LIVES IN `COPY`, right below. A piece's label is the
-   switch: while it is a plain string the label renders as a draft (dashed
-   underline and a "draft" tag, css/info.css), which says the whole piece's
-   copy is unapproved. Wrap the label in ok() once you have read it.
-
-   THE BRACELET IS THE SKILLS (2026-10-30; it was a record of the visit).
-   SKILLS below is the résumé's Technical Skills section, its six groups in
-   its order and words, plus "Beyond code": what its bullets show rather
-   than list. Change public/assets/resume.pdf and this together.
+   THE BRACELET IS THE SKILLS (2026-10-30). SKILLS below is the résumé's
+   Technical Skills section, its six groups in its order and words, plus
+   "Beyond code": what its bullets show rather than list. Change
+   public/assets/resume.pdf and this together.
 
    Loads before script.js, whose reveal observer has to see the .reveal
    elements written here. */
-var INFO_PIECES = ['intro', 'bracelet'];
-
 (function () {
   'use strict';
 
-  function ok(s) { return { ok: s }; }
-
   /* ======================= COPY: edit here ======================= */
-  var COPY = {
-    labels: {
-      marble: 'Ebru',
-      bracelet: ok('Skills')
-    },
-
-    /* Ebru, Turkish paper marbling. */
-    marble: {
-      intro: 'Ink floats on the tray in today’s three colours. Click to drop it, drag to comb it, then lift the paper. No two sheets come out the same, and nothing is kept.',
-      after: 'the drop and comb maths are Aubrey Jaffer’s, from “Mathematical Marbling”'
-    }
-  };
 
   /* Each group: its hue (saturation and lightness are measured, below), and
      its skills as [full name, charm icon]. An icon is a key of ICONS below,
@@ -71,164 +41,6 @@ var INFO_PIECES = ['intro', 'bracelet'];
       ['Reporting for a sales team', 'clip'], ['Trade-offs on evidence', 'scales']] }
   ];
   /* ===================== end of COPY ===================== */
-
-  var root = document.documentElement;
-
-  /* A COPY entry as HTML: escaped, then the draft wrapper unless approved. */
-  function t(entry) {
-    var approved = entry && typeof entry === 'object' && 'ok' in entry;
-    var html = esc(approved ? entry.ok : entry);
-    return approved ? html : '<span class="is-draft" data-draft>' + html + '</span>';
-  }
-
-  /* ================================================================
-     The pieces
-     ================================================================ */
-
-  /* ---------- ebru ----------
-     Aubrey Jaffer's "Mathematical Marbling": every drop of ink is a circle,
-     and a new drop at C of radius r pushes every point P already on the tray
-     to C + (P - C) * sqrt(1 + r^2 / |P - C|^2), which keeps the area of
-     everything else. A comb tine along unit direction M through B moves P
-     by M * z * u^d, d being P's distance from the tine's line; a stylus
-     dragged by hand is the same with d measured to the stylus's tip, so it
-     only moves ink near the pointer. Ink is kept
-     as polygons in tray units (600 x 400) and painted in drop order, in the
-     day's three Wada colours. */
-  var TW = 600, TH = 400;
-  function marble(el) {
-    var M = COPY.marble;
-    el.innerHTML =
-      '<div class="eb">' +
-        '<p class="eb__intro">' + esc(M.intro) + '</p>' +
-        '<div class="eb__tray"><canvas class="eb__canvas" role="img" aria-label="A marbling tray" data-eb-canvas data-cue="Click to drop ink · drag to comb"></canvas>' +
-          '<p class="eb__lifted" data-eb-lifted hidden></p></div>' +
-        '<div class="eb__bar">' +
-          '<button type="button" class="fd__btn" data-eb="drop">Drop ink</button>' +
-          '<button type="button" class="fd__btn" data-eb="comb">Comb it</button>' +
-          '<button type="button" class="fd__btn" data-eb="lift">Lift the paper</button>' +
-          '<button type="button" class="eb__reset" data-eb="new">New tray</button>' +
-        '</div>' +
-        '<p class="ip__after">' + esc(M.after) + '</p>' +
-      '</div>';
-    var canvas = el.querySelector('[data-eb-canvas]'), ctx = canvas.getContext('2d');
-    var tray = el.querySelector('.eb__tray'), lifted = el.querySelector('[data-eb-lifted]');
-    var drops = [], turn = 0, done = false;
-    var TONES = ['--graph-projects', '--graph-hobbies', '--graph-name'];
-
-    function size() {
-      var w = canvas.clientWidth, dpr = window.devicePixelRatio || 1;
-      if (!w) return;
-      canvas.width = Math.round(w * dpr); canvas.height = Math.round(w * TH / TW * dpr);
-      paint();
-    }
-    function paint() {
-      var s = canvas.width / TW;
-      ctx.setTransform(1, 0, 0, 1, 0, 0);
-      ctx.fillStyle = getComputedStyle(canvas).getPropertyValue('--eb-water').trim() || '#eee';
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
-      ctx.setTransform(s, 0, 0, s, 0, 0);
-      drops.forEach(function (d) {
-        ctx.fillStyle = d.c;
-        ctx.beginPath();
-        d.p.forEach(function (pt, i) { if (i) ctx.lineTo(pt[0], pt[1]); else ctx.moveTo(pt[0], pt[1]); });
-        ctx.closePath();
-        ctx.fill();
-      });
-    }
-    function drop(cx, cy, r) {
-      var r2 = r * r;
-      drops.forEach(function (d) {
-        d.p.forEach(function (pt) {
-          var dx = pt[0] - cx, dy = pt[1] - cy, k = Math.sqrt(1 + r2 / (dx * dx + dy * dy || 1e-6));
-          pt[0] = cx + dx * k; pt[1] = cy + dy * k;
-        });
-      });
-      // Ink pushed wholly off the tray is gone for good.
-      drops = drops.filter(function (d) { return d.p.some(function (pt) { return pt[0] > 0 && pt[0] < TW && pt[1] > 0 && pt[1] < TH; }); });
-      var pts = [], n = 120;
-      for (var i = 0; i < n; i++) pts.push([cx + r * Math.cos(i / n * 2 * Math.PI), cy + r * Math.sin(i / n * 2 * Math.PI)]);
-      drops.push({ c: getComputedStyle(root).getPropertyValue(TONES[turn++ % TONES.length]).trim() || '#555', p: pts });
-      paint();
-    }
-    // tip: false for a whole tine (distance to the line), true for a stylus
-    // (distance to the point). Long edges are split afterwards so a pulled
-    // curve stays a curve.
-    function comb(bx, by, mx, my, z, tip) {
-      var u = Math.pow(0.5, 1 / (tip ? 14 : 10));
-      drops.forEach(function (d) {
-        d.p.forEach(function (pt) {
-          var dist = tip ? Math.hypot(pt[0] - bx, pt[1] - by) : Math.abs((pt[0] - bx) * -my + (pt[1] - by) * mx);
-          var k = z * Math.pow(u, dist);
-          pt[0] += mx * k; pt[1] += my * k;
-        });
-        // ponytail: capped at 4000 points a drop; past that edges stay long.
-        if (d.p.length > 4000) return;
-        var out = [];
-        d.p.forEach(function (pt, i) {
-          var nx = d.p[(i + 1) % d.p.length];
-          out.push(pt);
-          if (Math.hypot(nx[0] - pt[0], nx[1] - pt[1]) > 6) out.push([(pt[0] + nx[0]) / 2, (pt[1] + nx[1]) / 2]);
-        });
-        d.p = out;
-      });
-      paint();
-    }
-    function at(e) {
-      var r = canvas.getBoundingClientRect();
-      return [(e.clientX - r.left) / r.width * TW, (e.clientY - r.top) / r.height * TH];
-    }
-    var down = null, moved = false;
-    canvas.addEventListener('pointerdown', function (e) {
-      if (done) return;
-      down = at(e); moved = false;
-      canvas.setPointerCapture(e.pointerId);
-    });
-    canvas.addEventListener('pointermove', function (e) {
-      if (!down) return;
-      var p = at(e), dx = p[0] - down[0], dy = p[1] - down[1], len = Math.hypot(dx, dy);
-      if (len < 3) return;
-      moved = true;
-      comb(p[0], p[1], dx / len, dy / len, len * 0.8, true);
-      down = p;
-    });
-    canvas.addEventListener('pointerup', function () {
-      if (down && !moved) drop(down[0], down[1], 26 + Math.random() * 30);
-      down = null;
-    });
-    canvas.addEventListener('pointercancel', function () { down = null; });
-
-    var actions = {
-      drop: function () { drop(60 + Math.random() * (TW - 120), 50 + Math.random() * (TH - 100), 30 + Math.random() * 40); },
-      // One pass of a seven-tine comb, alternate tines pulled opposite ways.
-      comb: function () {
-        if (!drops.length) return;
-        for (var tine = 0; tine < 7; tine++) comb(0, (tine + 0.5) * TH / 7, tine % 2 ? -1 : 1, 0, 34, false);
-      },
-      lift: function () {
-        if (!drops.length) return;
-        done = true;
-        tray.classList.add('is-lifted');
-        lifted.textContent = 'Lifted at ' + new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) + ' · one of one';
-        lifted.hidden = false;
-      },
-      'new': function () {
-        drops = []; turn = 0; done = false;
-        tray.classList.remove('is-lifted');
-        lifted.hidden = true;
-        paint();
-      }
-    };
-    el.querySelector('.eb__bar').addEventListener('click', function (e) {
-      var b = e.target.closest('[data-eb]');
-      if (!b) return;
-      var a = b.getAttribute('data-eb');
-      if (done && a !== 'new') return;
-      actions[a]();
-    });
-    new ResizeObserver(size).observe(canvas);
-    window.addEventListener('themechange', paint);
-  }
 
   /* ---------- the bracelet: skills ----------
      The group toggles, then the chain: one charm per skill in the selected
@@ -351,35 +163,22 @@ var INFO_PIECES = ['intro', 'bracelet'];
     draw();
   }
 
-  var BUILD = { marble: marble, bracelet: bracelet };
-
   function init() {
     var host = document.querySelector('[data-info-pieces]');
     if (!host || typeof esc !== 'function') return;
     var intro = document.querySelector('.info__intro');
-    if (intro && INFO_PIECES.indexOf('intro') < 0) intro.hidden = true;
-    var n = 0;
-    INFO_PIECES.forEach(function (name) {
-      if (name !== 'intro' && !BUILD[name]) return;
-      if (name === 'intro' && !intro) return;
-      if (name !== 'intro') n++;
-      var wrap = document.createElement('section');
-      wrap.className = 'ip ip--' + name;
-      // The intro is its own heading ("Hello."), so it carries no label.
-      if (name !== 'intro') {
-        wrap.setAttribute('aria-labelledby', 'ip-' + name);
-        wrap.innerHTML = '<h3 class="ip__label reveal" id="ip-' + name + '"><span class="ip__no">' + (n < 10 ? '0' : '') + n + '</span>' + t(COPY.labels[name] || name) + '</h3>';
-      }
-      if (name === 'intro') {
-        wrap.appendChild(intro);   // keeps its own .reveal
-      } else {
-        var body = document.createElement('div');
-        body.className = 'ip__body reveal';
-        wrap.appendChild(body);
-        try { BUILD[name](body); } catch (err) { wrap.remove(); return; }
-      }
-      host.appendChild(wrap);
-    });
+    if (intro) {
+      var iw = document.createElement('section');
+      iw.className = 'ip ip--intro';
+      iw.appendChild(intro);   // keeps its own .reveal
+      host.appendChild(iw);
+    }
+    var wrap = document.createElement('section');
+    wrap.className = 'ip ip--bracelet';
+    wrap.setAttribute('aria-labelledby', 'ip-bracelet');
+    wrap.innerHTML = '<h3 class="ip__label reveal" id="ip-bracelet">Skills</h3><div class="ip__body reveal"></div>';
+    host.appendChild(wrap);
+    bracelet(wrap.lastChild);
   }
 
   window.onReady(init);

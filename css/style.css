@@ -98,15 +98,12 @@
   --font-script: 'Caveat', 'Segoe Script', 'Bradley Hand', cursive;
   --font-serif: 'Libre Caslon Text', Georgia, 'Times New Roman', serif;
 
-  /* Info intro (after emilycampbell.co): grey word pills that go black on
-     hover, near-black terminal chips, and the leaf shadows behind it. */
+  /* --pill-bg: the time-of-day menu's highlighted row. --term-*: the
+     laptop's terminal (css/desk.css), near-black in both themes. */
   --pill-bg: rgba(22, 40, 61, 0.1);
-  --pill-hover-bg: #0a0a0a;
-  --pill-hover-ink: #ffffff;
   --term-bg: #0a0a0a;
   --term-ink: #e5e5e5;
   --term-dim: rgba(229, 229, 229, 0.55);
-  --leaf-shade: rgba(22, 40, 61, 0.045);
 
   /* Rhythm — the reference leans hard on a 10px beat */
   --gap: 10px;
@@ -190,15 +187,11 @@
   --shadow-card: 0 2px 10px 1px rgba(0, 0, 0, 0.44);
   --shadow-card-hover: 0 10px 28px 2px rgba(0, 0, 0, 0.55);
 
-  /* Info intro: the pills invert, the terminal chips stay black, and the
-     leaf shadows deepen so they still read on the dark ground. */
+  /* The menu's highlight inverts; the terminal stays black. */
   --pill-bg: rgba(234, 241, 248, 0.12);
-  --pill-hover-bg: #eaf1f8;
-  --pill-hover-ink: #0c1620;
   --term-bg: #04070b;
   --term-ink: #e5e5e5;
   --term-dim: rgba(229, 229, 229, 0.55);
-  --leaf-shade: rgba(0, 0, 0, 0.22);
 
   --header-bg: rgba(12, 22, 32, 0.85);
   --nav-color: rgba(255, 255, 255, 0.5);
@@ -224,6 +217,11 @@
    ground is showing. The base :root and [data-theme='dark'] values above
    remain the fallback when data-time is missing.
 
+   The home page wears these too, everywhere below the hero (2026-11-04):
+   its evening is light (the desk's rule), so evening joins the light block
+   there. Only the hero, and the header while it sits over the hero, wear
+   the desk's grounds (the block after this one).
+
    Contrast, measured for ink / body / soft / muted against the WORST of
    --bg, --bg-raised, --bg-sunken and --surface:
      light 15.4 / 12.4 / 7.7 / 5.4      dark 14.4 / 11.8 / 8.4 / 5.8
@@ -233,7 +231,8 @@
 :root[data-theme='dark'] { --lamp-glow: #ffb347; }
 
 :root[data-time='morning'],
-:root[data-time='day'] {
+:root[data-time='day'],
+:root[data-mode='desk'][data-time='evening'] {
   --bg: #f6f7f8;
   --bg-raised: #fbfbfc;
   --bg-sunken: #eceef0;
@@ -246,7 +245,6 @@
   --line: rgba(20, 22, 26, 0.12);
   --line-strong: rgba(20, 22, 26, 0.26);
   --pill-bg: rgba(20, 22, 26, 0.07);
-  --leaf-shade: rgba(20, 22, 26, 0.045);
   --header-bg: rgba(246, 247, 248, 0.96);
   --lamp-glow: #ffd877;
 }
@@ -264,8 +262,6 @@
   --line: rgba(235, 238, 242, 0.14);
   --line-strong: rgba(235, 238, 242, 0.28);
   --pill-bg: rgba(238, 240, 242, 0.12);
-  --pill-hover-bg: #eeeff1;
-  --pill-hover-ink: #141517;
   --header-bg: rgba(20, 21, 23, 0.86);
   --lamp-glow: #ffb347;
 }
@@ -288,8 +284,14 @@
      evening 11.2 / 8.3 / 6.0 / 4.6    night  8.0 /  7.1 / 6.3 / 5.3
    Night is the owner's own pair, not hers: the background #1a1e2c (--bg),
    darker than the leaves #485374, the slate surfaces between them.
+
+   Scoped to the hero and to the header while it is over the hero (any
+   state but 'revealed', which js/nav.js sets mid-page): the desk's grounds
+   stop where the desk does (2026-11-04). js/palette.js measures the accents
+   against both these grounds and the plain ones, so they pass on either.
    -------------------------------------------------------------------------- */
-:root[data-mode='desk'][data-time='morning'] {
+[data-mode='desk'] .hero { background-color: var(--bg); color: var(--ink-body); }
+[data-mode='desk'][data-time='morning'] :is(.hero, .site-header:not([data-nav-state='revealed'])) {
   --bg: #f9d4b8;
   --bg-raised: #fbe3d1;
   --bg-sunken: #efccb1;
@@ -302,11 +304,10 @@
   --line: rgba(0, 0, 0, 0.1);
   --line-strong: rgba(0, 0, 0, 0.17);
   --pill-bg: rgba(0, 0, 0, 0.08);
-  --leaf-shade: rgba(0, 0, 0, 0.05);
   --header-bg: rgba(249, 212, 184, 0.96);
   --lamp-glow: #f2c27e;
 }
-:root[data-mode='desk'][data-time='day'] {
+[data-mode='desk'][data-time='day'] :is(.hero, .site-header:not([data-nav-state='revealed'])) {
   --bg: #f9f7f6;
   --bg-raised: #fbfaf9;
   --bg-sunken: #efedec;
@@ -319,11 +320,10 @@
   --line: rgba(0, 0, 0, 0.1);
   --line-strong: rgba(0, 0, 0, 0.17);
   --pill-bg: rgba(0, 0, 0, 0.08);
-  --leaf-shade: rgba(0, 0, 0, 0.05);
   --header-bg: rgba(249, 247, 246, 0.96);
   --lamp-glow: #ffd877;
 }
-:root[data-mode='desk'][data-time='evening'] {
+[data-mode='desk'][data-time='evening'] :is(.hero, .site-header:not([data-nav-state='revealed'])) {
   --bg: #fbc8a9;
   --bg-raised: #fcdbc7;
   --bg-sunken: #f1c0a2;
@@ -336,11 +336,10 @@
   --line: rgba(0, 0, 0, 0.1);
   --line-strong: rgba(0, 0, 0, 0.17);
   --pill-bg: rgba(0, 0, 0, 0.08);
-  --leaf-shade: rgba(0, 0, 0, 0.05);
   --header-bg: rgba(251, 200, 169, 0.96);
   --lamp-glow: #ff9a5c;
 }
-:root[data-mode='desk'][data-time='night'] {
+[data-mode='desk'][data-time='night'] :is(.hero, .site-header:not([data-nav-state='revealed'])) {
   --bg: #1a1e2c;
   --bg-raised: #414b69;
   --bg-sunken: #141724;
@@ -353,8 +352,6 @@
   --line: rgba(255, 255, 255, 0.12);
   --line-strong: rgba(255, 255, 255, 0.18);
   --pill-bg: rgba(255, 255, 255, 0.1);
-  --pill-hover-bg: #ffffff;
-  --pill-hover-ink: #10121b;
   --header-bg: rgba(26, 30, 44, 0.92);
   /* The dark theme's white-at-50% nav measures 3.2 on this ground. */
   --nav-color: var(--ink-muted);
@@ -406,12 +403,11 @@ body {
    the handwriting. Prose that would otherwise inherit the mono is listed
    here. */
 .rm__desc,
-.rm-group__note,
 .hobbies__intro,
 .readings__intro,
 .shelf__caption,
 .contact p,
-.hero__proof,
+.hero__sub,
 .bz__intro,
 .bz__skills,
 .detail__tagline,
@@ -829,7 +825,9 @@ body { padding-top: var(--header-h, 80px); }
 
 /* --------------------------------------------------------------------------
    5. Hero — a full-viewport stage
-   One stage: the desk (css/desk.css), with the lockup on its laptop.
+   The desk (css/desk.css): the name and the line under it on the wall, the
+   case studies on the laptop's screen (.hero__work, also css/desk.css).
+   Below 900px there is no desk and the three stack in the flow.
    -------------------------------------------------------------------------- */
 .hero {
   position: relative;
@@ -847,67 +845,51 @@ body { padding-top: var(--header-h, 80px); }
   overflow: hidden;
 }
 
-/* --- Centre lockup ------------------------------------------------------ */
+/* --- The name, on the wall above the desk ------------------------------- */
 .hero__lockup {
   position: absolute;
   left: 50%;
-  top: 24.1%;
-  z-index: 20;   /* above every prop: on the reference the name prints ON the page */
-  width: min(590px, calc(100vw - 48px));
-  max-width: calc(100vw - 48px);
-  transform: translateX(-50%);
+  top: calc(var(--header-h, 80px) + 8.5svh);
+  z-index: 20;   /* above everything on the desk, however high it is stacked */
+  width: min(600px, 44vw);
+  translate: -50% 0;
   text-align: center;
-  /* Props can be dragged over this area, so empty space must not eat clicks */
+  /* Things can be dragged under it, so its empty space must not eat presses. */
   pointer-events: none;
 }
 .hero__name {
-  width: fit-content;
-  margin-left: auto;
-  margin-right: auto;
+  margin: 0 0 16px;
   font-family: var(--font-script);
-  font-size: clamp(3rem, 6.2vw, 85px);
+  font-size: clamp(3rem, 5.4vw, 80px);
   font-weight: 400;
   line-height: 1;
   letter-spacing: -0.02em;
+  white-space: nowrap;
   color: var(--ink);
-  margin-bottom: 46px;
 }
-
-.hero__role {
-  width: fit-content;
+.hero__sub {
   margin: 0 auto;
+  max-width: 34ch;
   color: var(--ink-body);
-  font-size: 18px;
-  font-weight: 400;
-  line-height: 1.5;
-}
-/* The proof line. Small, plain, and every figure in it is stated again
-   further down the page — it exists so a five-second visit leaves with a
-   number rather than with a dot cloud. */
-.hero__proof {
-  max-width: min(540px, calc(100vw - 64px));
-  margin: 0 auto 18px;
-  color: var(--ink-soft);
-  font-size: 14px;
-  letter-spacing: 0.01em;
+  font-size: clamp(17px, 1.35vw, 20px);
+  line-height: 1.45;
+  text-wrap: balance;
 }
 
-/* --- Narrow screens ----------------------------------------------------
-   The desk needs width to read. Below 900px the lockup returns to normal
-   flow so the hero stays readable rather than becoming a pile of overlaps. */
 @media (max-width: 899.98px) {
+  /* No desk: the name, the line and the list stack under the header. */
+  .hero { margin-top: 0; padding-top: 26px; }
   .stage { min-height: 0; padding-bottom: var(--gap-lg); }
-
   .hero__lockup {
     position: relative;
     left: auto;
     top: auto;
     width: auto;
-    transform: none;
-    padding: 40px var(--gap-lg) var(--gap-lg);
+    translate: none;
+    padding: 12px var(--gap-lg) 0;
     pointer-events: auto;
   }
-  .hero__name { margin-bottom: 22px; }
+  .hero__name { white-space: normal; margin-bottom: 12px; }
 }
 
 /* --------------------------------------------------------------------------
@@ -924,97 +906,84 @@ body { padding-top: var(--header-h, 80px); }
 
 /* --------------------------------------------------------------------------
    7. Work / project cards
-   Text-only rows: title, context and years, one line of what it is, the one
-   measured result where there is one, and the stack. The grid that puts the
-   two groups side by side, and the screen that shows a row's media on hover,
-   are in section 17.
+   Text-only rows: title with context and years beside it, one line of what
+   it is, then the one result (where there is one) and the stack. The layout
+   that puts the rows beside the preview pane is in section 17.
    -------------------------------------------------------------------------- */
 
 /* --- Projects ------------------------------------------------------ */
 .rm {
-  position: relative;
-  display: flex;
-  align-items: flex-start;
-  gap: 18px;
-  padding: 14px;
+  display: block;
+  padding: 10px 16px;
   border: 1px solid var(--line);
   border-radius: var(--radius-lg);
   background: var(--bg-raised);
   color: var(--ink);
-  transition: border-color var(--dur) var(--ease), background var(--dur) var(--ease);
+  transition: border-color var(--dur) var(--ease), background var(--dur) var(--ease),
+    box-shadow var(--dur) var(--ease);
 }
-.rm:hover {
+.rm:hover,
+.rm.is-on {
   border-color: var(--line-strong);
   background: var(--surface);
   color: var(--ink);
 }
-
-/* The row number is not shown. The static list tools/build-share-pages.js
-   writes into index.html still carries one, so it is hidden here rather than
-   left to print for a reader with JS off. */
-.rm__num { display: none; }
+/* The row the preview pane is showing. A mark, not text: 3:1 is the bar. */
+.rm.is-on { box-shadow: inset 3px 0 0 var(--accent); }
 
 .rm__text {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  min-width: 0;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: baseline;
+  gap: 3px 12px;
 }
 .rm__title {
   color: var(--ink);
-  font-size: 19px;
+  font-size: 18px;
   font-weight: 500;
   letter-spacing: -0.02em;
 }
+/* Context and years, beside the title. */
+.rm__meta {
+  color: var(--ink-soft);
+  font-size: 11.5px;
+  letter-spacing: 0.04em;
+  text-align: right;
+  text-transform: uppercase;
+}
+.rm__desc,
+.rm__foot { grid-column: 1 / -1; }
 .rm__desc {
   color: var(--ink-soft);
   font-size: 14px;
-  line-height: 1.45;
+  line-height: 1.4;
 }
-
-/* Context and year, above the description. */
-.rm__meta {
-  color: var(--ink-soft);
-  font-size: 12px;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-}
-
-/* --- Section headings inside the project list ------------------------
-   Four projects, two kinds. The heading is a label on a run of rows, not a
-   section of its own: it sits in the list's own column and carries a rule
-   rather than a box, so the list still reads as one list. */
-.rm-group {
+.rm__foot {
   display: flex;
-  flex-direction: column;
-  gap: 2px;
-  margin-top: 14px;
-  padding-bottom: 10px;
-  border-bottom: 1px solid var(--line);
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 12px;
+  margin-top: 3px;
 }
-.rm-group:first-child { margin-top: 0; }
-.rm-group__title {
-  margin: 0;
+
+/* --- Group labels inside the list ------------------------------------
+   A label on a run of rows, not a section of its own. */
+.rm-group {
+  margin: 6px 0 0;
   color: var(--accent-ink);
   font-size: 12px;
   font-weight: 500;
   letter-spacing: 0.14em;
   text-transform: uppercase;
 }
-.rm-group__note {
-  margin: 0;
-  max-width: 56ch;
-  color: var(--ink-soft);
-  font-size: 13px;
-  line-height: 1.5;
-}
+.rm-group:first-child { margin-top: 0; }
 
 /* --- The archive ----------------------------------------------------
    Three case studies that are still written and still live, one click away,
    but no longer what the work is. A line, not a list: the difference in
    weight IS the information. */
 .rm-archive {
-  margin: 20px 0 0;
+  margin: 4px 0 0;
   color: var(--ink-soft);
   font-size: 13px;
   line-height: 1.9;
@@ -1040,35 +1009,24 @@ body { padding-top: var(--header-h, 80px); }
   text-decoration-color: currentColor;
 }
 
-/* The one measured figure the project has, if it has one. Not every project
-   has an honest number, and the gap is the hierarchy: a row carrying a figure
-   is a row with a result behind it. */
+/* The one result the project has, in plain words with the figure in
+   brackets. Not every project has an honest number, and the gap is the
+   hierarchy. */
 .rm__metric {
-  align-self: flex-start;
-  margin-top: 4px;
   padding: 2px 9px;
   border: 1px solid var(--accent-mid, var(--line-strong));
-  border-radius: var(--radius-pill);
+  border-radius: 12px     /* a pill on one line, still tidy when it wraps */;
   color: var(--accent-ink);
   font-size: 12px;
   font-variant-numeric: tabular-nums;
   letter-spacing: 0.01em;
 }
 
-/* The stack, as a labelled row rather than pills: four items at most, so the
-   row stays one line and the list keeps its rhythm. */
-.rm__focus {
-  margin-top: 4px;
+/* The stack: four items at most. */
+.rm__stack {
   color: var(--ink-soft);
-  font-size: 12.5px;
+  font-size: 12px;
   line-height: 1.5;
-}
-.rm__focus-label {
-  margin-right: 8px;
-  color: var(--accent);
-  font-size: 11px;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
 }
 
 /* --- Readings ------------------------------------------------------
@@ -1309,201 +1267,83 @@ body { padding-top: var(--header-h, 80px); }
 
 /* --------------------------------------------------------------------------
    10. Info
-   After the intro on emilycampbell.co, measured at 1440px: one 720px column
-   of 32px serif at line-height 1.6, paragraphs 1.2em apart. Grey pills turn
-   black on hover; the photo chip (48px) lifts to 120px; the split-flap word
-   and the terminal chip are buttons, driven by initInfoIntro() in
-   js/script.js. Leaf shadows sway behind the section, CSS only.
+   The intro: one column of serif prose on the page's left edge (the same
+   edge as the section heading), signed in Caveat. Its one decoration is a
+   spirit level under the signature: a builder's measuring tool, its vial
+   the day's wash (--accent-pale) ringed in --accent-mid, its bubble
+   settling dead centre once the intro is revealed. Decorative and
+   aria-hidden; still under reduced motion. The chip, pills, split-flap,
+   terminal and leaf shadows it replaced were removed on 2026-11-04.
    -------------------------------------------------------------------------- */
-.info { position: relative; overflow: hidden; }
-
-/* --- Leaf shadows ----------------------------------------------------------
-   Soft, blurred, elongated shapes at a slant, the way light through a plant
-   falls on a wall. Each sways on its own clock; still under reduced motion. */
-.info__shade {
-  position: absolute;
-  inset: 120px 0 0;         /* below the heading, never into the section above */
-  pointer-events: none;
-  z-index: 0;
-  /* The section clips at its bottom edge, and blurred leaves cut off there
-     (or at this box's own top) drew a hard horizontal line across the page.
-     Fade them in and out instead. */
-  -webkit-mask-image: linear-gradient(to bottom, transparent, #000 18%, #000 70%, transparent);
-  mask-image: linear-gradient(to bottom, transparent, #000 18%, #000 70%, transparent);
-}
-.info__leaf {
-  position: absolute;
-  left: var(--lx);
-  top: var(--ly);
-  width: var(--lw);
-  height: calc(var(--lw) * 0.32);
-  border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%;
-  background: var(--leaf-shade);
-  filter: blur(40px);
-  transform: rotate(var(--lr));
-}
-@media (prefers-reduced-motion: no-preference) {
-  .js .info__leaf { animation: leaf-sway 9s ease-in-out var(--ld, 0s) infinite alternate; }
-}
-@keyframes leaf-sway {
-  to { transform: rotate(calc(var(--lr) + 6deg)) translate(18px, 10px); }
-}
-.info .wrap { position: relative; z-index: 1; }
-
-/* --- The intro ------------------------------------------------------------- */
 .info__intro {
-  max-width: 600px;
-  margin: 40px auto 0;      /* centred in the section, lines and all */
-  text-align: center;
+  max-width: 640px;
+  margin: 40px 0 0;
   color: var(--ink);
   font-family: var(--font-serif);
   font-size: clamp(17px, 2.6vw, 22px);
   line-height: 1.5;
 }
 .info__intro p { margin: 0 0 0.75em; }
-/* The signature's margin would otherwise add to the section's own padding. */
-.info__intro p:last-child { margin-bottom: 0; }
 .info__hello { font-style: italic; }
-.info__nowrap { white-space: nowrap; }
 
-.info__pill {
-  padding: 0.19em 0.375em 0.03em;
-  border-radius: 9999px;
-  background: var(--pill-bg);
-  -webkit-box-decoration-break: clone;
-  box-decoration-break: clone;
-  transition: background 0.26s cubic-bezier(0.22, 1, 0.36, 1),
-              color 0.26s cubic-bezier(0.22, 1, 0.36, 1);
-}
-.info__pill:hover { background: var(--pill-hover-bg); color: var(--pill-hover-ink); }
-
-.info__bold {
-  font-weight: 700;
-}
-
-/* Photo chip. A placeholder until there is a photo: initials on the accent
-   wash. It grows from its bottom edge, so it rises out of the line. */
-.info__face {
-  position: relative;
-  display: inline-block;
-  width: 1.5em;
-  height: 1.5em;
-  vertical-align: -0.38em;
-  border-radius: 8px;
-  overflow: hidden;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.18), 0 8px 20px rgba(0, 0, 0, 0.28);
-  transform-origin: center bottom;
-  transition: transform 0.18s cubic-bezier(0.2, 0.8, 0.2, 1);
-  z-index: 2;
-}
-.info__face img { width: 100%; height: 100%; object-fit: cover; }
-.info__face-ph {
-  display: grid;
-  place-items: center;
-  width: 100%;
-  height: 100%;
-  background: var(--accent-pale);
-  /* --ink, not the accent: the accent on its own wash measured 2.6:1 at
-     night. --ink clears 9:1 on --accent-pale in both themes. */
-  color: var(--ink);
-  font-family: var(--font-mono);
-  font-size: 0.42em;
-  font-weight: 600;
-  letter-spacing: 0.04em;
-}
-.info__face:hover { transform: scale(2.5); }
-
-/* Split-flap word: one dark plate, a lighter tile per letter. */
-.flap {
-  display: inline-flex;
-  gap: 0.09em;
-  padding: 0.09em;
-  border: 0;
-  border-radius: 6px;
-  background: var(--term-bg);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06), 0 0 0 1px rgba(255, 255, 255, 0.08);
-  vertical-align: -0.12em;
-  cursor: pointer;
-  transition: box-shadow 1s;
-}
-.flap:hover { box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06), 0 0 0 1px rgba(255, 255, 255, 0.08), 0 14px 28px rgba(0, 0, 0, 0.28); }
-.flap__tile {
-  display: grid;
-  place-items: center;
-  width: 0.52em;
-  height: 1em;
-  border-radius: 0.07em;
-  background: rgba(255, 255, 255, 0.2);
-  color: var(--term-ink);
-  font-family: var(--font-mono);
-  font-size: 1em;
-  line-height: 1;
-}
-.flap__tile span { font-size: 0.62em; font-weight: 500; }
-
-/* Terminal chip: a prompt, the phrase, a blinking cursor. The hidden sizer
-   holds the longest phrase, so the chip never changes width while typing. */
-.term {
-  display: inline-flex;
-  align-items: center;
-  padding: 4px 12px;
-  border: 0;
-  border-radius: 7px;
-  background: var(--term-bg);
-  color: var(--term-ink);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06), 0 0 0 1px rgba(255, 255, 255, 0.08);
-  font-family: var(--font-mono);
-  font-size: 0.6em;
-  font-weight: 500;
-  line-height: 1.4;
-  vertical-align: 0.12em;
-  cursor: pointer;
-  transition: box-shadow 1s;
-}
-.term:hover { box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06), 0 0 0 1px rgba(255, 255, 255, 0.08), 0 14px 28px rgba(0, 0, 0, 0.28); }
-.term__prompt { margin-right: 6px; color: var(--term-dim); font-size: 0.75em; }
-.term__box { display: inline-grid; white-space: pre; text-align: left; }
-.term__size, .term__out { grid-area: 1 / 1; }
-.term__size { visibility: hidden; }
-.term__out { display: inline-flex; align-items: center; }
-.term__cursor {
-  width: 1px;
-  height: 1.1em;
-  margin-left: 2px;
-  background: var(--term-ink);
-}
-@media (prefers-reduced-motion: no-preference) {
-  .js .term__cursor { animation: term-blink 1.1s steps(1) infinite; }
-}
-@keyframes term-blink { 50% { opacity: 0; } }
-
-.flap:focus-visible,
-.term:focus-visible {
-  outline: 2px solid var(--accent);
-  outline-offset: 3px;
-}
-
-/* The signature is in the name's hand, Caveat. */
-.info__sig {
-  margin-top: 0.4em;
+/* The signature rests on the level. */
+.info__signed { display: inline-grid; justify-items: center; margin-top: 0.3em; }
+.info__intro .info__sig {
+  margin: 0 0 -0.12em;
   font-family: var(--font-script);
   font-size: 1.9em;
   line-height: 1;
   transform: rotate(-4deg);
-  transform-origin: center;
+}
+.level {
+  display: grid;
+  place-items: center;
+  width: 9em;
+  height: 1.15em;
+  border: 1px solid var(--line-strong);
+  border-radius: 0.25em;
+  background: linear-gradient(90deg, var(--line-strong) 0 0.35em, var(--bg-raised) 0.35em calc(100% - 0.35em), var(--line-strong) 0);
+}
+.level__vial {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 3.2em;
+  height: 0.6em;
+  border: 1px solid var(--accent-mid);
+  border-radius: 1em;
+  background: var(--accent-pale);
+}
+/* The two marks the bubble sits between. */
+.level__vial::before {
+  content: '';
+  position: absolute;
+  inset: 0 calc(50% - 0.55em);
+  border-inline: 1px solid var(--ink-soft);
+}
+.level__bubble {
+  width: 0.85em;
+  height: 0.38em;
+  border-radius: 1em;
+  background: var(--bg);
+  box-shadow: inset 0 0 0 1.5px var(--accent-ink);
+}
+@media (prefers-reduced-motion: no-preference) {
+  .js .info__intro.is-visible .level__bubble { animation: level-settle 2.6s cubic-bezier(0.3, 0.7, 0.3, 1) 0.5s both; }
+}
+@keyframes level-settle {
+  0% { transform: translateX(-1.1em); }
+  45% { transform: translateX(0.35em); }
+  75% { transform: translateX(-0.1em); }
+  100% { transform: none; }
 }
 
 /* --------------------------------------------------------------------------
    10b. Contact
    -------------------------------------------------------------------------- */
-.contact { text-align: center; }
-.contact h2 {
-  font-size: clamp(1.6rem, 4vw, 2rem);
-  margin-bottom: var(--gap);
-}
 .contact p {
   max-width: 520px;
-  margin: 0 auto var(--gap-lg);
+  margin: 0 0 var(--gap-lg);
   color: var(--ink-soft);
   font-size: 16px;
   line-height: 1.6;
@@ -1511,7 +1351,6 @@ body { padding-top: var(--header-h, 80px); }
 .contact__links {
   display: flex;
   flex-wrap: wrap;
-  justify-content: center;
   gap: var(--gap);
 }
 
@@ -1616,21 +1455,14 @@ body { padding-top: var(--header-h, 80px); }
 
 /* --------------------------------------------------------------------------
    12a. Page-load choreography
-   The hero's pieces fade in on mount: the name, the role, the proof line,
-   then the mode switcher. Only opacity animates — the lockup's lines carry
-   positioning transforms of their own.
+   The hero's pieces fade in on mount: the name, the line under it, then
+   the list on the laptop. Only opacity animates.
    -------------------------------------------------------------------------- */
 @media (prefers-reduced-motion: no-preference) {
-  .js .hero__name,
-
-  .js .hero__role,
-
-  .js .hero__proof {
-    animation: appear 0.62s var(--ease) backwards;
-  }
+  .js :is(.hero__name, .hero__sub, .hero__work) { animation: appear 0.62s var(--ease) backwards; }
   .js .hero__name { animation-delay: 0.05s; }
-  .js .hero__role { animation-delay: 0.14s; }
-  .js .hero__proof { animation-delay: 0.22s; }
+  .js .hero__sub { animation-delay: 0.14s; }
+  .js .hero__work { animation-delay: 0.3s; }
 }
 
 @keyframes appear {
@@ -1671,63 +1503,7 @@ body { padding-top: var(--header-h, 80px); }
   .nav a { padding: 12px 0; min-height: 44px; align-content: center; }
   .nav-clock { display: none; }
 
-  .hero { padding-top: 40px; }
-  .hero__lockup { padding-top: 12px; }
   .site-footer__inner { justify-content: center; text-align: center; }
-}
-
-/* --------------------------------------------------------------------------
-   14. The hero lockup
-   The name, role and proof line, set on the laptop's screen in the desk
-   (css/desk.css). Below 900px there is no desk and they stack in the flow.
-   -------------------------------------------------------------------------- */
-
-/* --- Lockup position ---
-   The left offset is a percentage, so the block must also be told it can
-   never exceed the space remaining to its right — otherwise the lockup runs
-   off the viewport on narrow screens. */
-.hero__lockup {
-  left: 39.514%;
-  top: 24.111%;
-  transform: none;
-  text-align: center;
-  width: min(590px, calc(100vw - 39.514% - 24px));
-}
-
-[data-mode='desk'] .hero__lockup {
-  left: 0 !important; right: auto !important; top: 0 !important;
-  width: 100% !important; max-width: none !important;
-  height: 100% !important;
-}
-[data-mode='desk'] .hero__name {
-  position: absolute !important;
-  /* Centred. width:max-content + translateX(-50%)
-     keeps it one line whatever the string length. */
-  left: 50.000% !important; top: 42.000% !important;
-  right: auto !important; bottom: auto !important; margin: 0 !important;
-  width: max-content !important; max-width: 92vw !important;
-  white-space: nowrap !important;
-  text-align: center !important;
-  transform: translateX(-50%) !important;
-}
-[data-mode='desk'] .hero__role {
-  position: absolute !important;
-  left: 50.000% !important; top: 53.600% !important;
-  right: auto !important; bottom: auto !important; margin: 0 !important;
-  width: max-content !important; max-width: 92vw !important;
-  white-space: nowrap !important; text-align: center !important;
-  transform: translateX(-50%) !important;
-}
-/* A fixed 18px under the role (whose line box is 27px), rather than a stage
-   percentage: at 60.5% it sat twice as far from the role as the role from
-   the name, and read as a caption rather than the third line of the lockup. */
-[data-mode='desk'] .hero__proof {
-  position: absolute !important;
-  left: 50.000% !important; top: calc(53.600% + 45px) !important;
-  right: auto !important; bottom: auto !important; margin: 0 !important;
-  width: max-content !important; max-width: 92vw !important;
-  text-align: center !important;
-  transform: translateX(-50%) !important;
 }
 
 @media print {
@@ -1907,49 +1683,8 @@ body { padding-top: var(--header-h, 80px); }
   .section-head h2 { font-size: 21px; }
 
   /* One card per row, so the text gets the full width. */
-  .rm { padding: 14px; gap: 12px; }
+  .rm { padding: 12px 14px; }
   .rm__title { font-size: 17px; }
-}
-
-/* --------------------------------------------------------------------------
-   Hero: force natural flow on mobile.
-
-   The [data-mode='desk'] block pins the lockup text with
-   `position: absolute !important` and no media guard, so below 900px it
-   overlapped the base mobile reset (which had no !important). This block wins
-   by coming later with matching specificity plus !important, so the hero
-   stacks: name -> role -> proof line.
-   -------------------------------------------------------------------------- */
-@media (max-width: 899.98px) {
-  [data-mode] .hero__lockup {
-    position: relative !important;
-    left: auto !important; top: auto !important; right: auto !important;
-    width: auto !important; max-width: none !important; height: auto !important;
-    transform: none !important;
-  }
-  [data-mode] .hero__name,
-
-  [data-mode] .hero__role,
-
-  [data-mode] .hero__proof {
-    position: static !important;
-    left: auto !important; top: auto !important; right: auto !important;
-    width: auto !important; max-width: 100% !important;
-    white-space: normal !important;
-    transform: none !important;
-  }
-  /* The hero is pulled up under the fixed header by --header-h so the
-     desktop stage can start at y=0. On mobile there is no stage — just
-     stacked type — and that negative margin was clipping the top of the name
-     behind the bar. Cancel it and pad clear of the header instead. */
-  .hero {
-    margin-top: 0 !important;
-    padding-top: 26px !important;
-  }
-
-  [data-mode] .hero__name { margin: 0 auto 14px !important; }
-  [data-mode] .hero__role { margin: 0 auto 16px !important; }
-  [data-mode] .hero__proof { margin: 0 auto 20px !important; text-align: center !important; }
 }
 
 /* Very narrow (<=360px): the smallest phone still in real use. */
@@ -2017,14 +1752,6 @@ body:has(.notfound) main { flex: 1; }
   justify-content: center;
   gap: var(--gap);
   margin-top: 10px;
-}
-
-/* Mobile: the stage is stacked type, not a composition. */
-@media (max-width: 899.98px) {
-  :root[data-mode] .stage { position: relative; }
-
-  /* The lockup must sit above the desk. */
-  [data-mode] .hero__lockup { position: relative !important; z-index: 2; }
 }
 
 /* ==========================================================================
@@ -2165,101 +1892,63 @@ body:has(dialog[open]) .cue { display: none; }
    17. The project grid, the screen, and the shelf overlay
    ========================================================================== */
 
-/* --- The grid ---------------------------------------------------------
-   Two columns, one per group, with that group's projects beneath its heading.
-   Both renderers emit one flat run — heading, rows, heading, rows — with
-   data-group on every item, so each item is pinned to its group's column and
-   `row dense` stacks it at the first free row there. The groups can then hold
-   different numbers of projects (Products has three, Research two) without
-   either renderer growing a wrapper. One row per project in the longest
-   group; a third group wants a third column here. */
+/* --- The list and the preview pane -----------------------------------
+   One column of rows on the left, the pane on the right showing the row last
+   pointed at or focused (js/script.js; the static copy shows the first).
+   Rows are compact enough that the heading, all four and "Also built" fit
+   one 1280x720 screen. Below 900px there is no room beside the rows, so the
+   pane goes and the rows take the width. */
 .rm-list {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  grid-template-rows: auto repeat(3, 1fr);
-  grid-auto-flow: row dense;
-  gap: 14px 20px;
+  gap: 8px 24px;
 }
-.rm-list > [data-group="research"] { grid-column: 1; }
-.rm-list > [data-group="products"] { grid-column: 2; }
-.rm-list .rm-group { margin-top: 0; }
-/* One quiet line, under both columns. */
-.rm-list .rm-archive { grid-column: 1 / -1; grid-row: 5; margin-top: 6px; }
-
-/* Each row is name, year, one line, the measured result where there is one,
-   and the stack. The description is not clamped: the grid's rows are 1fr, so
-   the cards in a row already match heights, and a one-line clamp cut every
-   tagline off mid-word on a phone. */
-.rm-list .rm { padding: 12px 14px; }
-
-@media (max-width: 799.98px) {
-  .rm-list {
-    grid-template-columns: 1fr;
-    grid-template-rows: none;
-    grid-auto-flow: row;
-  }
-  .rm-list > [data-group] { grid-column: auto; }
-  .rm-list .rm-archive { grid-row: auto; }
-}
-
-/* --- The screen -------------------------------------------------------
-   No panel: no border, no ground, no rounding. The column it stands in has
-   stood down, so the media is simply what is in that half of the grid for as
-   long as the pointer is on the other half.
-
-   It is absolute inside .rm-stage rather than inside .rm-list, because
-   renderCards() replaces the list wholesale and would take the screen with
-   it. pointer-events:none keeps it from stealing the hover that produced it.
-   object-fit is `contain`, not `cover`: a phone render is a shape, and
-   cropping it is cropping the device. */
-.rm-stage { position: relative; }
-.rm-screen {
-  position: absolute;
-  top: 0;
-  bottom: 0;
-  width: calc(50% - 10px);          /* half the grid, less half its 20px gap */
+.rm-rows {
   display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 14px;
-  opacity: 0;
-  pointer-events: none;
-  transition: opacity 0.18s var(--ease);
+  flex-direction: column;
+  gap: 8px;
+  min-width: 0;
 }
-.rm-screen[data-side='left'] { left: 0; }
-.rm-screen[data-side='right'] { right: 0; }
-.rm-screen[data-on] { opacity: 1; }
-
-.rm-screen img,
-.rm-screen video {
-  display: block;
-  max-width: 100%;
-  max-height: 100%;
-  width: auto;
-  height: auto;
-  object-fit: contain;
-}
-/* More than one piece of media in the slot means two device renders side by
-   side, not one screenshot. Two full-height phones fill the column edge to
-   edge and read as a product shot; held back they read as a screen. */
-.rm-screen img:not(:only-child),
-.rm-screen video:not(:only-child) {
-  max-width: 44%;
-  max-height: 72%;
+.rm-screen { display: none; }
+/* A phone: the years go under the title instead of squeezing it. */
+@media (max-width: 599.98px) {
+  .rm__text { grid-template-columns: minmax(0, 1fr); }
+  .rm__meta { text-align: left; }
 }
 
-/* The column that stands down while the other one is being read. It keeps its
-   space — the grid must not reflow under the pointer — and only goes quiet. */
-.rm-list [data-group] { transition: opacity 0.18s var(--ease); }
-/* One class heavier than `.js .reveal.is-visible`, which also sets opacity on
-   these same elements once they have been revealed. */
-.rm-list [data-group].is-stood-down { opacity: 0; pointer-events: none; }
-
-/* One column, so there is no other column to give up. */
-@media (max-width: 799.98px) {
-  .rm-screen { display: none; }
-  .rm-list [data-group].is-stood-down { opacity: 1; pointer-events: auto; }
+@media (min-width: 900px) {
+  .rm-list { grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr); }
+  .rm-archive { grid-column: 1 / -1; }
+  /* The pane fits its image (start-aligned, capped at 60vh), so it never
+     stretches to the list's height as an empty panel. object-
+     fit is `contain`, not `cover`: a phone render is a shape, and cropping it
+     is cropping the device. */
+  .rm-screen {
+    align-self: start;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 14px;
+    padding: 20px;
+    border-radius: var(--radius-lg);
+    background: var(--bg-sunken);
+  }
+  .rm-screen img,
+  .rm-screen video {
+    display: block;
+    min-width: 0;
+    max-width: 100%;
+    max-height: 60vh;
+    object-fit: contain;
+  }
+  /* Two pieces of media are two device renders side by side. */
+  .rm-screen img:not(:only-child),
+  .rm-screen video:not(:only-child) { max-width: calc(50% - 7px); }
 }
+
+@media (min-width: 900px) and (prefers-reduced-motion: no-preference) {
+  .js .rm-screen > * { animation: rm-in 0.2s var(--ease); }
+}
+@keyframes rm-in { from { opacity: 0; } }
 
 /* --- The shelf --------------------------------------------------------
    Spines, and only spines, until the pointer or the keyboard reaches one:

@@ -11,7 +11,7 @@
      group                          'research' | 'products' — which list group
      archived                       true: kept live, but no row, node or tile;
                                     one line under "Also built"
-     tech                           header chips; first four are the row's Focus
+     tech                           header chips; first four are the row's stack
      repo, demo                     repo is the source, or the site when there
                                     is no public repo; demo is the live build
      created, updated               GitHub's created_at / pushed_at, transcribed
@@ -22,8 +22,9 @@
      nest                           [[name, note]], outermost first: the
                                     matryoshka under "At a glance". Each doll
                                     opens to the one inside; the last is solid
-     metric                         the one measured figure on the home row
-     screen                         what the home row's hover screen shows;
+     metric                         the home row's one result: plain words,
+                                    then the figure in brackets
+     screen                         what the home list's preview pane shows;
                                     .mp4/.webm play, anything else is a still
      thumb                          false: no image, so a text-only share card */
 const projects = [
@@ -61,8 +62,7 @@ const projects = [
       ["Factor investing", "https://en.wikipedia.org/wiki/Factor_investing"],
       ["Momentum (12-1)", "https://doi.org/10.1111/j.1540-6261.1993.tb04702.x"],
       ["VADER", "https://ojs.aaai.org/index.php/ICWSM/article/view/14550"],
-      ["Survivorship bias", "https://en.wikipedia.org/wiki/Survivorship_bias"],
-      ["Sharpe ratio", "https://en.wikipedia.org/wiki/Sharpe_ratio"]
+      ["Survivorship bias", "https://en.wikipedia.org/wiki/Survivorship_bias"]
     ],
     "glance": {
       "problem": "I wanted one ranking that weighs price signals and the news together, and a backtest honest enough to tell me when that ranking is luck.",
@@ -76,7 +76,7 @@ const projects = [
       ["The factors", "12-minus-1 momentum, signed volume, volatility, and VADER/TextBlob headline sentiment."],
       ["One z-score", "One stock, one factor, one date, clipped so it never sits more than 3 from the mean."]
     ],
-    "metric": "Beat SPY, p = 0.07",
+    "metric": "Beat the S&P 500 (+70% vs +19%, p = 0.07)",
     "screen": "public/assets/projects/quant-current.webp"
   },
   {
@@ -114,14 +114,14 @@ const projects = [
       ["The frame", "One of 100 seeded synthetic frames, 20 of them held out for testing."],
       ["One pixel", "One pixel that halo, uneven light and noise push across the threshold segmentation starts from."]
     ],
-    "metric": "PSNR 11.46 → 20.26 dB",
+    "metric": "Cleaner on all 20 held-out frames (PSNR 11.46 → 20.26 dB)",
     "screen": "public/assets/projects/phase-demo-metrics.webp"
   },
   {
     "id": "arteza",
     "title": "Arteza",
     "tagline": "An online gallery and shop for an original-art studio.",
-    "summary": "A React storefront and portfolio for the artist Upasna: 106 original paintings across five collections, a five-question style quiz, online class booking, and a cart that ends in a WhatsApp conversation instead of a card form.",
+    "summary": "A React storefront and portfolio for the artist Upasna: 106 original paintings across five collections, online class booking, and a cart that ends in a WhatsApp conversation instead of a card form.",
     "context": "Client work",
     "role": "Design & build",
     "year": "2026",
@@ -145,7 +145,7 @@ const projects = [
     ],
     "glance": {
       "problem": "A working painter with a catalogue spread across Instagram posts and WhatsApp threads, and no single place a buyer could see the work.",
-      "built": "A React and Supabase storefront for 106 originals across five collections, with a five-question style quiz, online class booking, and a cart that records the order and hands the buyer to WhatsApp — where the sales were already happening.",
+      "built": "A React and Supabase storefront for 106 originals across five collections, with online class booking, and a cart that records the order and hands the buyer to WhatsApp — where the sales were already happening.",
       "result": "A live site the studio sells from. Commercial figures belong to the client and are not mine to publish."
     },
     "nest": [
@@ -155,7 +155,7 @@ const projects = [
       ["The order", "One row in Supabase, priced on the server, which takes nothing the browser says on trust."],
       ["One painting", "An original. There is only one of it, so it can only be sold once."]
     ],
-    "metric": "Largest image: 4 downloads per load → 1",
+    "metric": "Big images download once, not four times (4 → 1 per load)",
     "screen": "public/assets/projects/arteza-home.webp",
     "projectData": {
       "tagline": "A gallery and shop for a painter, where the cart hands you to WhatsApp instead of taking money.",
@@ -194,13 +194,8 @@ const projects = [
         ["Supabase Edge Functions", "https://supabase.com/docs/guides/functions"],
         ["UPI", "https://en.wikipedia.org/wiki/Unified_Payments_Interface"],
         ["sharp", "https://sharp.pixelplumbing.com"]
-      ],
-      "excerpt": {
-        "note": "Nothing is wrong. The fixed point just isn’t on the screen.",
-        "code": "const radius = chord / 2 / Math.sin((step / 2) * DEG);\nx = radius * Math.sin(rad);\nz = radius * Math.cos(rad) - radius;  // front card stays at z = 0"
-      }
-    },
-    "notes": "No created/updated (private repo); repo stays https://arteza.site; no demo, so no live block. Metric is as of the 2026-10-16 catalogue read. Dropped the unevidenced 'Instagram/WhatsApp threads' problem line and the quiz entirely. Server re-pricing predates the owner's commits, so the prose only claims her October additions (rate limit, revoked inserts, show-sold, UTR attempt); early checkout events are told impersonally. New measurement: 11 of 106 rows transposed, from photo pixel aspects in the arteza repo (3 rows had no local file). Skipped the optional horizontal scroll pipeline. Glance strings avoid the ″ glyph only for safety; fine to restore."
+      ]
+    }
   },
   {
     "id": "habita",
@@ -283,13 +278,8 @@ const projects = [
         ]
       ],
       "created": "2026-04-19",
-      "updated": "2026-10-14",
-      "excerpt": {
-        "note": "a failed write leaves eventId null, and the next save retries",
-        "code": "for (const span of busy) {\n  if (candidate + length <= span.start) break;\n  if (candidate < span.end) candidate = app.snapTime(span.end);\n}"
-      }
-    },
-    "notes": "Files: js/articles/habita.js, css/articles/habita.css. No new assets. check.js passes for habita; consoles clean; no overflow at 390px. Re-ran Habita tests 2026-10-18: 18/18. Metric '18/18 UI checks pass' is honest but is a test count, not an outcome; drop it if the home row should carry results only. Colour-palette widget skipped (no device-read palette). Open owner items: shipped seam axis labels are transposed (styles.css:335-362); the sync-adapter insert's 'still born DIRTY' comment is likely wrong per AOSP and unverified on a device; README 'Updates are partial' claim is false end to end; repo topic 'habit-tracker' is stale. Old fragments 'no third-party sync', 'position, not a field' dropped. Mosaic no longer reads excerpt; kept per brief."
+      "updated": "2026-10-14"
+    }
   },
   {
     "id": "outbound-pipeline",
@@ -300,6 +290,7 @@ const projects = [
     "role": "AI Specialist, Sygnius Digital",
     "year": "2025",
     "group": "products",
+    "archived": true,
     "tech": [
       "Python",
       "Bland AI",
@@ -336,8 +327,7 @@ const projects = [
       ["The call", "A Bland AI or Retell AI agent that hangs up on machines and transfers anyone interested."],
       ["One phone number", "Found on the listing or the business’s own site, normalised to E.164 before anyone dials it."]
     ],
-    "metric": "600+ qualified leads",
-    "thumb": false
+    "metric": "Filled a sales team's call list (600+ qualified leads)"
   },
   {
     "id": "ivy-slack-agent",
@@ -390,8 +380,7 @@ const projects = [
       ["The screenshot", "Read by OCR. Four engines were benchmarked; PaddleOCR was the one packaged for Lambda."],
       ["One ticket", "One Jira ticket, assigned to whichever human is on shift and has room."]
     ],
-    "metric": "4 OCR engines benchmarked",
-    "thumb": false
+    "metric": "Screenshot readers tested head to head (4 OCR engines)"
   },
   {
     "id": "anttodo",
@@ -445,6 +434,7 @@ const projects = [
     "role": "Solo project",
     "year": "2026",
     "archived": true,
+    "article": false,
     "tech": ["JavaScript (ES modules)", "MediaWiki API", "ROUGE", "SVG", "Playwright"],
     "repo": "https://github.com/akshayaa-403/Wikipedia-Summarizer",
     "demo": "https://akshayaa-403.github.io/Wikipedia-Summarizer/",
@@ -468,7 +458,7 @@ const projects = [
       ["The score", "ROUGE against the article's own lead section, the summary its editors wrote."],
       ["One word", "One overlapping word: the unit ROUGE-1 counts."]
     ],
-    "metric": "ROUGE-1 0.400, 56% of the human ceiling"
+    "metric": "Reaches 56% of the human summary's score (ROUGE-1 0.400 vs 0.709)"
   }
 ];
 

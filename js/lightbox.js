@@ -1,5 +1,5 @@
-/* The image popover on the gallery page (hobby.html), and for desk mode's
-   Polaroids on the home page (js/desk-objects.js).
+/* The image popover on the gallery page (hobby.html) and the home page's
+   hobby cards (js/hobbies.js).
 
    Every tile on a gallery page opens it, and it is the destination the home
    page graph's image nodes point at (hobby.html?id=…&i=…). The home page's

@@ -7,15 +7,12 @@
   var reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
   /* ---------- project list ----------
-     A card per project, in two columns by group: title, context and years,
-     one line of what it is, the one measured result if there is one, and the
-     stack. Hovering a card shows its media in the other column (initScreen,
-     below). */
-  /* The real span, not one year. Every card used to read "2026" off p.year,
-     which made six projects spanning Jan 2025 to Aug 2026 look like a single
-     weekend of portfolio-building. created/updated are already on the data for
-     the detail page's header row; this is the same two dates, collapsed.
-     Arteza has no public repo and therefore no dates, so it falls back. */
+     One column of rows on the left, a preview pane on the right. Each row:
+     title, context and years, one line of what it is, the one result where
+     there is one (plain words, the figure in brackets), and the stack.
+     Pointing at or focusing a row puts its media in the pane (initScreen). */
+  /* The real span, not one year: created/updated collapsed. Arteza has no
+     public repo and therefore no dates, so it falls back to p.year. */
   function span(p) {
     var a = (p.created || '').slice(0, 4);
     var b = (p.updated || '').slice(0, 4);
@@ -23,40 +20,44 @@
     return a === b ? a : a + '–' + b;
   }
 
-  /* The two groups the shown work falls into, in render order. A project's
+  /* The groups the shown work falls into, in render order. A project's
      `group` in js/project-data.js picks one; anything with `archived: true`
-     is in neither and drops to the archive list at the foot of the section. */
+     is in neither and drops to "Also built" at the foot of the list.
+     Declared again in tools/build-share-pages.js — change both. */
   var GROUPS = [
-    { key: 'research', title: 'Research',
-      note: 'Systems that measure something and report the number, including when the number is bad.' },
-    { key: 'products', title: 'Products',
-      note: 'Things built for someone else to use — a shop, a phone app and a sales pipeline.' }
+    { key: 'research', title: 'Research' },
+    { key: 'products', title: 'Products' }
   ];
 
-  function row(p) {
-    // The group decides which half the screen covers, so the row carries it.
-    var focus = (p.tech || []).slice(0, 4).map(esc)
+  /* `screen` in js/project-data.js, one path or several: .mp4/.webm play
+     muted and looping, anything else is a still. */
+  function media(src) {
+    return [].concat(src || []).map(function (one) {
+      return /\.(mp4|webm|ogv)$/i.test(one)
+        ? '<video src="' + safeUrl(one) + '" autoplay muted loop playsinline></video>'
+        : '<img src="' + safeUrl(one) + '" alt="" decoding="async">';
+    }).join('');
+  }
+
+  function row(p, first) {
+    var stack = (p.tech || []).slice(0, 4).map(esc)
       .join(' <span aria-hidden="true">/</span> ');
     var meta = [p.context || p.role, span(p)].filter(Boolean).map(esc).join(' · ');
 
-    /* Link to the generated share page rather than project.html?id=. Both
-       land in the same place — work/<id>.html redirects — but the generated
-       one is a real document with its own <title> and og: tags, so a crawler,
-       a chat unfurl or a reader with JS off gets the project's name instead
-       of "Project — Akshayaa Kashyap". */
-    return '<a class="rm reveal" href="work/' + encodeURIComponent(p.id) + '.html"' +
-        (p.screen ? ' data-screen="' + [].concat(p.screen).map(safeUrl).join('|') + '"' : '') +
-        ' data-group="' + esc(p.group || '') + '"' +
-        ' data-cue="Read the case study">' +
+    /* Link to the generated share page rather than project.html?id=: a real
+       document with its own <title> and og: tags, so a crawler, a chat unfurl
+       or a reader with JS off gets the project's name. */
+    return '<a class="rm reveal' + (first ? ' is-on' : '') + '" href="work/' + encodeURIComponent(p.id) + '.html"' +
+        (p.screen ? ' data-screen="' + [].concat(p.screen).map(safeUrl).join('|') + '"' : '') + '>' +
         '<span class="rm__text">' +
           '<span class="rm__title">' + esc(p.title) + '</span>' +
           (meta ? '<span class="rm__meta">' + meta + '</span>' : '') +
           '<span class="rm__desc">' + esc(p.tagline) + '</span>' +
-          // One measured number per row, where there is one. Some projects
-          // have nothing honest to put here, and the empty slot is the
-          // hierarchy: a row carrying a figure is a row with a result.
-          (p.metric ? '<span class="rm__metric">' + esc(p.metric) + '</span>' : '') +
-          (focus ? '<span class="rm__focus"><span class="rm__focus-label">Focus</span>' + focus + '</span>' : '') +
+          '<span class="rm__foot">' +
+            // Some projects have no honest figure; the empty slot is the hierarchy.
+            (p.metric ? '<span class="rm__metric">' + esc(p.metric) + '</span>' : '') +
+            (stack ? '<span class="rm__stack">' + stack + '</span>' : '') +
+          '</span>' +
         '</span>' +
       '</a>';
   }
@@ -69,107 +70,60 @@
 
     var shown = projects.filter(function (p) { return !p.archived; });
     var gone = projects.filter(function (p) { return p.archived; });
+    var first = null;
 
-    var html = GROUPS.map(function (g) {
-      var rows = shown.filter(function (p) { return p.group === g.key; });
-      if (!rows.length) return '';
-      return '<div class="rm-group reveal" data-group="' + esc(g.key) + '">' +
-          '<h3 class="rm-group__title">' + esc(g.title) + '</h3>' +
-          '<p class="rm-group__note">' + esc(g.note) + '</p>' +
-        '</div>' +
-        rows.map(row).join('');
+    var rows = GROUPS.map(function (g) {
+      var mine = shown.filter(function (p) { return p.group === g.key; });
+      if (!mine.length) return '';
+      first = first || mine[0];
+      return '<h3 class="rm-group reveal">' + esc(g.title) + '</h3>' +
+        mine.map(function (p) { return row(p, p === first); }).join('');
     }).join('');
 
-    /* The archive. These case studies are still written, still live and still
-       linked — they are simply not what the work is now, and a list that
-       shows everything ever built weights the old the same as the current.
-       Kept as one quiet line rather than a second list. */
+    /* Still written, still live, still linked — just not what the work is
+       now. One quiet line under the list and the pane, not a second list. */
+    var archive = '';
     if (gone.length) {
-      html += '<p class="rm-archive reveal">' +
+      archive = '<p class="rm-archive reveal">' +
         '<span class="rm-archive__label">Also built</span> ' +
         gone.map(function (p) {
-          return '<a href="work/' + encodeURIComponent(p.id) + '.html">' +
-            esc(p.title) + '</a>';
+          /* article: false = no case study yet; link the repo instead of an empty page. */
+          var href = p.article === false ? safeUrl(p.repo) : 'work/' + encodeURIComponent(p.id) + '.html';
+          return '<a href="' + href + '">' + esc(p.title) + '</a>';
         }).join('<span aria-hidden="true"> · </span>') +
       '</p>';
     }
 
-    /* Replace, not prepend: index.html ships a real static copy of this list
-       (written by tools/build-share-pages.js) so a crawler, a proxy or a
-       reader with JS off sees the work rather than an empty column. When JS
-       is running, this is the enhanced version of the same thing. */
-    host.innerHTML = html;
-    initScreen();
+    /* Replace, not prepend: index.html ships a real static copy of this
+       (written by tools/build-share-pages.js) so a reader with JS off sees
+       the same list and the first project's preview. */
+    host.innerHTML = '<div class="rm-rows">' + rows + '</div>' +
+      '<div class="rm-screen" data-rm-screen aria-hidden="true">' + media(first && first.screen) + '</div>' +
+      archive;
+    initScreen(host);
   }
 
-  /* ---------- the screen ----------
-     Hovering a row takes the OTHER column away and puts that project in the
-     space it left: hover a product and Research goes, hover a research
-     project and Products goes. Not an overlay — there is no panel, no border
-     and no ground behind the media, so what is left on the page is the column
-     you are reading and the thing you are pointing at.
+  /* ---------- the preview pane ----------
+     Shows the media of the row last pointed at or focused, and that row is
+     marked. It never blanks: leaving the list keeps the last one, so the
+     pane does not flicker as the pointer crosses the gaps between rows.
+     aria-hidden: it is a second view of a row that is already a link with a
+     title and a description. Hidden below 900px by the CSS. */
+  function initScreen(list) {
+    var screen = list.querySelector('[data-rm-screen]');
+    var on = list.querySelector('.rm.is-on');
+    if (!screen) return;
 
-     Each row carries its own media in data-screen (`screen` in
-     js/project-data.js), one path or several; .mp4/.webm play muted and
-     looping, anything else is a still. So swapping a screenshot for a screen
-     recording is a data change and no code change.
-
-     Blank is the resting state on purpose: a panel showing the first project
-     by default is a panel nobody reads as belonging to the row under the
-     cursor.
-
-     GROUPS is the order of the columns, so the side to fill is the index of
-     the group NOT being hovered. Below 800px the grid is one column, there is
-     no other column to give up, and the CSS drops the whole thing. */
-  function initScreen() {
-    var screen = document.querySelector('[data-rm-screen]');
-    var list = document.getElementById('recent-cards');
-    if (!screen || !list) return;
-
-    var at = null;
     function show(rm) {
-      var src = rm && rm.getAttribute('data-screen');
-      if (src === at) return;
-      at = src;
-
-      var hide = null;
-      if (src) {
-        var i = 0;
-        for (var g = 0; g < GROUPS.length; g++) {
-          if (GROUPS[g].key === rm.getAttribute('data-group')) i = g;
-        }
-        hide = GROUPS[i === 0 ? GROUPS.length - 1 : 0].key;
-        screen.setAttribute('data-side', i === 0 ? 'right' : 'left');
-        screen.setAttribute('data-on', '');
-        screen.innerHTML = src.split('|').map(function (one) {
-          return /\.(mp4|webm|ogv)$/i.test(one)
-            ? '<video src="' + safeUrl(one) + '" autoplay muted loop playsinline></video>'
-            : '<img src="' + safeUrl(one) + '" alt="" decoding="async">';
-        }).join('');
-      } else {
-        screen.removeAttribute('data-on');
-        screen.innerHTML = '';
-      }
-
-      // Which column stands down. Done here rather than in a selector because
-      // CSS cannot compare one element's group against another's.
-      var col = list.querySelectorAll('[data-group]');
-      for (var k = 0; k < col.length; k++) {
-        col[k].classList.toggle('is-stood-down',
-          hide !== null && col[k].getAttribute('data-group') === hide);
-      }
+      if (!rm || rm === on || !rm.hasAttribute('data-screen')) return;
+      if (on) on.classList.remove('is-on');
+      on = rm;
+      rm.classList.add('is-on');
+      screen.innerHTML = media(rm.getAttribute('data-screen').split('|'));
     }
 
-    list.addEventListener('pointerover', function (e) {
-      show(e.target.closest('.rm'));
-    });
-    // focusin/focusout so the keyboard gets the same view the pointer does.
-    list.addEventListener('focusin', function (e) {
-      var rm = e.target.closest('.rm');
-      if (rm) show(rm);
-    });
-    list.addEventListener('focusout', function () { show(null); });
-    list.addEventListener('pointerleave', function () { show(null); });
+    list.addEventListener('pointerover', function (e) { show(e.target.closest('.rm')); });
+    list.addEventListener('focusin', function (e) { show(e.target.closest('.rm')); });
   }
 
   /* ---------- reading list ----------
@@ -539,66 +493,12 @@
     for (var k = 0; k < sections.length; k++) io.observe(sections[k]);
   }
 
-  /* ---------- Info intro: split-flap word and terminal chip ----------
-     Both are <button>s in the prose. The split-flap shuffles every tile
-     through random letters and lands them left to right; the terminal erases
-     its phrase and types the next one. Under reduced motion the flap stays put
-     and the terminal swaps its phrase without typing. */
-  function initInfoIntro() {
-    var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    var ABC = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
-
-    var flaps = document.querySelectorAll('[data-flap]');
-    Array.prototype.forEach.call(flaps, function (btn) {
-      var word = btn.getAttribute('data-flap');
-      var cells = btn.querySelectorAll('.flap__tile span');
-      var busy = false;
-      btn.addEventListener('click', function () {
-        if (busy || reduce) return;
-        busy = true;
-        var start = Date.now();
-        (function tick() {
-          var landed = 0;
-          for (var i = 0; i < cells.length; i++) {
-            if (Date.now() - start >= 350 + i * 90) { cells[i].textContent = word[i]; landed++; }
-            else cells[i].textContent = ABC[Math.floor(Math.random() * 26)];
-          }
-          if (landed < cells.length) setTimeout(tick, 45); else busy = false;
-        })();
-      });
-    });
-
-    var terms = document.querySelectorAll('[data-term]');
-    Array.prototype.forEach.call(terms, function (btn) {
-      var list = btn.getAttribute('data-term').split('|');
-      var out = btn.querySelector('.term__text');
-      var at = 0, timer = null;
-      btn.addEventListener('click', function () {
-        clearTimeout(timer);
-        at = (at + 1) % list.length;
-        var next = list[at];
-        if (reduce) { out.textContent = next; return; }
-        function type(n) {
-          out.textContent = next.slice(0, n);
-          if (n < next.length) timer = setTimeout(function () { type(n + 1); }, 45);
-        }
-        (function erase() {
-          if (out.textContent.length > 1) {
-            out.textContent = out.textContent.slice(0, -1);
-            timer = setTimeout(erase, 18);
-          } else type(1);
-        })();
-      });
-    });
-  }
-
   /* ---------- boot ---------- */
   function init() {
     renderCards();
     renderReadings();
     initReveal();
     initActiveNav();
-    initInfoIntro();
   }
 
   window.onReady(init);

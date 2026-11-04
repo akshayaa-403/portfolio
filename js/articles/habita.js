@@ -1,7 +1,5 @@
-/* Habita — "One task, followed."
-   The case study is the plot of the app's own test file: one task, "Write the
-   incident report", through every layer. Chapter labels are real check names
-   from tests/timeline.test.mjs. The rail is the task's model; every widget
+/* Habita: one task, "Write the incident report", followed through every layer
+   as the app's own test file does. The rail is the task's model; every widget
    writes to it through TASK below. Constants and algorithms are copied from
    the Habita repo (file:line beside each). */
 (function () {
@@ -57,14 +55,10 @@
   /* Where the test has left the task by each chapter. Applied when a chapter
      is reached, unless the reader has already used that chapter's figure. */
   var SNAP = {
-    before: { quadrant: null, start: null, duration: 30, eventId: null, synced: 'browser: no calendar', check: '✓ starts with an empty model' },
-    place: { quadrant: 1, start: null, duration: 30, eventId: null, synced: 'browser: no calendar', check: '✓ unscheduled tasks appear in the tray' },
-    drop: { quadrant: 1, start: 10 * H, duration: 30, eventId: null, synced: 'browser: no calendar', check: '✓ dragging a chip onto the grid schedules it at that hour' },
-    tap: { quadrant: 1, start: 12 * H, duration: 90, check: '✓ tapping a chip places it without a drag' },
-    overlap: { quadrant: 1, start: 12 * H, duration: 90, check: '✓ overlapping blocks are laid out side by side' },
-    land: { quadrant: 1, check: '✓ browser build reports no native calendar' },
-    unproven: { check: '? no check covers this' },
-    reload: { start: null, eventId: null, synced: 'unscheduled', check: '✓ state survives a reload' },
+    problem: { quadrant: null, start: null, duration: 30, eventId: null, synced: 'browser: no calendar', check: '✓ starts with an empty model' },
+    built: { quadrant: 1, start: 10 * H, duration: 30, eventId: null, synced: 'browser: no calendar', check: '✓ dragging a chip onto the grid schedules it at that hour' },
+    hard: { quadrant: 1, start: 12 * H, duration: 90, check: '? no check covers the native calendar' },
+    results: { start: null, eventId: null, synced: 'unscheduled', check: '✓ state survives a reload' },
     differently: { check: 'What I’d do differently' }
   };
 
@@ -74,24 +68,13 @@
     form: 'one-task',
     scramble: '0123456789:—▢▣',
     rail: 'card',
-    dek: 'This is the life of one task, **Write the incident report**, as Habita’s own test file lives it: filed under Focus, dropped at ten, moved to noon, stretched to ninety minutes. Each chapter is one check from a run that passed 18 of 18. The last stretch is the part no check covers: the block becoming a real event in the phone’s calendar.',
-
-    opener: function (c) {
-      return '<rect x="10" y="22" width="22" height="22" fill="' + c.a + '"/>' +
-        '<rect x="35" y="22" width="22" height="22" fill="none" stroke="' + c.l + '" stroke-width="1.4"/>' +
-        '<rect x="10" y="47" width="22" height="22" fill="none" stroke="' + c.l + '" stroke-width="1.4"/>' +
-        '<rect x="35" y="47" width="22" height="22" fill="none" stroke="' + c.l + '" stroke-width="1.4"/>' +
-        '<path d="M70 14V114" stroke="' + c.i + '" stroke-width="1"/>' +
-        [30, 46, 62, 78, 94].map(function (y) { return '<path d="M66 ' + y + 'H74" stroke="' + c.l + '" stroke-width="1"/>'; }).join('') +
-        '<rect x="76" y="46" width="14" height="40" fill="' + c.a + '"/>' +
-        '<path d="M32 33C52 33 56 60 74 60" fill="none" stroke="' + c.a + '" stroke-width="1.2" stroke-dasharray="3 3"/>' +
-        '<path d="M92 66H104" stroke="' + c.i + '" stroke-width="1.2"/><path d="M100 62l4 4-4 4" fill="none" stroke="' + c.i + '" stroke-width="1.2"/>' +
-        '<rect x="106" y="50" width="16" height="32" fill="none" stroke="' + c.i + '" stroke-width="1.2"/>' +
-        '<path d="M109 58H119M109 64H119M109 70H116" stroke="' + c.l + '" stroke-width="1"/>';
-    },
+    dek: 'Habita turns an Eisenhower matrix into a day timeline: drag a task into a box, drop it on an hour, and it is meant to land in the phone’s own calendar. Its test file follows one task through every layer and passes **18 of 18 checks**; the calendar write itself is the part no test covers.',
+    demo: { src: 'public/assets/demos/habita.mp4', poster: 'public/assets/demos/habita.webp',
+      alt: 'In Habita, the plus button is dragged onto Focus to add ‘Send the invoice’, then onto Goals to add ‘Plan the sprint’; both quadrant counters go to 1, and in the Day view each task is tapped and placed as a block on today’s timeline.',
+      caption: 'Recorded from the browser build, at 1.35x speed.' },
 
     chapters: [
-      { id: 'before', label: '✓ starts with an empty model', title: 'Before it was a timeline',
+      { id: 'problem', title: 'The problem',
         art: function (c) {
           return '<rect x="20" y="20" width="44" height="80" rx="8" fill="none" stroke="' + c.l + '" stroke-width="1.5" stroke-dasharray="4 4"/>' +
             '<text x="42" y="64" text-anchor="middle" font-size="10" fill="' + c.i + '" font-family="monospace">Swift</text>' +
@@ -100,66 +83,40 @@
             '<rect x="104" y="48" width="32" height="14" fill="' + c.a + '"/>';
         },
         blocks: [
-          { p: 'Habita did not start as this app. The first commit, on 19 April 2026, was a SwiftUI app for iPhone with habits, CloudKit sync and a button called “AI Rate” that scored a task’s complexity and urgency.^[git show 3105c56: HabitaApp.swift, CloudKitService, AIRatingService and a product spec in README.md.] The next day I deleted all the Swift and started again for the web.^[git show --stat a3ca719, 20 April 2026.]' },
-          { p: 'Most of that first spec is gone. One line survived, step 8 of the capture flow: *Once placed, task is time-blocked on the calendar for its duration.* It took four months to ship. The matrix came back in May, the redesign with quadrant names in June, and the day timeline, the calendar plugin and the test file all landed in one commit on 12 August.^[918d772 (27 May), 2c50f1b (15 June), b1724c3 (12 August), which added 516 lines of CalendarPlugin.java and 641 of timeline.js.]',
-            notes: [['One line survived', 'the only idea that made it from April to now']] },
+          { p: 'A to-do list with its own private calendar is one more thing to open. I wanted the time I block out for a task to land in the calendar my phone already shows me, so I never have to remember to look.' },
           { quote: 'A second place to check is a place you stop checking.' },
-          { p: 'That line is the reason the app exists. A to-do list with its own private calendar is one more thing to open. If the time I block out lands in the calendar the phone already shows me, I don’t have to remember to look.' },
-          { p: 'So rather than tour the features, I’m going to follow one task through the code. The test file, `tests/timeline.test.mjs`, already does this. It loads `src/index.html` in jsdom, presses the real interface and checks the saved model. Its first task is *Write the incident report*, filed under Focus. Each chapter below is headed with one of its checks. When I re-ran it on 18 October 2026, all 18 passed.^[`node tests/timeline.test.mjs` in the Habita repo at 4bc5591, run 18 October 2026: “18/18 checks passed”.]' },
-          { p: 'The card beside this text (above it, on a phone) is that task’s model: the fields the test reads. It changes as you read, and as you use the figures.' },
-          { p: 'There is no build step any more. Capacitor serves `src/` directly, and the script that used to copy it into a `www/` folder was deleted on 14 October.^[capacitor.config.json: `"webDir": "src"`; commit 4bc5591 deleted scripts/build.js.]' }
+          { p: 'Habita started on 19 April 2026 as a SwiftUI app with habits, CloudKit sync and an “AI Rate” button. The next day I deleted all the Swift and started again for the web. One line of that first spec survived: *Once placed, task is time-blocked on the calendar for its duration.* It shipped on 12 August, when the day timeline, the Android calendar plugin and the test file landed in one commit.' },
+          { p: 'Rather than tour the features, I’ll follow one task the way the test file, `tests/timeline.test.mjs`, does. It loads the real page in jsdom, presses the real interface and checks the saved model. Its first task is *Write the incident report*, filed under Focus. The card beside this text (above it, on a phone) is that task’s model. It changes as you read and as you use the figures.' }
         ] },
 
-      { id: 'place', label: '✓ unscheduled tasks appear in the tray, coloured by quadrant', title: 'Place it',
+      { id: 'built', title: 'What I built',
         blocks: [
-          { p: 'The matrix is the oldest idea here and the least original. It’s the Eisenhower grid: sort tasks by urgent and by important and you get four boxes. Habita names them **Focus** (urgent and important, top left), **Goals** (important, not urgent, top right), **Fit In** (urgent, not important, bottom left) and **Backburner** (neither, bottom right).^[src/index.html:59-85; colours in src/core/calendar.js:17-22.]' },
-          { p: 'To add a task you drag the **+** in the middle onto a box. Pressing it opens a 34-pixel gap between the boxes, shrinks the grid to 94%, and shows the axis labels in the gaps.^[styles.css:303-306.] Once the pointer has moved more than 8 pixels, every box except the one under it goes pale.^[ui.js:326 and :341-348; pale tints in styles.css:401-405.] Where you let go is decided by `quadrantAtPoint`, which cuts the grid at its centre.^[ui.js:397-406.]' },
+          { h: 'A matrix to file it' },
+          { p: 'The matrix is the Eisenhower grid: urgent against important, four boxes. Habita names them **Focus** (both), **Goals** (important, not urgent), **Fit In** (urgent, not important) and **Backburner** (neither). To add a task you drag the **+** in the middle onto a box. Pressing it opens a gap between the boxes and shows the axis labels; past 8 pixels of movement, every box but the one under your finger goes pale.' },
           { widget: 'axes', caption: 'Press and hold the **+**, or drag it onto a box. With a keyboard, press the **+** to open the seams, then choose a box. The swatches are the app’s own colours. The switch swaps the seam labels between what ships and what the box names say.' },
-          { p: 'Now look at the labels as shipped. The CSS puts *Urgent* on the top arm of the vertical seam and *Important* on the left arm of the horizontal one. Read that way, the top-right box is urgent and not important. The app calls it Goals: important and not urgent. The axes are transposed, and Fit In is wrong the same way.^[styles.css:335-362 against the aria-labels in index.html:66-78.]',
-            notes: [['The axes are transposed', 'found this while writing the article. The app still ships it.']] },
-          { p: 'The labels only show while you hold the button, which is probably why I never noticed. The names, the colours and the saved data are right; only the pressed state is wrong. It’s first on the list at the end.' },
-          { p: 'For our task nothing unusual happens. The test calls `addTask(1, \'Write the incident report\')`, and the task shows up in the Day view’s tray as a Focus chip with `start: null` and the default length of 30 minutes.^[tests/timeline.test.mjs:106; DEFAULT_DURATION in storage.js:10.]' }
-        ] },
-
-      { id: 'drop', label: '✓ dragging a chip onto the grid schedules it at that hour', title: 'Drop it at ten',
-        blocks: [
-          { p: 'The Day view is 24 rows of 64 pixels. That one constant, `PX_PER_HOUR = 64`, is the whole conversion between where your finger is and what time it means: minutes are y divided by 64, times 60.^[timeline.js:11, :40-46.] An hour is 64 pixels, so a quarter-hour is [[sixteen pixels|quarter]] and the whole day is 1,536 pixels tall.' },
-          { p: 'Blocks snap to 15 minutes. `snapTime` rounds to the nearest quarter, not down, so the jump to the next quarter happens at [[the midpoint|mid]], 8 pixels past each line.^[tasks.js:16, :130-133.] And a press only counts as a drag after [[six pixels|threshold]] of movement on either axis. Less than that and it’s a tap, which does something else (next chapter).^[timeline.js:15, :356.]',
-            notes: [['on either axis', 'so the dead zone is a 12-pixel square, not a circle']] },
-          { widget: 'ruler', size: 'wide', caption: 'True scale: 64 px is an hour, so the strip shows 08:00 to 12:00. Drag the chip onto it, or move the slider and press **Drop it there**. Once placed, drag the block or its bottom edge, or focus it and use ↑ ↓ and + −. The constants and the rounding are the app’s; the strip is clamped to the four hours it shows.' },
-          { p: 'The test does the same with a synthetic pointer: press on the chip, move to y = 640, let go. 640 ÷ 64 is 10, so the task starts at exactly 10:00, and the check reads the hour and minute back from the model.^[tests/timeline.test.mjs:124-137.] In the figure your pointer is at y = {{rawy|640}} px, which snaps to {{snapat|10:00}}.' },
-          { h: '✓ dragging the handle changes the duration, not the start' },
-          { p: 'Next the test drags the block down two hours, to 12:00, and pulls its bottom edge down 64 pixels. Resizing rounds the length the same way: `max(15, round((30 + 60) / 15) × 15)`, which is 90 minutes. The 15 in front means no block can be shorter than a quarter-hour, or 16 pixels.^[timeline.js:380-383; tests/timeline.test.mjs:148-177.]' },
-          { p: 'So our task now reads 12:00, 90 minutes. Two checks later the test leans on that.' }
-        ] },
-
-      { id: 'tap', label: '✓ tapping a chip places it without a drag', title: 'Or just tap',
-        blocks: [
-          { p: 'Dragging one-handed down a long day is fiddly, so a tap on a chip runs a sweep instead. It starts at the current time if you’re looking at today, or at 08:00 on any other day. It sorts everything already in that day, Habita’s blocks and the phone’s own events, and walks through them in order.^[timeline.js:435-458.]' },
-          { code: 'for (const span of busy) {\n  if (candidate + length <= span.start) break;\n  if (candidate < span.end) candidate = app.snapTime(span.end);\n}\n// If the day is genuinely full, land at the end rather than refusing.\nif (candidate + length > end) candidate = end - length;', lang: 'javascript', caption: 'The sweep, verbatim from src/features/timeline/timeline.js:450-455.' },
-          { p: 'In the test the second task, *Plan next quarter*, is tapped while ours sits at 12:00 for 90 minutes, and the next check confirms they don’t overlap.^[tests/timeline.test.mjs:179-197.] The figure below runs the same loop on an invented morning with two meetings from the phone’s calendar.' },
+          { p: 'Look at the labels as shipped. The CSS puts *Urgent* on the top arm and *Important* on the left. Read that way, the top-right box is urgent and not important, but the app calls it Goals. The axes are transposed. I found it while writing this; the names, colours and saved data are right, only the pressed state is wrong.' },
+          { h: 'A timeline to place it' },
+          { p: 'The Day view is 24 rows of 64 pixels. `PX_PER_HOUR = 64` is the whole conversion between your finger and the clock, so a quarter-hour is [[sixteen pixels|quarter]]. Blocks snap to 15 minutes by rounding to the nearest quarter, so the jump happens at [[the midpoint|mid]]. A press only counts as a drag after [[six pixels|threshold]] on either axis; less than that is a tap.' },
+          { widget: 'ruler', size: 'wide', caption: 'True scale: 64 px is an hour, so the strip shows 08:00 to 12:00. Drag the chip onto it, or move the slider and press **Drop it there**. Once placed, drag the block or its bottom edge, or focus it and use ↑ ↓ and + −.' },
+          { p: 'The test presses the chip and lets go at y = 640. 640 ÷ 64 is 10, so the task starts at exactly 10:00. In the figure your pointer is at y = {{rawy|640}} px, which snaps to {{snapat|10:00}}. Then the test drags the block to 12:00 and pulls its bottom edge down an hour: 90 minutes, never less than 15.' },
+          { h: 'A tap that finds a gap' },
+          { p: 'Dragging one-handed down a long day is fiddly, so a tap on a chip runs a sweep instead. It sorts everything already in the day, Habita’s blocks and the phone’s own events, and walks through them until the task fits.' },
+          { code: 'for (const span of busy) {\n  if (candidate + length <= span.start) break;\n  if (candidate < span.end) candidate = app.snapTime(span.end);\n}\n// If the day is genuinely full, land at the end rather than refusing.\nif (candidate + length > end) candidate = end - length;', lang: 'javascript', caption: 'The sweep, from src/features/timeline/timeline.js.' },
           { scrolly: 'sweep', caption: 'The two meetings are invented; the loop and `snapTime` are the app’s. Change where the review ends and how the sweep rounds, or press Play.', steps: [
-            { p: 'The day as the sweep sees it: a stand-up and a design review from the phone’s calendar (hatched), and our incident report at 12:00 (solid). *Plan next quarter* needs 30 minutes.', state: { upto: 0, mode: 'round' } },
-            { p: 'It isn’t today, so the candidate starts at 08:00. The first span is the stand-up, 08:00 to 08:30. The candidate doesn’t finish before it starts and sits inside it, so it jumps to `snapTime(08:30)`.', state: { upto: 1, mode: 'round' } },
-            { p: 'The design review runs 08:45 to 10:50. 08:30 plus 30 minutes is 09:00, past 08:45, so it jumps again, to `snapTime(10:50)`. The nearest quarter is **10:45**.', state: { upto: 2, mode: 'round' } },
-            { p: 'The next span is our task at 12:00. 10:45 plus 30 is 11:15, which ends before 12:00, so the loop breaks and the task lands at 10:45: five minutes inside the design review.', state: { upto: 3, mode: 'round' } },
-            { p: 'With `Math.ceil` instead of `Math.round`, the jump goes to 11:00 and nothing overlaps. That one word is on the list at the end.', state: { upto: 3, mode: 'ceil' } }
+            { p: 'A stand-up and a design review from the phone’s calendar (hatched), and our task at 12:00 (solid). *Plan next quarter* needs 30 minutes.', state: { upto: 0, mode: 'round' } },
+            { p: 'The candidate starts at 08:00, inside the stand-up, so it jumps to `snapTime(08:30)`.', state: { upto: 1, mode: 'round' } },
+            { p: 'The review runs 08:45 to 10:50. 08:30 plus 30 overruns it, so it jumps to `snapTime(10:50)`: the nearest quarter is **10:45**.', state: { upto: 2, mode: 'round' } },
+            { p: '10:45 plus 30 ends before 12:00, so the loop stops. The task lands five minutes inside the review.', state: { upto: 3, mode: 'round' } },
+            { p: 'With `Math.ceil` instead of `Math.round`, it lands at 11:00 and nothing overlaps.', state: { upto: 3, mode: 'ceil' } }
           ] },
-          { p: 'Move the review’s end in the figure. With it at {{revend|10:50}}, the task lands at {{landed|10:45}}, {{overlap|5 minutes inside the meeting}}. The test’s check still passes, and fairly: the test has no phone events, and its own block ends on a quarter. Rounding only bites when someone else’s meeting ends off the grid.' },
-          { p: 'The same rounding has two more edges. On today, “now” can round back as much as 7½ minutes into the past. And if the day is full, the task lands at the very end, on top of whatever is there, instead of being refused. That one I chose on purpose: a tap that silently does nothing felt worse.',
-            notes: [['I chose on purpose', 'a tap should always do something you can see']] }
-        ] },
-
-      { id: 'overlap', label: '✓ overlapping blocks are laid out side by side', title: 'Double-book it',
-        blocks: [
-          { p: 'Habita doesn’t stop you double-booking. It makes sure you can see it. The test schedules *Reply to the vendor* a quarter-hour into our task, for an hour, and checks that both blocks are now exactly 50% wide.^[tests/timeline.test.mjs:199-212.]' },
-          { p: '`assignColumns` does it in one pass. Blocks are sorted by start. A block that starts at or after the latest end seen so far closes the current [[cluster|cluster]]. Inside a cluster, each block takes the first column whose last block has already finished, or opens a new one. When a cluster closes, every block in it gets the same width: 100% divided by its number of columns.^[timeline.js:182-218; left = column/of × 100% and width = 100/of % at :147-148.]' },
+          { p: 'With the review ending at {{revend|10:50}}, the task lands at {{landed|10:45}}, {{overlap|5 minutes inside the meeting}}. The test still passes, fairly: it has no phone events, and rounding only bites when someone else’s meeting ends off the grid. If the day is full, the task lands at the very end instead of being refused. That I chose on purpose; a tap that does nothing felt worse.' },
+          { h: 'Side by side when you double-book' },
+          { p: 'Habita doesn’t stop you double-booking; it makes sure you can see it. `assignColumns` sorts blocks by start. A block that starts after the latest end so far closes the current [[cluster|cluster]]. Inside a cluster each block takes the first free column, and every block shares the width equally.' },
           { widget: 'pack', caption: 'Drag a block up or down, or focus it and use ↑ ↓ (move 15 minutes) and + − (resize). The layout is re-run with the app’s `assignColumns` on every change. Half scale: 32 px per hour.' },
-          { p: 'Two things fall out of that rule. Blocks that only touch, one ending at 13:30 as the next begins, are not in the same cluster, so each keeps the full width. And try *The long meeting*: one long block beside two short ones in a row makes three blocks in two columns, because the second short one reuses the column the first one freed. The live [[columnEnds|cols]] under the lane show the reuse.' },
-          { p: 'It’s the same arrangement a calendar app’s day view uses, which is the point. A block should look in Habita roughly the way it will look over there.' }
+          { p: 'Blocks that only touch keep the full width. Try *The long meeting*: three blocks fit in two columns, because the second short one reuses the column the first freed. The live [[columnEnds|cols]] show it. It’s the arrangement a calendar app’s day view uses, so a block looks roughly the way it will look over there.' }
         ] },
 
-      { id: 'land', label: '✓ browser build reports no native calendar', title: 'Watch it land somewhere else',
+      { id: 'hard', title: 'The hard part',
         art: function (c) {
           return '<rect x="14" y="24" width="56" height="72" fill="none" stroke="' + c.l + '" stroke-width="1.5"/>' +
             '<rect x="22" y="44" width="40" height="22" fill="' + c.a + '"/>' +
@@ -169,67 +126,47 @@
             '<rect x="102" y="72" width="24" height="10" fill="' + c.m + '"/>';
         },
         blocks: [
-          { p: 'This is the check I find funniest. The only test that touches the calendar asserts that there isn’t one. The file says so in its header: *The native calendar is not exercised here -- there is no CalendarContract in a browser*.^[tests/timeline.test.mjs:10-12 and :100-103.] So everything in this chapter is code I can read and explain, not something a test watched happen.' },
-          { p: 'Here is what the code does. Every change to a block is saved locally first, then `syncToCalendar` is called without waiting for it. Dragging stays instant; the calendar catches up when it can.^[tasks.js:143-172.] `saveTaskEvent` quietly gives up unless sync is on, the app is native, permission is granted, a calendar is chosen and the task has a start.^[calendar.js:137-139.] If the task already has an `eventId`, it calls `updateEvent`. If that comes back `updated: false`, the row is gone, so it calls `createEvent` and keeps the new id.^[calendar.js:151-159.]',
-            notes: [['without waiting for it', 'a failed write leaves eventId null, and the next save retries']] },
-          { p: 'On the Java side, a hand-written Capacitor plugin writes [[the row|row]] through Android’s `CalendarContract`: title, start, end, time zone, no alarm, and a description ending in [[the marker|marker]] `[habita:<taskId>]`.^[CalendarPlugin.java:291-345; HAS_ALARM = 0 at :315; the marker at :50 and :539-557.] When the day view reads the calendar back, any event carrying that marker is dropped, so a block is never drawn twice.^[listEvents marks isHabita (CalendarPlugin.java); calendar.js:124 filters it out.]' },
-          { widget: 'land', size: 'wide', caption: 'A simulation of the native path, built from calendar.js, tasks.js and CalendarPlugin.java. Left: our block in Habita. Right: the event row the plugin would write, and the log of bridge calls. The _ID and task-id values are made up by this figure, and the colour key depends on the account’s palette, so no value is shown for it.' },
-          { p: 'The buttons on the right act from the other side. **Delete it in Google Calendar**, then move the block: the update finds no row, so a new event is created with a new id. That’s the recovery the code comment promises, and it works as written.^[calendar.js:154-157.] Watch [[the log|log]] while you do it.' },
-          { p: 'Now **Rename it in Google Calendar** and move the block. The rename is gone. The plugin can do partial updates, but the JavaScript always sends the whole payload: title, description, colour. So my README’s line that a description you edited survives is true of the plugin and false of the app.^[calendar.js:141-153; CalendarPlugin.java:369-382.]',
-            notes: [['true of the plugin and false of the app', 'my README, my mistake']] },
-          { p: '**Pause sync**, move the block, then resume. The row stays stale: resuming flips a setting and sends nothing, and the full re-send only runs once, right after permission is granted.^[timeline.js:557-571; tasks.js:206-210.] Pausing doesn’t stop deletes either. Unschedule while paused and the event is removed anyway, because `removeTaskEvent` checks permission but not sync.^[calendar.js:166-175.] And **Tick it off** leaves the event where it is: a finished task still holds its slot.^[tasks.js:94-100.]' },
-          { p: '**Deny permission** shows the worst case. Unschedule now and the delete is skipped, but the task still forgets its `eventId`, so the event is orphaned in the calendar for good.^[tasks.js:175-184 with calendar.js:169.]' },
-          { p: 'The colour has a catch too. The event is tinted to the nearest colour the calendar allows, not to the quadrant’s colour. Accounts publish a small palette of event colours, and the plugin picks the slot with the smallest squared RGB distance, which its own comment calls “crude, but enough”.^[CalendarPlugin.java:429-514; the comment at :508.] Two quadrants can land on the same slot. I haven’t read a real account’s palette off a phone, so I won’t guess which.' },
-          { p: 'The browser demo has none of this. Its Day view says so in its own status line: *Browser preview — device calendar unavailable*.^[timeline.js:252-254.]' },
+          { p: 'The only test that touches the calendar asserts that there isn’t one: *there is no CalendarContract in a browser*. So this part is code I can read and explain, not something a test watched happen.' },
+          { p: 'Every change to a block is saved locally first, then `syncToCalendar` runs without being awaited, so dragging stays instant. It gives up unless sync is on, the app is native, permission is granted and a calendar is chosen. If the task has an `eventId` it updates; if the update finds no row, it creates a new event and keeps the new id.' },
+          { p: 'On the Java side, a hand-written Capacitor plugin writes [[the row|row]] through Android’s `CalendarContract`, with a description ending in [[the marker|marker]] `[habita:<taskId>]`. When the day view reads the calendar back, events with that marker are dropped, so a block is never drawn twice.' },
+          { widget: 'land', size: 'wide', caption: 'A simulation of the native path, built from calendar.js, tasks.js and CalendarPlugin.java. Left: our block in Habita. Right: the event row the plugin would write, and the log of bridge calls. The _ID and task-id values are made up by this figure.' },
+          { p: '**Delete it in Google Calendar**, then move the block: a new event is created, as the code promises. Watch [[the log|log]]. Now **Rename it in Google Calendar** and move the block. The rename is lost, because the JavaScript always sends the whole payload. My README said an edited description survives; that’s true of the plugin and false of the app.' },
+          { p: '**Pause sync**, move the block, then resume: the row stays stale, because resuming sends nothing. **Deny permission** and unschedule: the delete is skipped but the task forgets its `eventId`, so the event is orphaned for good. And **Tick it off** leaves the event in place.' },
+          { h: 'The fix I can’t prove' },
+          { p: 'On 25 August I changed the insert to go through a sync-adapter URI that names the calendar’s account, because I believed the rows were never leaving the phone.' },
+          { code: 'Uri insertUri = CalendarContract.Events.CONTENT_URI;\nString[] account = accountForCalendar(calendarId);\nif (account != null) {\n    insertUri = CalendarContract.Events.CONTENT_URI.buildUpon()\n        .appendQueryParameter(CalendarContract.CALLER_IS_SYNCADAPTER, "true")\n        .appendQueryParameter(CalendarContract.Events.ACCOUNT_NAME, account[0])\n        .appendQueryParameter(CalendarContract.Events.ACCOUNT_TYPE, account[1])\n        .build();\n}', lang: 'java', caption: 'CalendarPlugin.java, inside createEvent.' },
+          { p: 'My comment above that code says the row is still born DIRTY, the flag that tells a sync adapter to upload it. But Android’s open-source calendar provider only sets DIRTY when the caller is *not* a sync adapter. With `CALLER_IS_SYNCADAPTER=true`, it leaves the flag alone.' },
+          { callout: 'Either the comment is wrong and these inserts never upload, or a real phone behaves differently from AOSP. I have no device capture either way, and no released APK anyone could test. The test is small: insert from a phone, read `DIRTY` and `_SYNC_ID` back, and look for the event on the web.', label: 'Open question' }
         ] },
 
-      { id: 'unproven', label: '? no check covers this', title: 'The fix I can’t prove',
+      { id: 'results', title: 'Results',
         blocks: [
-          { p: 'On 25 August I changed how the event is inserted. Before, it went in as an ordinary app write. After, it goes through a sync-adapter URI that names the calendar’s account.^[commit c215520, 25 August 2026.] I did it because I believed the rows were never leaving the phone.' },
-          { code: '// Attribute the event to the calendar\'s own account so the sync adapter\n// (Google, Exchange, …) uploads it instead of leaving an unsynced local\n// row. Account name/type are provider-only columns: the ONLY legal way to\n// set them is as query params on a sync-adapter URI. We do NOT set a\n// _SYNC_ID, so the row is still born DIRTY and Google uploads it normally.\nUri insertUri = CalendarContract.Events.CONTENT_URI;\nString[] account = accountForCalendar(calendarId);\nif (account != null) {\n    insertUri = CalendarContract.Events.CONTENT_URI.buildUpon()\n        .appendQueryParameter(CalendarContract.CALLER_IS_SYNCADAPTER, "true")\n        .appendQueryParameter(CalendarContract.Events.ACCOUNT_NAME, account[0])\n        .appendQueryParameter(CalendarContract.Events.ACCOUNT_TYPE, account[1])\n        .build();\n}', lang: 'java', caption: 'android/app/src/main/java/com/habita/app/CalendarPlugin.java:319-332, inside createEvent.' },
-          { p: 'Read the last sentence of that comment: the row is still born DIRTY and Google uploads it normally. DIRTY is the flag that tells a sync adapter a row has local changes to upload. But Android’s open-source calendar provider only sets it when the caller is *not* a sync adapter.^[AOSP CalendarProvider2.java, insertInTransaction, case EVENTS: DIRTY = 1 is set only `if (!callerIsSyncAdapter)`.] With `CALLER_IS_SYNCADAPTER=true`, the provider assumes it is talking to the sync adapter itself, and leaves the flag alone.',
-            notes: [['the row is still born DIRTY', 'I wrote this comment. I now think it’s wrong.']] },
-          { callout: 'Either the comment is wrong and these inserts never upload, or something else marks them, or the provider on a real phone behaves differently from AOSP’s. I have no device capture either way: no screenshot of a Habita event in Google Calendar, and no released APK anyone could test with.\n\nThe test is small. Insert from a phone, read the row’s `DIRTY` and `_SYNC_ID` back, and look for the event on the web. Until then this is a question with line numbers, not a fix.', label: 'Open question' }
-        ] },
-
-      { id: 'reload', label: '✓ state survives a reload', title: 'Where the test lets go',
-        blocks: [
-          { p: 'After the overlap check the test presses the unschedule button on our block. `start` goes back to null, the chip returns to the tray, and our task leaves the story.^[tests/timeline.test.mjs:215-221.] The checks after that tick off a different block, nudge another with the arrow keys, and reload the saved model.' },
-          { p: 'The last real check is about old saves. Tasks saved before the timeline existed had no `start`, `duration` or `eventId`. On load every task is coerced into the current shape, and numeric ids become strings.^[storage.js:26-41; tests/timeline.test.mjs:250-261.]' },
-          { code: 'start: Number.isFinite(start) && start > 0 ? start : null,\nduration: Number.isFinite(duration) && duration > 0 ? duration : DEFAULT_DURATION,\neventId: typeof raw.eventId === \'string\' ? raw.eventId : null,', lang: 'javascript', caption: 'Three of the fields normalizeTask fills in, src/core/storage.js:35-39.' },
-          { p: 'That covers a save with missing fields. It doesn’t cover a save that won’t parse. Then the app logs a warning, starts with an empty model, and the next save writes over the old data.^[storage.js:56-64.] There’s no schema version either. I used to say an old save can never crash a newer build. That’s true, but partly because a broken save is thrown away.',
-            notes: [['a broken save is thrown away', 'not crashing and not losing data are different promises']] }
+          { p: 'When I re-ran the test file on 18 October 2026, all **18 of 18** checks passed: filing, dropping, resizing, tapping, side-by-side layout, unscheduling, keyboard nudges and a reload of the saved model.' },
+          { p: 'The last check is about old saves. Tasks saved before the timeline existed had no `start`, `duration` or `eventId`; on load every task is coerced into the current shape.' },
+          { code: 'start: Number.isFinite(start) && start > 0 ? start : null,\nduration: Number.isFinite(duration) && duration > 0 ? duration : DEFAULT_DURATION,\neventId: typeof raw.eventId === \'string\' ? raw.eventId : null,', lang: 'javascript', caption: 'Three of the fields normalizeTask fills in, src/core/storage.js.' },
+          { p: 'That covers missing fields, not a save that won’t parse: then the app starts empty and the next save writes over the old data. There is no build step any more; Capacitor serves `src/` directly. What isn’t a result yet is the calendar on a real phone: there are no releases on GitHub.' }
         ] }
     ],
 
     closing: { blocks: [
-      { p: 'In order of how much each one bothers me:' },
       { list: [
-        '**Fix the axes.** The pressed state labels the top row urgent, but the top-right box is Goals, important and not urgent. It’s a swap of two pairs of words in styles.css:335-362, and it’s wrong on every press.',
-        '**Prove the insert, then ship an APK.** There are no releases on GitHub.^[GitHub releases API for akshayaa-403/Habita returned an empty list.] The first one should come with a capture of an event arriving in Google Calendar, and the DIRTY question answered.',
-        '**Round up, not to the nearest.** `Math.ceil` on the way out of a busy span turns a 10:50 meeting into an 11:00 start, and “now” would never round into the past.',
-        '**Send only what changed.** The plugin already accepts partial updates. A move should send start and end, not overwrite a title someone edited in another app.',
-        '**Re-sync on resume, and don’t orphan events.** Resuming should re-send blocks moved while paused, and an unschedule without permission should keep the `eventId` until the delete has really happened.',
-        '**Decide what done means in the calendar.** Ticking a task off leaves its event in place. That might be right, a record of time spent, but it should be a decision, not a side effect.',
-        '**Read my own events back.** The day view hides Habita’s events entirely, so a block moved in Google Calendar never moves in Habita. The marker is already there to match them up.',
+        '**Fix the axes.** Swap two pairs of words in styles.css so the pressed state matches the box names.',
+        '**Prove the insert, then ship an APK.** The first release should come with a capture of an event arriving in Google Calendar, and the DIRTY question answered.',
+        '**Round up, not to the nearest.** `Math.ceil` turns a 10:50 meeting into an 11:00 start, and “now” would never round into the past.',
+        '**Send only what changed.** The plugin already accepts partial updates; a move shouldn’t overwrite a title edited elsewhere.',
+        '**Re-sync on resume, and don’t orphan events.** Keep the `eventId` until the delete has really happened.',
         '**Version the save.** A save that won’t parse should be set aside, not overwritten.'
       ] }
     ] },
 
     sources: [
-      ['Test run', '`node tests/timeline.test.mjs` in the Habita repo at 4bc5591, re-run 18 October 2026: 18/18 checks passed. Check names and the three sample tasks are from tests/timeline.test.mjs:95-273.'],
-      ['64 px per hour, 1,536 px day, 16 px quarter', 'PX_PER_HOUR in src/features/timeline/timeline.js:11; grid height :74.'],
-      ['15-minute snap, nearest not up', 'SNAP_MINUTES and snapTime in src/features/tasks/tasks.js:16, :130-133.'],
-      ['30-minute default', 'DEFAULT_DURATION in src/core/storage.js:10.'],
-      ['6 px drag threshold', 'DRAG_THRESHOLD in timeline.js:15, tested per axis at :356.'],
-      ['8 px threshold, 34 px gap, 0.94 scale', 'src/features/shared/ui.js:326; src/styles/styles.css:303-306.'],
-      ['Resize rule, minimum 15 minutes', 'timeline.js:380-383; tasks.js:167.'],
-      ['10:50 → 10:45, 5-minute overlap, 7½ minutes into the past', 'Computed from snapTime (Math.round to 900,000 ms) and the sweep at timeline.js:435-458.'],
-      ['50% widths', 'assignColumns, timeline.js:182-218; test at tests/timeline.test.mjs:199-212.'],
-      ['Dates', 'git log in the Habita repo: 3105c56 (19 Apr 2026), a3ca719 (20 Apr), 918d772 (27 May), 2c50f1b (15 Jun), b1724c3 (12 Aug: +516 lines CalendarPlugin.java, +641 timeline.js), c215520 (25 Aug), 4bc5591 (14 Oct).'],
-      ['Sync behaviour', 'src/core/calendar.js:120-175; tasks.js:94-210; timeline.js:557-571; CalendarPlugin.java:291-425, :429-514, :539-566.'],
+      ['Test run', '`node tests/timeline.test.mjs` in the Habita repo at 4bc5591, re-run 18 October 2026: 18/18 checks passed.'],
+      ['Timeline constants', 'PX_PER_HOUR, DRAG_THRESHOLD and the sweep in src/features/timeline/timeline.js; snapTime in src/features/tasks/tasks.js.'],
+      ['Sync behaviour', 'src/core/calendar.js:120-175; tasks.js:94-210; CalendarPlugin.java:291-566.'],
       ['DIRTY rule', '[AOSP CalendarProvider2.java](https://android.googlesource.com/platform/packages/providers/CalendarProvider/+/refs/heads/main/src/com/android/providers/calendar/CalendarProvider2.java), insertInTransaction, case EVENTS.'],
-      ['No releases', 'https://api.github.com/repos/akshayaa-403/Habita/releases returned [] (checked October 2026).']
+      ['Dates and releases', 'git log in the Habita repo (3105c56, a3ca719, b1724c3, c215520, 4bc5591); GitHub releases API returned [] (October 2026).'],
+      ['Axes', 'src/styles/styles.css:335-362 against the aria-labels in src/index.html:66-78.'],
+      ['Columns', 'assignColumns, timeline.js:182-218; test at tests/timeline.test.mjs:199-212.']
     ],
 
     widgets: {
@@ -318,7 +255,7 @@
         function choose(n) {
           Object.keys(tiles).forEach(function (k) { tiles[k].setAttribute('aria-pressed', String(Number(k) === n)); });
           out.set(n + ' · ' + Q[n].name);
-          setTask({ quadrant: n }, 'place');
+          setTask({ quadrant: n }, 'built');
           kit.announce('Filed under ' + Q[n].name);
         }
         // ui.js:397-406, verbatim apart from the grid reference.
@@ -427,7 +364,7 @@
           dur = Math.min(dur, VIEW_H * 60);
           start = clampStart(snapTime(ms));
           paintBlock();
-          setTask({ quadrant: TASK.quadrant || 1, start: start, duration: dur }, 'drop');
+          setTask({ quadrant: TASK.quadrant || 1, start: start, duration: dur }, 'built');
           info.textContent = 'Scheduled at ' + hhmm(start) + ', ' + dur + ' min.';
         }
         show(640);
@@ -712,7 +649,7 @@
         }
         var live = false;
         load('test');
-        kit.onChapter(function (c) { live = c === 'overlap'; if (live) layout(); });
+        kit.onChapter(function (c) { live = c === 'built'; if (live) layout(); });
         kit.onKey(function (k) { host.setAttribute('data-hl', k || ''); });
       },
 
@@ -902,7 +839,7 @@
         });
         kit.onKey(function (k) { host.setAttribute('data-hl', k || ''); });
         var live = false;
-        kit.onChapter(function (c) { live = c === 'land'; if (live) paint(); });
+        kit.onChapter(function (c) { live = c === 'hard'; if (live) paint(); });
         say('(our task, 12:00 for 90 min, already owns event _ID 1)');
         paint();
       }

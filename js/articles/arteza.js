@@ -1,4 +1,4 @@
-/* Arteza — "The Shop That Wouldn't Take Money", a gallery walk in rooms.
+/* Arteza — case study.
    Every number here is in `sources`. Paintings are never drawn: each widget
    uses coloured placeholder rectangles in the page's own colours. */
 (function () {
@@ -171,23 +171,27 @@
   Article.register('arteza', {
     form: 'rooms',
     scramble: '॥।०१२३४५◇◆▪',
-    dek: 'Twice this shop got a payment page. The first lasted twenty-three minutes; the second, twenty. This is a walk through the rooms of arteza.site, the gallery and shop of a painter whose every work is one of one, and through the parts of it I wrote by hand: a wall that zooms, a drum that turns, a shelf that knows inches, and a counter that won’t take your money.',
-
-    opener: function (c) {
-      return '<g fill="none" stroke="' + c.l + '" stroke-width="1" stroke-dasharray="2 3">' +
-        '<line x1="64" y1="104" x2="8" y2="8"/><line x1="64" y1="104" x2="120" y2="6"/>' +
-        '<line x1="64" y1="104" x2="10" y2="70"/><line x1="64" y1="104" x2="122" y2="72"/></g>' +
-        '<g fill="none" stroke="' + c.i + '" stroke-width="2">' +
-        '<rect x="8" y="10" width="22" height="26"/><rect x="84" y="6" width="36" height="28"/>' +
-        '<rect x="12" y="58" width="24" height="24"/><rect x="92" y="62" width="28" height="24"/></g>' +
-        '<rect x="56" y="50" width="16" height="20" fill="none" stroke="' + c.a + '" stroke-width="2"/>' +
-        '<rect x="59" y="53" width="10" height="11" fill="' + c.a + '"/>' +
-        '<circle cx="64" cy="104" r="3" fill="' + c.a + '"/>';
-    },
+    dek: 'arteza.site sells a painter’s 106 one-of-one works through a checkout that takes no money and trusts nothing the browser sends, on a wall that zooms, a drum that turns and a shelf that knows inches. The largest image now downloads once per load instead of four times.',
+    demo: { src: 'public/assets/demos/arteza.mp4', poster: 'public/assets/demos/arteza.webp',
+      alt: 'On arteza.site, the home page’s four empty gilt frames fill with paintings under the headline “Made by hand. Made once. Made Yours”, then the page scrolls down to the artist’s section and on to the shop’s shelf of framed works.',
+      caption: 'Recorded from arteza.site, at 1.35x speed.' },
 
     chapters: [
       {
-        id: 'wall', label: 'Room 1', title: 'The Wall',
+        id: 'problem', title: 'The problem',
+        art: function (c) {
+          return '<path d="M8 60 C 40 20, 60 100, 80 60 S 120 20, 152 60" fill="none" stroke="' + c.i + '" stroke-width="10" stroke-linecap="round"/>' +
+            '<path d="M8 60 C 40 20, 60 100, 80 60 S 120 20, 152 60" fill="none" stroke="' + c.p + '" stroke-width="4.5" stroke-linecap="round"/>';
+        },
+        blocks: [
+          { p: 'A painter needed a shop for 106 paintings. Every one is one of one, the smallest is a 4″ study and the largest a 36″ canvas, and the prices run from ₹500 to ₹1,25,000.' },
+          { p: 'That makes three problems. The gallery has to show work of wildly different sizes without lying about them. It has to stay fast on a phone, on a free hosting tier where a gallery is mostly egress. And the checkout has to sell something that can only be sold once, without the browser ever deciding the price.' },
+          { p: 'The section borders are Madhubani line work, so even the ornament had a rule to follow: the double outline, every figure drawn twice with bare ground between the lines. My `DoubleLine` component strokes one path twice, wide in ink, then at 0.45 of that width in the colour of the ground.' },
+          { widget: 'border', caption: 'One path, stroked twice. The second stroke is the ground showing through. Diagrammatic: the curve is drawn for this page, not taken from the site.' }
+        ]
+      },
+      {
+        id: 'built', title: 'What I built',
         art: function (c) {
           return '<g stroke="' + c.l + '" stroke-dasharray="3 4">' +
             '<line x1="80" y1="104" x2="10" y2="10"/><line x1="80" y1="104" x2="150" y2="10"/></g>' +
@@ -197,66 +201,41 @@
             '<circle cx="80" cy="104" r="4" fill="' + c.a + '"/>';
         },
         blocks: [
-          { quote: 'Scaling holds exactly one point still. The whole trick is choosing which.' },
-          { p: 'The home page opens on a wall: four gilt frames, a headline, and a small blank polaroid that says “Scroll to reveal”. Scroll, and the whole wall grows until the polaroid, now holding a painting, sits in the middle of the screen. It is one CSS transform, `scale(1 + z × 2)`, driven by one number `z` that a scroll listener moves from 0 to 1 over a section two screens tall.^[src/components/home/EditorialHero.tsx:132-160 and src/index.css:703-719: --z from 0 to 1 over a 200svh section, --zs 2 on desktop.]' },
-          { p: 'A scale keeps one point fixed: the transform-origin. Scale about the centre and the polaroid, which rests low at 66% of the stage, slides off the bottom of the screen. So I solved for the origin instead. A point C scaled by s about O lands at O + s(C − O). Set that equal to where the card should land, T, and the origin falls out.',
-            notes: [['solved for the origin instead', 'the one line of algebra on the whole home page']] },
+          { h: 'A wall that zooms' },
+          { p: 'The home page opens on a wall: four gilt frames, a headline and a small blank polaroid that says “Scroll to reveal”. Scroll, and the whole wall grows until the polaroid, now holding a painting, sits in the middle of the screen. It is one CSS transform, `scale(1 + z × 2)`, driven by one number `z` that moves from 0 to 1 over a section two screens tall.' },
+          { p: 'A scale keeps one point fixed: the transform-origin. Scale about the centre and the polaroid, which rests low at 66% of the stage, slides off the bottom. So I solved for the origin instead. A point C scaled by s about O lands at O + s(C − O). Set that equal to where the card should land, T, and the origin falls out.' },
           { tex: 'O = \\frac{T - s \\cdot C}{1 - s}', caption: 'The origin that makes C land on T at scale s.' },
-          { p: 'On desktop the scale ends at 3, [[the polaroid|card]] starts at 66% and should land at 42%, so [[the origin|origin]] sits at (42 − 3 × 66) / (1 − 3) = 78%, below the card. Drag the [[landing point|target]] in the figure and the origin re-solves: right now it is at {{origin|78%}}.' },
-          { widget: 'wall', size: 'wide', caption: 'The hero’s real geometry: the four frames at their measured positions and openings, the polaroid at 50%, 66%, 9% wide. Coloured blocks stand in for the paintings. Dashed rays run from the origin O through each corner: every point travels along its ray, which is why O is the only thing that does not move. Drag T or use the sliders; switch to Phone to see the origin leave the screen.' },
-          { p: 'Phones broke my picture of it. There the card rests at the right, 74.5% across and 44% down, 41% wide, and lands centred at 50%, 38%. That is a scale of 1.854, and the horizontal origin comes out at 103.2%: past the right edge of the screen. On the shortest phones it is 114.6%.^[src/index.css:945-994; the SE-class rule uses s = 1.61, O = (114.6%, 57.1%).]',
-            notes: [['past the right edge of the screen', 'Nothing is wrong. The fixed point just isn’t on the screen.']] },
-          { p: 'Everything else rides the same `z`. The headline’s opacity is 1 − 3.6z, so it is gone by z ≈ 0.28. The painting fades in from z = 0.18, the plate caption from z = 0.62, and past 0.3 the headline stops taking taps, because faded is not gone and an invisible caption was swallowing the buttons under it.^[src/index.css:851, 856, 861; EditorialHero.tsx:145-146.]' },
-          { p: 'The wall also has no `will-change` on purpose. With it, the browser rasterised the wall once at 1× and stretched that bitmap to 3×, and the painting arrived pixelated. Without it the wall is re-rastered as it grows. The painting itself is drawn at random from the catalogue once per load, after mount: drawing it on every render had downloaded the largest image four times per load, 1.1 MB of it.^[src/index.css:719-725; EditorialHero.tsx:104-130, comment on the LCP image.]' },
-          { figure: 'public/assets/projects/arteza-home.webp', alt: 'The live home page: four gilt frames around the headline “Made by hand. Made once. Made Yours”, with a blank polaroid reading Scroll to reveal.', caption: 'The wall at z = 0 on arteza.site.', size: 'wide' }
-        ]
-      },
-      {
-        id: 'drum', label: 'Room 2', title: 'The Drum',
-        art: function (c) {
-          return '<ellipse cx="80" cy="64" rx="66" ry="20" fill="none" stroke="' + c.l + '" stroke-width="1.5"/>' +
-            '<rect x="66" y="58" width="28" height="36" fill="' + c.a + '"/>' +
-            '<rect x="30" y="52" width="22" height="32" fill="' + c.m + '" transform="skewY(-8)"/>' +
-            '<rect x="108" y="40" width="22" height="32" fill="' + c.m + '" transform="skewY(8)"/>';
-        },
-        blocks: [
-          { quote: 'Six paintings or a hundred and six: the drum is the same drum.' },
-          { p: 'Below the wall, the paintings turn on a drum. There are 106 of them, and at most five are ever drawn.^[Live catalogue, 106 rows, read 2026-10-16. Five cards: at full bend the third card out is at 108°, past the side.] Every card is placed by one function I wrote, `arcPlacement`, from one signed angle. Neighbouring cards are bent apart by `step = curve × 36°`; ten cards at 36° close a ring.' },
+          { p: 'On desktop the scale ends at 3, [[the polaroid|card]] starts at 66% and should land at 42%, so [[the origin|origin]] sits at (42 − 3 × 66) / (1 − 3) = 78%. Drag the [[landing point|target]] and the origin re-solves: right now it is at {{origin|78%}}.' },
+          { widget: 'wall', size: 'wide', caption: 'The hero’s real geometry, with coloured blocks standing in for the paintings. Dashed rays run from the origin O through each corner: every point travels along its ray, which is why O is the only thing that does not move. Switch to Phone to see the origin leave the screen.' },
+          { p: 'On phones the card rests at the right and lands centred, a scale of 1.854, and the horizontal origin comes out at 103.2%: past the right edge of the screen. Nothing is wrong. The fixed point just isn’t on the screen.' },
+          { p: 'Everything else rides the same `z`. The headline fades out by z ≈ 0.28, the painting fades in from 0.18, and past 0.3 the headline stops taking taps, because an invisible caption was swallowing the buttons under it.' },
+          { figure: 'public/assets/projects/arteza-home.webp', alt: 'The live home page: four gilt frames around the headline “Made by hand. Made once. Made Yours”, with a blank polaroid reading Scroll to reveal.', caption: 'The wall at z = 0 on arteza.site.', size: 'wide' },
+          { h: 'A drum that turns' },
+          { p: 'Below the wall, the paintings turn on a drum. All 106 are in the loop and at most five are ever drawn. Every card is placed by one function I wrote, `arcPlacement`, from one signed angle: neighbours are bent apart by `step = curve × 36°`.' },
           { code: 'const pos = wrapIndex(index - offset, count);\nconst step = arcStep(curve);          // clamp(curve, -1, 1) * 36\nconst a = pos * step;\nconst rad = a * DEG;\nconst radius = chord / 2 / Math.sin((step / 2) * DEG);\nx = radius * Math.sin(rad);\nz = radius * Math.cos(rad) - radius;  // front card stays at z = 0',
-            lang: 'ts', caption: 'From `src/lib/arc-ring.ts`. The radius is the circle on which neighbours sit one chord apart.' },
-          { p: 'The sign carries the shape. [[A positive bend|ring]] wraps the cards round the outside of a drum. [[Zero|row]] lays them in a flat row. [[A negative bend|bowl]] gives a negative radius, which turns the drum inside out into a bowl, with the same formulas and no second case. At the shop’s real spacing of 408px the radius is now {{radius|660 px}}.',
-            notes: [['no second case', 'one formula, two shapes']] },
-          { widget: 'drum', size: 'wide', caption: 'Real CSS 3D, placed by the shipped `arcPlacement` maths under the shipped perspective (1800px), all lengths scaled to fit. Cards are numbered placeholders. The small plan underneath is the same track seen from above, with the viewer at the bottom. Drag the cards, or use the buttons.' },
-          { p: 'The bend is per card and is not divided by the count. Step the number of paintings from 6 to 106 and the barrel does not change; only the loop gets longer. At the idle speed of 0.3 cards a second, one lap now takes {{lap|353 s}}. Cards past 90° are not drawn, the last 18% of the half-lap fades out so a card wraps round while invisible, and a card takes clicks only while its opacity is above 0.01.^[src/lib/arc-ring.ts:29-52, 86-94; lap = count ÷ 0.3.]' },
-          { p: 'The motion is one velocity, in cards per second, that a spring of 2.5 per second pulls toward a target: 0.3 idle, 1.2 while an arrow is held, 3 for a click, 0 under the pointer. A drag only counts after 5px, so a tap still opens the painting. Eleven tests pin the geometry down, including the inside-out case.^[src/components/artwork/FeaturedKiosk.tsx:17-27, 79-153; src/lib/arc-ring.test.ts, 11 cases.]' }
-        ]
-      },
-      {
-        id: 'shelf', label: 'Room 3', title: 'The Shelf',
-        art: function (c) {
-          return '<line x1="8" y1="96" x2="152" y2="96" stroke="' + c.i + '" stroke-width="3"/>' +
-            '<rect x="16" y="24" width="48" height="72" fill="' + c.p + '" stroke="' + c.a + '" stroke-width="2"/>' +
-            '<rect x="76" y="50" width="36" height="46" fill="' + c.p + '" stroke="' + c.a + '" stroke-width="2"/>' +
-            '<rect x="124" y="74" width="22" height="22" fill="' + c.m + '" stroke="' + c.a + '" stroke-width="2"/>';
-        },
-        blocks: [
-          { p: 'The shop puts every painting in a frame on a shelf. The smallest are 4″ square studies; the largest are 36″ canvases. Draw them all the same size and the shelf lies. Draw them truthfully and the small ones disappear. `frameMetrics` sits between the two.' },
+            lang: 'ts', caption: 'From `src/lib/arc-ring.ts`.' },
+          { p: 'The sign carries the shape. [[A positive bend|ring]] wraps the cards round a drum. [[Zero|row]] lays them flat. [[A negative bend|bowl]] gives a negative radius, which turns the drum inside out into a bowl, with no second case in the code. At the shop’s spacing of 408px the radius is {{radius|660 px}}.' },
+          { widget: 'drum', size: 'wide', caption: 'Real CSS 3D, placed by the shipped `arcPlacement` maths under the shipped 1800px perspective, scaled to fit. The plan underneath is the same track seen from above. Drag the cards, or use the buttons.' },
+          { p: 'The bend is per card, not divided by the count, so going from 6 paintings to 106 only makes the loop longer: at the idle 0.3 cards a second one lap takes {{lap|353 s}}. A drag only counts after 5px, so a tap still opens the painting. Eleven tests pin the geometry down, the inside-out case included.' },
+          { h: 'A shelf that knows inches' },
+          { p: 'Every painting stands in a frame on a shelf. Draw them all the same size and the shelf lies. Draw them truthfully and the 4″ studies disappear. `frameMetrics` sits between the two.' },
           { scrolly: 'shelf', caption: 'All 106 works at their stated inches, sorted by drawn height. Placeholders, not paintings. A triangle under a frame means it hit the floor.',
             steps: [
-              { p: 'Start with the truth. Scale each frame by its height against a 36″ reference, linearly. The 4″ studies come out a ninth the height of the largest canvas: specks at the end of the shelf.', state: { exp: 1, floor: 0, repair: true } },
-              { p: 'The comment in the code says square root. At an exponent of 0.5 a 4″ study rises to a third of the 36″ canvas. Better, but the long tail of small works is still hard to read.', state: { exp: 0.5, floor: 0, repair: true } },
-              { p: 'What ships is 0.45, with a floor at 0.45. A 24″ work draws at 0.83, a 12″ at 0.61, and anything 6″ or under stops at the floor: **23 of 106**. Largest to smallest is now 2.2×, not 9×. The order is still visible; the extremes are still usable.', state: { exp: 0.45, floor: 0.45, repair: true } },
-              { p: 'Then the data. Some rows were typed height-first. “The Crimson Muse” is listed as 36″ × 24″, a landscape, but its photograph is portrait, 0.64 wide for its height. Taken literally, the photo sits in a wide frame with fat bands either side.', state: { exp: 0.45, floor: 0.45, repair: false, focus: true } },
-              { p: '`frameMetrics` turns the measurements round when the stated shape and the photograph disagree and both are more than 4% from square. The photo decides orientation only; the inches still decide size. Against the repo’s own photographs, **11 of 106** rows get turned.', state: { exp: 0.45, floor: 0.45, repair: true, focus: true } }
+              { p: 'Start with the truth: scale each frame by its height against a 36″ reference. The 4″ studies come out a ninth the height of the largest canvas, specks at the end of the shelf.', state: { exp: 1, floor: 0, repair: true } },
+              { p: 'At an exponent of 0.5, a square root, a 4″ study rises to a third of the 36″ canvas. Better, but the long tail is still hard to read.', state: { exp: 0.5, floor: 0, repair: true } },
+              { p: 'What ships is 0.45, with a floor at 0.45. Anything 6″ or under stops at the floor: **23 of 106**. Largest to smallest is now 2.2×, not 9×.', state: { exp: 0.45, floor: 0.45, repair: true } },
+              { p: 'Then the data. Some rows were typed height-first. “The Crimson Muse” is listed as 36″ × 24″, a landscape, but its photograph is portrait. Taken literally, it sits in a wide frame with fat bands either side.', state: { exp: 0.45, floor: 0.45, repair: false, focus: true } },
+              { p: '`frameMetrics` turns the measurements round when the stated shape and the photograph disagree and both are more than 4% from square. The photo decides orientation; the inches still decide size. **11 of 106** rows get turned.', state: { exp: 0.45, floor: 0.45, repair: true, focus: true } }
             ] },
-          { p: 'Height is the fixed dimension and width follows from the ratio, so every frame stands on the same plank line: the frame’s CSS height is `min(100%, 100cqw / ar) × scale`. Fourteen tests cover the parser and the repair, including the exact Crimson Muse case of a 0.64 photo inside “36 x 24 in”.^[src/lib/artwork-aspect.ts:56-109; src/components/artwork/ShelfArtwork.tsx:51-75; src/lib/artwork-aspect.test.ts, 14 cases. The 11 turned rows: frameMetrics run over the 2026-10-16 dimensions against the aspect of each photograph in public/img/paintings, measured 2026-10-18; 3 rows had no local file and count as unturned.]' },
-          { p: 'The comment above that code still says “square-root curve”. The exponent is 0.45. Since 0.45 is what ships and what the shelf is tuned to, the comment is the thing that is wrong.',
-            notes: [['the comment is the thing that is wrong', 'comments drift; numbers ship']] },
-          { figure: 'public/assets/projects/arteza-shop.webp', alt: 'The live shop: frames of different sizes on shelves, a small 4 by 4 inch study among larger canvases, one marked Sold out.', caption: 'The real shelf on arteza.site: a 4″ × 4″ study drawn small, but not a speck.', size: 'wide' }
+          { figure: 'public/assets/projects/arteza-shop.webp', alt: 'The live shop: frames of different sizes on shelves, a small 4 by 4 inch study among larger canvases, one marked Sold out.', caption: 'The real shelf: a 4″ × 4″ study drawn small, but not a speck.', size: 'wide' },
+          { h: 'Images the free tier can afford' },
+          { p: 'The photographs started in Supabase Storage, where the free tier allows 5 GB of egress a month. So I wrote `sync-images.mjs`: it copies each photo into the site as WebP at 400, 800, 1,200 and 1,600 pixels wide, never wider than the original. It applies the camera’s EXIF rotation first, and the WebP output drops EXIF, GPS included.' },
+          { table: { head: ['Widest copy', 'Paintings'], rows: [['1,600 px (all four widths)', '39'], ['1,200 px', '52'], ['800 px', '13'], ['400 px', '2']] },
+            caption: 'Counted from `src/data/image-manifest.ts`: 106 paintings, 340 files, 45 MB.' }
         ]
       },
       {
-        id: 'counter', label: 'Room 4', title: 'The Counter',
+        id: 'hard', title: 'The hard part',
         art: function (c) {
           return '<line x1="8" y1="70" x2="152" y2="70" stroke="' + c.l + '" stroke-width="2"/>' +
             '<line x1="54" y1="40" x2="54" y2="100" stroke="' + c.a + '" stroke-width="1"/>' +
@@ -265,78 +244,64 @@
             '<circle cx="54" cy="36" r="4" fill="' + c.a + '"/><circle cx="128" cy="36" r="4" fill="' + c.a + '"/>';
         },
         blocks: [
-          { quote: 'The cart never takes money, and the server takes nothing the browser says on trust.' },
-          { p: 'Here is the checkout’s history from git, drawn to scale. Look for the payment pages. [[The first|qr]] went in on 8 March at 19:07 UTC and came out at 19:30. Twenty-one minutes later the checkout ended in an order confirmation with a WhatsApp share button instead.^[git show 1f5c220, 26cd69f (−406 lines), 89b556d. Times are commit times in UTC.]' },
-          { widget: 'timeline', size: 'wide', caption: 'Commit times, to scale, 25 January to 15 October 2026. The two payment pages are hairlines a pixel wide at this scale; switch the view to the evening each one lived. Below the axis, checkout code removed. The card on the right says what the repo’s checkout ended in at the scrubbed moment (not what was deployed, which git does not record).' },
-          { p: 'On [[5 June|cut]] the accounts, the admin dashboard, the checkout page, the order confirmation and the order tracking were deleted in one commit: 18 files, 3,804 lines. The auth tables went in the same release, and two minutes later the checkout became what it still is: a name, an optional phone, and “Continue to WhatsApp”.^[git show --shortstat d61860b; migration 20260605190832; WhatsAppCheckoutModal.tsx first committed in 478ce13, 19:11 UTC.]' },
-          { p: '[[The second payment page|utr]] was mine. On 3 October at 21:57 IST I added a UTR claim: pay by UPI, then type the 12-digit transaction reference, checked by `^[0-9]{12}$` with a unique index so one payment can’t be claimed twice. At 22:17 I took it out again, +74 / −626, and the next migration reads “Checkout went back to the WhatsApp inquiry flow.”^[b7c3e7f, 172db42; supabase/migrations/20261003120000_*.sql:16-29, 20261003170000_drop_upi_payment_columns.sql.]',
-            notes: [['At 22:17 I took it out again', 'twenty minutes, by the commit clock']] },
-          { p: 'Every time, what came back was the conversation. The cart today says it plainly: “We’ll confirm the final price and shipping on WhatsApp, then share a UPI QR code for payment.” A person settles the money. What the code has to do is make sure the order that reaches that person is true.^[src/pages/CartPage.tsx:136-156.]' },
-          { h: 'What the counter does instead' },
-          { p: 'The browser sends a name, an optional phone, and for each item a title and a quantity. No price. The `create-order` function trims the name to 100 characters and the phone to 20, allows 1 to 50 items, clamps each quantity to 1–99, then reads the real price and `is_available` from the paintings table with the service role. Sold work is refused by name. The total is computed on the server, and the buyer is handed a `wa.me` link with the order already written out.^[supabase/functions/create-order/index.ts:18-120.]' },
+          { p: 'The hard part was the checkout, and most of it was deciding what it should not do. Here is its history from git, to scale. Look for the payment pages. [[The first|qr]] went in on 8 March at 19:07 UTC and came out at 19:30. Twenty-one minutes later the checkout ended in a WhatsApp share button instead.' },
+          { widget: 'timeline', size: 'wide', caption: 'Commit times, to scale, 25 January to 15 October 2026. The two payment pages are hairlines at this scale; switch the view to the evening each one lived. Below the axis, checkout code removed. The card says what the repo’s checkout ended in at the scrubbed moment.' },
+          { p: 'On [[5 June|cut]] the accounts, admin dashboard, checkout page, order confirmation and order tracking went in one commit: 18 files, 3,804 lines. Two minutes later the checkout became what it still is: a name, an optional phone, and “Continue to WhatsApp”.' },
+          { p: '[[The second payment page|utr]] was mine. On 3 October I added a UTR claim: pay by UPI, then type the 12-digit transaction reference, with a unique index so one payment can’t be claimed twice. Twenty minutes later I took it out again, −626 lines.' },
+          { p: 'Every time, what came back was the conversation. A person settles the money on WhatsApp. What the code has to do is make sure the order that reaches that person is true.' },
+          { h: 'A counter that trusts nothing' },
+          { p: 'The browser sends a name, an optional phone, and for each item a title and a quantity. No price. The `create-order` function trims the fields, allows 1 to 50 items, clamps each quantity to 1–99, then reads the real price and availability from the database. Sold work is refused by name. The total is computed on the server, and the buyer gets a `wa.me` link with the order already written out.' },
           { code: "quantity: Math.max(1, Math.min(99, Number(i.quantity) || 1)),\n\nif ((await tooMany(supabaseClient, 'orders', 20, 60)) ||\n    (customer_phone && (await tooMany(supabaseClient, 'orders', 5, 60, ['customer_phone', customer_phone])))) {\n  return json(req, { error: 'Too many orders right now…' }, 429);\n}",
             lang: 'ts', caption: 'From `create-order/index.ts`: the clamp, and the rate limit I added on 3 October.' },
-          { p: 'In October I closed the other doors. The function now rate-limits: 20 orders an hour overall and 5 an hour per phone. And direct inserts on orders, order items and bookings were revoked from the browser’s roles, so the function is the only way an order can be written.^[supabase/functions/_shared/common.ts:43-66; 20261003120000_lock_down_writes_and_upi_payments.sql:1-9.] Try to cheat it.' },
-          { widget: 'cheat', size: 'wide', caption: 'A port of `create-order` running in this page against six real rows of the catalogue (titles and prices only; ids are not in the sample, so match by title). Nothing is sent anywhere. Edit the request, or use the buttons: name your own price, order 500, add the sold painting, or send six from one phone.' },
-          { p: 'The limiter is deliberately plain. It counts rows created in the last hour, and if the count itself fails it lets the order through, because losing a real customer’s order is worse than letting a spammer past for an hour.^[common.ts:43-66, comment: “row counting, not a token bucket; enough for a one-artist shop”.] The same day, sold paintings stopped disappearing: the read policy changed from `is_available = true` to `true`, because a sold painting’s page used to 404 and drop out of the shop.^[20261003175000_show_sold_paintings.sql, commit 88bcb47.]',
-            notes: [['it lets the order through', 'fails open, on purpose']] },
+          { p: 'In October I closed the other doors: 20 orders an hour overall, 5 per phone, and direct inserts revoked from the browser’s roles, so the function is the only way an order can be written. Try to cheat it.' },
+          { widget: 'cheat', size: 'wide', caption: 'A port of `create-order` running in this page against six real rows of the catalogue. Nothing is sent anywhere. Edit the request, or use the buttons: name your own price, order 500, add the sold painting, or send six from one phone.' },
+          { p: 'The limiter is deliberately plain. It counts rows from the last hour, and if the count itself fails it lets the order through, because losing a real customer’s order is worse than letting a spammer past for an hour.' },
           { figure: 'public/assets/projects/arteza-cart.webp', alt: 'The live cart: an order summary reading Shipping: Discussed on WhatsApp, and an Inquire on WhatsApp button.', caption: 'The counter today: no card form, no payment page, a button to a conversation.', size: 'wide' }
         ]
       },
       {
-        id: 'store', label: 'Room 5', title: 'The Store Room',
-        blocks: [
-          { p: 'Behind the rooms are the photographs. They started in Supabase Storage, where the free tier allows 5 GB of egress a month, and a gallery is mostly egress. So I wrote `sync-images.mjs`: it copies each photo into the site as WebP at 400, 800, 1,200 and 1,600 pixels wide, never wider than the original, at quality 78. `rotate()` applies the camera’s EXIF orientation first, and the WebP output drops EXIF, GPS included.^[scripts/sync-images.mjs:1-16, 66-80; src/lib/image-url.ts:1-12.]',
-            notes: [['GPS included', 'phone photos can carry a location. these don’t']] },
-          { p: 'Because nothing is ever scaled up, the widths a painting gets depend on the photograph it came from:' },
-          { table: { head: ['Widest copy', 'Paintings'], rows: [['1,600 px (all four widths)', '39'], ['1,200 px', '52'], ['800 px', '13'], ['400 px', '2']] },
-            caption: 'Counted from `src/data/image-manifest.ts`: 106 paintings, 340 files, a 45 MB `public/img` folder.' },
-          { p: 'One honest gap: the `srcset` is opt-in. A component gets the smaller copies only if it passes `sizes`, so some surfaces still fetch a single width.^[src/components/ImageWithSkeleton.tsx:9-19, 52-60.]' }
-        ]
-      },
-      {
-        id: 'border', label: 'Room 6', title: 'The Border',
+        id: 'results', title: 'Results',
         art: function (c) {
-          return '<path d="M8 60 C 40 20, 60 100, 80 60 S 120 20, 152 60" fill="none" stroke="' + c.i + '" stroke-width="10" stroke-linecap="round"/>' +
-            '<path d="M8 60 C 40 20, 60 100, 80 60 S 120 20, 152 60" fill="none" stroke="' + c.p + '" stroke-width="4.5" stroke-linecap="round"/>';
+          return '<line x1="8" y1="96" x2="152" y2="96" stroke="' + c.i + '" stroke-width="3"/>' +
+            '<rect x="16" y="24" width="48" height="72" fill="' + c.p + '" stroke="' + c.a + '" stroke-width="2"/>' +
+            '<rect x="76" y="50" width="36" height="46" fill="' + c.p + '" stroke="' + c.a + '" stroke-width="2"/>' +
+            '<rect x="124" y="74" width="22" height="22" fill="' + c.m + '" stroke="' + c.a + '" stroke-width="2"/>';
         },
         blocks: [
-          { p: 'The site’s section borders are Madhubani line work, and the convention that defines Mithila painting is the double outline: every figure drawn twice, with a strip of bare ground between the two lines. My `DoubleLine` component does it by stroking the same path twice: once wide in ink, then again at 0.45 of that width in the colour of the ground.^[src/components/ornament/Madhubani.tsx:17-52; default width 4.6.]' },
-          { widget: 'border', caption: 'One path, stroked twice. The second stroke is the ground showing through, so it has to be the ground’s colour. Diagrammatic: the curve is drawn for this page, not taken from the site.' },
-          { p: 'Its comment says the 1 : 0.45 ratio leaves a gap “roughly as wide as each of the two lines”. At 0.45 the gap is 0.45 of the width and each line is 0.275, so the gap is 1.6 times a line. They are equal at a third. It is the same kind of slip as the shelf’s square root: the number in the code is right, and the sentence above it describes a different number.',
-            notes: [['the gap is 1.6 times a line', 'still looks right. still not what it says']] }
+          { list: [
+            'The hero’s largest image downloads once per load, not four times: it had been redrawn on every render, 1.1 MB of it. The wall also dropped `will-change`, which had rasterised it at 1× and stretched it to 3×.',
+            'The smallest painting draws at 45% of the largest instead of 11%, and 11 mistyped rows of 106 stand the right way up.',
+            'Every image exists at up to four widths; 39 paintings get all four.',
+            'No order can be written except through one function that prices it from the database, with 20-an-hour and 5-per-phone limits.',
+            'Sold paintings stay in the shop instead of returning 404.',
+            '25 tests cover the drum (11) and the shelf (14).'
+          ] }
         ]
       }
     ],
 
     closing: {
       blocks: [
-        { p: 'The shop’s price filter is a two-thumb slider, linear from the cheapest painting to the dearest, in 100 steps. On this catalogue each step is ₹1,245. The median price is ₹3,000, so 62 of 106 paintings sit in the first 2% of the track, and the narrowest window a buyer can make from the left, ₹500 to ₹1,745, already holds 41. One painting, a 36″ Tanjore in 22K gold foil at ₹1,25,000, sets the scale for the other 105; the next dearest is ₹35,000.^[src/pages/ShopPage.tsx:34, 62-66, 176-182; live prices, read 2026-10-16.] I’d use a log or quantile track.' },
-        { widget: 'price', size: 'wide', caption: 'All 106 prices as dots on the slider’s track. Linear is what ships. The step and window figures are computed from the shop’s own step rule, max(1, round((max − min) / 100)).' },
-        { p: 'The cart lets you raise the quantity of a one-of-one painting with a +/− stepper, and only the server’s clamp to 99 stops it. Every painting page says “Only one exists”. I’d cap a painting at one in the cart and on the server.^[src/contexts/CartContext.tsx:68-76; src/pages/CartPage.tsx:84-106.]' },
-        { p: 'The home page’s “How it works” still says “Checkout by UPI — Pay securely by UPI” over a drawn Pay button. That is a third payment page, and the only one that is live. It should describe the WhatsApp hand-off the shop actually has.^[src/components/home/HowItWorks.tsx:316-317, present in the live bundle on 2026-10-16.]' },
-        { p: 'Prerendering is configured and not live. The build prerenders every painting page and writes a per-page CSP and a sitemap, and locally `dist/shop` holds 106 pages. But on 2026-10-16 every route, including `/sitemap.xml`, returned the same 2,497-byte empty shell. Until the deployment serves the build, crawlers and link previews see nothing of the gallery.^[package.json, vite.config.ts, scripts/postbuild.ts:112-135; curl of /, /shop and /sitemap.xml, 2026-10-16.]' },
-        { p: 'And I’d fix two comments, the square root and the gap, so the next person reads what the code does.' }
+        { p: 'The price filter is a two-thumb slider, linear from ₹500 to ₹1,25,000 in 100 steps of ₹1,245. The median price is ₹3,000, so 62 of 106 paintings sit in the first 2% of the track. One Tanjore in gold foil sets the scale for the other 105; the next dearest is ₹35,000. I’d use a log or quantile track.' },
+        { widget: 'price', size: 'wide', caption: 'All 106 prices as dots on the slider’s track. Linear is what ships.' },
+        { p: 'The cart lets you raise the quantity of a one-of-one painting, and only the server’s clamp to 99 stops it. I’d cap a painting at one, in the cart and on the server.' },
+        { p: 'The home page’s “How it works” still says “Checkout by UPI”. It should describe the WhatsApp hand-off the shop actually has.' },
+        { p: 'Prerendering is configured but not live: locally the build holds 106 painting pages, yet on 2026-10-16 every route returned the same empty shell. Until the deployment serves the build, link previews see nothing of the gallery.' },
+        { p: 'And two code comments are wrong. The shelf’s says “square root” over an exponent of 0.45, and the border’s says the gap equals each line, when at 0.45 it is 1.6 times a line. I’d fix both so the next person reads what the code does.' }
       ]
     },
 
     sources: [
-      ['Catalogue (106 paintings, 105 available, 5 collections: 37/24/18/17/10)', 'the public paintings endpoint arteza.site calls, read once on 2026-10-16; cross-checked against 106 rows in the 20261003180000 migration.'],
-      ['Hero geometry (frames, 66%, 9%, 0.82, s = 3, 78%, phone 74.5/44/41%, 1.854, 103.2%, 51%, SE 1.61, 114.6%, 57.1%)', '`src/components/home/EditorialHero.tsx:28-66`, `src/index.css:703-719, 787-795, 945-994`.'],
-      ['Hero opacity ramps (3.6, 0.18 × 3.4, 0.62 × 3.2, taps off at 0.3); 1.1 MB, four times', '`src/index.css:851-861`; `EditorialHero.tsx:104-146`.'],
-      ['Drum (36°, 0.1° flat, 18% fade, opacity > 0.01, 1800px, 408px chord, R ≈ 660px, 0.3/1.2/3 cards/s, spring 2.5/s, 5px, 11 tests)', '`src/lib/arc-ring.ts`, `src/lib/arc-ring.test.ts`, `src/components/artwork/FeaturedKiosk.tsx:17-153`. R = 204 / sin 18°; lap = count ÷ 0.3.'],
-      ['Shelf (36″ reference, exponent 0.45, floor 0.45, 4% square band, 14 tests, 23 at the floor, 2.2× vs 9×)', '`src/lib/artwork-aspect.ts`, `.test.ts`; frameMetrics applied to the 2026-10-16 dimensions.'],
-      ['11 transposed rows', 'frameMetrics’ orientation rule run on 2026-10-18 against the pixel aspect of each painting’s photo in the arteza repo’s `public/img/paintings` (3 of 106 had no local file).'],
-      ['Checkout history (19:07, 19:30, 19:51, 20:20 on 8 March; 10 March; 18 files and 3,804 lines on 5 June; 19 June; 21:57 and 22:17 IST, +74/−626 on 3 October; −406 on 8 March)', '`git log` and `git show --shortstat` on 1d8cd9f, fedef4b, 1f5c220, 26cd69f, 89b556d, 8c6fc90, 955a9f5, d61860b, 478ce13, 49cac99, b7c3e7f, 172db42, 88bcb47.'],
-      ['create-order rules (100 / 20 chars, 1–50 items, 1–99, 20/h and 5/h, message text)', '`supabase/functions/create-order/index.ts`, `supabase/functions/_shared/common.ts:43-111`.'],
-      ['Image pipeline (400/800/1,200/1,600, quality 78, 39/52/13/2, 340 files, 45 MB, 5 GB egress)', '`scripts/sync-images.mjs`, `src/data/image-manifest.ts` (counted), `du -sh public/img`, `src/lib/image-url.ts:1-12`.'],
-      ['Double line (4.6, 0.45; 0.275 per line, 1.6×)', '`src/components/ornament/Madhubani.tsx:17-52`; the ratios are arithmetic on 0.45.'],
-      ['Price slider (₹500–₹1,25,000, step ₹1,245 or ₹345 without the Tanjore, 62 in 2.01%, 41 in ₹500–₹1,745, median ₹3,000, next ₹35,000)', '`src/pages/ShopPage.tsx:34, 62-66, 176-182` and the live prices of 2026-10-16.'],
-      ['Live shell (2,497 bytes)', '`curl -w size` on arteza.site `/`, `/shop`, `/sitemap.xml`, 2026-10-16.']
+      ['Catalogue', '106 paintings and prices from the public endpoint arteza.site calls, read 2026-10-16.'],
+      ['Checkout history', '`git log` / `git show --shortstat` on 26cd69f, d61860b, 478ce13, 172db42 and others.'],
+      ['create-order', '`supabase/functions/create-order/index.ts`, `_shared/common.ts`.'],
+      ['Drum and shelf', '`src/lib/arc-ring.ts`, `src/lib/artwork-aspect.ts` and their tests; 11 turned rows measured against the repo’s photographs, 2026-10-18.'],
+      ['Hero and images', '`EditorialHero.tsx`, `src/index.css`, `scripts/sync-images.mjs`, `src/data/image-manifest.ts`.'],
+      ['Price slider', '`src/pages/ShopPage.tsx` and the live prices of 2026-10-16.'],
+      ['Live shell', '`curl` on arteza.site `/`, `/shop`, `/sitemap.xml`, 2026-10-16.']
     ],
-
     widgets: {
-      /* ---------------- Room 1: the vanishing point ---------------- */
+      /* ---------------- the wall ---------------- */
       wall: function (host, kit) {
         var view = 'desk', z = 0, ty = VIEWS.desk.ty;
         var root = kit.el('div', { class: 'az-wall' });
@@ -471,7 +436,7 @@
         return {};
       },
 
-      /* ---------------- Room 2: the drum ---------------- */
+      /* ---------------- the drum ---------------- */
       drum: function (host, kit) {
         var COUNTS = [6, 10, 24, 40, 106];
         var ci = 4, curve = 1, offset = 0, v = 0, vt = 0, goal = null;
@@ -594,7 +559,7 @@
         return {};
       },
 
-      /* ---------------- Room 3: the shelf (scrolly) ---------------- */
+      /* ---------------- the shelf (scrolly) ---------------- */
       shelf: function (host, kit) {
         var st = { exp: 0.45, floor: 0.45, repair: true, focus: false };
         var narrow = window.matchMedia('(max-width: 959.98px)');
@@ -685,7 +650,7 @@
         };
       },
 
-      /* ---------------- Room 4: the checkout's history ---------------- */
+      /* ---------------- the checkout's history ---------------- */
       timeline: function (host, kit) {
         var win = 'year', t = T0, hl = null;
         var choice = kit.choice({ label: 'View', value: 'year', options: [{ value: 'year', label: 'Whole year' }, { value: 'mar', label: '8 March' }, { value: 'oct', label: '3 October' }],
@@ -768,7 +733,7 @@
         return {};
       },
 
-      /* ---------------- Room 4: try to cheat the counter ---------------- */
+      /* ---------------- try to cheat the counter ---------------- */
       cheat: function (host, kit) {
         var DEFAULT = { customer_name: 'Asha', customer_phone: '+91 98100 00000', items: [
           { painting_title: SAMPLE[0].title, quantity: 1 }, { painting_title: SAMPLE[2].title, quantity: 1 }] };
@@ -817,7 +782,7 @@
         return {};
       },
 
-      /* ---------------- Room 6: the double line ---------------- */
+      /* ---------------- the double line ---------------- */
       border: function (host, kit) {
         var r = 0.45;
         var svg = S('svg', { viewBox: '0 0 600 150', class: 'az-border', 'aria-hidden': 'true' });

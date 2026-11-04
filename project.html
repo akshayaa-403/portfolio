@@ -37,7 +37,7 @@
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:ital,wght@0,400;0,500;0,600;1,400&family=Caveat:wght@500;600&family=Libre+Caslon+Text:ital,wght@0,400;0,700;1,400&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:ital,wght@0,400;0,500;0,600;1,400&family=Libre+Caslon+Text:ital,wght@0,400;0,700;1,400&display=swap">
 <link rel="stylesheet" href="css/style.css">
 <link rel="stylesheet" href="css/project.css">
 <link rel="stylesheet" href="css/article.css">
@@ -134,12 +134,6 @@
 </header>
 
 <main id="main" tabindex="-1">
-  <!-- The opener: one screen of the project's own vocabulary over a textured
-       ground, filled by js/opener.js. aria-hidden in its entirety — every word
-       on it appears again in the case study below. Empty until the script
-       runs, so a no-JS visitor drops straight into the article. -->
-  <section class="opener" data-opener></section>
-
   <div class="wrap detail" id="detail-root">
     <!-- Real heading for crawlers and no-JS visitors; js/project-detail.js
          replaces the whole container with the case study when it runs. -->
@@ -176,7 +170,6 @@
 <!-- Renders the article; each case study's own file, js/articles/<id>.js,
      is fetched by project-detail.js for this page only. -->
 <script src="js/article.js" defer></script>
-<script src="js/opener.js" defer></script>
 <script src="js/project-detail.js" defer></script>
 </body>
 </html>

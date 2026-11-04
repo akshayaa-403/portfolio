@@ -1,37 +1,10 @@
 /* --------------------------------------------------------------------------
    The About section's pieces, written by js/info.js after the "Hello." intro
-   (whose own styles stay in css/style.css, §10). INFO_PIECES at the top of
-   js/info.js says which pieces render and in what order.
+   (whose own styles stay in css/style.css).
 
    Colours are the site's tokens: the day's Wada accents (--accent*, the three
    --graph-*), and the grounds and inks of whichever period is showing.
    -------------------------------------------------------------------------- */
-/* --- Draft copy ------------------------------------------------------------
-   Every line an assistant drafted wears this until the owner approves it
-   (ok() in js/info.js, or delete the class). Dashed underline, tiny tag. */
-.is-draft {
-  text-decoration-line: underline;
-  text-decoration-style: dashed;
-  text-decoration-thickness: 1px;
-  text-decoration-color: var(--accent-mid);
-  text-underline-offset: 0.24em;
-}
-.is-draft::after {
-  content: 'draft';
-  display: inline-block;     /* so the underline does not run through it */
-  margin-left: 0.45em;
-  padding: 2px 4px 1px;
-  border: 1px solid var(--line-strong);
-  border-radius: 3px;
-  color: var(--ink-muted);
-  font: 600 9px/1 var(--font-mono);
-  font-style: normal;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  vertical-align: 0.3em;
-  transform: none;
-}
-
 /* --- Frame: the pieces and their labels ------------------------------------ */
 .info-pieces {
   display: grid;
@@ -58,7 +31,6 @@
   height: 1px;
   background: var(--line);
 }
-.ip__no { color: var(--accent-ink); }
 
 .ip a:focus-visible,
 .ip button:focus-visible {
@@ -66,52 +38,6 @@
   outline-offset: 3px;
 }
 
-
-/* --- Shared: buttons and the credit line under each piece ------------------ */
-.fd__btn {
-  min-height: 40px;
-  padding: 8px 16px;
-  border: 1px solid var(--line-strong);
-  border-radius: var(--radius-pill);
-  background: var(--surface);
-  color: var(--ink);
-  font: 500 13px/1.2 var(--font-mono);
-  cursor: pointer;
-}
-.fd__btn:hover { border-color: var(--accent); color: var(--accent-ink); }
-.eb__reset {
-  padding: 8px 4px;
-  border: 0;
-  background: none;
-  color: var(--link);
-  font: 500 13px/1.2 var(--font-mono);
-  text-decoration: underline;
-  text-underline-offset: 0.2em;
-  cursor: pointer;
-}
-.ip__after { margin: 12px 0 0; color: var(--ink-muted); font: italic 12px/1.5 var(--font-serif); }
-.ip :is(.fd__btn, .eb__reset, input):focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
-
-/* --- Ebru (archived: not in INFO_PIECES, kept to bring back) ----------------
-   The tray's water is --surface; the ink is the day's three --graph-*
-   colours, read at the moment each drop falls (js/info.js). */
-.eb { max-width: 780px; margin: 0 auto; }
-.eb__intro { max-width: 620px; margin: 0 0 18px; color: var(--ink-soft); font-size: 16px; line-height: 1.6; }
-.eb__tray {
-  --eb-water: var(--surface);
-  position: relative;
-  padding: 10px;
-  border: 1px solid var(--line);
-  border-radius: 12px;
-  background: var(--bg-sunken);
-}
-.eb__canvas { display: block; width: 100%; aspect-ratio: 3 / 2; border-radius: 4px; cursor: crosshair; touch-action: none; }
-.eb__tray.is-lifted .eb__canvas { cursor: default; transform: rotate(-1.2deg) translateY(-6px); box-shadow: var(--shadow-card-hover); }
-@media (prefers-reduced-motion: no-preference) {
-  .eb__canvas { transition: transform 0.6s cubic-bezier(0.2, 0.7, 0.3, 1), box-shadow 0.6s ease; }
-}
-.eb__lifted { margin: 10px 0 0; color: var(--ink-muted); font: italic 13px/1.4 var(--font-serif); text-align: right; }
-.eb__bar { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-top: 14px; }
 
 /* --- The bracelet: skills ---------------------------------------------------
    The group toggles, then the chain: one charm per skill in each selected

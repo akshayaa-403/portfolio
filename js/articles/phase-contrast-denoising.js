@@ -1,5 +1,4 @@
-/* Phase-Contrast Clean-Up: "One slide, four lies". A lab notebook that
-   follows one held-out frame, img_0002, from the first screen to the last.
+/* Phase-Contrast Clean-Up: follows one held-out frame, img_0002.
    Every number here is in `sources`; the stage images were written by
    tools/phase-stages.py, which runs the project's own code. */
 (function () {
@@ -142,53 +141,50 @@
     form: 'specimen',
     scramble: '░▒▓·∘○◌◍●',
     rail: 'loupe',
-    dek: 'This is one frame, `img_0002`, followed from the moment I corrupted it to the moment a network gave most of it back. I know all 20 of its cells, because I drew them, and the network never trained on it. On the way it shows four lies: three I told on purpose, and one I told by accident.',
+    dek: 'A classical filter plus a residual U-Net lifts PSNR from 11.46 to 20.26 dB on 20 phase-contrast frames it never trained on, and raises the worst segmentation from Dice 0.556 to 0.901. Along the way I found a slider that never did anything.',
 
-    opener: function (c) {
-      return '<circle cx="64" cy="64" r="52" fill="none" stroke="' + c.l + '" stroke-width="1.2"/>' +
-        '<ellipse cx="44" cy="50" rx="12" ry="8" transform="rotate(30 44 50)" fill="none" stroke="' + c.i + '" stroke-width="1.2"/>' +
-        '<ellipse cx="78" cy="40" rx="7" ry="10" fill="none" stroke="' + c.i + '" stroke-width="1.2"/>' +
-        '<ellipse cx="54" cy="86" rx="9" ry="13" transform="rotate(-20 54 86)" fill="none" stroke="' + c.i + '" stroke-width="1.2"/>' +
-        '<circle cx="84" cy="78" r="20" fill="none" stroke="' + c.a + '" stroke-width="2"/>' +
-        '<ellipse cx="84" cy="78" rx="11" ry="14" fill="none" stroke="' + c.a + '" stroke-width="1.2"/>' +
-        '<line x1="98" y1="92" x2="114" y2="108" stroke="' + c.a + '" stroke-width="3" stroke-linecap="round"/>';
-    },
+    demo: { src: 'public/assets/demos/phase-contrast-denoising.mp4', poster: 'public/assets/demos/phase-contrast-denoising.webp',
+      alt: 'In the browser demo, dragging the subtraction-strength, halo-width and CLAHE-clip sliders re-runs the Difference-of-Gaussians and CLAHE pipeline live: the After DoG and CLAHE panels and their PSNR/SSIM figures change beside the precomputed U-Net output and the ground truth, then Reset restores the defaults.',
+      caption: 'Recorded from the live demo, at 1.6× speed.' },
 
     chapters: [
-      { id: 'lie', label: 'Plate 1', title: 'I made the microscope lie on purpose',
+      { id: 'problem', title: 'The problem',
         art: function (c) {
           return [0, 1, 2, 3].map(function (k) {
             return '<rect x="' + (30 + k * 14) + '" y="' + (20 + k * 14) + '" width="80" height="60" rx="4" fill="none" stroke="' + (k === 3 ? c.a : c.l) + '" stroke-width="1.3"/>';
           }).join('') + '<ellipse cx="100" cy="80" rx="12" ry="8" fill="none" stroke="' + c.i + '" stroke-width="1.3"/>';
         },
         blocks: [
-          { p: 'Phase contrast is how you look at a living cell without staining it. The microscope turns tiny delays in the light passing through the cell into differences in brightness. It works, and it adds things that are not in the sample: a halo at every edge, uneven light across the field, and sensor noise.' },
-          { p: 'The trouble comes later. Segmentation usually starts with a threshold: brighter than this is cell, darker is background. The halo and the uneven light both push pixels across that line, and every count and area measured afterwards inherits the error.' },
-          { p: 'I had no real micrographs with hand-drawn masks, so I built the problem instead. `data/generate_synthetic.py` draws 8 to 21 soft ellipses as the truth, then adds three corruptions, each with a known size. It is seeded, so every one of the 100 committed frames can be replayed exactly.^[Replaying seed 42 at 256 px reproduces the committed PNGs bit for bit; checked on img_0000 to img_0005 (scratchpad replay.py, 2026-10-16).] That is how this page knows the true outline of every cell on the slide.',
-            notes: [['seeded', 'seed 42. the same hundred frames, every time']] },
+          { p: 'Phase contrast is how you look at a living cell without staining it. The microscope turns tiny delays in the light into differences in brightness. It works, and it adds things that are not in the sample: a halo at every edge, uneven light across the field, and sensor noise.' },
+          { p: 'Segmentation usually starts with a threshold: brighter than this is cell, darker is background. The halo and the uneven light both push pixels across that line, and every count and area measured afterwards inherits the error.' },
+          { p: 'I had no real micrographs with hand-drawn masks, so I built the problem. `data/generate_synthetic.py` draws 8 to 21 soft ellipses as the truth, then adds three corruptions, each with a known size. It is seeded, so all 100 committed frames replay exactly. This page follows one of them, `img_0002`, which the network never trained on.' },
           { scrolly: 'microscope', caption: 'img_0002 rebuilt in your browser from the generator’s recorded parameters. Two stand-ins: cells are filled by a point-in-ellipse test rather than OpenCV’s polygon, and the noise is the same σ but not numpy’s draw. The scan is row 168; the dashed line is a global Otsu threshold. Live Otsu Dice on this rebuild: {{gdice|—}}. With all three corruptions on it reads 0.893; the repo’s own saved frame scores 0.894.',
             steps: [
-              { p: 'Start with the truth: 20 ellipses, brightness 0.5 to 1.0, softened by a σ 1.5 blur. A global Otsu threshold finds them almost exactly. The tinted area on the frame is what the threshold calls cell.', state: { halo: false, ramp: false, noise: false } },
-              { p: 'Add the halo. In my generator it is itself a band-pass: the cells blurred at σ 4.86 minus the cells blurred at σ 9.72, times 1.908 for this frame. Watch the scan. It lifts the inside of each cell and digs a dark moat round it.', state: { halo: true, ramp: false, noise: false } },
-              { p: 'Add the illumination ramp, a tilted plane. For img_0002 it spans 1.226 from corner to corner, more than the brightest cell at 0.933. This is the one that breaks a global threshold. Dim cells in the dark corner fall under the line, and bright background in the other corner rises over it.', state: { halo: true, ramp: true, noise: false } },
-              { p: 'Add Gaussian noise, σ 0.0116 here. That is img_0002 as it was saved. Open the sliders under the figure to move each layer over the generator’s own range.', state: { halo: true, ramp: true, noise: true } }
+              { p: 'Start with the truth: 20 ellipses, brightness 0.5 to 1.0, softened by a σ 1.5 blur. A global Otsu threshold finds them almost exactly. The tinted area is what the threshold calls cell.', state: { halo: false, ramp: false, noise: false } },
+              { p: 'Add the halo: the cells blurred at σ 4.86 minus the cells blurred at σ 9.72, times 1.908 for this frame. It lifts the inside of each cell and digs a dark moat round it.', state: { halo: true, ramp: false, noise: false } },
+              { p: 'Add the illumination ramp, a tilted plane. Here it spans 1.226 corner to corner, more than the brightest cell at 0.933. This is the one that breaks a global threshold.', state: { halo: true, ramp: true, noise: false } },
+              { p: 'Add Gaussian noise, σ 0.0116. That is img_0002 as it was saved. Open the sliders under the figure to move each layer over the generator’s range.', state: { halo: true, ramp: true, noise: true } }
             ] },
-          { callout: 'Real phase contrast usually shows a bright halo outside a darker cell. My halo has a sensible size but not that polarity. On a 16-pixel disk with this frame’s settings, it brightens the inside of the cell by up to 0.43 and digs a moat of −0.148 eight pixels outside the edge.^[scratchpad disk.py, 2026-10-16.] So everything below is measured against what I simulated, not against a microscope.', label: 'What I simulated' }
+          { callout: 'Real phase contrast usually shows a bright halo outside a darker cell. My halo has a sensible size but not that polarity: it brightens the inside of the cell and digs a moat outside. So everything below is measured against what I simulated, not against a microscope.', label: 'What I simulated' }
         ] },
 
-      { id: 'notch', label: 'Plate 2', title: 'A notch, aimed a little wrong',
+      { id: 'built', title: 'What I built',
         blocks: [
-          { p: 'The classical half of the pipeline is two blurs and a subtraction. Blur the frame at σ1 = 1 and at σ2 = 8, take the difference, and subtract 0.6 of it from the frame.' },
+          { h: 'A classical filter' },
+          { p: 'The first half is two blurs and a subtraction. Blur the frame at σ1 = 1 and at σ2 = 8, take the difference, and subtract 0.6 of it. Then CLAHE, contrast-limited adaptive histogram equalisation, stretches local contrast tile by tile.' },
           { tex: '\\text{enhanced} = x - \\alpha\\,(G_{\\sigma_1} * x - G_{\\sigma_2} * x), \\quad \\sigma_1 = 1,\\ \\sigma_2 = 8,\\ \\alpha = 0.6', caption: '`src/preprocessor.py:58–63` at the defaults in `configs/default_config.yaml`.' },
-          { p: 'I used to say σ2 was “wide enough to straddle the halo”. Frequencies are more honest. A Gaussian blur is a Gaussian in the frequency domain, so this whole step is one curve: the [[filter’s gain|filter]] at each period. The [[corruption|corrupt]] my generator added is another curve. If the filter undid the corruption exactly, their [[product|product]] would lie flat on 1.' },
-          { widget: 'notch', size: 'wide', caption: 'Gain against period, for img_0002. The corruption curve uses the generator’s recorded halo for this frame; the filter uses the sliders, which have the demo page’s ranges. These are continuous Gaussian transfer functions computed in your browser, not measured from pixels. Product at 64 px: {{nprod|1.26}}; filter gain at 256 px: {{nh256|0.989}}.' },
-          { p: 'It does not lie flat. At the defaults the filter cuts deepest at a 17.3-pixel period (gain 0.447), but this frame’s halo peaks at 31.8 pixels (1.90×). So at 64 px the product is still 1.26, halo left over, and at 16 px it is 0.59, cell detail cut. The two curves come from the same family, at different scales and with opposite signs. I never tuned one to the other.',
-            notes: [['I never tuned one to the other', 'the old copy said they matched by construction. they don’t']] },
-          { p: 'The shaded band on the right matters most. Every difference of Gaussians has a gain of exactly 1 at zero frequency, whatever you set, so a slow ramp goes straight through. At a 256-pixel period the default gain is 0.989. Nothing in this step can fix the light, and on the 20 held-out frames Otsu Dice after the DoG alone is 0.782, below the raw frames’ 0.894.^[scratchpad u8.py and evalval.py on the 20 held-out frames, repo code, 2026-10-16.]' },
-          { p: 'One thing the old copy got right: the DoG does not hollow the cells out. Across the 20 true cells of img_0002, the centre-to-rim brightness ratio goes from 1.161 to 1.269. The rims dim more than the middles.' }
+          { h: 'A residual U-Net' },
+          { p: 'Hybrid mode feeds that output to a U-Net: four levels from 64 to 512 channels, a 1,024-channel bottleneck, GroupNorm so small CPU batches behave, and 31,036,481 parameters. It trained for 15 epochs on 128-pixel crops from 80 frames.' },
+          { tex: '\\hat{y} = \\operatorname{clamp}\\big(x - f_\\theta(x),\\,0,\\,1\\big), \\qquad \\mathcal{L} = \\big\\lVert f_\\theta(x) - (x - y) \\big\\rVert_1', caption: 'Inference and loss: `src/pipeline.py:94–100`, `src/trainer.py:216–218`. x is the classical output, y the truth.' },
+          { p: 'It is not asked for the clean image. It is asked for the residual, the difference between its input and the truth, and the output is the input minus that. This is the idea behind DnCNN. Drag the scan line and see what it subtracts.' },
+          { widget: 'scrub', size: 'wide', caption: 'img_0002 through the network. Pixel values are read back from lossless images the repo’s own code wrote. Drag across the pictures, or use the slider, to pick a row. In the residual picture mid-grey is 0 and lighter is subtracted. Row {{row|168}}: residual {{rbg|—}} on background, {{rin|—}} in cells.' },
+          { p: 'The [[residual|res]] is not a small correction. Its RMS is 0.359, against 0.540 for the [[input|in]]. It sits around 0.37 on background and 0.13 inside cells, and peaks at cell edges. Correlated with the true cells it scores −0.603: a picture of the cells, in negative.' },
+          { p: 'So the network does know where the cells are. It mostly removes background, meaning the ramp, the moats and the noise, and leaves the cell bodies alone. That is why the [[output|out]] follows the [[truth|truth]] so closely across the big cell on row 168.' },
+          { h: 'A browser port' },
+          { p: 'The classical half is arithmetic, so `docs/` runs it in plain JavaScript, with no OpenCV, including OpenCV’s kernel sizing, reflected borders and CLAHE. `scripts/verify_web_pipeline.py` sends the same pixels through both and fails below 40 dB. They agree to between 49.1 and 51.7 dB. The U-Net column on the demo is precomputed, and the page says so.' }
         ] },
 
-      { id: 'clip', label: 'Plate 3', title: 'The slider that did nothing',
+      { id: 'hard', title: 'The hard part',
         art: function (c) {
           var h = [30, 70, 52, 88, 40, 64, 22, 48];
           return h.map(function (v, i) {
@@ -196,89 +192,62 @@
           }).join('') + '<line x1="10" y1="104" x2="150" y2="104" stroke="' + c.a + '" stroke-width="2" stroke-dasharray="5 4"/>';
         },
         blocks: [
-          { p: 'After the DoG comes CLAHE, contrast-limited adaptive histogram equalisation. It cuts the frame into an 8×8 grid of tiles and equalises each tile’s histogram, so local contrast gets stretched. The “contrast-limited” part is a ceiling: no grey level in a tile may hold more than a set number of pixels, and the excess is spread over all levels. Without that ceiling, a flat patch of background is stretched until its noise fills the whole range.' },
-          { p: 'Writing this up, I re-ran the classical half with the clip limit at every value from 0.5 to 40. The output was bit-identical every time.^[scratchpad clahe.py: cv2.createCLAHE on img_0002’s DoG output, clip 0.5, 1, 2, 5, 10 and 40, max |diff| 0 against clip 2 (2026-10-16).]' },
+          { h: 'A notch, aimed a little wrong' },
+          { p: 'A Gaussian blur is a Gaussian in the frequency domain, so the whole DoG step is one curve: the [[filter’s gain|filter]] at each period. The [[corruption|corrupt]] my generator added is another curve. If the filter undid the corruption exactly, their [[product|product]] would lie flat on 1.' },
+          { widget: 'notch', size: 'wide', caption: 'Gain against period, for img_0002. The corruption curve uses the generator’s recorded halo for this frame; the filter uses the sliders. These are continuous Gaussian transfer functions computed in your browser. Product at 64 px: {{nprod|1.26}}; filter gain at 256 px: {{nh256|0.989}}.' },
+          { p: 'It does not lie flat. The filter cuts deepest at a 17.3-pixel period, but this frame’s halo peaks at 31.8 pixels. I never tuned one to the other. And every difference of Gaussians has a gain of exactly 1 at zero frequency, so a slow ramp goes straight through. On the held-out frames, Otsu Dice after the DoG alone is 0.782, below the raw frames’ 0.894.' },
+          { h: 'The slider that did nothing' },
+          { p: 'CLAHE’s “contrast-limited” part is a ceiling: no grey level in a tile may hold more than a set number of pixels. Without it, a flat patch of background is stretched until its noise fills the whole range. Writing this up, I re-ran CLAHE with the clip limit at every value from 0.5 to 40. The output was bit-identical every time.' },
           { code: '# CLAHE requires an integer image; uint16 keeps more precision than uint8.\nimg_u16 = ((img - lo) / rng * 65535.0).astype(np.uint16)\n\nclahe = cv2.createCLAHE(clipLimit=clip, tileGridSize=grid)\neq_u16 = clahe.apply(img_u16)', lang: 'python', caption: '`src/preprocessor.py:84–90`, as shipped.' },
-          { p: 'The comment is true, and it is the bug. OpenCV turns the clip limit into a pixel count per grey level: clip × tile area ÷ number of levels, and at least 1. A 256-pixel frame on an 8×8 grid has tiles of 1,024 pixels. In 8-bit there are 256 levels, so clip 2 means a ceiling of 8. In 16-bit there are 65,536 levels, 2 × 1,024 ÷ 65,536 is less than one, and the floor of 1 wins.',
-            notes: [['The comment is true, and it is the bug.', 'more precision was exactly the problem']] },
-          { widget: 'ceiling', size: 'full', caption: 'One real 32×32 tile of img_0002 after the DoG, quantised both ways. Bars are the tile’s true count per grey level; the dashed line is the ceiling OpenCV computes for the clip on the slider, and the part of a bar above it is clipped. The small squares apply this tile’s own lookup table to itself, without the blending between neighbouring tiles that full CLAHE does. They show the stretch, not the exact output. At clip {{clipv|2}}, 8-bit clips {{c8|—}} pixels and 16-bit clips {{c16|—}}.' },
-          { p: 'So the clip limit never engaged, and CLAHE ran as plain per-tile equalisation. Flat background got stretched. The noise in the flattest quarter of the frame went from a standard deviation of 0.0184 after the DoG to 0.1293 after CLAHE, seven times more. The same CLAHE on uint8 gives 0.0410.^[scratchpad clahe.py: mean std of the flattest 16 of 64 tiles of img_0002.]' },
-          { p: 'The demo page inherited it. Its clip slider runs from 0.5 to 10 over tile counts from 2 to 16, and for every tile count from 3 upward the ceiling is 1 at every clip value.^[Enumerated from the formula in docs/cv.js:157–165 over the ranges in docs/index.html:149 and 154.] I built a slider and never checked that it moved anything.' },
-          { callout: 'The old version of this page said the classical stage scores below the raw frame “because CLAHE rewrites the tone curve”, and called that the metric behaving correctly. It was a bug. On the 20 held-out frames, the same pipeline with uint8 CLAHE scores 10.99 dB and Dice 0.875, against 7.39 dB and 0.480 as shipped. That is still not better than the raw frames, because nothing here touches the ramp, but it is no longer a collapse. The fix is one dtype.', label: 'Correction' }
+          { p: 'The comment is true, and it is the bug. OpenCV turns the clip limit into a pixel count per grey level: clip × tile area ÷ number of levels, at least 1. Tiles here are 1,024 pixels. In 8-bit, clip 2 means a ceiling of 8. In 16-bit there are 65,536 levels, the sum is under one, and the floor of 1 wins.' },
+          { widget: 'ceiling', size: 'full', caption: 'One real 32×32 tile of img_0002 after the DoG, quantised both ways. Bars are the tile’s count per grey level; the dashed line is the ceiling OpenCV computes for the clip on the slider. The small squares apply this tile’s own lookup table to itself, without blending between tiles, so they show the stretch, not the exact output. At clip {{clipv|2}}, 8-bit clips {{c8|—}} pixels and 16-bit clips {{c16|—}}.' },
+          { p: 'So CLAHE ran as plain per-tile equalisation. Noise in the flattest quarter of the frame went from 0.0184 after the DoG to 0.1293 after CLAHE, seven times more; uint8 gives 0.0410. The demo’s clip slider inherited it, line for line. I built a slider and never checked that it moved anything.' },
+          { callout: 'On the held-out frames, the same pipeline with uint8 CLAHE scores 10.99 dB and Dice 0.875, against 7.39 dB and 0.480 as shipped. Still not better than raw, because nothing here touches the ramp, but no longer a collapse. The fix is one dtype.', label: 'Correction' }
         ] },
 
-      { id: 'residual', label: 'Plate 4', title: 'What the network subtracts is mostly background',
+      { id: 'results', title: 'Results',
         blocks: [
-          { p: 'Hybrid mode feeds the classical output to a U-Net. It has four levels from 64 to 512 channels and a 1,024-channel bottleneck, uses GroupNorm instead of BatchNorm so small CPU batches behave, and holds 31,036,481 parameters. It trained for 15 epochs on 128-pixel crops from 80 frames.' },
-          { tex: '\\hat{y} = \\operatorname{clamp}\\big(x - f_\\theta(x),\\,0,\\,1\\big), \\qquad \\mathcal{L} = \\big\\lVert f_\\theta(x) - (x - y) \\big\\rVert_1', caption: 'Inference and loss: `src/pipeline.py:94–100`, `src/trainer.py:216–218`. x is the classical output, y the truth.' },
-          { p: 'It is not asked for the clean image. It is asked for the residual, the difference between its input and the truth, and the output is the input minus that. This is the idea behind DnCNN, and my plan called for it from the start.^[The project’s planning notes (local, untracked CLAUDE.md:76–84): “We do NOT train the UNet to output the clean image.”] I used to write that this meant “the network never draws a cell”. Drag the scan line and see.' },
-          { widget: 'scrub', size: 'wide', caption: 'img_0002 through the network. Pixel values are read back from lossless images the repo’s own code wrote (tools/phase-stages.py). Drag across the pictures, or use the slider, to pick a row; the traces are that row. In the residual picture mid-grey is 0 and lighter is subtracted. Row {{row|168}}: residual {{rbg|—}} on background, {{rin|—}} in cells.' },
-          { p: 'The [[residual|res]] is not a small correction. Across img_0002 its RMS is 0.359, against 0.540 for the [[input|in]] itself. It sits around 0.37 on background and 0.13 inside cells, and it peaks at cell edges, where the moats and the CLAHE overshoot are. Correlated with the true cells it scores −0.603. It is a picture of the cells, in negative.^[tools/phase-stages.py and scratchpad profile.py, img_0002, fp16 weights, 2026-10-16.]',
-            notes: [['in negative', 'so it does know where the cells are']] },
-          { p: 'So “never draws a cell” was wrong. A residual network is a shortcut plus a correction, and nothing stops the correction from knowing exactly where the cells are. Here it mostly removes background, meaning the ramp, the moats and the noise CLAHE amplified, and leaves the cell bodies alone. That is why the [[output|out]] follows the [[truth|truth]] so closely across the big cell on row 168.' }
-        ] },
-
-      { id: 'twenty', label: 'Plate 5', title: 'Twenty frames it never saw',
-        blocks: [
-          { p: 'The old headline was PSNR 12.87 → 20.62 dB, averaged over the six samples the demo bundles. Four of those six were training frames, and so were 17 of the 20 frames in the generated report.^[src/report.py:153–154 takes the first 20 files by name; scripts/make_demo_assets.py takes the first six; the split is src/dataset.py:128–134.] The trainer held out its own 20, picked by a seed-42 permutation. Those are the only fair test.' },
-          { p: 'On those 20, hybrid lifts mean PSNR from 11.46 to 20.26 dB, and it wins on every one. The worst hybrid frame, 15.21 dB, still beats the best raw frame, 14.24. The training log’s best validation score was also 20.26, at epoch 14, which is an independent check.^[TensorBoard psnr/val in runs/ (local), 15 epochs; best 20.26 at epoch 14.]' },
+          { p: 'An earlier headline, 12.87 → 20.62 dB, came from the six demo samples, and four of those were training frames. The trainer held out its own 20, picked by a seed-42 permutation. Those are the only fair test.' },
+          { p: 'On those 20, hybrid lifts mean PSNR from 11.46 to 20.26 dB, and it wins on every one. The worst hybrid frame, 15.21 dB, still beats the best raw frame, 14.24. The training log’s best validation score was also 20.26.' },
           { widget: 'dots', size: 'wide', caption: 'Each dot is one held-out frame; lines join the same frame across the three paths, and img_0002 is ringed. Switch the metric. Hybrid beats raw on {{dwins|20 of 20}} frames.' },
-          { p: 'Segmentation is the number I care about, and it tells a smaller story. Mean Otsu Dice moves from 0.894 to 0.907, and hybrid beats raw on only 7 of 20 frames. What changes is the floor. The worst raw frame, img_0059, scores 0.556; after hybrid it scores 0.901, and no hybrid frame drops below 0.808.',
-            notes: [['only 7 of 20 frames', 'the other thirteen got worse, most by a little']] },
+          { p: 'Segmentation tells a smaller story. Mean Otsu Dice moves from 0.894 to 0.907, and hybrid beats raw on only 7 of 20 frames. What changes is the floor. The worst raw frame, img_0059, scores 0.556; after hybrid it scores 0.901, and no hybrid frame drops below 0.808.' },
           { quote: 'It doesn’t segment better on average. It stops failing.' },
-          { p: 'For this slide, img_0002 goes from 12.25 to 19.24 dB, and from Dice 0.894 to 0.905. On my laptop’s CPU the classical half takes 8 ms a frame and hybrid takes 785 ms (medians from a re-run; the repo commits no timing). Hybrid is not real time on a laptop.' }
-        ] },
-
-      { id: 'parity', label: 'Plate 6', title: 'Two implementations, one number',
-        blocks: [
-          { p: 'The classical half is arithmetic, so `docs/` runs it in the browser in plain JavaScript, with no OpenCV. That includes OpenCV’s kernel sizing, its reflected borders and the 65,536-level CLAHE. You can drag its sliders over six bundled samples or upload a frame of your own.' },
-          { p: 'Two copies of the same maths drift apart quietly, so the port is measured rather than assumed. `scripts/verify_web_pipeline.py` sends the same pixels through both and fails below 40 dB. Re-run for this page, they agree to between 49.1 and 51.7 dB, and the JavaScript PSNR and SSIM match scikit-image exactly.^[python scripts/verify_web_pipeline.py, re-run 2026-10-16: 49.12 to 51.70 dB over the six samples, metric gap 0.00000.]' },
-          { p: 'That faithfulness has a funny side: the port copied the clip-limit bug too, line for line. The U-Net column on the demo is precomputed, and the page says so. Uploads get the classical half and two measures that need no clean target: edge energy and background variance.',
-            notes: [['copied the clip-limit bug too', 'faithful to a fault']] },
+          { p: 'On my laptop’s CPU the classical half takes 8 ms a frame and hybrid 785 ms. Hybrid is not real time on a laptop.' }
         ] }
     ],
 
     closing: { blocks: [
       { list: [
-        '**Quantise to uint8 before CLAHE**, or scale the clip limit by 256. On the held-out frames that one dtype takes the classical path from 7.39 to 10.99 dB and Dice from 0.480 to 0.875. Then retrain, because the network learned on the broken output.',
-        '**Report on the held-out split only.** The report scores the first 20 files by name and the demo shows the first six, so both mostly re-measure training frames. The trainer already had the split; the report just didn’t use it.',
-        '**Treat the ramp as its own problem.** No difference of Gaussians can touch it (gain 0.989 at 256 px), so it needs a background estimate, not a sharper notch. And the notch should sit on the halo’s band, 31.8 px here, not 17.3.',
-        '**Simulate the right polarity, then leave the simulator.** A bright halo outside a darker cell first; then real micrographs with hand-drawn masks, because Dice against a synthetic mask only says how well I undo my own simulator.',
-        '**Test that every control moves something.** A test that sweeps the clip limit and asserts the output changes would have caught this in July. The eight tests I had check the DoG and never the clip.'
+        '**Quantise to uint8 before CLAHE**, then retrain, because the network learned on the broken output.',
+        '**Report on the held-out split only.** The report and the demo mostly re-measure training frames.',
+        '**Treat the ramp as its own problem.** No difference of Gaussians can touch it, so it needs a background estimate. And the notch should sit on the halo’s band.',
+        '**Simulate the right polarity, then leave the simulator** for real micrographs with hand-drawn masks.',
+        '**Test that every control moves something.** A test that sweeps the clip limit would have caught this in July.'
       ] }
     ] },
 
     sources: [
-      ['Rebuilt frame check', 'The Plate 1 widget’s live Otsu Dice with all layers on, 0.893 (Playwright, Chromium, 2026-10-18), against 0.894 for the committed img_0002 (val.json). The rebuild’s noise is a seeded stand-in, so the two are not expected to match exactly.'],
-      ['Generator parameters and cells of img_0002', 'data/generate_synthetic.py:15–56, replayed at seed 42 and 256 px (scratchpad replay.py, 2026-10-16); bit-for-bit match with the committed PNGs on img_0000–0005. 20 cells; halo σ 4.862/9.724, strength 1.908; ramp gx 0.868, gy 0.569, amp 0.856, range 1.226; brightest cell 0.933; noise σ 0.0116.'],
-      ['Halo polarity', 'scratchpad disk.py: a 16 px disk with img_0002’s halo settings, interior +0.43 at r = 8, moat −0.148 at r = 24.'],
+      ['Held-out metrics', 'repo code with fp16 weights on the 20 frames src/dataset.py holds out.'],
+      ['Generator', 'data/generate_synthetic.py, replayed at seed 42; bit-for-bit match with the committed PNGs.'],
+      ['Inert clip limit', 'cv2.createCLAHE on img_0002’s DoG output, clip 0.5–40; OpenCV clahe.cpp.'],
+      ['Residual', 'tools/phase-stages.py on img_0002, run with the repo’s own code.'],
+      ['Browser parity', 'scripts/verify_web_pipeline.py: 49.12–51.70 dB against OpenCV.'],
       ['Classical defaults', 'configs/default_config.yaml:14–20 (σ1 1.0, σ2 8.0, α 0.6, clip 2.0, 8×8 grid).'],
-      ['Transfer functions', 'scratchpad freq.py, continuous Gaussian transfer functions of src/preprocessor.py:58–63: minimum 0.447 at 17.3 px; corruption peak 1.90× at 31.8 px; product 1.26 at 64 px and 0.59 at 16 px; gain 0.989 at 256 px. Recomputed in the widget.'],
-      ['Centre-to-rim ratio', 'scratchpad profile.py: 1.161 → 1.269 over img_0002’s 20 clean cells after DoG.'],
-      ['Inert clip limit', 'scratchpad clahe.py (cv2, 2026-10-16): bit-identical output for clip 0.5–40; flattest-quarter std 0.0184 after DoG, 0.1293 after uint16 CLAHE, 0.0410 after uint8 CLAHE. Ceiling formula: OpenCV clahe.cpp, mirrored in docs/cv.js:157–165. Demo ranges: docs/index.html:149, 154.'],
-      ['Tiles in the ceiling figure', 'tools/phase-stages.py: tiles (row 7, col 3), the flattest by std, and (row 5, col 1), on row 168’s big cell; counts and clipped pixels computed live from them.'],
-      ['uint8 vs uint16 on held-out frames', 'scratchpad u8.py: cv_only 7.39 dB / Dice 0.480 as shipped, 10.99 dB / 0.875 with uint8 CLAHE; DoG alone Dice 0.782.'],
-      ['Model', 'src/residual_unet.py; parameter count 31,036,481 summed over models/pretrained_fp16.pth; training config configs/default_config.yaml:30–42 (15 epochs, 128 px crops); split src/dataset.py:128–134 (80 train, 20 held out).'],
-      ['Residual statistics', 'tools/phase-stages.py on img_0002: predicted RMS 0.359, image RMS 0.540, mean 0.369 on background and 0.133 in cells (truth > 0.25), correlation with cells −0.603.'],
-      ['Held-out metrics', 'scratchpad evalval.py → val.json, repo code with fp16 weights on ids 2, 4, 18, 21, 24, 25, 27, 33, 42, 50, 51, 52, 56, 59, 61, 71, 81, 92, 97, 99: PSNR raw 11.46, hybrid 20.26 (20 of 20 better; worst hybrid 15.21, best raw 14.24); Dice raw 0.894 (min 0.556, img_0059), hybrid 0.907 (min 0.808), 7 of 20 better; img_0002 12.25 → 19.24 dB, Dice 0.894 → 0.905.'],
-      ['Old six-sample figures', 'docs/samples/manifest.json: raw 12.87 dB, hybrid 20.62 dB; only img_0002 and img_0004 are held out.'],
-      ['Validation curve', 'runs/events.out.tfevents.* (local, gitignored): best val PSNR 20.26 at epoch 14 of 15.'],
-      ['Timing', 'scratchpad evalval.py on a laptop CPU, torch 2.13: median 8.0 ms cv_only, 784.8 ms hybrid per 256 px frame. Not committed in the repo.'],
-      ['Browser parity', 'scripts/verify_web_pipeline.py, re-run 2026-10-16: 49.12–51.70 dB against OpenCV, PSNR/SSIM gap to scikit-image 0.00000.']
+      ['Model', 'src/residual_unet.py; 31,036,481 parameters; configs/default_config.yaml:30–42.'],
+      ['Timing', 'laptop CPU, torch 2.13: median 8.0 ms cv_only, 784.8 ms hybrid per 256 px frame.']
     ],
 
     widgets: {
       /* ---------- the rail: a slide and a 3× loupe ---------- */
       loupe: function (host, kit) {
-        var CH = { lie: 'raw', notch: 'dog', clip: 'clahe', residual: 'residual', twenty: 'hybrid', parity: 'truth', differently: 'truth' };
-        var ORDER = ['lie', 'notch', 'clip', 'residual', 'twenty', 'parity'];
+        var CH = { problem: 'raw', built: 'residual', hard: 'clahe', results: 'hybrid', differently: 'truth' };
+        var ORDER = ['problem', 'built', 'hard', 'results'];
+        var NAME = { problem: 'The problem', built: 'What I built', hard: 'The hard part', results: 'Results' };
         var LEDGER = {
-          lie: ['20 cells, drawn by seed 42', 'halo ×1.908 at σ 4.86 / 9.72 px', 'ramp range 1.226 (brightest cell 0.933)', 'noise σ 0.0116'],
-          notch: ['DoG gain at 256 px: 0.989', 'deepest cut 0.447 at 17.3 px; halo peak at 31.8 px'],
-          clip: ['clip ceiling: 1 pixel per level (8-bit: 8)', 'background noise ×7.0: 0.0184 → 0.1293'],
-          residual: ['residual 0.369 on background, 0.133 in cells', 'correlation with the cells −0.603'],
-          twenty: ['PSNR 12.25 → 19.24 dB', 'Dice 0.894 → 0.905'],
-          parity: ['browser vs OpenCV: 49.1–51.7 dB']
+          problem: ['20 cells, drawn by seed 42', 'halo ×1.908 at σ 4.86 / 9.72 px', 'ramp range 1.226 (brightest cell 0.933)', 'noise σ 0.0116'],
+          built: ['residual 0.369 on background, 0.133 in cells', 'browser vs OpenCV: 49.1–51.7 dB'],
+          hard: ['DoG gain at 256 px: 0.989', 'clip ceiling: 1 pixel per level (8-bit: 8)', 'background noise ×7.0: 0.0184 → 0.1293'],
+          results: ['PSNR 12.25 → 19.24 dB', 'Dice 0.894 → 0.905']
         };
         var stage = 'raw', lx = 0.25, ly = 0.66;
         host.appendChild(kit.el('p', { class: 'ph-loupe__k', text: 'Slide · img_0002 · held out' }));
@@ -296,7 +265,7 @@
         host.appendChild(pick.el);
         var ledger = kit.el('ol', { class: 'ph-ledger', 'aria-label': 'Ledger: measured numbers so far' });
         var groups = ORDER.map(function (ch, i) {
-          var li = kit.el('li', { class: 'ph-ledger__g' }, kit.el('span', { class: 'ph-ledger__p', text: 'Plate ' + (i + 1) }),
+          var li = kit.el('li', { class: 'ph-ledger__g' }, kit.el('span', { class: 'ph-ledger__p', text: NAME[ch] }),
             kit.el('ul', null, LEDGER[ch].map(function (t) { return kit.el('li', { text: t }); })));
           ledger.appendChild(li);
           return li;
@@ -339,7 +308,7 @@
         show('raw');
       },
 
-      /* ---------- Plate 1: make a microscope lie ---------- */
+      /* ---------- make a microscope lie ---------- */
       microscope: function (host, kit) {
         var W = 256, ROW = 168, L = { halo: true, ramp: true, noise: true }, P = { s: GEN.s, amp: GEN.amp, sig: GEN.noise };
         var base = null;
@@ -438,7 +407,7 @@
         } };
       },
 
-      /* ---------- Plate 2: the band-stop ---------- */
+      /* ---------- the band-stop ---------- */
       notch: function (host, kit) {
         var P = { s1: 1, s2: 8, a: 0.6 }, dim = null;
         var E = Math.exp, PI2 = 2 * Math.PI * Math.PI;
@@ -501,7 +470,7 @@
         redraw();
       },
 
-      /* ---------- Plate 3: where the ceiling is ---------- */
+      /* ---------- where the ceiling is ---------- */
       ceiling: function (host, kit) {
         var tile = 'background', clip = 2;
         var top = kit.el('div', { class: 'k-row' });
@@ -582,7 +551,7 @@
         draw();
       },
 
-      /* ---------- Plate 4: scrub the subtraction ---------- */
+      /* ---------- scrub the subtraction ---------- */
       scrub: function (host, kit) {
         var row = 168, dim = null, P = null;
         var names = [['clahe', 'Input (classical output)'], ['residual', 'Residual'], ['hybrid', 'Output']];
@@ -653,7 +622,7 @@
         });
       },
 
-      /* ---------- Plate 5: twenty frames ---------- */
+      /* ---------- twenty frames ---------- */
       dots: function (host, kit) {
         var metric = 'psnr', cur = null, anim = null;
         var plot = kit.el('div', { class: 'ph-dots' });

@@ -1,4 +1,4 @@
-/* Quantamental Screener — the forensic article. Every colour is a token. */
+/* Quantamental Screener — the article. Every colour is a token. */
 
 /* ledger (rail) */
 .qs-ledger summary { display: flex; justify-content: space-between; gap: 8px; cursor: pointer; list-style: none; }
@@ -98,9 +98,6 @@
   .qs-seg, .qs-sum__tick, .qs-ledger__row { transition: none; }
 }
 .a[data-form="forensic"] .a-code pre { max-width: 100%; overflow-x: auto; }
-/* A hidden footnote popover near the right edge still widens the page on a
-   phone (engine: visibility, not display). Take it out of layout until shown. */
-.a[data-form="forensic"] .a-fn:not(:hover):not(:focus-within) .a-fn__pop { display: none; }
 /* The dartboard is full-bleed, but the pinned ledger owns the right gutter
    from 1360px: bleed left only. */
 @media (min-width: 1360px) {

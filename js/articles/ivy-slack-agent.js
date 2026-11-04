@@ -199,140 +199,114 @@
     form: 'ladder',
     scramble: 'L1L2L3L4→↓▮▯#@',
     rail: 'ask',
-    dek: 'IVY was a Slack bot for internal IT questions at InnovyQ, built in the summer of 2026. I built what happens when the first answer isn’t good enough: a ladder from a fixed intent model, down through a knowledge base and a language model, to a person. This piece follows one question down it.',
-
-    opener: function (c) {
-      var s = '';
-      [24, 50, 76, 102].forEach(function (y, i) {
-        s += '<line x1="40" y1="' + y + '" x2="88" y2="' + y + '" stroke="' + (i === 1 ? c.a : c.l) + '" stroke-width="' + (i === 1 ? 2.4 : 1.4) + '"/>';
-      });
-      s += '<line x1="40" y1="12" x2="40" y2="116" stroke="' + c.i + '" stroke-width="1.6"/>';
-      s += '<line x1="88" y1="12" x2="88" y2="116" stroke="' + c.i + '" stroke-width="1.6"/>';
-      s += '<circle cx="64" cy="50" r="5" fill="' + c.a + '"/>';
-      s += '<path d="M64 60 L64 70 M60 66 L64 70 L68 66" stroke="' + c.a + '" stroke-width="1.4" fill="none"/>';
-      return s;
-    },
+    dek: 'IVY answers internal IT questions in Slack, and when its first answer misses, a ladder I built takes the question down through a local knowledge base and a language model to a person. Here one timesheet question goes all the way down.',
 
     chapters: [
       {
-        id: 'lex', label: 'Rung 1 · Lex', title: 'One question',
+        id: 'lex', title: 'The problem',
         blocks: [
-          { p: 'The question comes from the demo script I wrote for showing IVY off: "My timesheet won’t submit and the deadline is in an hour." I picked it because it is vague in the way real requests are. It names a symptom, not a system, and it has a clock on it.' },
-          { p: 'You can change it. The box labelled "Ask IVY something" holds the question, and every figure below re-runs on whatever you type there.' },
-          { scrolly: 'ladder', caption: 'The ladder as the worker decides it, with the real flags. The bot’s lines are the strings in lambda_o3_slack_worker.py. Lex, the LLM and the human are not run here; the knowledge-base rung is, on your question.',
-            steps: [
-              { p: 'A message leaves Slack, goes through API Gateway to the handler, is deduplicated by `event_id` and lands on SQS. The worker picks it up. That is why a slow reply never becomes two replies.', state: { at: 0, ladder: true, kb: true, lex: false } },
-              { p: 'The worker asks **Lex V2** first. Lex is deterministic: it only knows the intents it was given, 333 in the full export, 65 of which run a Lambda and actually do something. For the timesheet question it has nothing confident.^[333 intents and 65 Lambda-backed: data/lex_full_export_preview.json. The demo script expects Lex to miss this question.]', state: { at: 1, ladder: true, kb: true, lex: false } },
-              { p: 'Here is the first decision I made. When Lex misses and a knowledge base exists, IVY does **not** run it straight away. It says so and asks: *"Want me to search the knowledge base?"* The user presses a button to go down a rung, so each layer reads as its own step.', state: { at: 2, ladder: true, kb: true, lex: false } },
-              { p: 'If no knowledge base is provisioned, there is nothing to offer. The worker skips the rung silently and runs the next one in the background, stopping at the first that gives a real answer. Untick the knowledge base and watch the rung grey out.', state: { at: 2, ladder: true, kb: false, lex: false } },
-              { p: 'Every button carries its own state: the next rung and the question, cut to 1,500 characters. The ladder needs no extra session record to know where it is. Rung 3 is the LLM; the last button hands over to a person.', state: { at: 4, ladder: true, kb: true, lex: false } },
-              { p: 'One honest caveat. The whole ladder sits behind `ENABLE_ESCALATION_LADDER`, which defaults to off. With it off, the worker runs its original path and none of these buttons appear.', state: { at: 1, ladder: false, kb: true, lex: false } }
-            ] },
-          { h: 'Lex’s one hard rule' },
-          { p: 'Lex earns its place at the top because it is cheap and cannot make things up. It also has a rule that bit me when I loaded the full export: a Lex V2 build fails if one sample utterance belongs to two intents. The export had 2,672 utterances, of which 2,615 were distinct. Fifty-four strings were shared, and 57 copies had to go.^[Computed read-only over data/intent_kb.json with the loader’s own dedupe function.]' },
-          { p: 'The question is who keeps each one. My answer in `dedupe_cross_intent_utterances` is the intent with the fewest utterances. The specific intent keeps its phrasing, and the broad catch-all lets it go. Under that rule, [[ApplicationLicenses|al]] drops from 51 utterances to {{al-count|23}}.',
-            notes: [['the intent with the fewest utterances', 'specific beats general, by count alone']] },
-          { widget: 'tug', size: 'wide', caption: 'ApplicationLicenses against the five intents whose every utterance it also holds. Pick a rule and see who keeps each shared phrasing. Phrasings that name internal systems, links or people are counted but withheld. The 57 removals and the emptied-intent counts are for the whole 330-intent export under each rule.' },
-          { p: 'Pick either of the other rules and the five specific intents end up empty, so Lex prunes them. After that, "How do I request access to github?" lands on a generic licence intent. Nothing errors. The build passes, and the bot just gets vaguer.' }
+          { p: 'IVY was a Slack bot for internal IT questions at InnovyQ, built in the summer of 2026. Its first layer is **Lex V2**, an intent model: it only knows the intents it was given, 333 in the full export, 65 of which run a Lambda and actually do something.' },
+          { p: 'Lex is cheap and cannot make things up. But a real request rarely fits an intent. Take the question from the demo script I wrote: "My timesheet won’t submit and the deadline is in an hour." It names a symptom, not a system, and it has a clock on it. Lex has nothing confident for it.' },
+          { p: 'My job was what happens next. You can change the question: the box labelled "Ask IVY something" holds it, and every figure below re-runs on whatever you type there.' }
         ]
       },
       {
-        id: 'kb', label: 'Rung 2 · Knowledge base', title: 'A 0.30 line through 330 answers',
+        id: 'kb', title: 'What I built',
         art: function (c) {
           return '<line x1="10" y1="60" x2="150" y2="60" stroke="' + c.a + '" stroke-dasharray="4 3"/>' +
             '<rect x="20" y="30" width="16" height="70" fill="' + c.a + '"/><rect x="50" y="52" width="16" height="48" fill="' + c.m + '"/>' +
             '<rect x="80" y="74" width="16" height="26" fill="' + c.p + '"/><rect x="110" y="86" width="16" height="14" fill="' + c.p + '"/>';
         },
         blocks: [
-          { quote: 'A temporary stand-in for a Bedrock KB.', cite: 'my own comment, lambda_o3_slack_worker.py' },
-          { p: 'The second rung was meant to be a Bedrock knowledge base. None was provisioned while I worked on it, so I wrote a local one: the 330 exported intents that have an answer, loaded from one JSON file, searched in memory. That gives 2,672 utterances in 13 categories.^[data/intent_kb.json: 330 intents with responses, 2,672 utterances, 13 categories, 2,137 distinct tokens.]',
-            notes: [['searched in memory', 'no vector store, no extra bill']] },
-          { p: 'The matcher is keyword overlap, weighted so rare words count for more. A word that appears in one intent, like [[pcq|pcq]], weighs 6.11. A word in 150 of them, like [[access|access]], weighs 1.79. The score is the share of your question’s weight that an intent covers, and a hit needs at least 0.30.' },
+          { h: 'The ladder' },
+          { scrolly: 'ladder', caption: 'The ladder as the worker decides it, with the real flags. The bot’s lines are the strings in lambda_o3_slack_worker.py. Lex, the LLM and the human are not run here; the knowledge-base rung is, on your question.',
+            steps: [
+              { p: 'A message leaves Slack, goes through API Gateway to the handler, is deduplicated by `event_id` and lands on SQS. The worker picks it up, so a slow reply never becomes two replies.', state: { at: 0, ladder: true, kb: true, lex: false } },
+              { p: 'The worker asks Lex first. For the timesheet question it has nothing confident.', state: { at: 1, ladder: true, kb: true, lex: false } },
+              { p: 'When Lex misses and a knowledge base exists, IVY does **not** run it straight away. It asks: *"Want me to search the knowledge base?"* The user presses a button to go down a rung, so each layer reads as its own step.', state: { at: 2, ladder: true, kb: true, lex: false } },
+              { p: 'If no knowledge base is provisioned, the worker skips the rung silently and runs the next one, stopping at the first real answer. Untick the knowledge base and watch the rung grey out.', state: { at: 2, ladder: true, kb: false, lex: false } },
+              { p: 'Every button carries its own state: the next rung and the question, cut to 1,500 characters. No extra session record is needed. Rung 3 is the LLM; the last button hands over to a person.', state: { at: 4, ladder: true, kb: true, lex: false } },
+              { p: 'The whole ladder sits behind `ENABLE_ESCALATION_LADDER`, which defaults to off. With it off, the worker runs its original path and none of these buttons appear.', state: { at: 1, ladder: false, kb: true, lex: false } }
+            ] },
+          { h: 'A knowledge base in memory' },
+          { p: 'The second rung was meant to be a Bedrock knowledge base. None was provisioned, so I wrote a local stand-in: the 330 exported intents that have an answer, 2,672 utterances in 13 categories, loaded from one JSON file and searched in memory.' },
+          { p: 'The matcher is keyword overlap, weighted so rare words count for more. A word in one intent, like [[pcq|pcq]], weighs 6.11. A word in 150 of them, like [[access|access]], weighs 1.79. The score is the share of your question’s weight an intent covers, and a hit needs at least 0.30.' },
           { tex: '\\mathrm{idf}(t) = \\ln\\frac{N+1}{\\mathrm{df}(t)+1} + 1',
             caption: 'A word’s weight. N = 330, and a word the knowledge base has never seen weighs 1.' },
           { tex: '\\mathrm{score}(d) = \\frac{\\sum_{t \\in q ∩ d} \\mathrm{idf}(t)}{\\sum_{t \\in q} \\mathrm{idf}(t)}',
             caption: 'An intent’s score: the share of the question’s weight it covers. Ties go to the earlier intent in the file.' },
-          { p: 'For the timesheet question the winner is {{kb-top|Workday queries}} at {{kb-score|0.439}}. That is a fair answer. Timesheets live in Workday there, and the matcher found that through the word "timesheet" alone.' },
-          { widget: 'matcher', size: 'wide', caption: 'Your question, tokenised the way the worker does it, scored against the 330 intents. Chip size is the word’s weight; greyed chips are stopwords or under three letters. The dashed rule is the 0.30 threshold. Token sets ship without utterances or answers; 84 tokens naming people, internal hosts, ticket IDs or internal codenames were removed, so a question containing one of those scores slightly differently from the original.' },
-          { callout: 'Try "my vpn keeps dropping". It goes to BluetoothIssue, with a score of 0.469. "keeps" appears in only 6 intents and "vpn" in 9, so the filler word outweighs the subject. "I tried that but it still shows an error" scores 0.777 for a vSphere intent, because "but" was never a stopword.\n\nBoth clear my threshold comfortably. The matcher is not uncertain about these; it is confidently wrong, and a threshold can’t catch that.', label: 'Confident and wrong' },
-          { p: 'I found these by re-running my own code over its own data months later. The toggles in the figure are the first fix I’d reach for: treat "but" and "keeps" as filler. That fixes these two questions, but it does not fix the cause. On 330 short documents, rarity is a weak signal for meaning.' }
-        ]
-      },
-      {
-        id: 'llm', label: 'Rung 3 · LLM', title: 'The sentence that never changed',
-        blocks: [
-          { p: 'When the user presses "Try another solution", the question goes to rung 3, a language model. The provider is a setting: Claude on Bedrock by default, through a fallback Lambda, or Mistral, or Gemini. Rung 3 is the first rung that can make something up, so it is the one that needs the most rules.' },
-          { p: 'The fallback’s original prompt told the model to ask one clarifying question when a request was ambiguous. In a helpdesk, a clarifying question is often a dead end. So when I wired it into the ladder I rewrote the prompt to lead with the most likely fix, raised the answer budget from 500 to 800 tokens, and moved the call to Bedrock’s model-agnostic Converse API.^[lambda_o3_claude_fallback.py lines 13 and 18–22, commit 5a4e40e (2026-07-27); the original prompt is at 61fe183.]' },
+          { widget: 'matcher', size: 'wide', caption: 'Your question, tokenised the way the worker does it, scored against the 330 intents. Chip size is the word’s weight; greyed chips are stopwords or under three letters. The dashed rule is the 0.30 threshold. 84 tokens naming people, internal hosts or codenames were removed, so a question containing one scores slightly differently from the original.' },
+          { h: 'The LLM, with one fixed rule' },
+          { p: 'Rung 3 is a language model: Claude on Bedrock by default, or Mistral, or Gemini. The original fallback prompt asked one clarifying question when a request was ambiguous, which in a helpdesk is often a dead end. I rewrote it to lead with the most likely fix, raised the budget from 500 to 800 tokens and moved the call to Bedrock’s Converse API.' },
           { code: '"You are IVY, an IT and support assistant. "\n"Give a clear, concrete, step-by-step solution the user can act on right away, "\n"using short numbered steps and leading with the most likely fix. "\n"Only ask a clarifying question if you genuinely cannot give any useful "\n"guidance without more detail; otherwise provide the best actionable steps. "\n"Do not claim that a ticket was created."', lang: 'python',
-            caption: 'The rewritten system prompt, lambda_o3_claude_fallback.py at bbdf83a. The last line is the one line I kept from the original.' },
-          { p: 'The last sentence is the one that never moved: *Do not claim that a ticket was created.* The model may be helpful, but only the deterministic code is allowed to say that something happened.',
-            notes: [['only the deterministic code is allowed to say that something happened', 'the whole safety argument, in one rule']] },
-          { p: 'Once the ladder reaches rung 3, the conversation stays there. Follow-ups go to the model with the original issue and a transcript, for up to 50 turns. The transcript is cut to its last 6,000 characters, so a long chat forgets its beginning before it can outgrow the prompt. At turn 50, IVY says "We’ve gone back and forth quite a few times" and offers a person.^[LLM_CHAT_MAX_MESSAGES = 50 and LLM_CHAT_HISTORY_MAX_CHARS = 6000, lambda_o3_slack_worker.py lines 167–176.]' }
+            caption: 'The rewritten system prompt, lambda_o3_claude_fallback.py. The last line is kept from the original.' },
+          { p: 'That last sentence never moved: *Do not claim that a ticket was created.* Only deterministic code may say that something happened. Once the ladder reaches the LLM, follow-ups stay there with a transcript cut to its last 6,000 characters, for up to 50 turns, and then IVY offers a person.' },
+          { p: 'The bottom rung, "Talk to a support agent", goes to a dispatcher. It reserves the least-loaded agent on shift with a conditional write that only succeeds while they have fewer than 5 open chats; if nobody has room, the ticket queues.' },
+          { h: 'A closed ticket becomes a rung' },
+          { p: 'The ladder only helps if the top rungs keep learning. So I built a loop that turns resolved Jira tickets into new Lex intents, with a person approving each batch in Slack.' },
+          { list: [
+            '`/generate-intents` pulls resolved tickets. One LLM call per ticket, at temperature 0, distils each into a request, a resolution, a category and the user’s phrasings.',
+            'Within each category, requests are clustered by word overlap (Jaccard), threshold 0.3.',
+            'The LLM names each cluster, but the utterances stay the users’ real phrasings, up to 40 per intent.',
+            'A Slack card offers **Approve & load** or **Deny (get CSV)**. Approve loads them into Lex.'
+          ], ordered: true },
+          { p: 'Two of the four sample tickets are about Smartsheet. "Get access to Smartsheet" and "Get a Smartsheet license for planning" share one word in four, a Jaccard of {{jac|0.25}}, so at 0.3 they stay apart and the card proposes {{clusters|4}} intents.' },
+          { widget: 'loop', size: 'wide', caption: 'The four sample tickets (SUP-1001 to 1004, synthetic), clustered with the real algorithm. Move the threshold and switch the wording of SUP-1004. A fourth cluster gets a name built from its words, as the code does when the label queue runs dry. Approve adds the proposals to the matcher above, in this page only.' },
+          { p: 'Press Approve and scroll back up to the matcher. "my vpn keeps dropping" now goes to VpnDisconnecting, because that is how the person in SUP-1002 put it. The mock data is convenient on purpose, but the idea holds: a question that needed a person last week can be answered by the ladder this week.' }
         ]
       },
       {
-        id: 'human', label: 'Rung 4 · A human', title: 'Handing off to a person',
-        blocks: [
-          { p: 'The bottom rung is a button, "Talk to a support agent". The ladder draws it and sets the session state its handler needs. What happens after the press is the most carefully built part of IVY.' },
-          { p: 'The dispatcher picks the least-loaded agent who is enabled and on call or on shift. It reserves that agent with a conditional write that only succeeds while the agent has fewer than 5 open chats. If two requests race for the same person, one write fails and that request moves on to the next agent. If nobody has room, the ticket queues instead of being forced onto someone.^[live_agent_capacity.py; MAX_ACTIVE_CHATS_PER_AGENT defaults to 5.]' }
-        ]
-      },
-      {
-        id: 'screenshots', label: 'Side door', title: '“Half of tickets are a picture”',
+        id: 'hard', title: 'The hard part',
         art: function (c) {
           return '<rect x="30" y="24" width="100" height="70" rx="6" fill="none" stroke="' + c.l + '"/>' +
             '<rect x="30" y="24" width="100" height="14" fill="' + c.m + '"/>' +
             '<line x1="42" y1="56" x2="110" y2="56" stroke="' + c.i + '"/><line x1="42" y1="70" x2="96" y2="70" stroke="' + c.a + '" stroke-dasharray="3 2"/>';
         },
         blocks: [
-          { p: 'That line is from the demo script, not a measurement; I never counted. It is true often enough, though. People paste a screenshot of the error dialog and type nothing else. With the ladder on, the text read off the picture goes to Lex first and then down the same rungs as typed text. A screenshot is just another question.' },
-          { p: 'Reading it means picking an OCR engine. I scored four of them against transcriptions I typed by hand, using a plain edit distance: one minus the number of character edits divided by the length of the truth. The test set was five synthetic cards rendered for the purpose, one of them a timesheet error.^[ocr/metrics.py and ocr/ground_truth.py at 61fe183. Results generated 2026-07-17.]',
-            notes: [['five synthetic cards', 'clean rendered text, so 100% here is easy']] },
-          { figure: 'public/assets/projects/ivy-timesheet-card.webp', alt: 'A synthetic error card: TimeTrack Portal, Timesheet submission failed, Error: Timesheet period is locked for payroll processing, Employee: Test User.', caption: 'One of the five test cards, synthetic, made for the benchmark. Every card has a footer saying so.', size: 'column' },
-          { widget: 'ocr', size: 'wide', caption: 'Each engine’s real output on two of the cards, diffed against the ground truth in your browser with the same edit distance as ocr/metrics.py. Below that, a model of a cold Lambda: model load plus N images times the mean latency, from the benchmark. It is arithmetic on measured numbers, not a measurement of a deployed function.' },
-          { p: 'Accuracy barely separated them. Mistral OCR read all five cards perfectly and Textract scored 99.9%. The difference was cost at start-up. PaddleOCR took 10.6 seconds to load its model and EasyOCR 12.1. On Lambda, a new container pays that every time it scales out. With {{n|10}} screenshots per container, the cheapest engine to wait on is {{lead|Mistral OCR}}.' },
-          { p: 'I still packaged PaddleOCR, because it costs nothing per call. Its libraries are far over Lambda’s 250 MB zip limit, so it ships as a container image. The model weights are baked in at build time, because at runtime only `/tmp` is writable and it starts empty. Under the local Lambda emulator, a cold call took 4.3 seconds and warm calls about one.^[ocr/Dockerfile and ocr/DEPLOY.md at 61fe183. Nothing in the repo shows the image deployed to AWS.]' },
-          { p: 'That container was an experiment, and it never went further than the emulator. In a later commit I deleted the benchmark and three of the engines. IVY’s OCR is Textract, and the extracted text goes to Mistral when it needs an LLM.^[Commit 5a4e40e: ocr/registry.py lists only textract; IMAGE_LLM_PROVIDER defaults to mistral.]' }
+          { h: 'Who keeps a shared phrasing' },
+          { p: 'A Lex V2 build fails if one sample utterance belongs to two intents. The export had 2,672 utterances, 2,615 distinct: 54 strings were shared, and 57 copies had to go.' },
+          { p: 'My rule in `dedupe_cross_intent_utterances`: the intent with the fewest utterances keeps it. The specific intent keeps its phrasing and the catch-all lets it go. Under that rule, [[ApplicationLicenses|al]] drops from 51 utterances to {{al-count|23}}.' },
+          { widget: 'tug', size: 'wide', caption: 'ApplicationLicenses against the five intents whose every utterance it also holds. Pick a rule and see who keeps each shared phrasing. Phrasings that name internal systems, links or people are counted but withheld. The 57 removals and emptied-intent counts are for the whole export under each rule.' },
+          { p: 'Pick either other rule and the five specific intents end up empty, so Lex prunes them. Then "How do I request access to github?" lands on a generic licence intent. Nothing errors; the bot just gets vaguer.' },
+          { h: 'Confident and wrong' },
+          { p: 'Try "my vpn keeps dropping" in the matcher. It goes to BluetoothIssue at 0.469: "keeps" appears in only 6 intents and "vpn" in 9, so the filler word outweighs the subject. "I tried that but it still shows an error" scores 0.777 for a vSphere intent, because "but" was never a stopword.' },
+          { p: 'Both clear the threshold easily. The matcher isn’t uncertain; it is confidently wrong, and a threshold can’t catch that. Making "but" and "keeps" stopwords fixes these two, not the cause: on 330 short documents, rarity is a weak signal for meaning.' },
+          { h: 'Reading screenshots' },
+          { p: 'People often paste a screenshot of the error and type nothing else. With the ladder on, the text read off the picture goes down the same rungs as typed text. Choosing the OCR engine meant a benchmark: four engines scored against hand-typed transcriptions of five synthetic cards, as one minus edit distance over length.' },
+          { figure: 'public/assets/projects/ivy-timesheet-card.webp', alt: 'A synthetic error card: TimeTrack Portal, Timesheet submission failed, Error: Timesheet period is locked for payroll processing, Employee: Test User.', caption: 'One of the five test cards, synthetic, made for the benchmark.', size: 'column' },
+          { widget: 'ocr', size: 'wide', caption: 'Each engine’s real output on two of the cards, diffed against the ground truth in your browser. Below, a model of a cold Lambda: model load plus N images times the mean latency, from the benchmark. Arithmetic on measured numbers, not a measured deployment.' },
+          { p: 'Accuracy barely separated them: Mistral OCR read every card perfectly and Textract scored 99.9%. Start-up cost did. PaddleOCR took 10.6 seconds to load and EasyOCR 12.1, which a Lambda pays every time it scales out. With {{n|10}} screenshots per container, the fastest is {{lead|Mistral OCR}}.' },
+          { p: 'I still packaged PaddleOCR as a container image, with the weights baked in at build time, since only `/tmp` is writable at runtime. Under the local emulator a cold call took 4.3 seconds. It never went further: IVY’s OCR is Textract.' }
         ]
       },
       {
-        id: 'loop', label: 'Coda · The learning loop', title: 'A closed ticket becomes a rung',
+        id: 'results', title: 'Results',
         blocks: [
-          { p: 'The ladder only helps if the top rungs keep learning. So the last thing I built turns resolved Jira tickets into new Lex intents, with a person approving each batch in Slack.' },
-          { list: [
-            '`/generate-intents` pulls resolved tickets. One LLM call per ticket, at temperature 0, distils each into a request, a resolution, a category and the user’s phrasings.',
-            'Within each category, requests are clustered greedily by word overlap (Jaccard), with a threshold of 0.3.',
-            'The LLM names each cluster, but the utterances stay the users’ real phrasings, up to 40 per intent. The part Lex matches on is never generated.',
-            'A card in Slack lists the proposals with **Approve & load** and **Deny (get CSV)**. Approve loads them into Lex through the dedupe above.'
-          ], ordered: true },
-          { p: 'The sample run has four tickets, and two of them are about Smartsheet. The comments promise three intents from four tickets. Whether that happens depends on one sentence the LLM writes. "Get access to Smartsheet" and "Get a Smartsheet license for planning" share one word out of four, a Jaccard of {{jac|0.25}}. At 0.3 they stay apart, and the card proposes {{clusters|4}} intents.^[Production mock wording in lambda_o3_intents.py lines 131–149; the demo wording in demo/slack_intents_demo.py scores 0.50. Both computed with agents.synthesize.cluster_interactions.]',
-            notes: [['depends on one sentence the LLM writes', 'a knife edge I didn’t see until I measured it']] },
-          { widget: 'loop', size: 'wide', caption: 'The four sample tickets (SUP-1001 to 1004, synthetic, from agents/connectors.py), clustered with the real algorithm. Move the threshold and switch the wording of SUP-1004. The first three names are the mock run’s canned labels; a fourth cluster falls back to a name built from its words, as the code does when the label queue runs dry. Approve adds the proposals to the matcher above, in this page only.' },
-          { p: 'Press Approve and scroll back up to the matcher. "my vpn keeps dropping" now goes to VpnDisconnecting, because that is exactly how the person in SUP-1002 put it. The mock data is that convenient on purpose, but the loop works the same way with real tickets: a question that needed a person last week can be answered by the ladder this week.' }
+          { p: 'For the timesheet question, the knowledge base answers with {{kb-top|Workday queries}} at {{kb-score|0.439}}. That is right: timesheets live in Workday there, and the matcher got it from the word "timesheet" alone.' },
+          { p: 'The dedupe rule keeps the five specific access intents alive, where either other rule empties them. In the OCR benchmark, Mistral OCR scored 100% and Textract 99.9% on the synthetic cards. The learning loop’s agent tests ran 38 passed, 1 failed.' },
+          { p: 'What I can’t claim: the ladder is off by default and nothing in the repo shows it ran for real users. Everything here is how it decides, not how often it helped.' }
         ]
       }
     ],
 
     closing: {
       blocks: [
-        { p: '**Score the routing, not just the OCR.** I measured what was easy to measure, characters on a clean card. The part that decides whether IVY helps is whether a question lands on the right intent, and "vpn keeps dropping" going to Bluetooth shows I never checked. A hundred real requests, each labelled with the intent it should reach, would have caught it in an afternoon.' },
-        { p: '**Make the matcher earn a hit.** A 0.30 share of the weight can be all filler. I would require the single heaviest matched word to be a real subject word, or move to embeddings. The clustering already has a `similarity_fn` hook waiting for that.' },
-        { p: '**Test against real screenshots.** On synthetic cards, two engines tie at the top and the benchmark can’t tell them apart. I also deleted the harness when I chose Textract, which left the Dockerfile still saying `OCR_ENGINE=paddleocr`. I’d keep the harness and fix that line.' },
-        { p: '**Test the card I ship.** One of my 39 tests still expects an Edit button that the review card no longer has, and it fails. A learning loop that adds answers to a bot needs its approval step tested more strictly than anything else.' },
-        { p: '**Turn the ladder on somewhere real.** It is off by default, and nothing in the repo shows it ran for real users. Everything here is how it decides, not how often it helped.' }
+        { p: '**Score the routing, not just the OCR.** I measured characters on clean cards. What decides whether IVY helps is whether a question lands on the right intent, and "vpn keeps dropping" going to Bluetooth shows I never checked. A hundred labelled real requests would have caught it in an afternoon.' },
+        { p: '**Make the matcher earn a hit.** A 0.30 share of the weight can be all filler. I would require the heaviest matched word to be a subject word, or move to embeddings; the clustering already has a `similarity_fn` hook for that.' },
+        { p: '**Keep the benchmark.** I deleted the harness when I chose Textract, which left the Dockerfile still saying `OCR_ENGINE=paddleocr`. I’d keep it, fix that line and test on real screenshots.' },
+        { p: '**Test the card I ship.** The failing test expects an Edit button the review card no longer has. A loop that adds answers to a bot needs its approval step tested more strictly than anything else.' }
       ]
     },
 
     sources: [
-      ['Ladder', 'lambda_o3_slack_worker.py lines 148–176, 1396–1587, 5330–5390, 7675–7733: ESCALATION_LEVELS, ESCALATION_MAX_QUERY_CHARS = 1500, ENABLE_ESCALATION_LADDER default false, LLM_CHAT_MAX_MESSAGES = 50, LLM_CHAT_HISTORY_MAX_CHARS = 6000.'],
+      ['Ladder', 'lambda_o3_slack_worker.py: ENABLE_ESCALATION_LADDER (default off), 1,500-char button state, 50 turns, 6,000-char transcript.'],
+      ['Knowledge base', 'data/intent_kb.json (330 intents, 2,672 utterances); matcher re-run October 2026, LOCAL_KB_MIN_SCORE = 0.30.'],
+      ['Dedupe', 'load_lex_intents_from_excel.py over data/intent_kb.json: 57 removals; 4 / 12 / 13 intents emptied.'],
+      ['OCR', 'ocr/results at 61fe183, 2026-07-17: accuracy, latency and model-load times; cold container from ocr/DEPLOY.md.'],
+      ['Learning loop', 'agents/synthesize.py (Jaccard 0.3, 40 utterances); tests 2026-10-16, 38 passed, 1 failed.'],
       ['Lex intents', 'data/lex_full_export_preview.json: 333 intents, 65 Lambda-backed.'],
-      ['Knowledge base', 'data/intent_kb.json: 330 intents, 2,672 utterances, 13 categories; matcher lambda_o3_slack_worker.py lines 2847–2973, LOCAL_KB_MIN_SCORE = 0.30. Scores (Workday queries 0.439, BluetoothIssue 0.469, VsphereorVcloudIssues 0.777, idf pcq 6.11, access 1.79) re-run over the file in October 2026 with a mirror of invoke_local_kb.'],
-      ['Dedupe', 'load_lex_intents_from_excel.py lines 335–356 run read-only over data/intent_kb.json under each ordering: 2,615 distinct of 2,672, 54 shared strings, 57 removals; 4, 12 and 13 intents emptied; ApplicationLicenses 51 → 23.'],
-      ['Fallback prompt', 'lambda_o3_claude_fallback.py at 61fe183 (original, max tokens 500) and bbdf83a (rewrite in 5a4e40e, max tokens 800, Converse API).'],
-      ['Dispatcher', 'live_agent_capacity.py, MAX_ACTIVE_CHATS_PER_AGENT = 5.'],
-      ['OCR', 'ocr/results/result-*.json and benchmark_results.md at 61fe183, generated 2026-07-17: char accuracy 97.4 / 98.9 / 99.9 / 100%, mean latency 2,184 / 1,075 / 1,551 / 823 ms, load 12,142 / 10,594 / 38 / 1,420 ms (EasyOCR / PaddleOCR / Textract / Mistral OCR). Cold container 4,280.5 ms: ocr/DEPLOY.md. Crossovers are arithmetic on those means.'],
-      ['Learning loop', 'agents/ingest.py, synthesize.py (threshold 0.3, 40 utterances), store.py (7-day TTL), review.py; lambda_o3_intents.py. Jaccard 0.25 vs 0.50 and the 4-cluster result re-run with agents.synthesize.cluster_interactions and MockLLMClient.'],
-      ['Tests', 'python -m pytest tests, 2026-10-16: tests/test_agents_*.py 38 passed, 1 failed.']
+      ['Fallback prompt', 'lambda_o3_claude_fallback.py at 61fe183 (500 tokens) and bbdf83a (800 tokens, Converse API).'],
+      ['Dispatcher', 'live_agent_capacity.py, MAX_ACTIVE_CHATS_PER_AGENT = 5.']
     ],
 
     widgets: {

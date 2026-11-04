@@ -2,9 +2,10 @@
      1. Every [data-drag] object can be picked up and moved around the desk;
         "Tidy up" puts everything back. Nothing is saved, so a reload does too.
      2. The lamp is a theme switch: lit lamp = dark room.
-     3. Hovering the music card plays a track; leaving it fades the audio out.
+     3. The record player plays a track when pressed and stops when pressed
+        again. Nothing else starts it, ever: no hover, no autoplay.
    Everything else on the desk (the laptop's screen and terminal, the window,
-   the notes, the mug...) is js/desk-objects.js, which reaches the dragging
+   the phone, the drink...) is js/desk-objects.js, which reaches the dragging
    through window.portfolioDesk below: `on('drop' | 'tidy', fn)`, `nudge()`
    and `moved()`.
 
@@ -12,18 +13,13 @@
    compose with each object's authored `transform: rotate()` rather than
    replacing it, so nothing here has to rebuild a transform.
 
-   Tilt and the slide home are gated on prefers-reduced-motion. Audio only
-   ever starts from a real pointer interaction, and stops when the visitor
-   leaves desk mode. */
+   Tilt and the slide home are gated on prefers-reduced-motion. */
 (function () {
   'use strict';
 
   /* A press is a click until the pointer has moved this far, so the lamp,
-     the play button and the AirDrop links still work on objects that drag. */
+     the record player and the phone still work on objects that drag. */
   var DRAG_PX = 4;
-  /* One threshold for "the fade has converged" and "the track is audible",
-     so a click landing mid-fade cannot read as silent and start a second play. */
-  var FADE_EPSILON = 0.04;
   var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   var root = document.documentElement;
 
@@ -187,27 +183,20 @@
     lampLight();
   }
 
-  /* Hovering the card starts the track and fades it in; leaving fades out and
-     pauses. The button is the accessible, deliberate control — once it has
-     been used, hover stops hijacking playback so the visitor's choice sticks. */
+  /* The record player: press to play (fading in), press again to stop
+     (fading out). aria-pressed and the spinning record follow the audio
+     element itself, so they cannot disagree with what is heard. */
   function initAudio() {
-    var card = document.querySelector('.obj--player');
+    var tt = document.querySelector('[data-turntable]');
     var audio = document.getElementById('hero-audio');
-    if (!card || !audio) return;
-
-    var btn = document.getElementById('player-play');
-    var timeEl = document.getElementById('player-time');
-    var bar = card.querySelector('.player__bar span');
-    var userControlled = false;
-    var fade = null;
-
-    audio.volume = 0;
+    if (!tt || !audio) return;
+    var fade = null, on = false;
 
     function ramp(to, done) {
       window.clearInterval(fade);
       fade = window.setInterval(function () {
         var d = to - audio.volume;
-        if (Math.abs(d) < FADE_EPSILON) {
+        if (Math.abs(d) < 0.04) {
           audio.volume = to;
           window.clearInterval(fade);
           if (done) done();
@@ -216,55 +205,26 @@
         audio.volume = Math.max(0, Math.min(1, audio.volume + d * 0.25));
       }, 40);
     }
-
-    function play() {
-      var pr = audio.play();
-      if (pr && pr.catch) pr.catch(function () {});
-      ramp(0.7);
-    }
-    function pause() {
-      ramp(0, function () { audio.pause(); });
-    }
-
-    function syncButton() {
-      if (!btn) return;
+    function sync() {
       var playing = !audio.paused;
-      btn.setAttribute('aria-pressed', playing ? 'true' : 'false');
-      btn.setAttribute('aria-label', playing ? 'Pause track' : 'Play track');
-      btn.querySelector('.player__icon').textContent = playing ? '⏸' : '▶';
+      tt.classList.toggle('is-playing', playing);
+      tt.setAttribute('aria-pressed', playing ? 'true' : 'false');
+      tt.setAttribute('data-cue', playing ? 'Stop the record' : 'Play the record');
     }
-    audio.addEventListener('play', syncButton);
-    audio.addEventListener('pause', syncButton);
+    audio.addEventListener('play', sync);
+    audio.addEventListener('pause', sync);
 
-    function fmt(t) {
-      if (!isFinite(t)) return '0:00';
-      var m = Math.floor(t / 60), s = Math.floor(t % 60);
-      return m + ':' + (s < 10 ? '0' : '') + s;
-    }
-    audio.addEventListener('timeupdate', function () {
-      if (timeEl) timeEl.textContent = fmt(audio.currentTime);
-      if (bar && audio.duration) {
-        bar.style.right = (100 - (audio.currentTime / audio.duration) * 100).toFixed(2) + '%';
+    tt.addEventListener('click', function () {
+      on = !on;
+      if (on) {
+        if (audio.paused) audio.volume = 0;
+        var pr = audio.play();
+        if (pr && pr.catch) pr.catch(function () { on = false; });
+        ramp(0.7);
+      } else {
+        ramp(0, function () { audio.pause(); });
       }
     });
-
-    if (btn) {
-      btn.addEventListener('click', function (e) {
-        e.stopPropagation();
-        // Hover may already have started the track, so drive from intent:
-        // if it is audibly playing, stop; otherwise start.
-        var audible = !audio.paused && audio.volume > FADE_EPSILON;
-        userControlled = true;
-        if (audible) pause(); else play();
-      });
-    }
-
-    card.addEventListener('pointerenter', function () {
-      if (!userControlled) play();
-    });
-    function leave() { if (!userControlled) pause(); }
-    card.addEventListener('pointerleave', leave);
-    card.addEventListener('pointercancel', leave);
   }
 
   window.onReady(function () {

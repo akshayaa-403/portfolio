@@ -8,7 +8,7 @@ Live site: [akshayaa-403.github.io/portfolio](https://akshayaa-403.github.io/por
 
 ## About me
 
-I'm an AI engineer. For a year and a half, across three roles, I've built LLM agents, AI voice agents and the data pipelines that feed them, mostly in Python on AWS. I choose models by measuring them, and I'm looking for AI engineering roles that put LLM systems into production.
+I'm an AI engineer. For a year and a half, across three roles, I've built LLM agents, AI voice agents and the data pipelines that feed them, mostly in Python on AWS. I choose models by measuring them.
 
 - **Education:** B.Tech, Robotics & Automation, Symbiosis Institute of Technology
 - **Certifications:** HarvardX STAT110x Introduction to Probability; IBM SkillsBuild AI Literacy
@@ -27,8 +27,8 @@ I'm an AI engineer. For a year and a half, across three roles, I've built LLM ag
 
 ## What's on the site
 
-- **Home:** a desk drawn around the name. The lamp switches the theme, and the plant has one leaf per project, each wilting as its repo goes stale. Then Projects, About (with the skills as a charm bracelet), Contact, and "Outside work": two photo galleries and a bookshelf with every book at its real size.
-- **Case studies:** one long article per project, each with interactive figures, margin notes and a "What I'd do differently" section. Every number in them is footnoted to the repo it came from.
+- **Home:** a photographed desk under the name. The lamp switches the theme, the record player plays a track, the phone AirDrops the résumé, the drink shows what is in it, and the laptop lists the four case studies. Then Projects, Experience (a tape measure with a lanyard badge per role), About (with the skills as a charm bracelet), Contact, and "Outside work": two photo galleries and a bookshelf with every book at its real size.
+- **Case studies:** one article per project, result first, with a recorded demo where there is a live one, interactive figures, a "What I'd do differently" section and a short list of sources.
 - **Colour:** one of Sanzo Wada's 1933 three-colour combinations, picked by date, so the accent changes daily. Every colour is checked for WCAG AA contrast when the page loads.
 - **Time of day:** the theme follows the visitor's clock (morning, afternoon, evening, night), and the header lets you pick one.
 

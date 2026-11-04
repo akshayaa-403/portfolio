@@ -1,6 +1,6 @@
-/* Ant Colony Task Scheduler — "You vs the colony".
-   The form is a game: the reader schedules the real sample day first, then
-   each round opens one part of the machine that beat (or tied) them.
+/* Ant Colony Task Scheduler.
+   The reader schedules the real sample day first, then the article opens
+   the parts of the machine that beat (or tied) them.
 
    The sample data, the cost functions, the η normalisation and 2-opt below
    are ported from github.com/akshayaa-403/anttodo index.html (HEAD 14a4446),
@@ -184,7 +184,7 @@
      Widgets
      ====================================================================== */
 
-  /* ---- Round 1: Beat the colony ---- */
+  /* ---- Beat the colony ---- */
   function game(host, kit) {
     const el = kit.el;
     let order = ENTERED.slice();
@@ -390,7 +390,7 @@
     update();
   }
 
-  /* ---- Round 2: what an ant can smell ---- */
+  /* ---- what an ant can smell ---- */
   function nose(host, kit) {
     const el = kit.el;
     const ETA = etaOf(BASE, 10);
@@ -492,7 +492,7 @@
     draw();
   }
 
-  /* ---- Round 3: the pheromone ledger (scrolly) ---- */
+  /* ---- the pheromone ledger (scrolly) ---- */
   function ledger(host, kit) {
     const el = kit.el;
     let it = 0, rho = 0.1, hl = null;
@@ -609,7 +609,7 @@
     };
   }
 
-  /* ---- Round 4: 2-opt from the typed day ---- */
+  /* ---- 2-opt from the typed day ---- */
   function twoopt(host, kit) {
     const el = kit.el;
     host.classList.add('an-two');
@@ -685,7 +685,7 @@
     setOrder(ENTERED.slice(), cost);
   }
 
-  /* ---- Round 4b: the errands untangle ---- */
+  /* ---- the errands untangle ---- */
   function errands(host, kit) {
     const el = kit.el;
     host.classList.add('an-err');
@@ -731,7 +731,7 @@
     show();
   }
 
-  /* ---- Round 5: converged vs correct ---- */
+  /* ---- converged vs correct ---- */
   function converge(host, kit) {
     const el = kit.el;
     host.classList.add('an-conv');
@@ -826,26 +826,13 @@
   Article.register('anttodo', {
     form: 'game',
     scramble: 'τηραβ→·∘◦',
-    dek: 'A colony of twenty virtual ants rearranged my Tuesday and took a quarter off its penalty score. That sounded impressive until I checked all 3,628,800 other Tuesdays. So before any theory, here is the game: you against the colony, on the same ten tasks, scored by the same twenty lines of code.',
-    opener: function (c) {
-      let s = '';
-      const pts = [];
-      for (let i = 0; i < 10; i++) {
-        const a = i / 10 * Math.PI * 2 - Math.PI / 2;
-        pts.push([64 + Math.cos(a) * 44, 64 + Math.sin(a) * 44]);
-      }
-      for (let i = 0; i < 10; i++) for (let j = i + 1; j < 10; j++) {
-        s += '<line x1="' + pts[i][0].toFixed(1) + '" y1="' + pts[i][1].toFixed(1) + '" x2="' + pts[j][0].toFixed(1) + '" y2="' + pts[j][1].toFixed(1) + '" stroke="' + c.l + '" stroke-width="0.4"/>';
-      }
-      let d = 'M' + pts[COLONY[0]].join(',');
-      for (let k = 1; k < 10; k++) d += 'L' + pts[COLONY[k]].map(function (v) { return v.toFixed(1); }).join(',');
-      s += '<path d="' + d + '" fill="none" stroke="' + c.a + '" stroke-width="2.2" stroke-linejoin="round"/>';
-      pts.forEach(function (p, i) { s += '<circle cx="' + p[0].toFixed(1) + '" cy="' + p[1].toFixed(1) + '" r="' + (i === COLONY[0] ? 4.5 : 3) + '" fill="' + c.i + '"/>'; });
-      return s;
-    },
+    dek: 'A colony of twenty virtual ants finds the best order for a ten-task day: 50.146 points, 25.1% below the order I typed and the best of all 3,628,800 possible orders. Checking that showed me a fifteen-line polish was doing most of the work.',
+    demo: { src: 'public/assets/demos/anttodo.mp4', poster: 'public/assets/demos/anttodo.webp',
+      alt: 'In Errand Mode the ant colony runs on eight errands: a dense web of pheromone trails fades over about 50 iterations until one closed route through every stop remains (best 26.65 km).',
+      caption: 'Recorded from the live demo.' },
     chapters: [
       {
-        id: 'beat', label: 'Round 1', title: 'Beat the colony',
+        id: 'problem', title: 'The problem',
         art: function (c) {
           const w = [42, 14, 7, 21, 28, 19, 5, 23, 12, 19];
           let x = 6, s = '<line x1="6" y1="104" x2="154" y2="104" stroke="' + c.l + '"/>';
@@ -853,39 +840,49 @@
           return s;
         },
         blocks: [
-          { p: 'This is my sample day from the app, as I typed it in. It has ten tasks, five of them with a due time, and 405 minutes of work in a day that starts at 9:00. Drag a row by its handle, or use the arrows, to put the day in a better order. The score is the app’s own cost function, copied over line for line. Lower is better.' },
+          { p: 'A to-do list tells you what to do, not in what order. I built a scheduler that takes a day of tasks and orders them with ant colony optimisation.' },
+          { p: 'This is the app’s sample day, as I typed it in: ten tasks, five with a due time, 405 minutes of work from 9:00. Before any theory, try it yourself. Drag a row by its handle, or use the arrows, to put the day in a better order. The score is the app’s own cost function, copied over line for line. Lower is better.' },
           { widget: 'game', size: 'full',
-            caption: 'Your day, scored live by `makeFocusModel` (index.html:503-542, ported verbatim). A bar that ends past its due tick is late and says so. The histogram is every one of the 10! = 3,628,800 orders, each scored once by brute force at weights (1, 1, 1, 1). Moving a weight re-scores your day but not the histogram.' },
-          { p: 'Your day costs {{g-cost|66.906}} with {{g-late|1}} late task, which is better than {{g-pct|89.9%}} of every order these ten tasks could go in.^[Share of the 3,628,800 orders that score higher, counted by brute force against the shipped cost function and stored in 0.1-point bins, so the widget is exact to within one bin.]' },
-          { p: 'Four things cost points. [[Deadline pressure|deadline]] is the hours a task runs past its due time, times its priority. [[Priority inversion|priority]] charges every task its priority times how far down the day it sits, so important work wants to go early. [[Context switching|context]] costs 2 each time the category changes from one task to the next. [[Cognitive load|energy]] charges heavy tasks for landing late, by how far into the eight-hour day the middle of the task falls.' },
+            caption: 'Your day, scored live by the app’s `makeFocusModel`. A bar that ends past its due tick is late. The histogram is every one of the 10! = 3,628,800 orders, scored once by brute force at weights (1, 1, 1, 1). Moving a weight re-scores your day but not the histogram.' },
+          { p: 'Your day costs {{g-cost|66.906}} with {{g-late|1}} late task, which beats {{g-pct|89.9%}} of every order these ten tasks could go in.' },
+          { p: 'Four things cost points. [[Deadline pressure|deadline]] is the hours a task runs past its due time, times its priority. [[Priority inversion|priority]] charges each task its priority times how far down the day it sits. [[Context switching|context]] costs 2 each time the category changes. [[Cognitive load|energy]] charges heavy tasks for landing late in the day.' },
           { code: 'function parts(seq) {\n  let clock = dayStart;\n  const p = { deadline: 0, priority: 0, context: 0, energy: 0 };\n  for (let k = 0; k < seq.length; k++) {\n    const t = tasks[seq[k]], dur = t.duration ?? 30, finish = clock + dur;\n    if (t.due != null && finish > t.due) p.deadline += ((finish - t.due) / 60) * t.priority;\n    const pr = seq.length > 1 ? k / (seq.length - 1) : 0;\n    p.priority += t.priority * pr;\n    if (k > 0) p.context += D[seq[k - 1]][seq[k]] * 2;\n    const mid = clock + dur / 2;\n    p.energy += t.load * clamp((mid - dayStart) / dayLen, 0, 1);\n    clock = finish;\n  }\n  return p;\n}',
-            lang: 'javascript', caption: 'The whole definition of a good day, index.html:510-526. The total is each term times its weight.' },
-          { p: 'My typed order loses its deadline points in one place. Team standup is due at 10:00, and I put it third, behind a 90-minute report. It finishes at 11:15, an hour and a quarter late at priority 6, and that is the whole 7.5 of deadline pressure.' },
-          { p: 'The colony’s day costs 50.146, which is 25.1% lower. It pays the electricity bill first, does the standup at 9:10 and pushes the gym to the end of the afternoon. I wanted to know whether that was good or just better, so I scored every possible order. Ten tasks is small enough for that: it took 1.3 seconds in Node.',
-            notes: [['scored every possible order', 'should have done this before writing a single slider']] },
-          { callout: 'The colony’s 50.146 is the best of all 3,628,800 orders, and no other order ties it.\n\nBut the order I typed without thinking already beat 89.9% of them. Only 10,115 orders, 0.28%, land within five points of the best. The ants were working in the last thin slice of the haystack.', label: 'Score' },
-          { p: 'The weights are how the app lets you decide what “better” means. Set context switching to 0 and the best day does not change at all; its score just drops by exactly 10, to 40.146. Keep only deadline pressure and 218,448 orders tie at zero, 6% of all of them, so the colony is picking among equals. The histogram stays at (1, 1, 1, 1) because that is the only weighting I brute-forced.' }
+            lang: 'javascript', caption: 'The whole definition of a good day. The total is each term times its weight.' },
+          { p: 'My typed order loses its deadline points in one place. Team standup is due at 10:00 and I put it third, behind a 90-minute report. It finishes at 11:15, and that is the whole 7.5 of deadline pressure.' },
+          { p: 'The weights let you decide what “better” means. Set context switching to 0 and the best day does not change; its score just drops by 10. Keep only deadline pressure and 218,448 orders tie at zero.' }
         ]
       },
       {
-        id: 'smell', label: 'Round 2', title: 'What an ant can smell',
+        id: 'built', title: 'What I built',
         blocks: [
-          { quote: 'In Focus Mode the ants can smell one thing: whether the next task is in the same category.' },
-          { p: 'The old version of this page called the app a routing problem. That is true of one of its two modes. Errand Mode is a real closed tour over eight places in Bengaluru, measured in haversine kilometres. Focus Mode, the default, is a sequencing problem. Three of its four penalties depend on where a task sits in the day and what the clock says, not on which task came before it. Only context switching is a cost between neighbours.' },
-          { p: 'An ant builds a day one task at a time. Standing on one task, it weighs every task it has not done yet by two numbers: τ, the pheromone on that step, and η, how good the step looks before anyone has walked it. With probability q₀ it skips the dice and takes the best-looking step. Otherwise it rolls.' },
-          { tex: 'P(i \\to j) = \\frac{\\tau_{ij}^{\\alpha} \\, \\eta_{ij}^{\\beta}}{\\sum_{k} \\tau_{ik}^{\\alpha} \\, \\eta_{ik}^{\\beta}}', caption: 'The roulette wheel in `buildOne()`, index.html:602-620, over the tasks not yet placed.' },
-          { code: '// makeFocusModel, index.html:505-508\nD[i][j] = i === j ? 0 : tasks[i].category === tasks[j].category ? 0 : 1;\n\n// class ACO, index.html:571\nthis.eta[i][j] = i === j ? 0 : 1 / (this.model.dist[i][j] / scale + 0.1);', lang: 'javascript', caption: 'In Focus Mode the “distance” is 0 inside a category and 1 across.' },
-          { p: 'So η is 10 for a step inside a category and 0.909 for any other, and with β = 3 that is a ratio of 11³, or 1,331. Hover on [[Team standup|standup]]: the four other work tasks take 99.9% of the choice. Hover on [[Pay electricity bill|paybill]], the only admin task, and every step looks the same, except that the greedy 10% breaks the tie toward whichever task was typed first.',
-            notes: [['breaks the tie toward whichever task was typed first', 'the report gets a free 10% from the bill. found it while building this']] },
+          { p: 'The app is one HTML file with two modes. Errand Mode is a real round trip over eight places, measured in kilometres. Focus Mode, the default, orders a workday. Three of its four penalties depend on where a task sits in the day, not on which task came before it.' },
+          { h: 'How an ant picks the next task' },
+          { p: 'An ant builds a day one task at a time. Standing on one task, it weighs every task it has not done by two numbers: τ, the pheromone on that step, and η, how good the step looks before anyone has walked it. With probability q₀ it takes the best-looking step. Otherwise it rolls.' },
+          { tex: 'P(i \\to j) = \\frac{\\tau_{ij}^{\\alpha} \\, \\eta_{ij}^{\\beta}}{\\sum_{k} \\tau_{ik}^{\\alpha} \\, \\eta_{ik}^{\\beta}}', caption: 'The roulette wheel in `buildOne()`, over the tasks not yet placed.' },
+          { code: '// distance in Focus Mode\nD[i][j] = i === j ? 0 : tasks[i].category === tasks[j].category ? 0 : 1;\n\n// heuristic\nthis.eta[i][j] = i === j ? 0 : 1 / (this.model.dist[i][j] / scale + 0.1);', lang: 'javascript', caption: 'In Focus Mode the “distance” is 0 inside a category and 1 across.' },
+          { p: 'So η is 10 inside a category and 0.909 across, and with β = 3 that is a ratio of 1,331. Hover on [[Team standup|standup]]: the four other work tasks take 99.9% of the choice. Hover on [[Pay electricity bill|paybill]], the only admin task, and every step looks the same.' },
           { widget: 'nose', size: 'wide',
-            caption: 'The exact choice an ant makes from each task, computed with the app’s η and the q₀ rule from `buildOne()`. Pick a task on the ring. “After 30 iterations” uses the real field from the seed-1337 run: 0.1994 on the nine steps of the best day, 0.00997 on the rest. Each task’s shape marks its category.' },
-          { p: 'Deadlines, priority and energy are invisible to the ant. It cannot smell that the standup is due at 10:00. That knowledge reaches the colony only through pheromone, after a whole day has been scored. And the first task of the day is not chosen by smell at all. It is picked uniformly at random.^[index.html:595-596. The next nine choices follow the rule above.]',
-            notes: [['picked uniformly at random', 'pheromone is about what follows what, so nothing ever learns how the day should start']] },
-          { p: 'Switch the figure to *after 30 iterations* and the trails take over. From the standup, Code review now gets 88.2% of the choice; from the bill, Team standup gets 74.3%. The floor keeps the other 25.7% of choices from the bill spread over the other eight tasks, so the colony never stops exploring completely.' }
+            caption: 'The exact choice an ant makes from each task, with the app’s η and q₀ rule. Pick a task on the ring. “After 30 iterations” uses the real field from the seed-1337 run. Each shape marks a category.' },
+          { p: 'In Focus Mode the ant can smell only one thing: whether the next task shares a category. It cannot smell that the standup is due at 10:00. That reaches the colony only through pheromone, after a whole day has been scored. And the first task is picked at random.' },
+          { h: 'The pheromone ledger' },
+          { p: 'Pheromone is a 10×10 table: how much the colony likes doing *this* straight after *that*. After every iteration the app does three things to it.' },
+          { list: ['**Evaporate.** Every entry is multiplied by 1 − ρ.', '**Deposit.** Each step of the best day so far gets 1/C, where C is that day’s cost.', '**Clamp.** Every entry is held between a ceiling and a floor.'], ordered: true },
+          { tex: '\\tau_{max} = \\frac{1}{\\rho \\, C_{best}} \\qquad \\tau_{min} = \\frac{\\tau_{max}}{2n}', caption: 'The Max-Min Ant System bounds, reset each time a better day is found.' },
+          { p: 'The ceiling is where evaporation and deposit cancel. The floor keeps every move possible. Scroll, and watch the real run.' },
+          { scrolly: 'ledger', caption: 'The pheromone field of the seed-1337 run. Shade is τ on a log scale; a ring marks the nine steps of the best day.',
+            steps: [
+              { p: '**Iteration 0.** All 90 steps start at 1. The ants have nothing to go on but category.', state: { it: 0, rho: 0.1 } },
+              { p: '**Iteration 1.** With 2-opt on, the first round already finds the 50.146 day. Everything is clamped to the new ceiling, 0.1994. The [[nine steps of the best day|path]] are there, but so is everything else.', state: { it: 1, rho: 0.1 } },
+              { p: 'Each round, the 81 other steps lose 10%. The nine stay at the ceiling, because the deposit puts back what evaporation took.', state: { it: 2, to: 29, rho: 0.1 } },
+              { p: '**Iteration 30.** The field is two-valued: nine steps at 0.1994 and 81 on the [[floor|floor]] at 0.00997. From here nothing changes.', state: { it: 30, rho: 0.1 } },
+              { p: 'At ρ = 0.01 that takes until iteration 230, past the app’s default 100.', state: { it: 230, rho: 0.01 } },
+              { p: 'At ρ = 0.9 it takes three. Try the sliders: the field goes two-valued at iteration {{l-flat|3}}.', state: { it: 3, rho: 0.9 } }
+            ] },
+          { p: 'I used to say that turning evaporation up makes the colony settle sooner. The ledger does settle sooner. The answer does not: with 2-opt on, the best day arrives in iteration 1 at every ρ I tried.' }
         ]
       },
       {
-        id: 'ledger', label: 'Round 3', title: 'The pheromone ledger',
+        id: 'hard', title: 'The hard part',
         art: function (c) {
           let s = '';
           for (let i = 0; i < 6; i++) for (let j = 0; j < 8; j++) {
@@ -895,100 +892,50 @@
           return s;
         },
         blocks: [
-          { p: 'Pheromone is a 10×10 table: one number for every ordered pair of tasks, saying how much the colony likes doing *this* straight after *that*. After every iteration the app does three things to it.' },
-          { list: ['**Evaporate.** Every entry is multiplied by 1 − ρ.', '**Deposit.** The steps of the best day found so far each get 1/C, where C is that day’s cost.', '**Clamp.** Every entry is held between a ceiling and a floor.'], ordered: true },
-          { tex: '\\tau_{max} = \\frac{1}{\\rho \\, C_{best}} \\qquad \\tau_{min} = \\frac{\\tau_{max}}{2n}', caption: 'The Max-Min Ant System bounds, index.html:659-663, reset each time a better day is found.' },
-          { p: 'The ceiling is not arbitrary. A step that gets the deposit every round settles where evaporation and deposit cancel, τ = (1 − ρ)τ + 1/C, and that is exactly 1/(ρC). The floor holds every step at a twentieth of the ceiling, so no move ever becomes impossible. Scroll, and watch the real run.' },
-          { scrolly: 'ledger', caption: 'The pheromone field of the seed-1337 run, from the update in index.html:664-677. Shade is τ on a log scale; a ring marks the nine steps of the best day. Replayed on the run’s best day, which matches the engine’s own τ exactly at every ρ tested.',
-            steps: [
-              { p: '**Iteration 0.** All 90 steps start at 1. The ants have nothing to go on but category.', state: { it: 0, rho: 0.1 } },
-              { p: '**Iteration 1.** With 2-opt on, the first round already finds the 50.146 day. Everything is clamped to the new ceiling, 1/(0.1 × 50.146) = 0.1994. The [[nine steps of the best day|path]] are there, but so is everything else.', state: { it: 1, rho: 0.1 } },
-              { p: 'Scroll slowly. Each round, the 81 other steps lose 10%. The nine stay pinned to the ceiling, because the deposit puts back exactly what evaporation took.', state: { it: 2, to: 29, rho: 0.1 } },
-              { p: '**Iteration 30.** The field has gone two-valued: nine steps at 0.1994 and 81 on the [[floor|floor]] at 0.00997, a ratio of 20, which is 2n. From here on nothing changes, however long it runs.', state: { it: 30, rho: 0.1 } },
-              { p: 'Turn evaporation down to ρ = 0.01 and the same thing takes until iteration 230, well past the 100 iterations the app runs by default.', state: { it: 230, rho: 0.01 } },
-              { p: 'At ρ = 0.9 it takes three. Try the sliders: the field goes two-valued at iteration {{l-flat|3}}.', state: { it: 3, rho: 0.9 } }
-            ] },
-          { table: { head: ['ρ', 'Field two-valued from iteration'], rows: [['0.01', '230'], ['0.05', '60'], ['0.1 (default)', '30'], ['0.3', '10'], ['0.5', '6'], ['0.9', '3']] },
-            caption: 'Measured on the seed-1337 run with 2-opt on.' },
-          { p: 'The old version of this page said that turning evaporation up makes the colony settle sooner. The ledger does settle sooner. The answer does not. With 2-opt on, the best day arrives in the first iteration at every ρ I tried, so evaporation only decides how fast the bookkeeping catches up with an answer the colony already has.',
-            notes: [['turning evaporation up makes the colony settle sooner', 'I wrote that sentence. it sounded right']] }
-        ]
-      },
-      {
-        id: 'polish', label: 'Round 4', title: 'Who really did the work',
-        blocks: [
-          { quote: 'The ants found the best day. 2-opt did most of the walking.' },
-          { p: 'Every ant’s day gets polished before it is scored. The polish is 2-opt: try reversing every stretch of the order, keep the first reversal that lowers the cost, and repeat until none does. It is fifteen lines.' },
-          { code: 'localSearch(seq) {\n  const hasDeps = this.deps.length > 0;\n  let best = seq.slice(), bc = this.model.cost(best), improved = true, guard = 0;\n  while (improved && guard++ < 40) {\n    improved = false;\n    for (let i = 0; i < best.length - 1 && !improved; i++)\n      for (let k = i + 1; k < best.length && !improved; k++) {\n        const cand = best.slice(0, i).concat(best.slice(i, k + 1).reverse(), best.slice(k + 1));\n        if (hasDeps && !this.validOrder(cand)) continue;\n        const cc = this.model.cost(cand);\n        if (cc < bc - 1e-12) { best = cand; bc = cc; improved = true; }\n      }\n  }\n  return best;\n}', lang: 'javascript', caption: 'First-improvement 2-opt, index.html:633-647.' },
-          { p: 'Start it from the day I typed, with no ants at all, and step through what it does. Each step reverses the highlighted stretch.' },
+          { p: 'The hard part was being honest about who did the work. Every ant’s day is polished before it is scored. The polish is 2-opt: reverse every stretch of the order, keep the first reversal that lowers the cost, repeat until none does.' },
+          { code: 'localSearch(seq) {\n  const hasDeps = this.deps.length > 0;\n  let best = seq.slice(), bc = this.model.cost(best), improved = true, guard = 0;\n  while (improved && guard++ < 40) {\n    improved = false;\n    for (let i = 0; i < best.length - 1 && !improved; i++)\n      for (let k = i + 1; k < best.length && !improved; k++) {\n        const cand = best.slice(0, i).concat(best.slice(i, k + 1).reverse(), best.slice(k + 1));\n        if (hasDeps && !this.validOrder(cand)) continue;\n        const cc = this.model.cost(cand);\n        if (cc < bc - 1e-12) { best = cand; bc = cc; improved = true; }\n      }\n  }\n  return best;\n}', lang: 'javascript', caption: 'First-improvement 2-opt.' },
+          { p: 'Start it from the day I typed, with no ants at all, and step through it.' },
           { widget: 'twoopt', size: 'wide',
-            caption: 'The ported `localSearch` running on the typed day. It accepts 14 reversals and stops at 50.983, 0.837 above the optimum. “Try another start” shuffles the day (seeded) and polishes it again.' },
-          { p: 'It makes 14 reversals and drops from 66.906 to 50.983. That is 95% of the way to the optimum, and then it stops, because no single reversal helps any more. It is stuck in a local optimum, 0.84 points short. Press *Try another start* a few times. From a thousand random orders, 2-opt reached 50.146 only 41 times.^[twoopt.js, 1,000 shuffles from a seeded mulberry32. The median finish was 50.500 and the worst 55.028.]' },
-          { p: 'So the honest split of the work is this. 2-opt does the descent. Twenty ants an iteration, steered by pheromone, give it twenty different places to start from, and one of them lands in the right valley. With both, the colony found the optimum on 20 of 20 seeds within 10 iterations.' },
+            caption: 'The ported `localSearch` on the typed day. “Try another start” shuffles the day (seeded) and polishes it again.' },
+          { p: 'It makes 14 reversals and drops from 66.906 to 50.983, then stops 0.84 points short, in a local optimum. From a thousand random orders, 2-opt alone reached the best day only 41 times.' },
+          { p: 'So the honest split is this. 2-opt does the descent. Twenty ants an iteration give it twenty different places to start, and one of them lands in the right valley.' },
           { p: 'In Errand Mode the ants aren’t needed at all. Eight stops make 2,520 distinct round trips, and 2-opt untangles the one I typed in four moves.' },
           { widget: 'errands',
-            caption: 'The eight Bengaluru stops from `sampleErrand()`, placed by the app’s own lat/lon projection. Each Step is one accepted 2-opt reversal; the tour goes 40.870 → 35.273 → 29.300 → 28.602 → 26.649 km.' },
-          { p: '26.649 km is the shortest of all 2,520 tours. From 1,000 random starts, 2-opt alone found it 1,000 times. The app’s own test says the same thing in its way: the colony ties the best of 500 random tours, because 500 random tours of eight stops already include the best one.',
-            notes: [['ties the best of 500 random tours', 'the test passes. it also shows the ants are decoration here']] }
-        ]
-      },
-      {
-        id: 'finish', label: 'Round 5', title: 'Converged is not correct',
-        blocks: [
-          { p: 'The app draws a convergence chart: the best cost found so far, at each iteration. Mine was flat, because with 2-opt on the answer arrives in iteration 1. A flat line looks the same whether it is flat at the optimum or flat somewhere short of it. The chart had no finish line, so I drew one.' },
+            caption: 'The eight stops from `sampleErrand()`, placed by the app’s own projection. Each Step is one 2-opt reversal: 40.870 → 35.273 → 29.300 → 28.602 → 26.649 km.' },
+          { p: '26.649 km is the shortest of all 2,520 tours, and 2-opt alone found it from 1,000 of 1,000 random starts.' },
+          { h: 'Converged is not correct' },
+          { p: 'The app draws the best cost found so far at each iteration. Mine was flat, because the answer arrives in iteration 1. A flat line looks the same whether it is flat at the optimum or short of it, so I drew the finish line.' },
           { widget: 'converge', size: 'wide',
-            caption: 'Top: the seed-1337 run with 2-opt off (a staircase) or on (flat), against the brute-forced optimum, dashed. Bottom: where 20 seeds finish after 100 iterations for each ant count. A filled dot reached the optimum and a hollow square did not. All from runs of the shipped engine.' },
-          { p: 'Turn 2-opt off and the colony has to do the work itself. Seed 1337 steps down from 53.656 to 50.549 by iteration 37. Then it stays there for the remaining 63 iterations: converged, and wrong.' },
-          { p: 'Evaporation doesn’t fix that. Over twenty seeds with 2-opt off, moving ρ from 0.01 to 0.9 kept the mean result between 50.398 and 50.658, with no trend. Ant count moved it every time. [[4 ants|a4]] reach the line on 0 of 20 seeds and [[120 ants|a120]] on 17. Pure greed, q₀ = 1, is the worst setting of all, with a mean of 54.479.^[sweep.js and the per-seed rerun: 20 seeds, 100 iterations, all other parameters at the app’s defaults.]' },
-          { h: 'Rules as gates' },
-          { p: 'Focus Mode also takes dependencies, like *finish the report before planning the backlog*. The app never charges a penalty for breaking one, because it never lets an ant break one. A task is only offered once everything it waits on is placed. 2-opt checks again before accepting a reversal, and a rule that would close a loop is refused before the solver ever sees it.' },
-          { p: 'That one rule halves the space to 1,814,400 orders and moves the optimum to 50.729; the colony finds it at iteration 5. The four rules in the test suite leave 151,200 orders, 4.17% of the day’s possibilities, and the colony finds their optimum, 50.965, at iteration 2.' }
+            caption: 'Top: the seed-1337 run with 2-opt off (a staircase) or on (flat), against the brute-forced optimum, dashed. Bottom: where 20 seeds finish after 100 iterations. A filled dot reached the optimum; a hollow square did not.' },
+          { p: 'With 2-opt off, seed 1337 steps down from 53.656 to 50.549 by iteration 37, then stays there for 63 iterations: converged, and wrong. Evaporation doesn’t fix that; ant count does. [[4 ants|a4]] reach the line on 0 of 20 seeds and [[120 ants|a120]] on 17.' }
         ]
       },
       {
-        id: 'lives', label: 'Replay', title: 'Three lives of one file',
+        id: 'results', title: 'Results',
         blocks: [
-          { p: 'The app took three tries to become honest, and the git history keeps all of them.' },
-          { table: { head: ['When', 'What it was', 'What a “distance” meant'],
-            rows: [
-              ['April 2026', 'Classic Ant System over tasks scattered at seeded random 2D points', 'Straight lines between made-up coordinates'],
-              ['June 2026', '“antplan”: Flask, SQLAlchemy, Celery and Redis, Postgres 15, a React front end, docker-compose', 'A fitness that guessed deadlines from whether a task sat past 60% of the list'],
-              ['August 2026', 'One index.html, 1,393 lines, no dependencies, two test suites with 104 assertions', 'Kilometres for errands, and four penalties you can read for a workday']] },
-            caption: 'Commits 063f43d, 3265c28 and e052c5b. The August commit changed 90 files.' },
-          { p: 'The April version looked like ant colony optimisation, but its distances meant nothing. The June version put a database and a task queue behind a to-do list. In August I cut it back to one file, where every number is either a kilometre or a penalty with a line of code behind it. It runs in the page below, with the same defaults as the article.' },
+          { callout: 'The colony’s 50.146 is the best of all 3,628,800 orders, and no other order ties it. With 2-opt on, it found that day on 20 of 20 seeds within 10 iterations.\n\nBut the order I typed without thinking already beat 89.9% of them. The ants were working in the last thin slice of the haystack.', label: 'Score' },
+          { p: 'Scoring every order of ten tasks took 1.3 seconds in Node, which is how I know the answer is the best one and not just a good one.' },
+          { p: 'Dependencies hold too. A rule like *finish the report before planning the backlog* is never charged as a penalty; an ant is simply never offered a task until what it waits on is placed, and 2-opt checks again before a reversal. With the four rules in the test suite, 151,200 orders remain and the colony finds their optimum, 50.965, at iteration 2.' },
+          { p: 'It took three versions to get here: random 2D points with meaningless distances, then a Flask, Celery and Postgres stack behind a to-do list, then one 1,393-line `index.html` with no dependencies and 104 test assertions.' }
         ]
       }
     ],
     closing: {
       blocks: [
-        { p: '**Put pheromone on positions, not just pairs.** Three of the four penalties are about *when* a task happens. Pheromone on edges can only learn what follows what, and the first task is a coin toss. Scheduling versions of ACO keep a trail for each task in each slot, and that is what this cost function needs.' },
-        { p: '**Give the ants a nose for deadlines.** In Focus Mode, η only knows category. A heuristic built from due-time slack and priority would let an ant smell the 10:00 standup, instead of waiting for pheromone to tell it.' },
-        { p: '**Draw the finish line in the app.** For ten tasks the true optimum is a 1.3-second brute force. The app should compute it, draw it on its convergence chart, and say plainly when the colony has reached it and when it has only stopped moving.' },
-        { p: '**Say what the ants add.** In Errand Mode, 2-opt alone found the best tour from 1,000 of 1,000 starts. The page should say that, instead of letting the colony take the credit.' },
-        { p: '**Let people edit their tasks.** A task typed into the app gets a random priority from 5 to 8, a random load from 3 to 7, 30 minutes and no due time. A scheduler that makes up its inputs is scoring a day nobody has.' },
-        { p: 'And a small one. A comment at the top of the script still says the engine mirrors a “30/30” test suite in a scratchpad file that isn’t in the repo. The real suites have 31 and 73 assertions.' }
+        { p: '**Put pheromone on positions, not just pairs.** Three of the four penalties are about *when* a task happens. Scheduling versions of ACO keep a trail for each task in each slot, and that is what this cost function needs.' },
+        { p: '**Give the ants a nose for deadlines.** A heuristic built from due-time slack and priority would let an ant smell the 10:00 standup instead of waiting for pheromone.' },
+        { p: '**Draw the finish line in the app.** For ten tasks the true optimum is a 1.3-second brute force. The app should draw it and say when the colony has reached it, not just stopped moving.' },
+        { p: '**Let people edit their tasks.** A typed-in task gets a random priority and load, 30 minutes and no due time. A scheduler that makes up its inputs is scoring a day nobody has.' }
       ]
     },
     sources: [
-      ['Sample day, errands, cost functions, η, 2-opt', 'github.com/akshayaa-403/anttodo index.html at 14a4446: sampleFocus 424-439, sampleErrand 440-454, cost models 481-542, ACO 545-680. Ported verbatim into this article.'],
-      ['66.906, 7.5 deadline, standup ends 11:15', 'Entered order scored with the shipped engine (scratchpad probe.js, re-run 2026-10-17).'],
-      ['50.146, 25.1% better, colony order, 9:10 standup', 'ACO seed 1337, 20 ants, 2-opt on, 100 iterations (probe.js); matches test/engine.test.js:80-97 printed output.'],
-      ['3,628,800 orders, unique optimum, 89.9%, 10,115 within 5 points, 1.3 s', 'Brute force over all 10! orders with the shipped cost (brute.js and gen.js, Node 24, 2026-10-17). 3,261,322 orders score worse than the typed day.'],
-      ['Term ranges in the meters', 'Brute force: deadline 0–59, priority 26–39, context 10–18, energy 11.95–23.49 (terms.js).'],
-      ['Context weight 0 → 40.146; deadline-only 218,448 ties', 'brute.js presets ctx0 and deadlineOnly.'],
-      ['η 10 vs 0.909, 1,331×, choice percentages', 'index.html:505-508, 564-571, 602-620; field.js and probs.js (effective probabilities include q₀ = 0.1).'],
-      ['First task uniform', 'index.html:595-596.'],
-      ['τmax 0.1994, τmin 0.00997, two-valued iterations by ρ', 'field.js and sweep2.js: simulated field equals the engine’s τ to 0 difference for ρ = 0.01, 0.05, 0.1, 0.3, 0.5, 0.9.'],
-      ['14 reversals, 50.983, 41 of 1,000', 'twoopt.js trace from the typed day; 1,000 shuffled starts.'],
-      ['Errands 40.870 → 26.649 km, 2,520 tours, 1,000 of 1,000', 'errand.js (all tours) and twoopt.js.'],
-      ['Best-of-500 random tie', 'test/engine.test.js:62-78 printed output (26.65 vs 26.65 km).'],
-      ['20 of 20 seeds within 10 iterations', 'sweep.js, 2-opt on, seeds 1–20.'],
-      ['Staircase 53.656 → 50.549', 'field.js change points, seed 1337, 2-opt off.'],
-      ['ρ means 50.398–50.658; ants 4 → 0/20, 120 → 17/20; q₀ = 1 mean 54.479', 'sweep.js and sweep2.js, 20 seeds, 100 iterations, 2-opt off.'],
-      ['Dependencies: 1,814,400 / 50.729 / iteration 5; 151,200 / 4.17% / 50.965 / iteration 2', 'deps.js; test dependencies from test/engine.test.js:99-118.'],
-      ['History', 'git show 063f43d:js/utils.js (random coordinates), 3265c28:backend/requirements.txt and backend/src/core/fitness.py:30, git log --shortstat e052c5b (90 files). 1,393 lines: wc -l index.html.'],
-      ['104 assertions', 'test/engine.test.js (31) and test/ui.test.js (73), run 2026-10-16.'],
-      ['Typed-in tasks', 'index.html:1251-1271.']
+      ['Engine', 'github.com/akshayaa-403/anttodo index.html at 14a4446; sample days, cost models, ACO and 2-opt ported verbatim.'],
+      ['3,628,800 orders, 50.146 optimum, 89.9%', 'Brute force over all 10! orders with the shipped cost, Node 24, 2026-10-17.'],
+      ['Colony runs', 'Seed 1337 and seeds 1–20, 20 ants, 100 iterations, app defaults; matches test/engine.test.js output.'],
+      ['2-opt and errands', '14 reversals to 50.983, 41 of 1,000; errands 40.870 → 26.649 km over all 2,520 tours.'],
+      ['History and tests', 'Commits 063f43d, 3265c28, e052c5b; test/engine.test.js (31) and test/ui.test.js (73).'],
+      ['Pheromone field', 'Simulated τ equals the engine’s for ρ = 0.01, 0.05, 0.1, 0.3, 0.5, 0.9.'],
+      ['Dependencies', '151,200 orders, 50.965 at iteration 2; rules from test/engine.test.js:99-118.']
     ],
     widgets: { game: game, nose: nose, ledger: ledger, twoopt: twoopt, errands: errands, converge: converge }
   });

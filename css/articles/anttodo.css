@@ -1,1 +1,112 @@
-/* ENGINE SMOKE TEST — replaced by the real article. */
+/* Ant Colony Task Scheduler: widget styles (js/articles/anttodo.js). */
+.an-glyph { font-family: var(--font-mono); }
+[data-cat="work"] > .an-glyph, .an-glyph[data-cat="work"] { color: var(--an-c-work, var(--accent-ink)); }
+[data-cat="health"] > .an-glyph, .an-glyph[data-cat="health"] { color: var(--an-c-health, var(--ink-soft)); }
+[data-cat="errands"] > .an-glyph, .an-glyph[data-cat="errands"] { color: var(--an-c-errands, var(--ink-soft)); }
+[data-cat="admin"] > .an-glyph, .an-glyph[data-cat="admin"] { color: var(--an-c-admin, var(--ink-soft)); }
+[data-cat="home"] > .an-glyph, .an-glyph[data-cat="home"] { color: var(--an-c-home, var(--ink-soft)); }
+[data-cat="social"] > .an-glyph, .an-glyph[data-cat="social"] { color: var(--an-c-social, var(--ink-soft)); }
+
+/* the game */
+.an-day { list-style: none; margin: 0 0 20px; padding: 0; }
+.an-row { display: grid; grid-template-columns: 76px minmax(0, 1fr) minmax(0, 1.2fr); gap: 10px; align-items: center; padding: 3px 0; border-bottom: 1px solid var(--line); font-size: 12px; }
+.an-row--axis { border: 0; color: var(--ink-muted); }
+.an-axis { position: relative; height: 14px; }
+.an-axis span { position: absolute; transform: translateX(-50%); font-size: 11px; }
+.an-axis span:first-child { transform: none; }
+.an-axis span:last-child { transform: translateX(-100%); }
+.an-ctl { display: flex; align-items: center; gap: 2px; }
+.an-grip { cursor: grab; color: var(--ink-muted); padding: 0 4px; user-select: none; }
+.an-row.is-drag { background: var(--accent-tint); }
+.an-mv { width: 26px; height: 26px; padding: 0; border: 1px solid var(--line); border-radius: 4px; background: var(--surface); color: var(--ink); cursor: pointer; }
+.an-mv:disabled { opacity: 0.35; cursor: default; }
+.an-name { display: flex; flex-direction: column; min-width: 0; }
+.an-name__t { color: var(--ink); }
+.an-name .an-glyph { position: absolute; margin-left: -14px; }
+.an-name { position: relative; padding-left: 14px; }
+.an-name__m { color: var(--ink-muted); font-size: 11px; }
+.an-track { position: relative; height: 18px; background: var(--bg-sunken); border-radius: 3px; }
+.an-bar { position: absolute; top: 3px; bottom: 3px; background: var(--accent); border-radius: 2px; }
+.is-late .an-bar { background: var(--an-late, var(--accent)); outline: 2px solid var(--ink); }
+.an-due { position: absolute; top: -2px; bottom: -2px; width: 2px; background: var(--ink); }
+.an-latetag { position: absolute; right: 4px; top: 50%; transform: translateY(-50%); font-size: 10px; font-weight: 700; color: var(--ink); background: var(--surface); padding: 0 3px; }
+.an-latetag:empty { display: none; }
+
+.an-meters { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 8px 20px; margin: 0 0 16px; }
+.an-meter { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 4px 8px; font-size: 12px; transition: opacity .2s; }
+.an-meter__k { color: var(--ink-soft); }
+.an-meter__v { color: var(--ink); text-align: right; }
+.an-meter__bar { grid-column: 1 / -1; position: relative; height: 8px; background: var(--bg-sunken); border-radius: 4px; overflow: hidden; }
+.an-meter__fill { position: absolute; left: 0; top: 0; bottom: 0; background: var(--accent); }
+.an-meter__best { position: absolute; top: 0; bottom: 0; width: 2px; background: var(--ink); }
+.an-meter.is-dim { opacity: 0.4; }
+.an-meter.is-hl .an-meter__k { color: var(--ink); font-weight: 700; }
+
+.an-hist__k, .an-conv__k, .an-nose__k { margin: 16px 0 6px; font-size: 12px; color: var(--ink-soft); }
+.an-hist { display: block; width: 100%; height: auto; max-height: 220px; font-family: var(--font-mono); }
+.an-hist__bar { fill: var(--accent-tint-strong, var(--accent-tint)); }
+.an-hist__tick { fill: var(--ink-muted); font-size: 11px; }
+.an-hist__base { stroke: var(--line-strong, var(--line)); }
+.an-mk line { stroke-width: 1.5; }
+.an-mk text { font-size: 11px; }
+.an-mk--colony line { stroke: var(--ink); stroke-dasharray: 4 3; }
+.an-mk--colony text { fill: var(--ink); }
+.an-mk--typed line { stroke: var(--ink-muted); }
+.an-mk--typed text { fill: var(--ink-soft); }
+.an-mk--you line { stroke: var(--accent); stroke-width: 2.5; }
+.an-mk--you text { fill: var(--accent-ink); font-weight: 700; }
+.an-note { font-size: 12px; color: var(--ink-soft); margin: 8px 0 12px; }
+
+/* what an ant can smell */
+.an-nose__grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 24px; align-items: center; margin-bottom: 16px; }
+.an-ring { position: relative; aspect-ratio: 1; max-width: 420px; width: 100%; margin: 0 auto; }
+.an-ring__svg { position: absolute; inset: 0; width: 100%; height: 100%; }
+.an-node { position: absolute; transform: translate(-50%, -50%); display: flex; align-items: center; gap: 3px; min-height: 26px; padding: 2px 6px; font: 11px var(--font-mono); color: var(--ink); background: var(--surface); border: 1.5px solid var(--an-cat, var(--line)); border-radius: 999px; cursor: pointer; white-space: nowrap; }
+.an-node .an-glyph { color: var(--an-cat, var(--ink-soft)); }
+.an-node[aria-pressed="true"] { background: var(--accent-tint); border-width: 2.5px; font-weight: 700; }
+.an-ring__c { position: absolute; left: 22%; right: 22%; top: 50%; transform: translateY(-50%); margin: 0; text-align: center; font-size: 12px; color: var(--ink-soft); }
+.an-stack { display: flex; height: 10px; border-radius: 5px; overflow: hidden; background: var(--bg-sunken); margin-bottom: 10px; }
+.an-probs { list-style: none; margin: 0; padding: 0; font-size: 12px; }
+.an-probs li { display: grid; grid-template-columns: 14px minmax(0, 8em) minmax(0, 1fr) 4.5em; gap: 6px; align-items: center; padding: 2px 0; }
+.an-probs__n { color: var(--ink); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.an-probs__bar { height: 6px; background: var(--bg-sunken); border-radius: 3px; overflow: hidden; }
+.an-probs__bar span { display: block; height: 100%; background: var(--accent); }
+.an-probs__v { text-align: right; color: var(--ink-soft); }
+
+/* ledger */
+.an-ledger__cv { height: 440px; }
+.an-ledger__legend { font-size: 11px; color: var(--ink-muted); margin: 8px 0 0; }
+
+/* 2-opt */
+.an-tiles { list-style: none; display: flex; flex-wrap: wrap; gap: 6px; padding: 0; margin: 0 0 16px; }
+.an-tile { padding: 4px 8px; font-size: 12px; border: 1px solid var(--line); border-radius: 4px; background: var(--surface); color: var(--ink); }
+.an-tile.is-seg { border-color: var(--accent); background: var(--accent-tint); }
+.an-gauge { position: relative; height: 34px; margin: 0 0 16px; border-bottom: 1px solid var(--line-strong, var(--line)); }
+.an-gauge__opt { position: absolute; bottom: 0; height: 22px; width: 0; border-left: 2px dashed var(--ink); }
+.an-gauge__optk { position: absolute; top: 0; transform: translateX(-4px); font-size: 11px; color: var(--ink); white-space: nowrap; padding-left: 8px; }
+.an-gauge__dot { position: absolute; bottom: -6px; width: 12px; height: 12px; margin-left: -6px; border-radius: 50%; background: var(--accent); }
+@media (prefers-reduced-motion: no-preference) {
+  .js .an-gauge__dot { transition: left .5s ease; }
+  .js .an-bar { transition: left .3s ease, width .3s ease; }
+}
+
+/* errands map */
+.an-map { display: block; width: 100%; max-width: 600px; height: auto; margin: 0 auto 12px; font-family: var(--font-mono); }
+.an-map__tour { fill: none; stroke: var(--accent); stroke-width: 2.5; stroke-linejoin: round; }
+.an-map__stop { fill: var(--surface); stroke: var(--ink); stroke-width: 2; }
+.an-map__lab { fill: var(--ink); font-size: 13px; }
+
+/* converge */
+.an-strip { display: block; width: 100%; height: auto; font-family: var(--font-mono); }
+.an-strip__axis { stroke: var(--line-strong, var(--line)); }
+.an-strip__t { fill: var(--ink-muted); font-size: 10px; }
+.an-strip__opt { stroke: var(--ink); stroke-dasharray: 4 3; }
+
+@media (max-width: 599px) {
+  .an-row { grid-template-columns: 70px minmax(0, 1fr); }
+  .an-track { grid-column: 1 / -1; }
+  .an-row--axis { display: none; }
+  .an-nose__grid { grid-template-columns: 1fr; }
+  .an-node__t { display: none; }
+  .an-ledger__cv { height: 360px; }
+}

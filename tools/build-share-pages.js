@@ -156,14 +156,16 @@ const LIST_END = '<!-- END generated:project-list -->';
    the same list rendered twice, and the whole point is that a reader with no
    JavaScript sees what a reader with JavaScript sees. */
 const GROUPS = [
-  { key: 'research', title: 'Research',
-    note: 'Systems that measure something and report the number, including when the number is bad.' },
-  { key: 'products', title: 'Products',
-    note: 'Things built for someone else to use — a shop, a phone app and a sales pipeline.' }
+  { key: 'research', title: 'Research' },
+  { key: 'products', title: 'Products' }
 ];
 
-function rowHtml(p, n, lead) {
-  const focus = (p.tech || []).slice(0, 4).map(esc)
+const media = (src) => [].concat(src || []).map((one) => /\.(mp4|webm|ogv)$/i.test(one)
+  ? '<video src="' + esc(one) + '" autoplay muted loop playsinline></video>'
+  : '<img src="' + esc(one) + '" alt="" decoding="async">').join('');
+
+function rowHtml(p, first) {
+  const stack = (p.tech || []).slice(0, 4).map(esc)
     .join(' <span aria-hidden="true">/</span> ');
   // Same span rule as span() in js/script.js: the real years, not p.year.
   const a = (p.created || '').slice(0, 4);
@@ -171,15 +173,15 @@ function rowHtml(p, n, lead) {
   const years = a ? (a === b ? a : a + '–' + b) : (p.year || '');
   const meta = [p.context || p.role, years].filter(Boolean).map(esc).join(' · ');
 
-  return '          <a class="rm' + (lead ? ' rm--lead' : '') +
-      '" href="work/' + encodeURIComponent(p.id) + '.html" data-group="' + esc(p.group) + '">' +
-      '<span class="rm__num" aria-hidden="true">' + (n < 10 ? '0' : '') + n + '</span>' +
+  return '            <a class="rm' + (first ? ' is-on' : '') + '" href="work/' + encodeURIComponent(p.id) + '.html">' +
       '<span class="rm__text">' +
         '<span class="rm__title">' + esc(p.title) + '</span>' +
         (meta ? '<span class="rm__meta">' + meta + '</span>' : '') +
         '<span class="rm__desc">' + esc(p.tagline) + '</span>' +
-        (p.metric ? '<span class="rm__metric">' + esc(p.metric) + '</span>' : '') +
-        (focus ? '<span class="rm__focus"><span class="rm__focus-label">Focus</span>' + focus + '</span>' : '') +
+        '<span class="rm__foot">' +
+          (p.metric ? '<span class="rm__metric">' + esc(p.metric) + '</span>' : '') +
+          (stack ? '<span class="rm__stack">' + stack + '</span>' : '') +
+        '</span>' +
       '</span>' +
     '</a>';
 }
@@ -187,28 +189,28 @@ function rowHtml(p, n, lead) {
 function projectListHtml(projects) {
   const shown = projects.filter((p) => !p.archived);
   const gone = projects.filter((p) => p.archived);
-  const out = [];
-  let n = 0;
+  const out = ['          <div class="rm-rows">'];
+  let first = null;
 
   for (const g of GROUPS) {
     const rows = shown.filter((p) => p.group === g.key);
     if (!rows.length) continue;
-    out.push('          <div class="rm-group" data-group="' + esc(g.key) + '">' +
-      '<h3 class="rm-group__title">' + esc(g.title) + '</h3>' +
-      '<p class="rm-group__note">' + esc(g.note) + '</p></div>');
-    for (const p of rows) { n++; out.push(rowHtml(p, n, n === 1)); }
+    out.push('            <h3 class="rm-group">' + esc(g.title) + '</h3>');
+    for (const p of rows) { out.push(rowHtml(p, !first)); first = first || p; }
   }
 
+  out.push('          </div>');
+  out.push('          <div class="rm-screen" data-rm-screen aria-hidden="true">' + media(first && first.screen) + '</div>');
+
   /* The archive: still written, still live, still linked — just not what the
-     work is now. One quiet line rather than a second list. */
+     work is now. One quiet line under the list and the pane. */
   if (gone.length) {
     out.push('          <p class="rm-archive">' +
       '<span class="rm-archive__label">Also built</span> ' +
-      gone.map((p) => '<a href="work/' + encodeURIComponent(p.id) + '.html">' +
+      gone.map((p) => '<a href="' + (p.article === false ? esc(p.repo) : 'work/' + encodeURIComponent(p.id) + '.html') + '">' +
         esc(p.title) + '</a>').join('<span aria-hidden="true"> · </span>') +
       '</p>');
   }
-
   return out.join('\n');
 }
 

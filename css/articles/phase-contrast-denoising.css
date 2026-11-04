@@ -1,6 +1,5 @@
 /* Phase-contrast case study ("specimen" form): the loupe rail and the widgets. */
 
-.a[data-form="specimen"] .a-ch__label::before { content: '◍ '; }
 .ph-svg { display: block; max-width: 100%; height: auto; font-family: var(--font-mono); font-size: 11px; }
 .ph-svg__lab { font-weight: 600; }
 .ph-readouts { gap: 10px 24px; }
@@ -40,7 +39,7 @@
   .a[data-form="specimen"] .ph-ledger { margin-top: 12px; padding-top: 10px; border-top: 1px solid var(--line); }
 }
 
-/* ---------- Plate 1: the generator ---------- */
+/* ---------- the generator ---------- */
 .ph-gen { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 14px; align-items: start; margin-bottom: 12px; }
 .ph-gen__img { width: 100%; height: auto; aspect-ratio: 1; border-radius: 6px; image-rendering: pixelated; }
 .ph-gen__row { gap: 8px 10px; }
@@ -54,7 +53,7 @@
   .ph-gen__row .k-readout__v { font-size: 15px; }
 }
 
-/* ---------- Plate 3: the ceiling ---------- */
+/* ---------- the ceiling ---------- */
 .ph-ceil { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 20px 32px; max-width: 1180px; margin: 0 auto; }
 .ph-ceil__pane { min-width: 0; }
 .ph-ceil__h { margin: 0 0 6px; color: var(--ink); font-size: 13px; font-weight: 600; }
@@ -65,7 +64,7 @@
 .a-size--full .a-widget__stage:has(.ph-ceil) { border-radius: 0; border-inline: 0; }
 @media (max-width: 759.98px) { .ph-ceil { grid-template-columns: minmax(0, 1fr); } }
 
-/* ---------- Plate 4: the scrub ---------- */
+/* ---------- the scrub ---------- */
 .ph-scrub__strip { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; margin-bottom: 12px; cursor: row-resize; }
 .ph-scrub__fig { margin: 0; }
 .ph-scrub__img { display: block; width: 100%; height: auto; aspect-ratio: 1; border-radius: 4px; image-rendering: pixelated; }
@@ -80,7 +79,3 @@
 .ph-key__truth::before, .a[data-form="specimen"] .xref[data-key="truth"]::before { border-top: 2px dotted var(--ink-soft) !important; }
 .a[data-form="specimen"] .xref[data-key="corrupt"]::before { border-top: 2px dashed var(--ph-s1, var(--accent)); }
 .a[data-form="specimen"] .xref[data-key="product"]::before { border-top: 3px solid var(--ink); }
-
-/* A hidden footnote popover still takes layout and pushed the phone page
-   128px wide; keep it out of layout until it is shown. */
-.a[data-form="specimen"] .a-fn:not(:hover):not(:focus-within) .a-fn__pop { display: none; }

@@ -37,7 +37,7 @@
     root.addEventListener('click', function (e) {
       var btn = e.target.closest && e.target.closest('.code-copy');
       if (!btn) return;
-      var fig = btn.closest('.dd--code');
+      var fig = btn.closest('.a-code');
       var code = fig && fig.querySelector('code');
       if (!code) return;
       var text = code.textContent;
@@ -76,64 +76,47 @@
   }
 
   /* ---------- header facts ----------
-     One horizontal row under the tagline: when the repo was started, when it
-     was last touched, what it was built with, and the concepts it leans on.
+     Quiet lines under the dek: dates and links, then the stack, then tags,
+     as plain text separated by " · ".
 
      The two dates come from the GitHub API (created_at / pushed_at) and are
-     recorded in project-data.js rather than fetched at run time — a live call
-     would mean a third-party request on every page view, a rate limit, and a
-     row that renders empty when the API is slow. Arteza has no public repo,
-     so it simply has no dates: the rows are omitted rather than filled with a
-     guess or a dash that reads like missing data.
+     recorded in project-data.js rather than fetched at run time. Arteza has
+     no public repo, so it simply has no dates. Tags point outward, at the
+     paper, spec or docs behind the idea.
 
-     Tags are keywords that point outward — the paper, the spec, the docs
-     behind the idea — so a reader who does not know CycleGAN or ROUGE has
-     one click to the source rather than a search. */
-  function facts(p, tech) {
-    var rows = '';
-
-    if (p.created) {
-      rows += '<div><dt>Date created</dt><dd>' +
-        '<time datetime="' + esc(p.created) + '">' + longDate(p.created) + '</time></dd></div>';
-    }
-    if (p.updated) {
-      rows += '<div><dt>Last updated</dt><dd>' +
-        '<time datetime="' + esc(p.updated) + '">' + longDate(p.updated) + '</time></dd></div>';
-    }
-    if (tech) {
-      rows += '<div><dt>Tech stack used</dt><dd><ul class="fact__chips">' + tech + '</ul></dd></div>';
-    }
-
-    var tags = (p.tags || []).map(function (t) {
-      return '<li><a href="' + safeUrl(t[1]) + '" target="_blank" rel="noopener noreferrer">' +
-        esc(t[0]) + ' ↗</a></li>';
-    }).join('');
-    if (tags) {
-      rows += '<div><dt>Tags</dt><dd><ul class="fact__chips fact__chips--tags">' + tags + '</ul></dd></div>';
-    }
-
-    return rows ? '<dl class="detail__facts">' + rows + '</dl>' : '';
+     The label has to match where the repo link goes: Arteza's `repo` is the
+     shop itself, so it reads "Visit the site". */
+  function link(href, text) {
+    return '<a href="' + safeUrl(href) + '" target="_blank" rel="noopener noreferrer">' + esc(text) + ' ↗</a>';
+  }
+  function facts(p) {
+    var first = [];
+    if (p.created) first.push('Started <time datetime="' + esc(p.created) + '">' + longDate(p.created) + '</time>');
+    if (p.updated) first.push('updated <time datetime="' + esc(p.updated) + '">' + longDate(p.updated) + '</time>');
+    if (p.repo) first.push(link(p.repo, /^https:\/\/github\.com\//.test(String(p.repo)) ? 'Source' : 'Visit the site'));
+    if (p.demo) first.push(link(p.demo, 'Live demo'));
+    var tags = (p.tags || []).map(function (t) { return link(t[1], t[0]); });
+    return '<div class="detail__facts">' +
+      '<p>' + first.join(' · ') + '</p>' +
+      ((p.tech || []).length ? '<p><span class="detail__k">Stack</span> ' + esc(p.tech.join(' · ')) + '</p>' : '') +
+      (tags.length ? '<p><span class="detail__k">Tags</span> ' + tags.join(' · ') + '</p>' : '') +
+    '</div>';
   }
 
   /* ---------- at a glance ----------
-     Four lines at the top of a long page. The prose below is worth reading and
-     takes ten minutes; this is for the reader who has twenty seconds and needs
-     to know what the problem was, what got built, what came out of it and what
-     it was built with before deciding whether to spend the ten minutes.
-
-     Stack is not authored — it is the same `tech` array the header row uses,
-     so the two can never disagree. */
+     Three lines at the top of a long page, for the reader who has twenty
+     seconds: what the problem was, what got built, what came out of it. The
+     stack is in the header's facts, one line above. */
   function glance(p) {
     if (!p.glance) return '';
     var rows = [
       ['Problem', p.glance.problem],
       ['What I built', p.glance.built],
-      ['Result', p.glance.result],
-      ['Stack', (p.tech || []).join(', ')]
+      ['Result', p.glance.result]
     ].filter(function (r) { return r[1]; }).map(function (r) {
       return '<div><dt>' + esc(r[0]) + '</dt><dd>' + esc(r[1]) + '</dd></div>';
     }).join('');
-    return rows ? '<dl class="detail__glance">' + rows + '</dl>' : '';
+    return rows ? '<h2 class="detail__k">At a glance</h2><dl class="detail__glance">' + rows + '</dl>' : '';
   }
 
   /* ---------- the matryoshka ----------
@@ -240,7 +223,7 @@
      css/articles/<id>.css, fetched for this page only — the home page loads
      the summaries in js/project-data.js and nothing else. The version tag
      travels with both so a deploy is never half old, half new. */
-  var ARTICLE_V = '2';
+  var ARTICLE_V = '6';
 
   function loadArticle(id, done) {
     var css = document.createElement('link');
@@ -267,6 +250,8 @@
     if (index === -1) { notFound(root); return; }
 
     var p = projects[index];
+    /* article: false = no case study yet, so Previous/Next go to its repo. */
+    function workHref(q) { return q.article === false ? safeUrl(q.repo) : 'work/' + encodeURIComponent(q.id) + '.html'; }
     var prev = projects[index - 1];
     var next = projects[index + 1];
 
@@ -279,40 +264,27 @@
     setMeta('meta[name="twitter:title"]', 'content', pageTitle);
     setMeta('meta[name="twitter:description"]', 'content', p.summary);
 
-    var tech = (p.tech || []).map(function (t) { return '<li>' + esc(t) + '</li>'; }).join('');
-
-    /* The label has to match where the link goes. Arteza's `repo` is the
-       shop itself — the client owns the code — and labelling that "Source"
-       promised a repository and delivered a storefront. */
-    var repoLabel = /^https:\/\/github\.com\//.test(String(p.repo || '')) ? 'Source ↗' : 'Visit the site ↗';
-    var actions = '<a class="btn btn--quiet" href="' + safeUrl(p.repo) + '" target="_blank" rel="noopener noreferrer">' + repoLabel + '</a>' +
-      (p.demo ? '<a class="btn btn--quiet" href="' + safeUrl(p.demo) + '" target="_blank" rel="noopener noreferrer">Live demo ↗</a>' : '');
-
     var navPrev = prev
-      ? '<a href="work/' + encodeURIComponent(prev.id) + '.html"><span>Previous</span>' + esc(prev.title) + '</a>'
+      ? '<a href="' + workHref(prev) + '"><span>Previous</span>' + esc(prev.title) + '</a>'
       : '<span></span>';
     var navNext = next
-      ? '<a href="work/' + encodeURIComponent(next.id) + '.html"><span>Next</span>' + esc(next.title) + '</a>'
+      ? '<a href="' + workHref(next) + '"><span>Next</span>' + esc(next.title) + '</a>'
       : '<span></span>';
 
     root.innerHTML =
       '<a class="detail__back" href="index.html#work">← All work</a>' +
       '<header class="detail__head">' +
-        '<div class="detail__headrow">' +
-          '<div class="detail__headtext">' +
-            '<h1 class="detail__title">' + esc(p.title) + '</h1>' +
-            '<p class="detail__tagline">' + esc(p.tagline) + '</p>' +
-          '</div>' +
-          '<div class="detail__actions">' + actions + '</div>' +
-        '</div>' +
-        facts(p, tech) +
+        '<h1 class="detail__title">' + esc(p.title) + '</h1>' +
+        // The tagline until the article's own dek arrives.
+        '<p class="detail__dek" data-dek>' + esc(p.tagline) + '</p>' +
+        facts(p) +
       '</header>' +
+      '<div class="detail__demo" data-demo hidden></div>' +
       '<div class="detail__body">' +
         // First, so its top lines up with the glance box it sits beside in
         // the margin (css/project.css).
         nest(p) +
         glance(p) +
-        '<p class="detail__dek" data-dek hidden></p>' +
       '</div>' +
       '<article class="a" id="article" aria-busy="true"></article>' +
       '<nav class="detail__nav" aria-label="Project navigation">' + navPrev + navNext + '</nav>';
@@ -325,16 +297,11 @@
       art.removeAttribute('aria-busy');
       if (!spec) {
         art.innerHTML = '<p class="a-p">' + esc(p.summary) + '</p>';
-        if (typeof window.initOpener === 'function') window.initOpener(p, null);
         return;
       }
-      if (spec.dek) {
-        var dek = root.querySelector('[data-dek]');
-        dek.innerHTML = window.Article.inline(spec.dek);
-        dek.hidden = false;
-      }
+      if (spec.dek) root.querySelector('[data-dek]').innerHTML = window.Article.inline(spec.dek);
+      window.Article.demo(root.querySelector('[data-demo]'), spec.demo);
       window.Article.render(art, p, spec);
-      if (typeof window.initOpener === 'function') window.initOpener(p, spec);
     });
   }
 

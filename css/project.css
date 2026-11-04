@@ -1,9 +1,8 @@
 /* Detail-page-only styles.
 
-   One centred column, not the old 40/60 split: the facts that used to sit in
-   a sticky sidebar box (year, role, stack, links) are part of the header now,
-   so the prose gets the middle of the page and the outer margins are free for
-   the annotation layer below. */
+   One centred column: the facts (dates, links, stack, tags) are part of the
+   header, so the prose gets the middle of the page. The case-study column
+   and header are laid out in css/article.css. */
 
 .detail {
   /* Block padding only: a `0` on the sides here cancelled .wrap's gutter,
@@ -38,15 +37,10 @@
   line-height: 1.5;
 }
 
-/* --- header facts ---------------------------------------------------------
-   One horizontal row under the tagline: date created, last updated, tech
-   stack, tags. It replaced a sticky sidebar card — as a row of label-over-
-   value columns it costs a fifth of the space and stops competing with the
-   prose for the reader's first look. The columns wrap to two, then one. */
 /* ---------- at a glance ----------
-   Four rows at the head of a long article: problem, what got built, what came
-   out of it, and the stack. The prose below is worth the ten minutes; this is
-   for deciding whether to spend them. */
+   Three rows at the head of a long article: problem, what got built, what
+   came out of it. The prose below is worth the ten minutes; this is for
+   deciding whether to spend them. */
 .detail__glance {
   display: grid;
   grid-template-columns: max-content 1fr;
@@ -58,6 +52,7 @@
   border-radius: var(--radius);
   background: var(--bg-sunken);
 }
+h2.detail__k { margin: 0 0 8px; font-weight: 500; line-height: 1.4; }
 .detail__glance > div { display: contents; }
 .detail__glance dt {
   color: var(--ink-muted);
@@ -157,128 +152,6 @@
 }
 .nest__btn:hover { border-color: var(--accent); color: var(--accent-ink); }
 .nest__btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
-
-.detail__facts {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--gap-lg) 40px;
-  align-items: flex-start;
-  margin: var(--gap-lg) 0 0;
-  padding-top: var(--gap-lg);
-  border-top: 1px solid var(--line);
-}
-/* Dates stay narrow; the two chip lists take whatever is left, so a long
-   stack wraps inside its own column instead of pushing Tags onto a new row. */
-.detail__facts > div { flex: 1 1 auto; min-width: 0; }
-.detail__facts > div:has(.fact__chips) { flex: 1 1 260px; }
-
-.detail__facts dt {
-  margin-bottom: 8px;
-  color: var(--ink-muted);
-  font-size: 11px;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  white-space: nowrap;
-}
-.detail__facts dd {
-  margin: 0;
-  color: var(--ink-body);
-  font-size: 14px;
-  line-height: 1.6;
-}
-.detail__facts time { font-variant-numeric: tabular-nums; }
-
-.fact__chips {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-  margin: 0;
-  padding: 0;
-  list-style: none;
-}
-.fact__chips li {
-  padding: 3px 9px;
-  border: 1px solid var(--line);
-  border-radius: var(--radius-pill);
-  background: var(--bg-raised);
-  color: var(--ink-body);
-  font-family: var(--font-mono);
-  font-size: 12px;
-  line-height: 1.5;
-}
-/* Tags are links out to the paper or spec behind the idea, so they carry the
-   accent and a hover state; the stack chips are inert labels. */
-.fact__chips--tags li {
-  padding: 0;
-  border-color: var(--accent-mid);
-  background: transparent;
-}
-.fact__chips--tags a {
-  display: block;
-  padding: 3px 9px;
-  color: var(--accent-ink);
-}
-.fact__chips--tags li:hover,
-.fact__chips--tags li:focus-within { border-color: var(--accent-ink); }
-
-/* Title left, links right, on the same first line. */
-.detail__headrow {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: var(--gap) var(--gap-lg);
-}
-.detail__headtext { flex: 1 1 320px; min-width: 0; }
-
-/* Stacked, not side by side, and right-aligned under each other so their
-   trailing arrows line up. */
-.detail__actions {
-  display: flex;
-  flex-direction: column;
-  align-items: stretch;
-  gap: 8px;
-  flex: 0 0 auto;
-}
-.detail__actions .btn {
-  justify-content: space-between;
-  padding: 8px 14px;
-  font-size: 12px;
-  min-width: 132px;
-}
-
-/* Both links look the same, and at rest they are the page: only the outline
-   says there is something here. Hover fills them pale blue, pressing fills
-   them deep blue — and because --accent-pale and --accent-deep swap roles in
-   the dark theme, the same two rules read as dark-then-light there without a
-   second set of colours. */
-.btn--quiet {
-  background: var(--bg);
-  border-color: var(--line-strong);
-  color: var(--ink);
-}
-.btn--quiet:hover,
-.btn--quiet:focus-visible {
-  background: var(--accent-pale);
-  border-color: var(--accent-pale);
-  color: var(--ink);
-}
-.btn--quiet:active {
-  background: var(--accent-deep);
-  border-color: var(--accent-deep);
-  color: var(--on-accent-deep, #fff);
-}
-
-@media (max-width: 599.98px) {
-  .detail__actions { width: 100%; }
-}
-
-/* The glance and the dek share the article's centred measure. */
-.detail__body {
-  max-width: var(--measure-narrow);
-  min-width: 0;
-  margin-inline: auto;
-}
 
 .detail__nav {
   display: flex;
@@ -529,9 +402,6 @@
 @media (max-width: 599.98px) {
   .detail__title { font-size: clamp(26px, 8vw, 34px); }
   .detail__tagline { font-size: 15px; }
-  .detail__actions { gap: 8px; }
-  .detail__actions .btn { padding: 11px 15px; font-size: 13px; min-height: 44px; }
-
 
   /* Tables: a phone cannot show four columns, so let them scroll and hint it. */
   .table-scroll {
@@ -548,273 +418,3 @@
   .hobby__blurb { font-size: 15px; }
 }
 
-/* --------------------------------------------------------------------------
-   The opener (js/opener.js)
-
-   The first screen of a case study, after altermag.com: a textured ground,
-   one drawn figure in the middle, and a chevron into the article. 62svh, so
-   the project's title is on the first screen. Scroll sinks the figure.
-
-   The ground is procedural — two layered repeating gradients at low opacity
-   over the theme's own paper, so it costs no image and inverts with the theme
-   instead of carrying a second texture for dark.
-   -------------------------------------------------------------------------- */
-
-.opener {
-  position: relative;
-  height: 62svh;
-  min-height: 380px;
-  margin-top: calc(-1 * var(--header-h, 58px));
-  overflow: hidden;
-  background: var(--bg);
-  /* The tooth of the paper. Three coarse gradients at different angles read as
-     fibre rather than as stripes; the eye cannot resolve the period. */
-  background-image:
-    repeating-linear-gradient(107deg, rgb(128 128 128 / 0.035) 0 2px, transparent 2px 5px),
-    repeating-linear-gradient(17deg,  rgb(128 128 128 / 0.03)  0 1px, transparent 1px 7px),
-    repeating-linear-gradient(61deg,  rgb(128 128 128 / 0.025) 0 3px, transparent 3px 11px);
-}
-
-.op-field {
-  position: absolute;
-  inset: 0;
-  --p: 0;
-}
-
-.op-figure {
-  position: absolute;
-  left: 50%;
-  top: 50%;
-  transform: translate3d(-50%, calc(-50% + var(--p) * 90px), 0) scale(calc(1 + var(--p) * 0.25));
-  opacity: calc(1 - var(--p) * 1.1);
-  will-change: transform, opacity;
-}
-
-.op-more {
-  position: absolute;
-  left: 50%;
-  bottom: 42px;
-  transform: translateX(-50%);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 10px;
-  color: var(--ink);
-  font-size: 13px;
-  letter-spacing: 0.02em;
-  text-decoration: none;
-}
-.op-more__t { font-family: var(--font-script, inherit); font-size: 26px; }
-.op-more__c { color: var(--ink-soft); font-size: 15px; line-height: 0.6; }
-@media (prefers-reduced-motion: no-preference) {
-  .js .op-more__c { animation: op-nudge 2.4s var(--ease, ease) infinite; }
-}
-@keyframes op-nudge {
-  0%, 100% { transform: translateY(0); opacity: 0.6; }
-  50%      { transform: translateY(5px); opacity: 1; }
-}
-
-/* ---------- opener centrepieces (js/opener.js PIECES) ----------
-   Two case studies swap the small drawing for an object: a microscope whose
-   eyepiece view is the real frame under a movable lens, and a till that
-   prints the screener's result. Both ride .op-figure, so they sink and fade
-   with the scroll; their size is a share of the opener's height, and their
-   type is in container units, so a phone gets the same object smaller.
-
-   Receipt paper is a token pair rather than --surface: thermal paper is pale
-   in any light, and a dark receipt would not read as one. Night dims it
-   instead of inverting it. Ink 12:1 / soft ink 5.7:1 on the dimmer paper. */
-:root {
-  --receipt-paper: #fbfaf5;
-  --receipt-ink: #26231e;
-  --receipt-ink-soft: #5a554b;
-  /* The eyepiece shows a micrograph, which is dark in any theme (like the
-     lightbox veil), so these do not flip: the field's black, the captured
-     frame's median grey for its key, and the shade that rings the lens. */
-  --scope-dark: #000;
-  --scope-raw: #4e4e4e;
-  --scope-shade: rgb(0 0 0 / 0.55);
-}
-:root[data-theme='dark'] {
-  --receipt-paper: #e6e2d6;
-  --receipt-ink: #26231e;
-  --receipt-ink-soft: #5a554b;
-}
-
-.op-piece {
-  top: 43%;
-  container-type: size;
-}
-
-/* The microscope. The SVG and the view share one 320×340 box. */
-.op-piece--scope { height: 54%; aspect-ratio: 320 / 340; }
-.op-scope__body { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
-.op-scope__body .ms-f { fill: var(--bg-raised); stroke: var(--ink-soft); stroke-width: 1.5; stroke-linejoin: round; }
-.op-scope__body .ms-l { fill: none; stroke: var(--ink-soft); stroke-width: 1.5; }
-.op-scope__body .ms-a { fill: none; stroke: var(--accent); stroke-width: 1.8; }
-.op-scope__body .ms-s { fill: var(--accent-pale); stroke: var(--ink-soft); stroke-width: 1.2; }
-.op-scope__body .ms-arm { fill: none; stroke: var(--ink-soft); stroke-width: 15; stroke-linecap: round; }
-.op-scope__body .ms-arm--in { stroke: var(--bg-raised); stroke-width: 12; }
-.op-scope__body .ms-cone { fill: none; stroke: var(--line-strong); stroke-width: 1.2; stroke-dasharray: 3 4; }
-
-.op-scope__view {
-  --lx: 64%;
-  --ly: 40%;
-  position: absolute;
-  left: 30%;
-  top: 4.118%;
-  width: 65%;
-  height: 61.18%;
-  border-radius: 50%;
-  overflow: hidden;
-  background: var(--scope-dark);
-  border: 2px solid var(--ink-soft);
-  box-shadow: var(--shadow-card);
-  touch-action: none;
-  cursor: none;
-  user-select: none;
-  -webkit-user-select: none;
-}
-.op-scope__view img {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  pointer-events: none;
-}
-.op-scope__clean { clip-path: circle(24% at var(--lx) var(--ly)); }
-.op-scope__lens {
-  position: absolute;
-  left: var(--lx);
-  top: var(--ly);
-  width: 48%;
-  height: 48%;
-  transform: translate(-50%, -50%);
-  border-radius: 50%;
-  border: 2px solid var(--lens, #fff);
-  /* A dark hairline either side of the ring, so it holds on the grey field
-     and on the black output alike. */
-  box-shadow: 0 0 0 1px var(--scope-shade), inset 0 0 0 1px var(--scope-shade);
-  pointer-events: none;
-}
-/* The eyepiece's own vignette, over both images and the lens. */
-.op-scope__view::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  border-radius: 50%;
-  box-shadow: inset 0 0 8cqw var(--scope-shade);
-  pointer-events: none;
-}
-.op-scope__cap {
-  position: absolute;
-  left: 52%;
-  top: 71%;
-  width: 48%;
-  margin: 0;
-  display: grid;
-  gap: 0.5em;
-  color: var(--ink-soft);
-  font-family: var(--font-mono, ui-monospace, monospace);
-  font-size: clamp(9px, 3.4cqw, 12px);
-  line-height: 1.3;
-}
-.op-scope__cap span { display: flex; gap: 0.55em; align-items: baseline; }
-.op-scope__k {
-  flex: none;
-  width: 0.8em;
-  height: 0.8em;
-  border-radius: 50%;
-  background: var(--scope-raw);
-  border: 1px solid var(--ink-soft);
-}
-.op-scope__k--lens { background: var(--scope-dark); border: 2px solid var(--lens, var(--accent)); }
-
-/* The till. */
-.op-piece--receipt { height: 60%; aspect-ratio: 0.66; }
-.op-rc__paper {
-  position: absolute;
-  left: 13%;
-  width: 74%;
-  bottom: 19%;
-  display: flex;
-  flex-direction: column;
-  padding: 0.7em 0.9em 0.9em;
-  background: var(--receipt-paper);
-  color: var(--receipt-ink);
-  font-family: var(--font-mono, ui-monospace, monospace);
-  font-size: 2.25cqh;
-  line-height: 1.25;
-  box-shadow: var(--shadow-card);
-}
-/* The torn top edge. */
-.op-rc__paper::before {
-  content: '';
-  position: absolute;
-  left: 0;
-  right: 0;
-  top: -5px;
-  height: 6px;
-  background:
-    linear-gradient(-45deg, var(--receipt-paper) 3px, transparent 0) 0 100% / 6px 6px repeat-x,
-    linear-gradient(45deg, var(--receipt-paper) 3px, transparent 0) 0 100% / 6px 6px repeat-x;
-}
-.op-rc__l {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: space-between;
-  column-gap: 1ch;
-  max-height: 4em;
-  overflow: hidden;
-}
-.op-rc__l span:last-child:not(:first-child) { text-align: right; margin-left: auto; }
-.op-rc__l--h { justify-content: center; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; }
-.op-rc__l--c { justify-content: center; text-align: center; color: var(--receipt-ink-soft); }
-.op-rc__l--r, .op-rc__l--rr { height: 0.8em; }
-.op-rc__l--r::before, .op-rc__l--rr::before {
-  content: '';
-  flex: 1;
-  align-self: center;
-  border-top: 1px dashed var(--receipt-ink-soft);
-}
-.op-rc__l--rr::before { border-top: 3px double var(--receipt-ink); }
-.op-rc__l--t { font-size: 1.22em; font-weight: 600; align-items: baseline; }
-
-.op-rc__printer {
-  position: absolute;
-  left: 3%;
-  right: 3%;
-  bottom: 0;
-  height: 21%;
-  border-radius: 12px 12px 7px 7px;
-  background: var(--surface);
-  border: 1.5px solid var(--line-strong);
-  box-shadow: var(--shadow-card);
-}
-.op-rc__printer i { position: absolute; display: block; }
-.op-rc__slot { left: 10%; right: 10%; top: 9%; height: 5px; border-radius: 3px; background: var(--receipt-ink); }
-.op-rc__vent {
-  left: 12%; width: 34%; top: 46%; height: 30%;
-  background: repeating-linear-gradient(180deg, var(--line-strong) 0 1.5px, transparent 1.5px 6px);
-}
-.op-rc__led { right: 12%; top: 50%; width: 7px; height: 7px; border-radius: 50%; background: var(--accent); }
-
-@media (prefers-reduced-motion: no-preference) {
-  /* One line every 0.2s, each opening from nothing so the paper is pushed
-     up out of the slot. */
-  .js .op-rc__l {
-    animation: op-print 0.16s steps(3, end) backwards;
-    animation-delay: calc(0.5s + var(--i) * 0.2s);
-  }
-  .js .op-rc__led { animation: op-led 0.4s steps(1, end) 12 0.5s; }
-}
-@keyframes op-print { from { max-height: 0; height: 0; } }
-@keyframes op-led { 50% { opacity: 0.2; } }
-
-@media (max-width: 599.98px) {
-  .op-piece { top: 41%; }
-  .op-piece--scope { height: 54%; }
-  .op-piece--receipt { height: 52%; aspect-ratio: 0.9; }
-  .op-rc__paper { left: 7%; width: 86%; font-size: 3.5cqh; }
-  .op-rc__l--x { display: none; }
-}

@@ -1,23 +1,25 @@
 /* ==========================================================================
    The article (js/article.js)
 
-   A case study is a long read: serif body in one centred measure, the site's
-   mono for everything that is chrome — chapter labels, captions, numbers,
-   controls, code. Figures break the measure when they need the room ('wide',
-   'full'); margin notes sit in the gutters in the owner's hand; a scrolly
-   section pins its figure while the prose beside it moves the figure along.
+   A case study is a long read, laid out the way Medium lays one out: one
+   centred ~680px column that the back link, title, dek, facts, glance and
+   prose all share, serif body at 20px, the site's mono for chrome —
+   captions, numbers, controls, code. Figures break the column when they need
+   the room ('wide', 'full'); a scrolly section pins its figure while the
+   prose beside it moves the figure along.
 
    Each article's own widgets are styled in css/articles/<id>.css. This file
    is the shared grammar, and every colour in it is a token, so the articles
    follow the theme, the time of day and the day's Wada palette.
    ========================================================================== */
 
-.a {
-  --col: 660px;
-  --wide: 1040px;
+.detail {
+  --col: 680px;
+  --wide: 1000px;
   --gutter: max(16px, 4vw);
-  --serif-size: 19px;
-  --a-gap: 30px;
+  --serif-size: 20px;
+}
+.a {
   position: relative;
   display: grid;
   grid-template-columns:
@@ -26,7 +28,7 @@
     [col-start] min(var(--col), 100% - 2 * var(--gutter))
     [col-end] minmax(0, calc((var(--wide) - var(--col)) / 2))
     [wide-end] minmax(var(--gutter), 1fr) [full-end];
-  margin-top: 56px;
+  margin-top: 48px;
   color: var(--ink-body);
 }
 .a > *, .a-ch > * { grid-column: col; min-width: 0; }
@@ -37,7 +39,7 @@
   grid-column: full;
   display: grid;
   grid-template-columns: subgrid;
-  padding-top: 72px;
+  padding-top: 64px;
 }
 .a-ch:first-of-type { padding-top: 8px; }
 
@@ -45,23 +47,14 @@
 .a-size--full { grid-column: full; }
 
 /* ---------- chapter heads ---------- */
-.a-ch__head { margin: 0 0 28px; }
-.a-ch__label {
-  margin: 0 0 10px;
-  color: var(--accent-ink);
-  font-family: var(--font-mono);
-  font-size: 12px;
-  font-weight: 500;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-}
+.a-ch__head { margin: 0 0 20px; }
 .a-ch__title {
   margin: 0;
   color: var(--ink);
   font-family: var(--font-serif);
-  font-size: clamp(28px, 4.2vw, 40px);
+  font-size: clamp(26px, 3.2vw, 32px);
   font-weight: 400;
-  line-height: 1.12;
+  line-height: 1.2;
   letter-spacing: -0.015em;
   text-wrap: balance;
 }
@@ -71,12 +64,10 @@
 .a-p, .a-p > p, .a-list, .a-step p, .a-callout p {
   font-family: var(--font-serif);
   font-size: var(--serif-size);
-  line-height: 1.7;
+  line-height: 1.6;
   color: var(--ink-body);
 }
-.a-p, .a-p > p { margin: 0 0 1.05em; }
-.a-p > p:last-of-type { margin-bottom: 0; }
-div.a-p { margin-bottom: 1.05em; }
+.a-p { margin: 0 0 1.4em; }
 
 .a strong { color: var(--ink); font-weight: 700; }
 .a em { font-style: italic; }
@@ -102,7 +93,7 @@ div.a-p { margin-bottom: 1.05em; }
   overflow-wrap: anywhere;
 }
 
-.a a:not(.btn):not(.a-progress__seg) {
+.a a:not(.btn), .detail__dek a {
   color: var(--accent-ink);
   text-decoration: underline;
   text-decoration-thickness: 1px;
@@ -114,16 +105,94 @@ div.a-p { margin-bottom: 1.05em; }
 .a-list li::marker { color: var(--accent-mid); }
 ol.a-list li::marker { font-family: var(--font-mono); font-size: 0.8em; }
 
-/* The standfirst: the article's first word, set larger, before the chapters. */
-.detail__body .detail__dek {
-  margin: 48px 0 0;
-  color: var(--ink);
+/* ---------- the header ----------
+   Title, the dek (the result, first), then quiet facts: dates and links,
+   stack, tags, as plain text in the mono. */
+.detail__head { margin-bottom: 32px; }
+.detail__dek {
+  margin: 14px 0 0;
+  color: var(--ink-soft);
   font-family: var(--font-serif);
-  font-size: clamp(21px, 2.4vw, 25px);
-  line-height: 1.5;
+  font-size: clamp(19px, 2.2vw, 22px);
+  line-height: 1.45;
   text-wrap: pretty;
 }
 .detail__dek code { font-size: 0.8em; }
+.detail__facts {
+  margin-top: 22px;
+  padding-top: 14px;
+  border-top: 1px solid var(--line);
+  color: var(--ink-soft);
+  font-family: var(--font-mono);
+  font-size: 12.5px;
+  line-height: 1.9;
+}
+.detail__facts p { margin: 0; }
+.detail__facts time { font-variant-numeric: tabular-nums; }
+.detail__facts a { color: var(--accent-ink); text-underline-offset: 3px; }
+.detail__facts a:hover { text-decoration: underline; }
+.detail__k {
+  margin-right: 6px;
+  color: var(--ink-muted);
+  font-size: 10.5px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+/* ---------- the demo ----------
+   A recording of the live demo, wider than the column, before At a glance. */
+.a-demo { position: relative; margin: 0; }
+.a-demo video {
+  display: block;
+  width: 100%;
+  height: auto;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  background: var(--bg-sunken);
+}
+.a-demo__btn {
+  position: absolute;
+  right: 10px;
+  top: 10px;
+  min-height: 28px;
+  padding: 4px 12px;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius-pill);
+  background: var(--surface);
+  color: var(--ink);
+  font: 500 11px/1.2 var(--font-mono);
+  cursor: pointer;
+}
+.a-demo__btn:hover { border-color: var(--accent); }
+.a-demo figcaption {
+  margin-top: 10px;
+  color: var(--ink-soft);
+  font-family: var(--font-mono);
+  font-size: 12.5px;
+  line-height: 1.6;
+}
+
+/* ---------- sources ----------
+   The few that matter, one line each, at the very end. */
+.a-sources {
+  margin-top: 64px;
+  padding-top: 16px;
+  border-top: 1px solid var(--line);
+  color: var(--ink-soft);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  line-height: 1.6;
+}
+.a-sources__h {
+  margin: 0 0 10px;
+  color: var(--ink-muted);
+  font: 500 11px/1.4 var(--font-mono);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+.a-sources ul { margin: 0; padding: 0; list-style: none; }
+.a-sources li { margin-bottom: 6px; }
+.a-sources b { color: var(--ink-body); font-weight: 600; }
 
 /* ---------- pull quote, callout ---------- */
 .a-quote {
@@ -353,43 +422,6 @@ ol.a-list li::marker { font-family: var(--font-mono); font-size: 0.8em; }
   font-variant-numeric: tabular-nums;
 }
 
-/* ---------- margin notes ----------
-   The phrase is underlined in the prose; the note is set in Caveat in the
-   gutter beside it. js/article.js parks each note at its phrase's line. */
-.mg { position: relative; }
-.mg__mark {
-  background: none;
-  color: inherit;
-  border-bottom: 1.5px solid var(--accent-mid);
-  padding-bottom: 1px;
-}
-.mg__note {
-  margin: 10px 0 0;
-  color: var(--accent-ink);
-  font-family: var(--font-script);
-  font-size: 21px;
-  line-height: 1.22;
-}
-.mg__note code { font-size: 0.7em; }
-
-@media (min-width: 1180px) {
-  .mg__note {
-    position: absolute;
-    top: 0;
-    width: 190px;
-    margin: 0;
-  }
-  .mg__note--l { right: calc(100% + 28px); text-align: right; }
-  .mg__note--r { left: calc(100% + 28px); }
-}
-@media (max-width: 1179.98px) {
-  .mg__note {
-    padding-left: 16px;
-    border-left: 2px solid var(--accent-mid);
-  }
-  .mg__note + .mg__note { margin-top: 6px; }
-}
-
 /* ---------- scrolly ----------
    The figure pins; the prose beside it scrolls past and, step by step,
    sets the figure's state. Wide screens put them side by side; narrow ones
@@ -477,103 +509,11 @@ ol.a-list li::marker { font-family: var(--font-mono); font-size: 0.8em; }
     transition: opacity 0.3s var(--ease), visibility 0.3s;
   }
   .a.has-rail.rail-on > .a-rail { opacity: 1; visibility: visible; }
-  /* The rail owns the right gutter, so notes all move to the left and wide
-     figures grow leftward only. */
+  /* The rail owns the right gutter, so wide figures grow leftward only. */
   .a.has-rail .a-scrolly, .a.has-rail .a-size--wide, .a.has-rail .a-quote {
     grid-column: wide-start / col-end;
   }
 }
-
-/* ---------- contents ---------- */
-.a-toc {
-  margin: 0 0 24px;
-  padding: 18px 0 4px;
-  border-top: 1px solid var(--line-strong);
-  border-bottom: 1px solid var(--line);
-  font-family: var(--font-mono);
-}
-.a-toc__k {
-  margin: 0 0 10px;
-  color: var(--ink-muted);
-  font-size: 11px;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-}
-.a-toc ol {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(min(100%, 280px), 1fr));
-  gap: 0 28px;
-  margin: 0;
-  padding: 0;
-  list-style: none;
-}
-.a-toc a {
-  display: flex;
-  gap: 12px;
-  align-items: baseline;
-  padding: 7px 0;
-  border-bottom: 1px dashed var(--line);
-  color: var(--ink-body);
-  font-size: 13px;
-  line-height: 1.45;
-  text-decoration: none !important;
-}
-.a-toc li:nth-last-child(-n+1) a { border-bottom: 0; }
-.a-toc a:hover .a-toc__t { color: var(--accent-ink); }
-.a-toc__l {
-  flex: none;
-  min-width: 6.5em;
-  color: var(--accent-ink);
-  font-size: 10.5px;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-}
-
-/* ---------- footnotes ----------
-   A small number in the text; its note shows beside it on hover or focus,
-   and again in the list at the end, which is where a phone reader gets it. */
-.a-fn { position: relative; line-height: 0; font-size: 0.62em; }
-.a-fn > a {
-  position: relative;
-  padding: 0 0.15em;
-  color: var(--accent-ink) !important;
-  font-family: var(--font-mono);
-  font-weight: 600;
-  text-decoration: none !important;
-}
-/* A footnote number is ~10x14px of type. Its hit area is 24px either way
-   (WCAG 2.5.8), drawn as an invisible box so the line spacing is untouched. */
-.a-fn > a::after { content: ''; position: absolute; inset: 50% auto auto 50%; width: 26px; height: 26px; translate: -50% -50%; }
-.a-fn__pop {
-  position: absolute;
-  left: 50%;
-  bottom: calc(100% + 1.2em);
-  z-index: 30;
-  width: max-content;
-  max-width: min(320px, 80vw);
-  padding: 10px 12px;
-  border: 1px solid var(--line-strong);
-  border-radius: var(--radius-sm);
-  background: var(--surface, var(--bg-raised));
-  box-shadow: var(--shadow-card);
-  color: var(--ink-body);
-  font-family: var(--font-mono);
-  font-size: 12px;
-  font-weight: 400;
-  line-height: 1.55;
-  text-align: left;
-  white-space: normal;
-  transform: translateX(-50%);
-  opacity: 0;
-  visibility: hidden;
-  pointer-events: none;
-  transition: opacity var(--dur) var(--ease), visibility var(--dur);
-}
-/* display:none at rest: a hidden absolute popover still widens the page on
-   phones (scrollWidth ~500 at 390px). */
-.a-fn__pop { display: none; }
-.a-fn:hover .a-fn__pop, .a-fn:focus-within .a-fn__pop { display: block; opacity: 1; visibility: visible; }
-@media (hover: none) { .a-fn__pop { display: none; } }
 
 /* ---------- closing ---------- */
 .a-ch--closing { padding-top: 96px; }
@@ -582,64 +522,12 @@ ol.a-list li::marker { font-family: var(--font-mono); font-size: 0.8em; }
   border-top: 1px solid var(--line-strong);
 }
 
-/* ---------- reading progress ----------
-   Under the header: one segment per chapter, each a link to it. */
-.a-progress {
-  position: fixed;
-  top: var(--header-h, 56px);
-  left: 0;
-  right: 0;
-  z-index: 40;
-  display: flex;
-  gap: 3px;
-  height: 3px;
-  padding: 0 3px;
-  opacity: 0;
-  pointer-events: none;
-  transition: opacity 0.3s var(--ease);
-}
-.a-progress.is-shown { opacity: 1; pointer-events: auto; }
-.a-progress__seg {
-  position: relative;
-  flex: 1 1 0;
-  background: var(--line);
-}
-/* A taller hit area than the 3px it draws. */
-.a-progress__seg::before { content: ''; position: absolute; inset: -10px 0 -11px; }
-.a-progress__fill {
-  position: absolute;
-  inset: 0;
-  transform: scaleX(var(--p, 0));
-  transform-origin: left;
-  background: var(--accent);
-}
-.a-progress__seg:hover { background: var(--line-strong); }
-
-/* ---------- the sheet ----------
-   altermag's opener stays where it is and the article rises over it like a
-   sheet of paper. The opener is pinned; the page container is lifted over its
-   last fifth with a soft top edge. Only when an opener was actually drawn —
-   with none, the page starts as an ordinary page. */
-.opener:not(:empty) { position: sticky; top: 0; z-index: 0; }
-.opener:not(:empty) + .detail {
-  position: relative;
-  z-index: 1;
-  margin-top: -12svh;
-  padding-top: 44px;
-  border-radius: 28px 28px 0 0;
-  background: var(--bg);
-  box-shadow: 0 -1px 0 var(--line), 0 -24px 48px -28px rgb(0 0 0 / 0.28);
-}
-@media (max-width: 599.98px) {
-  .opener:not(:empty) + .detail { margin-top: -10svh; border-radius: 20px 20px 0 0; padding-top: 28px; }
-}
-
 /* The title is the article's, so it is set in the article's face. */
 .detail__title {
   font-family: var(--font-serif);
   font-weight: 400;
   letter-spacing: -0.02em;
-  line-height: 1.04;
+  line-height: 1.1;
   text-wrap: balance;
 }
 
@@ -650,65 +538,21 @@ ol.a-list li::marker { font-family: var(--font-mono); font-size: 0.8em; }
 .a-ch__art { flex: none; width: clamp(96px, 16vw, 168px); }
 .a-ch__art svg { display: block; width: 100%; height: auto; overflow: visible; }
 
-/* ---------- side notes ----------
-   Footnotes set beside the line that cites them, numbered, the way a long
-   read on paper does it. Only where the right gutter is free (no rail). */
-.a-sn { display: none; }
-.a.has-sn .a-sn {
-  display: block;
-  position: absolute;
-  left: calc(50% + var(--col) / 2 + 32px);
-  width: min(220px, calc(50vw - var(--col) / 2 - 56px));
-  padding-top: 6px;
-  border-top: 1px solid var(--line-strong);
-  color: var(--ink-soft);
-  font-family: var(--font-mono);
-  font-size: 11.5px;
-  line-height: 1.55;
-}
-.a.has-sn .a-sn b { margin-right: 6px; color: var(--accent-ink); font-weight: 600; }
-.a.has-sn .a-sn a { color: var(--accent-ink); }
-.a.has-sn .a-fn__pop { display: none; }
-.a-sn.is-hl { color: var(--ink); border-top-color: var(--accent); }
-
-/* The notes sheet, for touch: tapping a number opens every note at once with
-   the tapped one marked, instead of a jump to the foot of the page. */
-.a-sheet {
-  width: min(560px, 100vw);
-  max-height: 70vh;
-  margin: auto auto 0;
-  padding: 18px 20px 24px;
-  border: 1px solid var(--line-strong);
-  border-radius: 18px 18px 0 0;
-  background: var(--surface, var(--bg-raised));
-  color: var(--ink-body);
-  font-family: var(--font-mono);
-  font-size: 13px;
-  line-height: 1.6;
-}
-.a-sheet::backdrop { background: rgb(0 0 0 / 0.4); }
-.a-sheet__head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
-.a-sheet h2 { margin: 0; font-size: 12px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--ink-soft); }
-.a-sheet ol { margin: 0; padding-left: 1.4em; }
-.a-sheet li { margin-bottom: 8px; padding: 4px 6px; border-radius: 6px; }
-.a-sheet li.is-hl { background: var(--accent-tint-strong); color: var(--ink); }
-
 /* ---------- the page around the article ----------
    The article needs the whole width for its full-bleed figures, so the page
-   container stops constraining it; everything else on the page keeps the
-   site's measure and gets the side gutter it was missing on phones. */
+   container stops constraining it. Everything else sits in the article's
+   column, so back link, title, glance and prose share one left edge. */
 .wrap.detail { max-width: none; padding-inline: 0; }
 .detail > :not(.a) {
-  max-width: var(--measure);
+  max-width: calc(var(--col) + 2 * var(--gutter));
   margin-inline: auto;
-  padding-inline: var(--gutter-x, max(16px, 4vw));
+  padding-inline: var(--gutter);
 }
-.detail > .detail__body { max-width: calc(var(--measure-narrow) + 2 * max(16px, 4vw)); }
+.detail > .detail__demo { max-width: calc(var(--wide) + 2 * var(--gutter)); margin-bottom: 40px; }
+/* Inline, so it gets the column's edge as a margin instead. */
+.detail > .detail__back { padding-inline: 0; margin-left: max(var(--gutter), calc((100% - var(--col)) / 2)); }
 
-.detail__nav {
-  max-width: var(--wide, 1040px);
-  margin: 96px auto 0;
-}
+.detail > .detail__nav { max-width: min(var(--col), 100% - 2 * var(--gutter)); margin-top: 96px; padding-inline: 0; }
 .detail__nav a {
   display: flex;
   flex-direction: column;
@@ -730,7 +574,8 @@ ol.a-list li::marker { font-family: var(--font-mono); font-size: 0.8em; }
 .detail__nav a:hover { color: var(--accent-ink); }
 
 @media (max-width: 599.98px) {
-  .a { --serif-size: 17.5px; margin-top: 40px; }
+  .detail { --serif-size: 18px; }
+  .a { margin-top: 40px; }
   .a-ch { padding-top: 56px; }
   .a-widget__stage { padding: 16px 14px; }
   .a-callout { padding: 18px 16px; }
@@ -740,5 +585,5 @@ ol.a-list li::marker { font-family: var(--font-mono); font-size: 0.8em; }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .a-step, .a-progress, .a.has-rail > .a-rail { transition: none; }
+  .a-step, .a.has-rail > .a-rail { transition: none; }
 }

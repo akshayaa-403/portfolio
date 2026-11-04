@@ -14,8 +14,8 @@
      Esc                    deselect
      D                      copy every object's style="" to the clipboard
 
-   The laptop moves and resizes too, but does not rotate: the lockup is
-   placed separately, as stage percentages, and follows it only through the
+   The laptop moves and resizes too, but does not rotate: the list on its
+   screen (.hero__work) is placed separately, as stage percentages, and follows it only through the
    shared --lap-dx/--lap-dy/--lap-s on .stage. Its dump line is the stage's
    style="".
 
@@ -68,7 +68,7 @@
     var HELP = 'click select · drag move · corner resize · knob rotate\n[ ] layer · , . rotate · arrows nudge · D copy · Esc';
 
     function name(el) {
-      if (el === laptop) return 'stage (laptop + lockup)';
+      if (el === laptop) return 'stage (laptop + screen)';
       var m = el.className.match(/\b(?:obj|prop)--[\w-]+/g);
       return m ? m[m.length - 1] : el.tagName.toLowerCase();
     }
@@ -133,7 +133,7 @@
     });
 
     // The laptop: its offset lives on .stage, in viewport units, because the
-    // lockup it carries is placed against the stage, not the desk.
+    // screen it carries is placed against the stage, not the desk.
     function nudgeLaptop(dvw, dsvh) {
       set(stage, '--lap-dx', (get(stage, '--lap-dx') || 0) + dvw, 'vw');
       set(stage, '--lap-dy', (get(stage, '--lap-dy') || 0) + dsvh, 'svh');

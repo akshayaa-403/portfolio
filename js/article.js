@@ -7,19 +7,33 @@
 
      Article.register('<id>', {
        form:     'forensic',            // data-form on the article: per-form CSS
-       dek:      'Standfirst…',         // the large intro under the title
+       dek:      'Result first…',       // the standfirst under the title; it
+                                        // replaces the project's tagline there
+       demo:     { src: 'public/assets/demos/<id>.mp4',
+                   poster: 'public/assets/demos/<id>.webp',
+                   alt: 'What the recording shows', caption? },
+                                        // optional: a muted looping recording
+                                        // between the header and At a glance
        rail:     'ledger',              // optional: a widget pinned in the margin
-       chapters: [{ id, label, title, blocks: [...] }, ...],
+       scramble: '01{}[]',              // optional: titles decode from these glyphs
+       chapters: [{ id, title, art?, blocks: [...] }, ...],
+                                        // title is the heading, printed as is
        closing:  { title?, blocks },    // "What I'd do differently"
-       sources:  [[label, detail], ...],// where every number came from; kept
-                                        // on file and checked, not shown
+       sources:  [[label, detail], ...],// a "Sources" list at the end: the
+                                        // first five, one line each
        widgets:  { name: function (host, kit) { ...; return { set: fn } } }
      });
 
    and css/articles/<id>.css carries anything only that article draws.
 
+   The page opens on the header (js/project-detail.js), then the demo, then
+   At a glance, then the chapters. Removed on 2026-11-04 and no longer read:
+   the opener (`opener`), margin notes (`notes` on a paragraph), footnotes
+   (`^[…]` is stripped from any text, so leftovers never show), the table of
+   contents (`toc`), the reading-progress bar, and chapter labels (`label`).
+
    BLOCKS — one key names the kind:
-     { p: 'text', notes: [[phrase, note]] }  paragraph, optional margin notes
+     { p: 'text' }                           paragraph
      { h: 'Subhead' }
      { quote: 'pull quote', cite? }
      { callout: 'text', label: 'Verdict' }   boxed aside; text may hold \n\n
@@ -49,13 +63,11 @@
   var REDUCE = window.matchMedia('(prefers-reduced-motion: reduce)');
   var KEY_RE = /^[a-z0-9_-]+$/;
 
-  /* Footnotes collected while an article renders; null otherwise, and a
-     footnote outside an article (the dek, set before render) is dropped. */
-  var FN = null;
-
   /* ---------- inline markup ---------- */
   function inline(text) {
-    var parts = esc(text == null ? '' : String(text)).split(/`([^`]+)`/);
+    // Footnotes are gone: strip ^[…] before anything else sees it.
+    var src = text == null ? '' : String(text).replace(/ ?\^\[[^\]]*\]/g, '');
+    var parts = esc(src).split(/`([^`]+)`/);
     return parts.map(function (seg, i) {
       if (i % 2) return '<code>' + seg + '</code>';
       return seg
@@ -67,20 +79,10 @@
           return '<output class="a-live" data-out="' + key + '">' + (fb || '') + '</output>';
         })
         .replace(/\[([^\]]+)\]\(([^)\s]+)\)/g, function (m, label, url) {
-          var href = safeUrl(url.replace(/&amp;/g, '&'));
+          var href = safeUrl(url.replace(/&amp;/g, '&')); // safeUrl escapes
           var ext = /^https?:/.test(href);
-          return '<a href="' + esc(href) + '"' +
+          return '<a href="' + href + '"' +
             (ext ? ' target="_blank" rel="noopener noreferrer"' : '') + '>' + label + '</a>';
-        })
-        // ^[a footnote]: a numbered superscript that shows its note on hover
-        // or focus, as a side note in a free right gutter, and in a sheet on
-        // touch. There is no list at the end (removed 2026-10-30).
-        .replace(/\^\[([^\]]+)\]/g, function (m, note) {
-          if (!FN) return '';
-          FN.push(note);
-          var n = FN.length;
-          return '<sup class="a-fn"><a href="#fnref-' + n + '" id="fnref-' + n + '" aria-describedby="fnpop-' + n + '">' + n +
-            '</a><span class="a-fn__pop" id="fnpop-' + n + '" role="tooltip">' + note + '</span></sup>';
         });
     }).join('');
   }
@@ -90,28 +92,6 @@
     return String(text || '').split(/\n\s*\n/).map(function (t) {
       return '<p>' + inline(t.trim()) + '</p>';
     }).join('');
-  }
-
-  /* A paragraph with margin notes. The phrase is fenced with two control
-     characters before markup (esc() leaves them alone), so the <mark> lands
-     around exactly the words quoted, wherever inline markup moves them. A
-     phrase that is missing drops its note; tools/check.js fails on that. */
-  function annotated(text, notes, key, side) {
-    var src = String(text || '');
-    var asides = '';
-    (notes || []).forEach(function (n, i) {
-      var at = src.indexOf(n[0]);
-      if (at === -1) return;
-      var id = key + '-' + i;
-      src = src.slice(0, at) + '\u0001' + id + '\u0003' + n[0] + '\u0002' +
-            src.slice(at + n[0].length);
-      asides += '<aside class="mg__note mg__note--' + (side || (i % 2 ? 'l' : 'r')) +
-        '" data-mg-for="' + id + '">' + inline(n[1]) + '</aside>';
-    });
-    var html = inline(src)
-      .replace(/\u0001([a-z0-9_-]+)\u0003/g, '<mark class="mg__mark" id="$1">')
-      .replace(/\u0002/g, '</mark>');
-    return '<div class="a-p mg"><p>' + html + '</p>' + asides + '</div>';
   }
 
   /* ---------- blocks ---------- */
@@ -125,11 +105,7 @@
   function block(b, ctx) {
     var i = ctx.blocks.push(b) - 1;
 
-    if (b.p != null) {
-      return b.notes && b.notes.length
-        ? annotated(b.p, b.notes, 'mg-' + ctx.ch + '-' + i, ctx.noteSide)
-        : '<p class="a-p">' + inline(b.p) + '</p>';
-    }
+    if (b.p != null) return '<p class="a-p">' + inline(b.p) + '</p>';
     if (b.h != null) return '<h3 class="a-h">' + inline(b.h) + '</h3>';
     if (b.quote != null) {
       return '<blockquote class="a-quote"><p>' + inline(b.quote) + '</p>' +
@@ -206,10 +182,9 @@
     }
     return '<section class="a-ch' + (closing ? ' a-ch--closing' : '') + '" id="ch-' + ctx.ch +
         '" data-ch="' + ctx.ch + '">' +
-      '<header class="a-ch__head"><div class="a-ch__words">' +
-        (c.label ? '<p class="a-ch__label">' + inline(c.label) + '</p>' : '') +
+      '<header class="a-ch__head">' +
         '<h2 class="a-ch__title">' + inline(c.title || '') + '</h2>' +
-      '</div>' + art + '</header>' + body + '</section>';
+      art + '</header>' + body + '</section>';
   }
 
   function drawArt(root, ctx) {
@@ -231,69 +206,6 @@
     }
     draw();
     ctx.themeListeners.push(draw);
-  }
-
-  /* Footnotes as side notes: numbered, set in the right gutter level with the
-     line that cites them, pushed down when two would touch. Only where that
-     gutter is free — the rail owns it otherwise, and below 1180px there is no
-     gutter at all, so the hover popover does the job. On touch, a number
-     opens every note at once in a sheet, built from `notes`. */
-  function sidenotes(root, enabled, notes) {
-    var sups = root.querySelectorAll('.a-fn');
-    if (!sups.length) return;
-
-    var sheet = null;
-    var touch = window.matchMedia('(hover: none)');
-    root.addEventListener('click', function (e) {
-      var a = e.target.closest && e.target.closest('.a-fn > a');
-      if (!a || !touch.matches || typeof HTMLDialogElement === 'undefined') return;
-      e.preventDefault();
-      if (!sheet) {
-        sheet = el('dialog', { class: 'a-sheet', 'aria-label': 'Notes' });
-        var close = el('button', { type: 'button', class: 'k-btn', text: 'Close',
-          on: { click: function () { sheet.close(); } } });
-        sheet.appendChild(el('div', { class: 'a-sheet__head' }, el('h2', { text: 'Notes' }), close));
-        var ol = el('ol');
-        ol.innerHTML = notes.map(function (n, i) { return '<li data-n="' + (i + 1) + '">' + n + '</li>'; }).join('');
-        sheet.appendChild(ol);
-        sheet.addEventListener('click', function (ev) { if (ev.target === sheet) sheet.close(); });
-        document.body.appendChild(sheet);
-      }
-      var n = a.getAttribute('href').replace('#fnref-', '');
-      Array.prototype.forEach.call(sheet.querySelectorAll('li'), function (li) {
-        li.classList.toggle('is-hl', li.getAttribute('data-n') === n);
-      });
-      sheet.showModal();
-      var hl = sheet.querySelector('li.is-hl');
-      if (hl) hl.scrollIntoView({ block: 'center' });
-    });
-
-    if (!enabled) return;
-    var wide = window.matchMedia('(min-width: 1180px)');
-    var asides = Array.prototype.map.call(sups, function (s, i) {
-      var pop = s.querySelector('.a-fn__pop');
-      var aside = el('aside', { class: 'a-sn', 'aria-hidden': 'true' });
-      aside.innerHTML = '<b>' + (i + 1) + '</b>' + (pop ? pop.innerHTML : '');
-      s.addEventListener('pointerenter', function () { aside.classList.add('is-hl'); });
-      s.addEventListener('pointerleave', function () { aside.classList.remove('is-hl'); });
-      root.appendChild(aside);
-      return aside;
-    });
-    function place() {
-      root.classList.toggle('has-sn', wide.matches);
-      if (!wide.matches) return;
-      var base = root.getBoundingClientRect().top;
-      var floor = -Infinity;
-      for (var i = 0; i < sups.length; i++) {
-        var at = Math.max(sups[i].getBoundingClientRect().top - base - 6, floor);
-        asides[i].style.top = at + 'px';
-        floor = at + asides[i].offsetHeight + 14;
-      }
-    }
-    place();
-    wide.addEventListener('change', place);
-    if (window.ResizeObserver) new ResizeObserver(place).observe(root);
-    if (document.fonts && document.fonts.ready) document.fonts.ready.then(place);
   }
 
   /* ---------- the kit ----------
@@ -662,54 +574,11 @@
     root.addEventListener('focusout', function (e) { fire(e.target, false); });
   }
 
-  /* Park each margin note beside the phrase it annotates. Where a phrase
-     lands depends on where the line wrapped, so this is measured, and
-     re-measured when the column resizes or the handwriting face arrives. */
-  function alignNotes(root) {
-    var notes = root.querySelectorAll('[data-mg-for]');
-    if (!notes.length) return;
-    var wide = window.matchMedia('(min-width: 1180px)');
-    /* Two notes whose phrases sit close would print over each other, so each
-       side keeps a floor down the whole article: a note starts no higher than
-       the bottom of the last note on its side. Measured in page coordinates,
-       because each note is positioned inside its own paragraph. */
-    function place() {
-      var floor = { l: -Infinity, r: -Infinity };
-      for (var i = 0; i < notes.length; i++) {
-        var n = notes[i];
-        if (!wide.matches) { n.style.top = ''; continue; }
-        var mark = document.getElementById(n.getAttribute('data-mg-for'));
-        if (!mark) continue;
-        var side = n.classList.contains('mg__note--l') ? 'l' : 'r';
-        var boxTop = n.parentNode.getBoundingClientRect().top;
-        var want = mark.getBoundingClientRect().top - 2;
-        var at = Math.max(want, floor[side]);
-        n.style.top = Math.max(0, at - boxTop) + 'px';
-        floor[side] = at + n.offsetHeight + 12;
-      }
-    }
-    place();
-    wide.addEventListener('change', place);
-    if (window.ResizeObserver) new ResizeObserver(place).observe(root);
-    if (document.fonts && document.fonts.ready) document.fonts.ready.then(place);
-  }
-
-  /* Reading progress, cut into one segment per chapter so the bar is also a
-     table of contents: each segment is a link to its chapter. */
-  function progress(root, ctx) {
+  /* Which chapter is being read, for the rail (kit.onChapter) and for
+     showing the pinned rail only while the article is on screen. */
+  function track(root, ctx) {
     var chs = root.querySelectorAll('.a-ch');
     if (!chs.length) return;
-    var bar = el('nav', { class: 'a-progress', 'aria-label': 'Chapters' });
-    var segs = Array.prototype.map.call(chs, function (c) {
-      var t = c.querySelector('.a-ch__title');
-      var a = el('a', { class: 'a-progress__seg', href: '#' + c.id, title: t ? t.textContent : '' },
-        el('span', { class: 'a-progress__fill' }),
-        el('span', { class: 'visually-hidden', text: t ? t.textContent : '' }));
-      bar.appendChild(a);
-      return a;
-    });
-    document.body.appendChild(bar);
-
     var ticking = false;
     function update() {
       ticking = false;
@@ -717,13 +586,9 @@
       var cur = null;
       for (var i = 0; i < chs.length; i++) {
         var r = chs[i].getBoundingClientRect();
-        var p = Math.max(0, Math.min(1, (mid - r.top) / Math.max(1, r.height)));
-        segs[i].style.setProperty('--p', p.toFixed(3));
         if (r.top <= mid && r.bottom > mid) cur = chs[i].getAttribute('data-ch');
-        segs[i].classList.toggle('is-current', r.top <= mid && r.bottom > mid);
       }
       var art = root.getBoundingClientRect();
-      bar.classList.toggle('is-shown', art.top < window.innerHeight * 0.5 && art.bottom > 0);
       // The pinned rail shows only while the article is what is being read.
       root.classList.toggle('rail-on', art.top < window.innerHeight * 0.45 &&
                                         art.bottom > window.innerHeight * 0.6);
@@ -742,38 +607,23 @@
   /* ---------- render ---------- */
 
   function render(root, project, spec) {
-    // Footnotes take the right gutter as side notes unless a rail has it; in
-    // either case the handwritten notes give it up and all go left.
-    var hasFn = /\^\[/.test(JSON.stringify([spec.chapters, spec.closing]));
     var ctx = {
       root: root, blocks: [], n: 0, ch: '', arts: [],
-      noteSide: spec.rail || hasFn ? 'l' : null,
       themeListeners: [], chapterFns: [], current: null,
       say: el('p', { class: 'visually-hidden', 'aria-live': 'polite' })
     };
 
-    FN = [];
     var html = (spec.chapters || []).map(function (c) { return chapter(c, ctx); }).join('');
     if (spec.closing) {
-      html += chapter({ id: 'differently', label: spec.closing.label || 'Last',
-        title: spec.closing.title || 'What I’d do differently',
+      html += chapter({ id: 'differently', title: spec.closing.title || 'What I’d do differently',
         blocks: spec.closing.blocks }, ctx, true);
     }
-    var notesList = FN;
-    FN = null;
-
-    /* A contents list under the standfirst, as a long read opens: label and
-       title per chapter, each a link. */
-    var toc = '';
-    if (spec.toc !== false && (spec.chapters || []).length > 2) {
-      toc = '<nav class="a-toc" aria-label="In this article"><p class="a-toc__k">In this piece</p><ol>' +
-        (spec.chapters || []).concat(spec.closing ? [{ id: 'differently',
-          label: spec.closing.label || 'Last', title: spec.closing.title || 'What I’d do differently' }] : [])
-          .map(function (c) {
-            return '<li><a href="#ch-' + esc(c.id) + '">' +
-              (c.label ? '<span class="a-toc__l">' + inline(c.label) + '</span>' : '') +
-              '<span class="a-toc__t">' + inline(c.title || '') + '</span></a></li>';
-          }).join('') + '</ol></nav>';
+    var src = (spec.sources || []).slice(0, 5).map(function (s) {
+      return '<li><b>' + inline(s[0]) + '</b>' + (s[1] ? ' — ' + inline(s[1]) : '') + '</li>';
+    }).join('');
+    if (src) {
+      html += '<section class="a-sources" aria-labelledby="a-sources-h">' +
+        '<h2 class="a-sources__h" id="a-sources-h">Sources</h2><ul>' + src + '</ul></section>';
     }
 
     root.setAttribute('data-form', KEY_RE.test(spec.form || '') ? spec.form : 'plain');
@@ -781,7 +631,7 @@
     root.innerHTML =
       (spec.rail ? '<aside class="a-rail" data-widget="' + esc(spec.rail) + '" data-block="-1">' +
         '<div class="a-rail__in a-widget__stage"></div></aside>' : '') +
-      toc + html;
+      html;
     root.appendChild(ctx.say);
 
     // Wired before any widget exists: portfolioPalette.on fires once on
@@ -795,9 +645,7 @@
     wireXrefs(root);
     drawArt(root, ctx);
     mountWidgets(root, spec, ctx);
-    alignNotes(root);
-    sidenotes(root, !spec.rail, notesList);
-    progress(root, ctx);
+    track(root, ctx);
     if (spec.scramble) {
       var titles = Array.prototype.slice.call(root.querySelectorAll('.a-ch__title'));
       var h1 = document.querySelector('.detail__title');
@@ -852,10 +700,38 @@
     }
   }
 
+  /* The demo: a muted, looping recording that plays only while on screen,
+     with a Pause button. Under reduced motion it waits on its poster with
+     the native controls. A recording that fails to load removes itself. */
+  function demo(host, d) {
+    if (!host || !d || !d.src) return;
+    var still = REDUCE.matches;
+    host.innerHTML = '<figure class="a-demo">' +
+      '<video src="' + safeUrl(d.src) + '"' + (d.poster ? ' poster="' + safeUrl(d.poster) + '"' : '') +
+        ' muted loop playsinline preload="' + (still ? 'metadata" controls' : 'none"') +
+        ' aria-label="' + esc(d.alt || 'Demo recording') + '"></video>' +
+      (still ? '' : '<button type="button" class="a-demo__btn">Pause</button>') +
+      cap(d.caption) + '</figure>';
+    host.hidden = false;
+    var v = host.querySelector('video');
+    v.addEventListener('error', function () { host.hidden = true; host.innerHTML = ''; });
+    if (still) return;
+    var btn = host.querySelector('.a-demo__btn'), held = false, seen = false;
+    function sync() {
+      if (seen && !held) { var p = v.play(); if (p && p.catch) p.catch(function () {}); } else v.pause();
+      btn.textContent = held ? 'Play' : 'Pause';
+    }
+    btn.addEventListener('click', function () { held = !held; sync(); });
+    if (!('IntersectionObserver' in window)) { seen = true; sync(); return; }
+    new IntersectionObserver(function (es) { seen = es[0].isIntersecting; sync(); },
+      { threshold: 0.25 }).observe(v);
+  }
+
   window.Article = {
     register: function (id, spec) { REG[id] = spec; },
     get: function (id) { return REG[id]; },
     render: render,
+    demo: demo,
     inline: inline,
     paras: paras
   };

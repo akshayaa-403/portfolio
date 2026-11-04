@@ -1,7 +1,5 @@
 /* Arteza — "rooms". Widget classes are prefixed .az-; every colour is a token. */
 
-.a[data-form="rooms"] .a-ch__label::before { content: '◇ '; color: var(--accent-mid); }
-
 /* prose ↔ figure glyphs */
 .a[data-form="rooms"] .xref[data-key=origin]::before { content: '⊕ '; color: var(--ink); }
 .a[data-form="rooms"] .xref[data-key=target]::before { content: '◎ '; color: var(--accent-ink); }
@@ -142,4 +140,3 @@
 
 /* long source lines scroll inside their block, never the page */
 .a[data-form="rooms"] .a-code pre, .a[data-form="rooms"] .a-code pre code { white-space: pre-wrap; overflow-wrap: anywhere; }
-.a[data-form="rooms"] .a-sn { overflow-wrap: anywhere; }

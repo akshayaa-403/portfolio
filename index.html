@@ -32,7 +32,7 @@
 <meta name="twitter:image" content="https://akshayaa-403.github.io/portfolio/public/assets/og-card.png">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="Akshayaa Kashyap — AI Engineer">
-<meta name="twitter:description" content="AI engineer working in machine learning and data analysis, based in India.">
+<meta name="twitter:description" content="AI engineer working in machine learning and data analysis.">
 
 <link rel="icon" href="public/assets/favicon.webp" type="image/webp">
 <link rel="icon" href="public/assets/favicon.png" type="image/png">
@@ -43,6 +43,7 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Caveat:wght@500;600&family=Libre+Caslon+Text:ital,wght@0,400;0,700;1,400&display=swap">
 <link rel="stylesheet" href="css/style.css">
 <link rel="stylesheet" href="css/info.css">
+<link rel="stylesheet" href="css/experience.css">
 <link rel="stylesheet" href="css/desk.css">
 
 <!-- No-FOUC: mark JS available and apply the saved view mode + theme
@@ -158,43 +159,34 @@
 <main id="main" tabindex="-1">
 
   <!-- ===================== Hero =====================
-       The desk: the lockup on a laptop's screen, with things around it
-       (900px and up). Below that, the lockup alone. data-mode="desk" on
-       <html> is what css/style.css and css/desk.css key the desk's colours
-       and layout on; there are no other modes.
+       The desk (900px and up): the name and what she does on the wall, the
+       four case studies on a laptop's screen, and things on the desk to pick
+       up and press. Below 900px the desk is hidden and the name, the line
+       under it and the case-study list stack in the flow. data-mode="desk"
+       on <html> is what css/style.css and css/desk.css key the desk on.
   -->
   <section class="hero" id="home" aria-labelledby="hero-name">
 
-    <!-- --lap-dx/--lap-dy/--lap-s: how far desk mode's laptop, and the
-         lockup on its screen with it, sits from its default place and at what
-         scale (css/desk.css). Set with the ?edit=1 desk editor. -->
-    <div class="stage" style="--lap-dx:-0.431vw; --lap-dy:-6.939svh; --lap-s:0.62;">
+    <!-- --lap-dx/--lap-dy/--lap-s: how far the laptop (and the list on its
+         screen) sits from its default place and at what scale
+         (css/desk.css). Set with the ?edit=1 desk editor. -->
+    <div class="stage" style="--lap-dx:0vw; --lap-dy:-6svh; --lap-s:0.72;">
 
-      <!-- ---------- Desk mode ----------
-           A desk around the lockup: a photographed lamp, a music card, an
-           AirDrop card, and the drawn objects js/desk-objects.js fills. Every [data-drag] child can be picked up and moved; "Tidy up" (and a reload) puts them all back.
-           Hidden below 900px. The desk starts below
-           the header and clips to it, so nothing on it can reach into the nav;
-           every --x/--y is a percentage of the desk, not the stage, and is the
-           starting layout tidy-up returns to. Rules in css/desk.css; dragging,
-           the lamp and the audio in js/hero-hover.js. -->
+      <!-- ---------- The desk ----------
+           Every [data-drag] child can be picked up and moved; "Tidy up" (and
+           a reload) puts them all back. It starts below the header and clips
+           to it, so nothing on it can reach into the nav. Every --x/--y/--w
+           is a percentage of the desk, the starting layout tidy-up returns
+           to. Rules in css/desk.css; dragging, the lamp and the record in
+           js/hero-hover.js; everything else in js/desk-objects.js. -->
       <div class="desk">
-        <!-- The tabletop. Drawn in css/desk.css; decoration only. -->
         <div class="desk__top" aria-hidden="true">
           <div class="desk__surface"></div>
         </div>
 
-        <!-- The laptop the lockup is shown on: the MacBook in the owner's
-             references, with its glass cut out (tools/build-desk-props.py) so
-             the page paints the screen behind it. Placed in the stage's
-             coordinates round the lockup, so not draggable: the text is not
-             part of the desk and would stay put. The screen shows only the
-             lockup (the photo carousel was removed on 2026-10-30). -->
-        <!-- The window: four panes, curtains that draw (a real button), and
-             the daylight it lets in. Drawing them dims only the daylight and
-             the leaf shadows (js/desk-wall.js); the theme stays on the clock,
-             and the lamp is still the only switch. js/desk-objects.js. -->
-        <div class="window" style="--x:12.5%; --y:5%; --w:15%; --h:43%;">
+        <!-- The window: curtains that draw (a real button) dim the daylight
+             and take the wall's leaf shadows away (js/desk-wall.js). -->
+        <div class="window" style="--x:16%; --y:6%; --w:13%; --h:40%;">
           <div class="window__glass" aria-hidden="true"><span></span><span></span><span></span><span></span></div>
           <span class="window__sill" aria-hidden="true"></span>
           <span class="window__rod" aria-hidden="true"></span>
@@ -205,110 +197,87 @@
           </button>
         </div>
         <div class="desk__beam" aria-hidden="true"></div>
-        <!-- Rings the mug leaves where it stood (js/desk-objects.js). -->
+        <!-- Rings the drink leaves where it stood. -->
         <div class="desk__rings" aria-hidden="true"></div>
         <!-- The night's deep shadow over the wall and the tabletop; its light
-             twin, .desk__night, is over everything (css/desk.css). -->
+             twin, .desk__night, is over everything. -->
         <div class="desk__dusk" aria-hidden="true"></div>
 
+        <!-- The laptop: the MacBook from the owner's references with its glass
+             cut out, so the page paints the screen. What the screen shows
+             (the case studies, the terminal) is .hero__work, outside the
+             desk, laid over the glass by css/desk.css. -->
         <div class="laptop">
-          <div class="laptop__screen">
-            <!-- The terminal (js/desk-objects.js): every fact it prints comes
-                 from the site's own data. This button opens it. -->
-            <button class="lterm-open" type="button" data-term-open data-cue="Open a terminal"
-                    aria-label="Open a terminal on the laptop">&gt;_</button>
-            <form class="lterm" data-term hidden autocomplete="off">
-              <div class="lterm__out" data-term-out role="log" aria-live="polite"></div>
-              <label class="lterm__line">
-                <span class="lterm__ps" aria-hidden="true">~ $</span>
-                <span class="visually-hidden">Terminal command (type help, or exit to close)</span>
-                <input class="lterm__in" data-term-in type="text" spellcheck="false" autocapitalize="off" enterkeyhint="go">
-              </label>
-            </form>
-          </div>
+          <div class="laptop__screen"></div>
           <img class="laptop__img" src="public/assets/desk/laptop.webp" alt="" width="710" height="432" decoding="async">
         </div>
 
-        <!-- The lamp switches the colour theme: lit lamp = dark room. A real
-             <button>, so it is reachable by keyboard and announces its state.
-             The glow lives inside it, in the lamp image's own coordinates,
-             so it stays under the shade at any size, tilt or hover scale.
-             Lit whenever the dark theme is on, previewed while hovered. -->
+        <!-- The lamp switches the colour theme: lit lamp = dark room. -->
         <button class="prop prop--lamp-btn" type="button" data-drag data-cue="Turn the lights off!"
                 aria-pressed="false" aria-label="Turn on the lamp (dark theme)"
-                style="--x:1.841%; --y:37.207%; --w:14.000%; --h:51.000%; --r:0deg; --z:4;">
+                style="--x:1.5%; --y:37%; --w:14%; --h:51%; --z:4;">
           <span class="lamp__fig">
             <img class="lamp__glow" src="public/assets/props/lamp-light.webp" alt="" aria-hidden="true"
                  width="600" height="599" loading="lazy" decoding="async" fetchpriority="low">
             <img class="lamp__img" src="public/assets/props/lamp.webp" alt="" aria-hidden="true" width="354" height="743">
           </span>
         </button>
-        <!-- preload="none": the file is ~2 MB and a passive page view must not
-             pull it down. It is fetched only when playback actually starts. -->
-        <audio id="hero-audio" preload="none" loop
-               src="public/assets/audio/track.mp3"></audio>
-        <article class="obj obj--player" data-drag data-cue="Drag"
-                 style="--x:85.400%; --y:6.000%; --w:10.200%; --r:2deg; --z:6;">
-          <div class="player__disc" aria-hidden="true">
-            <img src="public/assets/props/vinyl.webp" alt="" aria-hidden="true" width="760" height="760"
-                 loading="lazy" decoding="async">
-          </div>
-          <button class="player__play" type="button" id="player-play"
-                  aria-label="Play track" aria-pressed="false">
-            <span class="player__icon" aria-hidden="true">▶</span>
+
+        <!-- A record player: press to play, press again to stop. Never on
+             its own. preload="none": the file is ~2 MB and a passive page
+             view must not pull it down. -->
+        <audio id="hero-audio" preload="none" loop src="public/assets/audio/track.mp3"></audio>
+        <button class="tt" type="button" data-drag data-turntable aria-pressed="false"
+                aria-label="Record player: Old Devil Moon, Miles Davis Quartet" data-cue="Play the record"
+                style="--x:77.5%; --y:54%; --w:14.5%; --z:5;">
+          <span class="tt__fig">
+            <img class="tt__img" src="public/assets/desk/turntable.webp" alt="" width="900" height="801" decoding="async">
+            <span class="tt__spin" aria-hidden="true"></span>
+          </span>
+          <span class="tt__label"><span>Old Devil Moon</span> Miles Davis Quartet</span>
+        </button>
+
+        <!-- A phone lying on the desk; press it and AirDrop offers the
+             résumé. -->
+        <div class="phone" data-drag style="--x:26%; --y:86%; --w:8.5%; --z:7;">
+          <button class="phone__btn" type="button" aria-expanded="false" aria-controls="airdrop"
+                  aria-label="Phone: AirDrop from Akshayaa" data-cue="AirDrop from Akshayaa">
+            <img src="public/assets/desk/phone.webp" alt="" width="700" height="206" decoding="async">
           </button>
-          <p class="obj__meta player__artist">Miles Davis Quartet</p>
-          <p class="obj__title player__track">Old Devil Moon</p>
-          <div class="player__bar" aria-hidden="true"><span></span></div>
-          <div class="player__times"><span id="player-time" role="timer" aria-live="off">0:00</span><span aria-hidden="true">/ 3:31</span></div>
-        </article>
-
-        <article class="obj obj--share" data-drag data-cue="Drag"
-                 style="--x:70.931%; --y:34.715%; --w:10.000%; --r:-2deg; --z:7;">
-          <p class="share__title">AirDrop</p>
-          <p class="share__sub">Akshayaa would like to share a file</p>
-          <div class="share__thumb" aria-hidden="true"></div>
-          <div class="share__actions">
-            <a class="share__btn" href="#about">Decline</a>
-            <a class="share__btn share__btn--go" href="public/assets/resume.pdf" target="_blank" rel="noopener noreferrer">Accept</a>
+          <div class="airdrop" id="airdrop" hidden>
+            <p class="airdrop__title">AirDrop</p>
+            <p class="airdrop__sub">Akshayaa would like to share a file</p>
+            <div class="airdrop__thumb" aria-hidden="true"></div>
+            <div class="airdrop__actions">
+              <button class="airdrop__btn" type="button" data-airdrop-close>Decline</button>
+              <a class="airdrop__btn airdrop__btn--go" href="public/assets/resume.pdf" target="_blank" rel="noopener noreferrer"
+                 aria-label="Accept: open the résumé (PDF, new tab)">Accept</a>
+            </div>
           </div>
-        </article>
-
-        <!-- Everything below is filled by js/desk-objects.js from the site's
-             own data (js/desk-data.js, project-data.js, hobby-data.js and the
-             day's palette), so none of it can say more than the site holds. -->
-
-        <!-- A paint chip: the day's Wada combination. -->
-        <div class="obj chip" data-drag data-cue="Today's palette"
-             style="--x:29.956%; --y:6.899%; --w:7.400%; --r:-3deg; --z:6;">
-          <p class="chip__title">Today's Palette</p>
-          <p class="chip__no" data-chip-no></p>
-          <span class="chip__sw" data-chip-sw aria-hidden="true"><i></i><i></i><i></i></span>
         </div>
 
-        <!-- A Polaroid stack from the galleries, top last. Pull the top one
-             off and it develops; click any to open the photograph. -->
-        <button class="pola" type="button" data-drag data-pola="3" style="--x:67.815%; --y:10.156%; --w:6.400%; --r:7deg; --z:5;"></button>
-        <button class="pola" type="button" data-drag data-pola="2" style="--x:63.806%; --y:8.695%; --w:6.400%; --r:-5deg; --z:5;"></button>
-        <button class="pola" type="button" data-drag data-pola="1" style="--x:66.291%; --y:6.020%; --w:6.400%; --r:3deg; --z:5;"></button>
-        <button class="pola" type="button" data-drag data-pola="0" style="--x:65.620%; --y:9.343%; --w:6.400%; --r:-2deg; --z:5;"></button>
+        <!-- Everything below is filled by js/desk-objects.js from the site's
+             own data (js/desk-data.js, project-data.js and the day's
+             palette), so none of it can say more than the site holds. -->
 
-        <!-- The mug: a drink for each weekday, hot in the morning, cold at
-             night. Leaves a ring where it stood when moved. -->
-        <div class="mug" data-drag role="img" data-mug style="--x:70.723%; --y:71.348%; --w:4.200%; --r:0deg; --z:7;">
-          <svg viewBox="0 0 64 70" aria-hidden="true" focusable="false">
-            <g class="mug__steam" fill="none" stroke-width="2.2" stroke-linecap="round">
-              <path d="M22 18c-4-5 4-8 0-14"/><path d="M32 16c-4-5 4-8 0-14"/><path d="M42 18c-4-5 4-8 0-14"/>
-            </g>
-            <path class="mug__handle" d="M50 34h4a8 8 0 0 1 0 16h-5" fill="none" stroke-width="5"/>
-            <path class="mug__body" d="M10 26h42v30a10 10 0 0 1-10 10H20a10 10 0 0 1-10-10z"/>
-            <ellipse class="mug__drink" cx="31" cy="28.5" rx="18.5" ry="3.2"/>
-            <path class="mug__shine" d="M16 32v20" fill="none" stroke-width="2.5" stroke-linecap="round"/>
-          </svg>
+        <!-- A paint chip pinned to the wall: today's Wada combination. It
+             opens a card about the dictionary it comes from. -->
+        <button class="chip" type="button" data-drag data-chip aria-haspopup="dialog"
+                aria-label="Today's palette: about Sanzo Wada's colour combinations" data-cue="Today's palette"
+                style="--x:76%; --y:11%; --w:7.4%; --r:2deg; --z:6;">
+          <span class="chip__sw" data-chip-sw aria-hidden="true"><i></i><i></i><i></i></span>
+          <span class="chip__title">Today's Palette</span>
+          <span class="chip__no" data-chip-no></span>
+        </button>
+
+        <!-- The drink of the day; press it and what is in it floats out. -->
+        <div class="mug" data-drag data-mug style="--x:21.5%; --y:69%; --w:4.2%; --z:7;">
+          <button class="mug__btn" type="button" aria-expanded="false" aria-controls="drink-ings"></button>
+          <ul class="ings" id="drink-ings" aria-label="What is in it"></ul>
         </div>
 
         <!-- A business-card holder: take a card and it is shown on the page. -->
-        <div class="cards" data-drag style="--x:22.930%; --y:71.281%; --w:6.000%; --r:0deg; --z:6;">
+        <div class="cards" data-drag style="--x:68%; --y:72%; --w:6%; --z:6;">
           <button class="cards__take" type="button" data-cards data-cue="Take a card"
                   aria-haspopup="dialog" aria-label="Take a business card">
             <span class="cards__card cards__card--3" aria-hidden="true"></span>
@@ -318,45 +287,52 @@
           </button>
         </div>
 
-        <!-- A plant with one leaf per project (js/desk-objects.js draws them),
-             each wilting as that project's repo goes stale. -->
-        <div class="plant" data-drag role="img" data-plant style="--x:87.000%; --y:51.000%; --w:9.000%; --r:0deg; --z:5;">
-          <svg viewBox="0 0 100 150" aria-hidden="true" focusable="false">
-            <g class="plant__leaves">
-              <path class="plant__stem" d="M50 108C50 84 48 62 50 30" fill="none" stroke-width="3"/>
-            </g>
-            <path class="plant__pot" d="M28 106h44l-6 40H34z"/>
-            <path class="plant__rim" d="M25 102h50v8H25z"/>
-          </svg>
-        </div>
-
-        <!-- At night only the lamp (and the laptop's screen) lights the desk:
-             a shadow over everything, with a pool where the lamp is. -->
+        <!-- At night only the lamp and the laptop's screen light the desk. -->
         <div class="desk__night" aria-hidden="true"></div>
 
         <!-- Shown by js/hero-hover.js once anything has moved. -->
         <button class="desk__tidy" type="button" hidden>Tidy up</button>
       </div>
 
-      <!-- ---------- The lockup ---------- -->
+      <!-- ---------- The name, on the wall ---------- -->
       <div class="hero__lockup">
         <h1 class="hero__name" id="hero-name">Akshayaa Kashyap</h1>
-        <p class="hero__role">AI Engineer</p>
-        <!-- The one line that has to survive a five-second visit: name, role
-             and a proof point, stated plainly. Every figure here is on the
-             page below: five case studies in the list, and three tools out
-             of their stacks. -->
-        <p class="hero__proof">
-          5 case studies, each shown working &middot; Python, PyTorch, React
-        </p>
+        <p class="hero__sub">AI engineer. I build LLM agents and the data pipelines that feed them.</p>
+      </div>
+
+      <!-- ---------- The laptop's screen ----------
+           The case studies as real links, laid over the laptop's glass at
+           900px and up, under the name below that. js/desk-objects.js
+           rebuilds the list from js/project-data.js (every project not
+           archived); this copy is for no JS. The terminal's every line
+           comes from the site's own data. -->
+      <div class="hero__work">
+        <nav class="screen" aria-label="Case studies">
+          <ul class="screen__list" data-screen-list>
+            <li><a href="work/quantamental-screener.html"><b>Quantamental Screener</b> <span>Four-factor stock ranking with news sentiment, and a backtest that tests itself against luck.</span></a></li>
+            <li><a href="work/phase-contrast-denoising.html"><b>Phase-Contrast Clean-Up Pipeline</b> <span>One held-out microscope frame, followed through a classical filter and a residual U-Net.</span></a></li>
+            <li><a href="work/arteza.html"><b>Arteza</b> <span>An online gallery and shop for an original-art studio.</span></a></li>
+            <li><a href="work/habita.html"><b>Habita</b> <span>Eisenhower matrix that writes to your real calendar.</span></a></li>
+          </ul>
+        </nav>
+        <button class="lterm-open" type="button" data-term-open data-cue="Open a terminal"
+                aria-label="Open a terminal on the laptop">&gt;_</button>
+        <form class="lterm" data-term hidden autocomplete="off">
+          <div class="lterm__out" data-term-out role="log" aria-live="polite"></div>
+          <label class="lterm__line">
+            <span class="lterm__ps" aria-hidden="true">~ $</span>
+            <span class="visually-hidden">Terminal command (type help, or exit to close)</span>
+            <input class="lterm__in" data-term-in type="text" spellcheck="false" autocapitalize="off" enterkeyhint="go">
+          </label>
+        </form>
       </div>
 
     </div>
   </section>
 
   <!-- ===================== Work =====================
-       Two columns, Research and Products, a card per project; hovering a
-       card shows its media in the other column. The archived case studies
+       One column of projects on the left, a preview pane on the right that
+       shows the row being pointed at or focused. The archived case studies
        get one line at the foot.
   -->
   <section class="section" id="work" aria-labelledby="work-h">
@@ -366,61 +342,102 @@
         <span class="glyph" aria-hidden="true">&#9654;</span>
       </div>
 
-      <!-- The list below is REAL MARKUP, regenerated by
+      <!-- REAL MARKUP, list and preview both, regenerated by
            tools/build-share-pages.js, so this page says what the work is
            without running a line of JavaScript. js/script.js replaces it with
-           the same list plus hover cues and the reveal animation. -->
-      <!-- The stage exists only to give the screen something to be absolute
-           inside. The list itself is replaced wholesale by renderCards(), so
-           the screen cannot live in it. -->
-      <div class="rm-stage">
+           the same thing plus the live preview and the reveal animation. -->
       <div class="rm-list" id="recent-cards">
         <!-- BEGIN generated:project-list — written by tools/build-share-pages.js, do not hand-edit -->
-          <div class="rm-group" data-group="research"><h3 class="rm-group__title">Research</h3><p class="rm-group__note">Systems that measure something and report the number, including when the number is bad.</p></div>
-          <a class="rm rm--lead" href="work/quantamental-screener.html" data-group="research"><span class="rm__num" aria-hidden="true">01</span><span class="rm__text"><span class="rm__title">Quantamental Screener</span><span class="rm__meta">Solo project · 2025–2026</span><span class="rm__desc">Four-factor stock ranking with news sentiment, and a backtest that tests itself against luck.</span><span class="rm__metric">Beat SPY, p = 0.07</span><span class="rm__focus"><span class="rm__focus-label">Focus</span>Python <span aria-hidden="true">/</span> pandas <span aria-hidden="true">/</span> NumPy <span aria-hidden="true">/</span> yfinance</span></span></a>
-          <a class="rm" href="work/phase-contrast-denoising.html" data-group="research"><span class="rm__num" aria-hidden="true">02</span><span class="rm__text"><span class="rm__title">Phase-Contrast Clean-Up Pipeline</span><span class="rm__meta">Research tool · 2026</span><span class="rm__desc">One held-out microscope frame, followed through a classical filter and a residual U-Net.</span><span class="rm__metric">PSNR 11.46 → 20.26 dB</span><span class="rm__focus"><span class="rm__focus-label">Focus</span>Python <span aria-hidden="true">/</span> PyTorch <span aria-hidden="true">/</span> OpenCV <span aria-hidden="true">/</span> Gradio</span></span></a>
-          <div class="rm-group" data-group="products"><h3 class="rm-group__title">Products</h3><p class="rm-group__note">Things built for someone else to use — a shop, a phone app and a sales pipeline.</p></div>
-          <a class="rm" href="work/arteza.html" data-group="products"><span class="rm__num" aria-hidden="true">03</span><span class="rm__text"><span class="rm__title">Arteza</span><span class="rm__meta">Client work · 2026</span><span class="rm__desc">An online gallery and shop for an original-art studio.</span><span class="rm__metric">Largest image: 4 downloads per load → 1</span><span class="rm__focus"><span class="rm__focus-label">Focus</span>React <span aria-hidden="true">/</span> Vite <span aria-hidden="true">/</span> TypeScript <span aria-hidden="true">/</span> Tailwind CSS</span></span></a>
-          <a class="rm" href="work/habita.html" data-group="products"><span class="rm__num" aria-hidden="true">04</span><span class="rm__text"><span class="rm__title">Habita</span><span class="rm__meta">Solo project · 2026</span><span class="rm__desc">Eisenhower matrix that writes to your real calendar.</span><span class="rm__focus"><span class="rm__focus-label">Focus</span>JavaScript (ES6) <span aria-hidden="true">/</span> CSS Grid <span aria-hidden="true">/</span> SVG <span aria-hidden="true">/</span> Capacitor</span></span></a>
-          <a class="rm" href="work/outbound-pipeline.html" data-group="products"><span class="rm__num" aria-hidden="true">05</span><span class="rm__text"><span class="rm__title">Outbound Sales Pipeline</span><span class="rm__meta">Sygnius Digital · 2025</span><span class="rm__desc">From a Google Maps search to a salesperson’s phone: find the business, find a number, let an AI agent make the call.</span><span class="rm__metric">600+ qualified leads</span><span class="rm__focus"><span class="rm__focus-label">Focus</span>Python <span aria-hidden="true">/</span> Bland AI <span aria-hidden="true">/</span> Retell AI <span aria-hidden="true">/</span> Google Places API</span></span></a>
-          <p class="rm-archive"><span class="rm-archive__label">Also built</span> <a href="work/ivy-slack-agent.html">Project IVY</a><span aria-hidden="true"> · </span><a href="work/anttodo.html">Ant Colony Task Scheduler</a><span aria-hidden="true"> · </span><a href="work/wikipedia-summarizer.html">Wikipedia Summarizer</a></p>
+          <div class="rm-rows">
+            <h3 class="rm-group">Research</h3>
+            <a class="rm is-on" href="work/quantamental-screener.html"><span class="rm__text"><span class="rm__title">Quantamental Screener</span><span class="rm__meta">Solo project · 2025–2026</span><span class="rm__desc">Four-factor stock ranking with news sentiment, and a backtest that tests itself against luck.</span><span class="rm__foot"><span class="rm__metric">Beat the S&amp;P 500 (+70% vs +19%, p = 0.07)</span><span class="rm__stack">Python <span aria-hidden="true">/</span> pandas <span aria-hidden="true">/</span> NumPy <span aria-hidden="true">/</span> yfinance</span></span></span></a>
+            <a class="rm" href="work/phase-contrast-denoising.html"><span class="rm__text"><span class="rm__title">Phase-Contrast Clean-Up Pipeline</span><span class="rm__meta">Research tool · 2026</span><span class="rm__desc">One held-out microscope frame, followed through a classical filter and a residual U-Net.</span><span class="rm__foot"><span class="rm__metric">Cleaner on all 20 held-out frames (PSNR 11.46 → 20.26 dB)</span><span class="rm__stack">Python <span aria-hidden="true">/</span> PyTorch <span aria-hidden="true">/</span> OpenCV <span aria-hidden="true">/</span> Gradio</span></span></span></a>
+            <h3 class="rm-group">Products</h3>
+            <a class="rm" href="work/arteza.html"><span class="rm__text"><span class="rm__title">Arteza</span><span class="rm__meta">Client work · 2026</span><span class="rm__desc">An online gallery and shop for an original-art studio.</span><span class="rm__foot"><span class="rm__metric">Big images download once, not four times (4 → 1 per load)</span><span class="rm__stack">React <span aria-hidden="true">/</span> Vite <span aria-hidden="true">/</span> TypeScript <span aria-hidden="true">/</span> Tailwind CSS</span></span></span></a>
+            <a class="rm" href="work/habita.html"><span class="rm__text"><span class="rm__title">Habita</span><span class="rm__meta">Solo project · 2026</span><span class="rm__desc">Eisenhower matrix that writes to your real calendar.</span><span class="rm__foot"><span class="rm__stack">JavaScript (ES6) <span aria-hidden="true">/</span> CSS Grid <span aria-hidden="true">/</span> SVG <span aria-hidden="true">/</span> Capacitor</span></span></span></a>
+          </div>
+          <div class="rm-screen" data-rm-screen aria-hidden="true"><img src="public/assets/projects/quant-current.webp" alt="" decoding="async"></div>
+          <p class="rm-archive"><span class="rm-archive__label">Also built</span> <a href="work/outbound-pipeline.html">Outbound Sales Pipeline</a><span aria-hidden="true"> · </span><a href="work/ivy-slack-agent.html">Project IVY</a><span aria-hidden="true"> · </span><a href="work/anttodo.html">Ant Colony Task Scheduler</a><span aria-hidden="true"> · </span><a href="https://github.com/akshayaa-403/Wikipedia-Summarizer">Wikipedia Summarizer</a></p>
         <!-- END generated:project-list -->
-        <!-- No <noscript> here any more: the list above IS the no-JS
-             experience. -->
-      </div>
-
-      <!-- The screen. Blank until a row is hovered, then it fades in over the
-           OTHER column: hover a product and it covers Research on the left,
-           hover a research project and it covers Products on the right. The
-           column being read is never the column being covered.
-
-           Wired in js/script.js from `screen` in js/project-data.js; drop an
-           .mp4/.webm at that path and it plays as video instead of a still.
-           aria-hidden: it is a second view of a row that is already a link
-           with a title and a description. -->
-      <div class="rm-screen" data-rm-screen aria-hidden="true"></div>
       </div>
     </div>
   </section>
 
-  <!-- ===================== About =====================
-       After the intro on emilycampbell.co: one column of large serif prose
-       with things to touch in it — grey pills that turn black, a photo chip
-       that lifts, a split-flap word that reshuffles on click, a terminal chip
-       that types a new ending on click — then a signature, then the skills
-       bracelet (js/info.js). The leaf shadows behind it are drawn in CSS.
-       Behaviour: initInfoIntro() in js/script.js. -->
-  <section class="section info" id="about" aria-labelledby="about-h">
-    <div class="info__shade" aria-hidden="true">
-      <span class="info__leaf" style="--lx:8%; --ly:6%; --lw:260px; --lr:-32deg; --ld:0s;"></span>
-      <span class="info__leaf" style="--lx:62%; --ly:2%; --lw:340px; --lr:-28deg; --ld:-3s;"></span>
-      <span class="info__leaf" style="--lx:84%; --ly:30%; --lw:220px; --lr:-40deg; --ld:-6s;"></span>
-      <span class="info__leaf" style="--lx:30%; --ly:38%; --lw:300px; --lr:-24deg; --ld:-2s;"></span>
-      <span class="info__leaf" style="--lx:70%; --ly:62%; --lw:280px; --lr:-35deg; --ld:-5s;"></span>
-      <span class="info__leaf" style="--lx:4%; --ly:70%; --lw:240px; --lr:-30deg; --ld:-8s;"></span>
-      <span class="info__leaf" style="--lx:44%; --ly:84%; --lw:320px; --lr:-26deg; --ld:-4s;"></span>
-      <span class="info__leaf" style="--lx:90%; --ly:88%; --lw:200px; --lr:-38deg; --ld:-1s;"></span>
+  <!-- ===================== Experience =====================
+       Two drafts from .claude/experience-drafts/ combined: the tape measure
+       (to scale) and the lanyard badges. The tape runs newest first, one
+       tick a month from Sep 2026 back to Jan 2025, and each role's lanyard
+       is clipped to it at the role's real start and end, so the width of its
+       V is how long the role lasted. Static: css/experience.css, no script.
+       The tape is aria-hidden; every date it draws is in the badge's text.
+       Roles follow the résumé except where the site disagrees: no
+       locations, InnovyQ claims only her parts of IVY, PaddleOCR is
+       "packaged", and the Sygnius client is not named. -->
+  <section class="section xp" id="experience" aria-labelledby="experience-h">
+    <div class="wrap">
+      <div class="section-head reveal">
+        <h2 id="experience-h">Experience</h2>
+        <span class="glyph" aria-hidden="true">&#8596;&#xFE0E;</span>
+      </div>
+
+      <div class="xp__tape reveal" aria-hidden="true">
+        <div class="xp__rule"><span style="flex-grow: 9">2026</span><span style="flex-grow: 12">2025</span></div>
+        <div class="xp__spans"><span style="flex-grow: 4; --c: var(--graph-projects)"></span><span style="flex-grow: 11; --c: var(--graph-hobbies)"></span><span style="flex-grow: 6; --c: var(--graph-name)"></span></div>
+        <!-- One unit a month. Each V runs from the role's first month down to
+             its badge's clip (the centre of its third) and back up to its last. -->
+        <svg class="xp__straps" viewBox="0 0 21 10" preserveAspectRatio="none" focusable="false">
+          <polyline points="0.2,0 3.5,10 3.8,0" style="--c: var(--graph-projects)"/>
+          <polyline points="4.2,0 10.5,10 14.8,0" style="--c: var(--graph-hobbies)"/>
+          <polyline points="15.2,0 17.5,10 20.8,0" style="--c: var(--graph-name)"/>
+        </svg>
+      </div>
+
+      <ol class="xp__roles" aria-label="Roles, newest first">
+        <li class="xp__badge reveal" style="--c: var(--graph-projects)">
+          <h3 class="xp__co">InnovyQ Solutions</h3>
+          <p class="xp__role">DevOps Engineer</p>
+          <p class="xp__when"><time datetime="2026-06">Jun</time> – <time datetime="2026-09">Sep 2026</time> · 4 months</p>
+          <ul class="xp__lines">
+            <li>Built the escalation ladder in Project IVY, a Slack support agent on AWS: Lex answers first, then a knowledge base, then a language model, then a person.</li>
+            <li>Wrote the local knowledge base and its matcher over 330 exported intents, and the dedupe that lets a Lex V2 build accept them.</li>
+            <li>Rewrote the language-model fallback prompt to lead with the likeliest fix, and built a learning loop that proposes new intents from closed tickets.</li>
+            <li>Benchmarked four OCR engines on ticket screenshots and packaged PaddleOCR for Lambda; IVY’s OCR is Textract.</li>
+          </ul>
+          <a class="xp__case" href="work/ivy-slack-agent.html">Project IVY case study</a>
+        </li>
+        <li class="xp__badge reveal" style="--c: var(--graph-hobbies)">
+          <h3 class="xp__co">Artenos Network</h3>
+          <p class="xp__role">Software Engineer</p>
+          <p class="xp__when"><time datetime="2025-07">Jul 2025</time> – <time datetime="2026-05">May 2026</time> · 11 months</p>
+          <ul class="xp__lines">
+            <li>Designed CRM dashboards in Python and Matplotlib that became the sales team’s daily reporting, cutting decision time by about 25%.</li>
+            <li>Ran LLM benchmarking and iterative prompt testing, raising measured response accuracy by about 15%.</li>
+            <li>Shipped internal full-stack tools in React Native, Next.js and TypeScript over Python REST APIs, deployed on Vercel.</li>
+          </ul>
+        </li>
+        <li class="xp__badge reveal" style="--c: var(--graph-name)">
+          <h3 class="xp__co">Sygnius Digital</h3>
+          <p class="xp__role">AI Specialist</p>
+          <p class="xp__when"><time datetime="2025-01">Jan</time> – <time datetime="2025-06">Jun 2025</time> · 6 months</p>
+          <ul class="xp__lines">
+            <li>Wrote a lead pipeline in Python: the Google Maps Places API finds the businesses, and Selenium and BeautifulSoup find the contacts their listings leave out. 600+ qualified leads.</li>
+            <li>Deployed Bland AI and Retell AI voice agents to call them, with live transfer to sales. Re-tuning the agent’s tone lifted successful transfers by 12%.</li>
+            <li>Set up SPF, DKIM, DMARC and domain warm-up for email campaigns, and prototyped an email generator by fine-tuning FLAN-T5 and DistilGPT2.</li>
+          </ul>
+          <a class="xp__case" href="work/outbound-pipeline.html">Outbound Sales Pipeline case study</a>
+        </li>
+      </ol>
     </div>
+  </section>
+
+  <!-- ===================== About =====================
+       After the intro on emilycampbell.co: one column of serif prose on the
+       page's left edge, signed, then the skills bracelet (js/info.js). The
+       one decoration is the spirit level the signature rests on: a
+       builder's measuring tool, its bubble in the day's wash, settling dead
+       centre once the intro is revealed (still under reduced motion). CSS
+       only, in css/style.css §10. -->
+  <section class="section info" id="about" aria-labelledby="about-h">
     <div class="wrap">
       <div class="section-head reveal">
         <h2 id="about-h">About</h2>
@@ -430,26 +447,25 @@
       <div class="info__intro reveal">
         <p class="info__hello" data-cue="👋">Hello.</p>
 
-        <p>I’m Akshayaa Kashyap<span class="info__nowrap"> <span class="info__face" aria-hidden="true"><!-- Placeholder: swap for
-          <img src="public/assets/face.webp" alt="" width="96" height="96"> when the photo exists. --><span class="info__face-ph">AK</span></span>,</span>
-          an <span class="info__pill">AI engineer</span>. For a year and a half I’ve built
-          <span class="info__pill">LLM agents</span>, voice agents and the data pipelines that feed them,
+        <p>I’m Akshayaa Kashyap, an AI engineer. For a year and a half I’ve built
+          LLM agents, voice agents and the data pipelines that feed them,
           mostly in Python on AWS.</p>
 
-        <p>I pick tools by <b class="info__bold">measuring</b> them. Four OCR engines were
-          <button type="button" class="flap" data-flap="MEASURED" aria-label="measured"><span class="flap__tile" aria-hidden="true"><span>M</span></span><span class="flap__tile" aria-hidden="true"><span>E</span></span><span class="flap__tile" aria-hidden="true"><span>A</span></span><span class="flap__tile" aria-hidden="true"><span>S</span></span><span class="flap__tile" aria-hidden="true"><span>U</span></span><span class="flap__tile" aria-hidden="true"><span>R</span></span><span class="flap__tile" aria-hidden="true"><span>E</span></span><span class="flap__tile" aria-hidden="true"><span>D</span></span></button>
-          before one was packaged for Lambda, and a sales voice agent was re-tuned until live transfers rose 12%.</p>
+        <p>I pick tools by measuring them. Four OCR engines were measured before
+          one was packaged for Lambda, and a sales voice agent was re-tuned
+          until live transfers rose 12%.</p>
 
-        <p>Next, I want to put <span class="info__pill">LLM systems into production</span>, where
-          <button type="button" class="term" data-term='~a person is waiting|~the answer has to be right|~every call has a cost|~it has to work next month'><span class="term__prompt" aria-hidden="true">&gt;/</span><span class="term__box"><span class="term__size" aria-hidden="true">~the answer has to be right</span><span class="term__out"><span class="term__text">~a person is waiting</span><span class="term__cursor" aria-hidden="true"></span></span></span></button>.</p>
+        <p>Next, I want to put LLM systems into production, where a person is waiting.</p>
 
-        <p><span class="info__pill">It’s nice to meet you.</span></p>
+        <p>It’s nice to meet you.</p>
 
-        <p class="info__sig">Akshayaa</p>
+        <div class="info__signed">
+          <p class="info__sig">Akshayaa</p>
+          <span class="level" aria-hidden="true"><span class="level__vial"><span class="level__bubble"></span></span></span>
+        </div>
       </div>
 
-      <!-- The pieces after the intro (the skills bracelet), written by
-           js/info.js. INFO_PIECES at its top picks them and their order. -->
+      <!-- The skills bracelet, written by js/info.js. -->
       <div class="info-pieces" data-info-pieces></div>
     </div>
   </section>
@@ -457,7 +473,9 @@
   <!-- ===================== Contact ===================== -->
   <section class="section contact" id="contact" aria-labelledby="contact-h">
     <div class="wrap">
-      <h2 id="contact-h" class="reveal">Get in touch</h2>
+      <div class="section-head reveal">
+        <h2 id="contact-h">Get in touch</h2>
+      </div>
       <p class="reveal">My inbox is open — whether it's a role, a collaboration on something
         AI-shaped, or a question about any of the projects above.</p>
       <div class="contact__links reveal">
@@ -556,7 +574,7 @@ if (/[?&]edit=1/.test(location.search)) {
 }
 </script>
 <script src="js/cursor.js" defer></script>
-<!-- The photo popover, for the Hobbies cards and the desk's Polaroids. -->
+<!-- The photo popover, for the Hobbies cards. -->
 <script src="js/lightbox.js" defer></script>
 <!-- After every data file (it reads hobbies, projects and readings) and
      before script.js, whose reveal observer must see its .reveal elements. -->

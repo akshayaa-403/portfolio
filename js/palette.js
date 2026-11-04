@@ -164,21 +164,40 @@
      --bg-sunken on a dark page, the darkest on a light one. Accent text is
      set on cards and pills as well as on the page, and measured against
      --bg alone it came out at 4.2:1 on a raised card at night, and 2.5:1 on
-     desk mode's slate surfaces. */
+     desk mode's slate surfaces.
+
+     On the home page the desk's grounds are scoped to the hero (css/style.css,
+     "Time of day, desk mode") and the plain ones run below it, so both sets
+     count: a probe .hero, which this script can make before <body> exists,
+     reads the hero's. `page` is the harder of the two --bg values, for the
+     tokens measured against the page ground rather than a card. */
   function ground() {
     var cs = getComputedStyle(root);
     var bg = (cs.getPropertyValue('--bg') || '').trim() || '#f4f7fa';
     var g = toHsl(bg);
     var dark = !!g && g.l < 50;
     var gl = g ? lum(hslRgb(g.h, g.s, g.l)) : (dark ? 0.01 : 0.9);
-    var worst = gl;
-    ['--bg-raised', '--surface', '--bg-sunken'].forEach(function (t) {
-      var c = toHsl((cs.getPropertyValue(t) || '').trim());
-      if (!c) return;
-      var l = lum(hslRgb(c.h, c.s, c.l));
-      worst = dark ? Math.max(worst, l) : Math.min(worst, l);
-    });
-    return { dark: dark, gl: gl, worst: worst };
+    var worst = gl, page = gl;
+    function harder(a, b) { return dark ? Math.max(a, b) : Math.min(a, b); }
+    function read(style, names) {
+      names.forEach(function (t) {
+        var c = toHsl((style.getPropertyValue(t) || '').trim());
+        if (!c) return;
+        var l = lum(hslRgb(c.h, c.s, c.l));
+        worst = harder(worst, l);
+        if (t === '--bg') page = harder(page, l);
+      });
+    }
+    read(cs, ['--bg-raised', '--surface', '--bg-sunken']);
+    if (root.getAttribute('data-mode') === 'desk') {
+      var probe = document.createElement('div');
+      probe.className = 'hero';
+      probe.style.display = 'none';
+      root.appendChild(probe);
+      read(getComputedStyle(probe), ['--bg', '--bg-raised', '--surface', '--bg-sunken']);
+      probe.remove();
+    }
+    return { dark: dark, gl: gl, worst: worst, page: page };
   }
 
   function apply() {
@@ -228,9 +247,9 @@
       // ground. `meet` still walks each one until it measures 4.5:1 against
       // the ground it is actually on, so the swap changes the colour and
       // never the contrast.
-      '--graph-projects': css(meet(a, 4.5, g.dark, g.gl, g.dark ? 26 : 46, g.dark ? 46 : 66)),
-      '--graph-hobbies': css(meet(b, 4.5, g.dark, g.gl, g.dark ? 26 : 46, g.dark ? 46 : 66)),
-      '--graph-name': css(meet(c, 4.5, g.dark, g.gl, g.dark ? 26 : 46, g.dark ? 46 : 66))
+      '--graph-projects': css(meet(a, 4.5, g.dark, g.page, g.dark ? 26 : 46, g.dark ? 46 : 66)),
+      '--graph-hobbies': css(meet(b, 4.5, g.dark, g.page, g.dark ? 26 : 46, g.dark ? 46 : 66)),
+      '--graph-name': css(meet(c, 4.5, g.dark, g.page, g.dark ? 26 : 46, g.dark ? 46 : 66))
     };
 
     written = Object.keys(out);

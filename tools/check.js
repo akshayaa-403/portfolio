@@ -232,8 +232,7 @@ for (const p of PROJECTS) {
    js/article.js. The engine drops what it cannot render rather than failing,
    so the mistakes that matter are silent ones, and this is where they are
    caught: a block of no known kind, a widget name with no function behind it,
-   a figure that points at no file, and a margin note whose phrase was
-   edited out of its paragraph. */
+   and a figure or demo recording that points at no file. */
 
 console.log('9. articles');
 const vm = require('vm');
@@ -252,6 +251,7 @@ function loadArticle(id) {
 }
 
 for (const p of PROJECTS) {
+  if (p.article === false) continue; // no case study yet; links go to the repo
   const where = 'articles/' + p.id;
   checked += 2;
   if (!fs.existsSync(path.join(ROOT, 'css', 'articles', p.id + '.css'))) {
@@ -270,6 +270,14 @@ for (const p of PROJECTS) {
   if (spec.rail) {
     checked++;
     if (typeof widgets[spec.rail] !== 'function') fail(where, 'rail "' + spec.rail + '" has no widget');
+  }
+  if (spec.demo) {
+    for (const k of ['src', 'poster']) {
+      checked++;
+      if (!spec.demo[k] || !fs.existsSync(path.join(ROOT, spec.demo[k]))) fail(where, 'demo.' + k + ' missing: ' + spec.demo[k]);
+    }
+    checked++;
+    if (!spec.demo.alt) fail(where, 'demo without alt text');
   }
   if (spec.closing) chapters.push(spec.closing);
 
@@ -300,17 +308,6 @@ for (const p of PROJECTS) {
       if (k === 'figure') {
         if (!fs.existsSync(path.join(ROOT, b.figure.split('?')[0]))) fail(where, 'figure file missing: ' + b.figure);
         if (!b.alt) fail(where, 'figure without alt text: ' + b.figure);
-      }
-      if (k === 'p') {
-        for (const [phrase, say] of b.notes || []) {
-          checked++;
-          const hits = b.p.split(phrase).length - 1;
-          if (hits !== 1) {
-            fail(where, 'margin-note phrase appears ' + hits +
-              ' times in its paragraph (needs exactly 1): "' + phrase + '"');
-          }
-          if (!say || !say.trim()) fail(where, 'empty margin note on "' + phrase + '"');
-        }
       }
     }
   }

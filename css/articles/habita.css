@@ -1,7 +1,5 @@
 /* Habita — "One task, followed". Widgets are prefixed .hb-. */
 
-.a[data-form="one-task"] .a-ch__label { text-transform: none; letter-spacing: 0.02em; font-size: 12.5px; }
-
 .hb-note { margin: 0; color: var(--ink-soft); font-size: 12px; }
 .hb-w button:focus-visible, .hb-w [tabindex]:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 
@@ -146,10 +144,10 @@
   .hb-card__dl dd.is-new, .hb-ld.is-pending .hb-row { animation: none; }
 }
 
-/* Chapter labels are whole check names, too long for the contents' label column. */
-.a[data-form="one-task"] .a-toc a { flex-direction: column; gap: 2px; }
-.a[data-form="one-task"] .a-toc__l { min-width: 0; flex: initial; letter-spacing: 0.02em; text-transform: none; }
 @media (max-width: 599.98px) {
   .hb-ru__side { flex-direction: row; flex-wrap: wrap; gap: 10px 18px; }
   .hb-ru__side .k-readout__v { font-size: 16px; }
 }
+
+/* the demo is a phone recording (420x908): show it at phone width, not 1000px */
+.a-demo { max-width: 340px; margin-inline: auto; }

@@ -20,9 +20,6 @@
   var PERIODS = ['morning', 'day', 'evening', 'night'];
   var root = document.documentElement;
 
-  // The old light/dark preference was kept forever; the clock replaces it.
-  try { localStorage.removeItem('theme'); } catch (e) {}
-
   function natural() { return window.periodOf(new Date().getHours()); }
 
   function override() {
