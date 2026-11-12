@@ -54,8 +54,6 @@
           (meta ? '<span class="rm__meta">' + meta + '</span>' : '') +
           '<span class="rm__desc">' + esc(p.tagline) + '</span>' +
           '<span class="rm__foot">' +
-            // Some projects have no honest figure; the empty slot is the hierarchy.
-            (p.metric ? '<span class="rm__metric">' + esc(p.metric) + '</span>' : '') +
             (stack ? '<span class="rm__stack">' + stack + '</span>' : '') +
           '</span>' +
         '</span>' +

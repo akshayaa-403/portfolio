@@ -49,7 +49,7 @@
   --desk-crease: rgba(0, 0, 0, 0.6);
   --desk-ao: rgba(0, 0, 0, 0.3);
 }
-:root[data-time='morning'] {
+:root[data-time='day'] {
   --desk-filter: sepia(0.12) brightness(1.02);
   --desk-sheen: rgba(255, 228, 180, 0.30);
   --desk-sheen-x: 12%;
@@ -190,16 +190,20 @@
 }
 
 /* --- The laptop's screen: the case studies --------------------------------
-   At 900px and up, exactly the glass (31% of the stage down, 0.803 lw wide,
-   0.5196 lw high), moved and scaled as the laptop is. Type is divided by
-   --lap-s so it lands at its stated size whatever the laptop's scale.
-   Below 900px, a plain list under the name. */
+   At 900px and up the screen is a desktop: each case study is a shortcut, an
+   icon over its name (js/desk-objects.js), on the glass. The glass is 31% of
+   the stage down, 0.803 lw wide and 0.5196 lw high, and this moves and scales
+   with the laptop. Type and icons are divided by --lap-s, so they land at
+   their stated size whatever the laptop's scale. Below 900px the shortcuts
+   are a plain list under the name, with their descriptions. */
 .hero__work { position: relative; padding: 22px var(--gap-lg) 0; }
 /* No laptop below 900px, and #work lists the same four right after. */
 @media (max-width: 899.98px) { .hero__work { display: none; } }
 .screen__list { display: grid; gap: 10px; margin: 0; padding: 0; list-style: none; }
-.screen__list a {
-  display: block;
+.shortcut {
+  display: flex;
+  align-items: center;
+  gap: 14px;
   padding: 12px 14px;
   border: 1px solid var(--line);
   border-radius: var(--radius);
@@ -207,10 +211,30 @@
   color: var(--ink-body);
   text-decoration: none;
 }
-.screen__list b { display: block; color: var(--ink); font-size: 15px; font-weight: 600; }
-.screen__list span { display: block; margin-top: 2px; font-family: var(--font-serif); font-size: 14px; line-height: 1.4; }
-.screen__list a:hover b { color: var(--link); text-decoration: underline; text-underline-offset: 3px; }
-.screen__list a:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.shortcut__icon {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 46px;
+  height: 46px;
+  border-radius: 11px;
+  background: var(--c);
+  color: var(--bg);
+  box-shadow: 0 2px 6px rgb(0 0 0 / 0.18);
+}
+.shortcut__icon svg {
+  width: 26px;
+  height: 26px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2.4;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.shortcut__name { display: block; color: var(--ink); font-size: 15px; font-weight: 600; line-height: 1.3; }
+.shortcut__desc { display: block; margin-top: 2px; color: var(--ink-body); font-family: var(--font-serif); font-size: 14px; line-height: 1.4; }
+.shortcut:hover .shortcut__name { color: var(--link); text-decoration: underline; text-underline-offset: 3px; }
+.shortcut:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 .lterm-open, .lterm { display: none; }
 
 @media (min-width: 900px) {
@@ -233,28 +257,53 @@
     flex-direction: column;
     justify-content: center;
     height: 100%;
-    padding: calc(14 * var(--k)) calc(14 * var(--k)) calc(12 * var(--k));
+    padding: calc(16 * var(--k)) calc(14 * var(--k));
     overflow: hidden;
   }
-  [data-mode='desk'] .screen__list { gap: calc(3 * var(--k)); }
-  [data-mode='desk'] .screen__list a {
-    padding: calc(4 * var(--k)) calc(8 * var(--k));
+  [data-mode='desk'] .screen__list {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: calc(8 * var(--k)) calc(6 * var(--k));
+    align-content: center;
+  }
+  [data-mode='desk'] .shortcut {
+    flex-direction: column;
+    justify-content: flex-start;
+    gap: calc(7 * var(--k));
+    min-width: 0;
+    padding: calc(6 * var(--k)) calc(4 * var(--k));
     border: 0;
-    border-radius: calc(4 * var(--k));
+    border-radius: calc(8 * var(--k));
     background: none;
+    text-align: center;
     pointer-events: auto;
   }
-  [data-mode='desk'] .screen__list a:hover { background: color-mix(in srgb, var(--ink) 6%, transparent); }
-  [data-mode='desk'] .screen__list a:focus-visible { outline-width: calc(2 * var(--k)); }
-  [data-mode='desk'] .screen__list b { font-size: calc(13 * var(--k)); }
-  [data-mode='desk'] .screen__list span {
-    margin-top: calc(1 * var(--k));
-    font-size: calc(12 * var(--k));
-    line-height: 1.35;
+  [data-mode='desk'] .shortcut:hover,
+  [data-mode='desk'] .shortcut:focus-visible { background: color-mix(in srgb, var(--ink) 6%, transparent); }
+  [data-mode='desk'] .shortcut:focus-visible { outline-width: calc(2 * var(--k)); }
+  [data-mode='desk'] .shortcut__icon {
+    width: calc(54 * var(--k));
+    height: calc(54 * var(--k));
+    border-radius: calc(13 * var(--k));
+    box-shadow: 0 calc(2 * var(--k)) calc(6 * var(--k)) rgb(0 0 0 / 0.2);
+  }
+  [data-mode='desk'] .shortcut__icon svg { width: calc(28 * var(--k)); height: calc(28 * var(--k)); }
+  [data-mode='desk'] .shortcut__name {
+    font-size: calc(12.5 * var(--k));
+    line-height: 1.25;
     display: -webkit-box;
     -webkit-line-clamp: 2;
     -webkit-box-orient: vertical;
     overflow: hidden;
+    overflow-wrap: anywhere;
+  }
+  [data-mode='desk'] .shortcut:hover .shortcut__name { text-decoration: none; }
+  [data-mode='desk'] .shortcut__desc { display: none; }
+  /* Hover: the icon swells a little, as a desktop icon does. Same on touch. */
+  [data-mode='desk'] .shortcut:hover .shortcut__icon,
+  [data-mode='desk'] .shortcut:focus-visible .shortcut__icon { scale: 1.14; }
+  @media (prefers-reduced-motion: no-preference) {
+    [data-mode='desk'] .shortcut__icon { transition: scale 0.25s var(--ease), box-shadow 0.25s var(--ease); }
   }
   [data-mode='desk'] .lterm-open { display: block; top: auto; bottom: 3%; }
   [data-mode='desk'] .lterm:not([hidden]) { display: flex; }
@@ -399,7 +448,7 @@
 .lamp__glow {
   position: absolute;
   left: 0.65%;
-  top: 3.82%;
+  top: 0.7%;
   width: 98.6%;
   height: auto;
   opacity: 0;
@@ -578,7 +627,7 @@
   --stand: #8c7863;
   --ring: rgba(110, 72, 40, 0.28);
 }
-:root[data-time='morning'] {
+:root[data-time='day'] {
   --win-sky: linear-gradient(180deg, #f9d7b9, #fbe9d6 60%, #fdf3e6);
   --beam: rgba(255, 232, 196, 0.6);
 }
@@ -916,7 +965,7 @@
 }
 .bizcard__card {
   position: relative;
-  width: min(420px, 88vw);
+  width: min(440px, 88vw);
   aspect-ratio: 1.75;
   display: flex;
   flex-direction: column;
@@ -934,6 +983,13 @@
 .wada__sw i { display: block; height: 46px; margin-bottom: 4px; border-radius: 2px; box-shadow: inset 0 0 0 1px rgb(0 0 0 / 0.08); }
 .wada__sw code { font-family: var(--font-mono); font-size: 12px; }
 .wada__p { margin: 0 0 8px; font-family: var(--font-serif); font-size: 14.5px; line-height: 1.5; }
+.wada__p a {
+  color: var(--paper-ink);
+  text-decoration: underline;
+  text-decoration-color: var(--biz-accent, var(--accent-deep));
+  text-underline-offset: 3px;
+}
+.wada__p a:focus-visible { outline: 2px solid var(--biz-accent, var(--accent-deep)); outline-offset: 2px; }
 .bizcard__card::before {
   content: '';
   position: absolute;
@@ -946,7 +1002,60 @@
 }
 .bizcard__name { margin: 0; font-family: var(--font-serif); font-size: 26px; line-height: 1.1; }
 .bizcard__role { margin: 4px 0 14px; color: var(--paper-ink-soft, #4a443b); font-size: 13px; letter-spacing: 0.04em; }
-.bizcard__lines { margin: 0; padding: 0; list-style: none; font-family: var(--font-mono); font-size: 12.5px; line-height: 1.7; }
+.bizcard__lines { margin: 0; padding: 0; list-style: none; font-family: var(--font-mono); font-size: 11.5px; line-height: 1.75; }
+/* The card's body: the details on the left, the LinkedIn QR on the right,
+   both sitting on the card's bottom edge. */
+.bizcard__body { display: flex; align-items: flex-end; justify-content: space-between; gap: 18px; }
+.bizcard__text { min-width: 0; }
+/* The QR is a link. It lifts a little on hover, and a line of the day's
+   accent sweeps over it (still under reduced motion: a steady line). */
+.bizcard__qr {
+  position: relative;
+  flex: none;
+  display: grid;
+  justify-items: center;
+  gap: 4px;
+  padding: 6px;
+  border-radius: 4px;
+  background: var(--paper);
+  color: var(--paper-ink);
+  box-shadow: 0 0 0 1px rgb(0 0 0 / 0.08);
+  text-decoration: none;
+  overflow: hidden;
+}
+.bizcard__qr img { display: block; width: 104px; height: 104px; }
+.bizcard__qrcap {
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  letter-spacing: 0.04em;
+  color: var(--paper-ink-soft);
+}
+.bizcard__qr::after {
+  content: '';
+  position: absolute;
+  left: 6px;
+  right: 6px;
+  top: 6px;
+  height: 2px;
+  border-radius: 1px;
+  background: var(--biz-accent, var(--accent-deep));
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+.bizcard__qr:hover,
+.bizcard__qr:focus-visible { box-shadow: 0 0 0 2px var(--biz-accent, var(--accent-deep)); }
+.bizcard__qr:hover::after,
+.bizcard__qr:focus-visible::after { opacity: 0.7; }
+.bizcard__qr:focus-visible { outline: 2px solid var(--biz-accent, var(--accent-deep)); outline-offset: 3px; }
+@media (prefers-reduced-motion: no-preference) {
+  .bizcard__qr { transition: box-shadow 0.25s ease, scale 0.25s cubic-bezier(0.2, 0.8, 0.3, 1.2); }
+  .bizcard__qr:hover { scale: 1.05; }
+  .bizcard__qr:hover::after, .bizcard__qr:focus-visible::after { animation: qr-scan 1.8s ease-in-out infinite; }
+}
+@keyframes qr-scan {
+  0%, 100% { top: 6px; }
+  50% { top: calc(100% - 8px); }
+}
 .bizcard__lines a {
   color: var(--paper-ink, #24211c);
   text-decoration: underline;

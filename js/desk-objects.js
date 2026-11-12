@@ -11,7 +11,6 @@
      the phone             AirDrop offers the résumé
      the card holder       take a card, see it on the page
      the night             only the lamp and the screen light the desk
-     the mess              the longer you stay, the more the desk drifts
 
    Reads js/desk-data.js, project-data.js, hobby-data.js, readings-data.js
    and window.portfolioPalette; every fact on the desk comes from those, so
@@ -26,7 +25,7 @@
   var root = document.documentElement;
   var stage = desk.closest('.stage');
   var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  var api = window.portfolioDesk || { on: function () {}, nudge: function () {}, moved: function () {} };
+  var api = window.portfolioDesk || { on: function () {}, moved: function () {} };
   var P = typeof projects !== 'undefined' ? projects : [];
   var H = typeof hobbies !== 'undefined' ? hobbies : {};
   var live = P.filter(function (p) { return !p.archived; });
@@ -69,12 +68,19 @@
      Every case study that is not archived, as a link to its share page.
      The markup ships the same list for no JS; this keeps it in step with
      js/project-data.js. */
+  var TOKENS = ['var(--graph-projects)', 'var(--graph-hobbies)', 'var(--graph-name)'];
   function initScreen() {
     var ul = document.querySelector('[data-screen-list]');
     if (!ul || !live.length) return;
-    ul.innerHTML = live.map(function (p) {
-      return '<li><a href="' + safeUrl('work/' + encodeURIComponent(p.id) + '.html') + '"><b>' + esc(p.title) +
-        '</b> <span>' + esc(p.tagline || p.context || '') + '</span></a></li>';
+    // Desktop shortcuts: an icon over the name. The description is for the
+    // phone's list, where there is room for it.
+    ul.innerHTML = live.map(function (p, i) {
+      var glyph = D.icons[p.id] || D.icons.fallback;
+      return '<li><a class="shortcut" href="' + safeUrl('work/' + encodeURIComponent(p.id) + '.html') + '">' +
+        '<span class="shortcut__icon" style="--c: ' + TOKENS[i % TOKENS.length] + '" aria-hidden="true">' +
+          '<svg viewBox="0 0 48 48" focusable="false">' + glyph + '</svg></span>' +
+        '<span class="shortcut__name">' + esc(p.title) + '</span>' +
+        '<span class="shortcut__desc">' + esc(p.tagline || p.context || '') + '</span></a></li>';
     }).join('');
   }
 
@@ -280,7 +286,7 @@
             return '<li>' + (ok ? '<i style="background:' + h + '"></i>' : '') + '<code>' + esc(h) + '</code></li>';
           }).join('') + '</ul>' +
           '<p class="wada__p">Sanzo Wada (1883–1967) was a Japanese painter and costume designer. His ' +
-          '<cite>A Dictionary of Color Combinations</cite>, first published in six volumes in 1933–34, ' +
+          '<cite><a href="https://colors.elwyn.co" target="_blank" rel="noopener noreferrer">A Dictionary of Color Combinations</a></cite>, first published in six volumes in 1933–34, ' +
           'sets colours side by side in twos, threes and fours.</p>' +
           '<p class="wada__p">This site keeps ' + total + ' of his three-colour combinations and takes a new one ' +
           'each day. Every accent on the page is rebuilt from it, then made lighter or darker until it passes contrast.</p>',
@@ -418,6 +424,7 @@
       var c = D.card;
       if (!dlg) {
         dlg = card('Business card: ' + c.name,
+          '<div class="bizcard__body"><div class="bizcard__text">' +
           '<p class="bizcard__name">' + esc(c.name) + '</p>' +
           '<p class="bizcard__role">' + esc(c.role) + '</p>' +
           '<ul class="bizcard__lines">' +
@@ -427,7 +434,12 @@
                 esc(u.replace(/^https?:\/\//, '')) + '</a></li>';
             }).join('') +
             '<li><a href="' + safeUrl(c.resume) + '" target="_blank" rel="noopener noreferrer">Résumé (PDF)</a></li>' +
-          '</ul>',
+          '</ul></div>' +
+          // The QR is a link: scanning it on a phone or pressing it here opens LinkedIn.
+          '<a class="bizcard__qr" href="' + safeUrl(c.urls[1]) + '" target="_blank" rel="noopener noreferrer" ' +
+            'aria-label="LinkedIn profile, opens in a new tab">' +
+            '<img src="public/assets/linkedin-qr.svg" alt="" width="104" height="104" decoding="async">' +
+            '<span class="bizcard__qrcap">LinkedIn ↗</span></a></div>',
           function () { holder.classList.remove('is-taken'); btn.focus({ preventScroll: true }); });
       }
       holder.classList.add('is-taken');
@@ -466,31 +478,9 @@
     place();
   }
 
-  /* ---------- the mess ----------
-     Every 45 s that the desk is on screen in desk mode, two things drift a
-     little and the mug creeps. "Tidy up" puts it all back. Never under
-     reduced motion. */
-  var MESS_MS = 45000;
-  function initMess() {
-    if (reduce) return;
-    var seen = true;
-    new IntersectionObserver(function (es) { seen = es[0].isIntersecting; }).observe(desk);
-    function rand(a, b) { return a + Math.random() * (b - a); }
-    window.setInterval(function () {
-      if (!seen || document.hidden || !desk.offsetWidth) return;
-      var all = Array.prototype.filter.call(desk.querySelectorAll('[data-drag]'), function (el) {
-        return !el.classList.contains('is-held');
-      });
-      for (var k = 0; k < 2 && all.length; k++) {
-        var el = all.splice(Math.floor(Math.random() * all.length), 1)[0];
-        api.nudge(el, rand(-14, 14), rand(-4, 4), rand(-3, 3));
-      }
-      var mug = desk.querySelector('[data-mug]');
-      if (mug) { ring(mug.getBoundingClientRect()); api.nudge(mug, rand(6, 16), rand(-2, 2), 0); }
-    }, MESS_MS);
-  }
-
-  /* ---------- drops and tidying ---------- */
+  /* ---------- drops and tidying ----------
+     Nothing on the desk moves unless it is dragged (owner's request,
+     2026-11-12: the drift every 45 s was removed). */
   api.on('drop', function (el, from) {
     if (el.matches('[data-mug]')) ring(from);
   });
@@ -509,6 +499,5 @@
     initPhone();
     initCards();
     initNight();
-    if (!window.isEditing()) initMess();
   });
 })();

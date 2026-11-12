@@ -1,5 +1,5 @@
-/* The About section's skills bracelet, written into [data-info-pieces]
-   after the static "Hello." intro in index.html.
+/* The Skills section's bracelet, written into [data-info-pieces]
+   in index.html.
 
    THE BRACELET IS THE SKILLS (2026-10-30). SKILLS below is the résumé's
    Technical Skills section, its six groups in its order and words, plus
@@ -166,17 +166,9 @@
   function init() {
     var host = document.querySelector('[data-info-pieces]');
     if (!host || typeof esc !== 'function') return;
-    var intro = document.querySelector('.info__intro');
-    if (intro) {
-      var iw = document.createElement('section');
-      iw.className = 'ip ip--intro';
-      iw.appendChild(intro);   // keeps its own .reveal
-      host.appendChild(iw);
-    }
-    var wrap = document.createElement('section');
+    var wrap = document.createElement('div');
     wrap.className = 'ip ip--bracelet';
-    wrap.setAttribute('aria-labelledby', 'ip-bracelet');
-    wrap.innerHTML = '<h3 class="ip__label reveal" id="ip-bracelet">Skills</h3><div class="ip__body reveal"></div>';
+    wrap.innerHTML = '<div class="ip__body reveal"></div>';
     host.appendChild(wrap);
     bracelet(wrap.lastChild);
   }

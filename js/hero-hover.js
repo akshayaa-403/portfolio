@@ -6,8 +6,8 @@
         again. Nothing else starts it, ever: no hover, no autoplay.
    Everything else on the desk (the laptop's screen and terminal, the window,
    the phone, the drink...) is js/desk-objects.js, which reaches the dragging
-   through window.portfolioDesk below: `on('drop' | 'tidy', fn)`, `nudge()`
-   and `moved()`.
+   through window.portfolioDesk below: `on('drop' | 'tidy', fn)` and
+   `moved()`. Nothing moves unless it is dragged.
 
    Hover lift is CSS: the individual `scale`/`translate`/`rotate` properties
    compose with each object's authored `transform: rotate()` rather than
@@ -33,7 +33,6 @@
   }
   window.portfolioDesk = {
     on: function (type, fn) { if (heard[type]) heard[type].push(fn); },
-    nudge: function () {},
     moved: function () {}
   };
 
@@ -93,8 +92,8 @@
     function moved() { tidy.hidden = false; }
 
     Array.prototype.forEach.call(desk.querySelectorAll('[data-drag]'), function (el) {
-      // Where it has been moved to, in px, and any tilt the mess gave it.
-      var st = el.__desk = { tx: 0, ty: 0, rot: 0 };
+      // Where it has been moved to, in px.
+      var st = el.__desk = { tx: 0, ty: 0 };
 
       el.addEventListener('pointerdown', function (e) {
         if (e.button !== 0) return;
@@ -123,7 +122,7 @@
           nx = st.tx + Math.max(box[0], Math.min(box[1], dx));
           ny = st.ty + Math.max(box[2], Math.min(box[3], dy));
           el.style.translate = nx + 'px ' + ny + 'px';
-          if (!reduce) el.style.rotate = (st.rot + Math.max(-6, Math.min(6, ev.movementX * 0.5))) + 'deg';
+          if (!reduce) el.style.rotate = Math.max(-6, Math.min(6, ev.movementX * 0.5)) + 'deg';
           if (el === lamp) lampLight();
         }
 
@@ -134,7 +133,7 @@
           if (!box) return;
           st.tx = nx; st.ty = ny;
           el.classList.remove('is-held');
-          el.style.rotate = st.rot ? st.rot + 'deg' : '';
+          el.style.rotate = '';
           if (el === lamp) window.setTimeout(lampLight, reduce ? 0 : 340);
           // A drag is not a click: swallow the one this release fires, so
           // dropping the lamp does not switch the theme.
@@ -149,27 +148,13 @@
       });
 
       resets.push(function () {
-        st.tx = st.ty = st.rot = 0;
+        st.tx = st.ty = 0;
         el.style.translate = '';
         el.style.rotate = '';
         el.style.zIndex = '';
       });
     });
 
-    /* Move something by (dx, dy) px and tilt it by dr degrees, kept on the
-       desk, as if it had been knocked. For js/desk-objects.js's mess. */
-    window.portfolioDesk.nudge = function (el, dx, dy, dr) {
-      var st = el && el.__desk;
-      if (!st || el.classList.contains('is-held')) return;
-      var d = desk.getBoundingClientRect(), r = el.getBoundingClientRect();
-      dx = Math.max(Math.min(0, d.left - r.left), Math.min(Math.max(0, d.right - r.right), dx));
-      dy = Math.max(Math.min(0, d.top - r.top), Math.min(Math.max(0, d.bottom - r.bottom), dy));
-      st.tx += dx; st.ty += dy; st.rot += dr || 0;
-      el.style.translate = st.tx + 'px ' + st.ty + 'px';
-      el.style.rotate = st.rot ? st.rot + 'deg' : '';
-      moved();
-      if (el === lamp) window.setTimeout(lampLight, reduce ? 0 : 600);
-    };
     window.portfolioDesk.moved = moved;
 
     tidy.addEventListener('click', function () {

@@ -41,8 +41,8 @@
 
   // [lit wall, full shadow] per period.
   var MODES = {
-    morning: ['#f9d4b8', '#d6bda7'],
-    day:     ['#f9f7f6', '#f0ebea'],
+    morning: ['#f9f7f6', '#f0ebea'],
+    day:     ['#f9d4b8', '#d6bda7'],
     evening: ['#fbc8a9', '#e2b5a9'],
     night:   ['#485374', '#1a1e2c']
   };

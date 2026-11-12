@@ -280,7 +280,7 @@
    Inks are hers, black (white at night) at 90 / 78 / 68 % over the ground,
    the last tier raised until it passes. Contrast for ink / body / soft /
    muted against the WORST of --bg, --bg-raised, --bg-sunken and --surface:
-     morning 12.0 / 8.7 / 6.3 / 4.6    day   15.1 / 10.3 / 7.0 / 4.6
+     day     12.0 / 8.7 / 6.3 / 4.6    morning 15.1 / 10.3 / 7.0 / 4.6
      evening 11.2 / 8.3 / 6.0 / 4.6    night  8.0 /  7.1 / 6.3 / 5.3
    Night is the owner's own pair, not hers: the background #1a1e2c (--bg),
    darker than the leaves #485374, the slate surfaces between them.
@@ -291,7 +291,7 @@
    against both these grounds and the plain ones, so they pass on either.
    -------------------------------------------------------------------------- */
 [data-mode='desk'] .hero { background-color: var(--bg); color: var(--ink-body); }
-[data-mode='desk'][data-time='morning'] :is(.hero, .site-header:not([data-nav-state='revealed'])) {
+[data-mode='desk'][data-time='day'] :is(.hero, .site-header:not([data-nav-state='revealed'])) {
   --bg: #f9d4b8;
   --bg-raised: #fbe3d1;
   --bg-sunken: #efccb1;
@@ -307,7 +307,7 @@
   --header-bg: rgba(249, 212, 184, 0.96);
   --lamp-glow: #f2c27e;
 }
-[data-mode='desk'][data-time='day'] :is(.hero, .site-header:not([data-nav-state='revealed'])) {
+[data-mode='desk'][data-time='morning'] :is(.hero, .site-header:not([data-nav-state='revealed'])) {
   --bg: #f9f7f6;
   --bg-raised: #fbfaf9;
   --bg-sunken: #efedec;
@@ -516,7 +516,7 @@ main:focus-visible { outline: none; }
   padding: var(--section-gap) 0;
 }
 
-/* Section headings carry a trailing decorative glyph, per the reference */
+/* Section headings */
 .section-head {
   display: flex;
   align-items: baseline;
@@ -526,11 +526,6 @@ main:focus-visible { outline: none; }
 .section-head h2 {
   font-size: 24px;
   font-weight: 500;
-}
-.section-head .glyph {
-  color: var(--accent-ink);
-  font-size: 18px;
-  line-height: 1;
 }
 
 /* --------------------------------------------------------------------------
@@ -1009,19 +1004,6 @@ body { padding-top: var(--header-h, 80px); }
   text-decoration-color: currentColor;
 }
 
-/* The one result the project has, in plain words with the figure in
-   brackets. Not every project has an honest number, and the gap is the
-   hierarchy. */
-.rm__metric {
-  padding: 2px 9px;
-  border: 1px solid var(--accent-mid, var(--line-strong));
-  border-radius: 12px     /* a pill on one line, still tidy when it wraps */;
-  color: var(--accent-ink);
-  font-size: 12px;
-  font-variant-numeric: tabular-nums;
-  letter-spacing: 0.01em;
-}
-
 /* The stack: four items at most. */
 .rm__stack {
   color: var(--ink-soft);
@@ -1267,75 +1249,28 @@ body { padding-top: var(--header-h, 80px); }
 
 /* --------------------------------------------------------------------------
    10. Info
-   The intro: one column of serif prose on the page's left edge (the same
-   edge as the section heading), signed in Caveat. Its one decoration is a
-   spirit level under the signature: a builder's measuring tool, its vial
-   the day's wash (--accent-pale) ringed in --accent-mid, its bubble
-   settling dead centre once the intro is revealed. Decorative and
-   aria-hidden; still under reduced motion. The chip, pills, split-flap,
-   terminal and leaf shadows it replaced were removed on 2026-11-04.
+   The intro: one centred column of serif prose, signed in Caveat. No
+   decoration; the signature is the last line.
    -------------------------------------------------------------------------- */
 .info__intro {
   max-width: 640px;
-  margin: 40px 0 0;
+  margin: 40px auto 0;
   color: var(--ink);
   font-family: var(--font-serif);
   font-size: clamp(17px, 2.6vw, 22px);
   line-height: 1.5;
+  text-align: center;
 }
 .info__intro p { margin: 0 0 0.75em; }
 .info__hello { font-style: italic; }
 
-/* The signature rests on the level. */
-.info__signed { display: inline-grid; justify-items: center; margin-top: 0.3em; }
+.info__signed { display: block; margin-top: 0.3em; }
 .info__intro .info__sig {
-  margin: 0 0 -0.12em;
+  margin: 0;
   font-family: var(--font-script);
   font-size: 1.9em;
   line-height: 1;
   transform: rotate(-4deg);
-}
-.level {
-  display: grid;
-  place-items: center;
-  width: 9em;
-  height: 1.15em;
-  border: 1px solid var(--line-strong);
-  border-radius: 0.25em;
-  background: linear-gradient(90deg, var(--line-strong) 0 0.35em, var(--bg-raised) 0.35em calc(100% - 0.35em), var(--line-strong) 0);
-}
-.level__vial {
-  position: relative;
-  display: grid;
-  place-items: center;
-  width: 3.2em;
-  height: 0.6em;
-  border: 1px solid var(--accent-mid);
-  border-radius: 1em;
-  background: var(--accent-pale);
-}
-/* The two marks the bubble sits between. */
-.level__vial::before {
-  content: '';
-  position: absolute;
-  inset: 0 calc(50% - 0.55em);
-  border-inline: 1px solid var(--ink-soft);
-}
-.level__bubble {
-  width: 0.85em;
-  height: 0.38em;
-  border-radius: 1em;
-  background: var(--bg);
-  box-shadow: inset 0 0 0 1.5px var(--accent-ink);
-}
-@media (prefers-reduced-motion: no-preference) {
-  .js .info__intro.is-visible .level__bubble { animation: level-settle 2.6s cubic-bezier(0.3, 0.7, 0.3, 1) 0.5s both; }
-}
-@keyframes level-settle {
-  0% { transform: translateX(-1.1em); }
-  45% { transform: translateX(0.35em); }
-  75% { transform: translateX(-0.1em); }
-  100% { transform: none; }
 }
 
 /* --------------------------------------------------------------------------
@@ -1389,54 +1324,95 @@ body { padding-top: var(--header-h, 80px); }
 
 /* --------------------------------------------------------------------------
    11. Footer
+   Three parts: who she is and the way to the sections; the three ways to
+   reach her; and a base line with the copyright and a way back up.
    -------------------------------------------------------------------------- */
 .site-footer {
   border-top: 1px solid var(--line);
-  padding: var(--gap-lg) 0;
+  padding: var(--gap-lg) 0 calc(var(--gap-lg) * 0.75);
   margin-top: var(--section-gap);
 }
 .site-footer__inner {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--gap);
   max-width: var(--measure);
   margin: 0 auto;
   padding: 0 var(--gap-lg);
   color: var(--ink-muted);
-  font-size: 12px;
+  font-size: 13px;
 }
-/* --- Social icons ---------------------------------------------------------
-   Brand marks from the inline sprite in each page's <head>. They inherit
-   currentColor, so they track link colour and both themes for free. */
-.icon {
-  display: inline-block;
-  width: 1em;
-  height: 1em;
-  vertical-align: -0.15em;
-  flex: none;
-  fill: currentColor;
+.site-footer__top {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 28px 48px;
+  align-items: start;
 }
-.btn--icon {
-  display: inline-flex;
-  align-items: center;
+.site-footer__name {
+  margin: 0;
+  color: var(--ink);
+  font-family: var(--font-script);
+  font-size: 36px;
+  line-height: 1;
+}
+.site-footer__role {
+  max-width: 40ch;
+  margin: 8px 0 0;
+  color: var(--ink-body);
+  font-family: var(--font-serif);
+  font-size: 15px;
+  line-height: 1.5;
+}
+.site-footer__nav {
+  display: grid;
   gap: 8px;
+  justify-items: start;
+}
+.site-footer__nav a,
+.site-footer__up { color: var(--ink-body); text-decoration: none; }
+.site-footer__nav a:hover,
+.site-footer__up:hover { color: var(--accent-ink); text-decoration: underline; text-underline-offset: 3px; }
+.site-footer__social {
+  grid-column: 1 / -1;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
 }
 .site-footer__social a {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
+  gap: 7px;
+  padding: 7px 14px;
+  border: 1px solid var(--line-strong);
+  border-radius: 999px;
+  color: var(--ink);
+  text-decoration: none;
 }
-
-.site-footer nav {
+.site-footer__social a:hover { background: var(--accent-deep); border-color: var(--accent-deep); color: var(--on-accent-deep, #fff); }
+.site-footer__social a:focus-visible,
+.site-footer__up:focus-visible,
+.site-footer__nav a:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; border-radius: 2px; }
+.site-footer__base {
   display: flex;
   flex-wrap: wrap;
-  gap: var(--gap);
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px 24px;
+  margin-top: 28px;
+  padding-top: 16px;
+  border-top: 1px solid var(--line);
 }
-.site-footer a { color: var(--ink-muted); }
-.site-footer a:hover { color: var(--accent-ink); }
-.site-footer__inner p { margin: 0; }
+.site-footer__base p { margin: 0; }
+.site-footer__up { font-family: var(--font-mono); }
+
+@media (max-width: 599.98px) {
+  .site-footer__top { grid-template-columns: minmax(0, 1fr); }
+  .site-footer__nav { display: flex; flex-wrap: wrap; gap: 6px 20px; }
+  .site-footer__nav a,
+  .site-footer__up { display: inline-flex; align-items: center; min-height: 44px; }
+  .site-footer__social a { min-height: 44px; padding: 10px 14px; }
+  .site-footer__inner { font-size: 13px; }
+}
 
 /* --------------------------------------------------------------------------
    12. Reveal animation — gated on .js AND reduced-motion
@@ -1503,7 +1479,6 @@ body { padding-top: var(--header-h, 80px); }
   .nav a { padding: 12px 0; min-height: 44px; align-content: center; }
   .nav-clock { display: none; }
 
-  .site-footer__inner { justify-content: center; text-align: center; }
 }
 
 @media print {
@@ -1650,15 +1625,6 @@ body { padding-top: var(--header-h, 80px); }
   /* Padding rather than min-height: these are inline links inside flowing
      text, so growing the box keeps them in the layout instead of stretching
      their line. */
-  .site-footer nav a,
-
-  .site-footer__social a {
-    padding: 11px 4px;
-    min-height: 44px;
-    align-items: center;
-  }
-  .site-footer__social { gap: 2px; }
-
   .detail__back {
     display: inline-flex;
     align-items: center;
@@ -1703,9 +1669,6 @@ body { padding-top: var(--header-h, 80px); }
   .notfound__actions .btn { min-height: 46px; }
   .skip-link { padding: 13px 18px; }
   .code-copy { min-height: 44px; padding: 11px 14px; }
-  /* Footer year and social labels were 12px. */
-  .site-footer__inner { font-size: 13px; }
-  .site-footer__social a span { font-size: 13px; }
   .hob-card__count { font-size: 11.5px; }
   .hob-shot figcaption { font-size: 12.5px; }
 }
@@ -1928,9 +1891,6 @@ body:has(dialog[open]) .cue { display: none; }
     align-items: center;
     justify-content: center;
     gap: 14px;
-    padding: 20px;
-    border-radius: var(--radius-lg);
-    background: var(--bg-sunken);
   }
   .rm-screen img,
   .rm-screen video {

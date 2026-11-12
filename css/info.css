@@ -1,37 +1,16 @@
 /* --------------------------------------------------------------------------
-   The About section's pieces, written by js/info.js after the "Hello." intro
-   (whose own styles stay in css/style.css).
+   The Skills section's bracelet, written by js/info.js.
 
    Colours are the site's tokens: the day's Wada accents (--accent*, the three
    --graph-*), and the grounds and inks of whichever period is showing.
    -------------------------------------------------------------------------- */
-/* --- Frame: the pieces and their labels ------------------------------------ */
+/* --- Frame ----------------------------------------------------------------- */
 .info-pieces {
   display: grid;
   gap: clamp(64px, 9vw, 104px);
   margin-top: 8px;
 }
-/* The intro moves in here when it is listed; it keeps its own margin. */
-.info-pieces > .ip--intro .info__intro { margin-top: 40px; }
-
 .ip { min-width: 0; }
-.ip__label {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  margin: 0 0 28px;
-  color: var(--ink-muted);
-  font: 500 11px/1.4 var(--font-mono);
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-}
-.ip__label::after {
-  content: '';
-  flex: 1;
-  height: 1px;
-  background: var(--line);
-}
-
 .ip a:focus-visible,
 .ip button:focus-visible {
   outline: 2px solid var(--accent);

@@ -5,11 +5,11 @@
 
    The tape runs newest first, one tick a month from Sep 2026 back to
    Jan 2025, so reading order and drawing order agree. Under it, each role's
-   span in its colour, and a V of lanyard from the span's two ends down to
-   its badge's clip. The badges sit in equal thirds with no grid gap (their
-   spacing is margin), so each clip is exactly at 3.5, 10.5 and 17.5 months
-   of the 21, where the SVG's Vs meet. Below 760px the badges stack and the
-   straps go; the coloured spans stay to scale.
+   span in its colour, and each badge hangs from its own span on one straight
+   string (the badge's ::after). The badges sit in equal thirds with no grid
+   gap (their spacing is margin), so each string drops at 3.5, 10.5 and 17.5
+   months of the 21, inside its role's span. Below 760px the badges stack
+   and the strings go; the coloured spans stay to scale.
 
    Each role wears one of the day's three --graph-* colours, which
    js/palette.js measures to 4.5:1 against the page ground, so --bg text on
@@ -39,23 +39,15 @@
 .xp__rule span + span { border-left: 2px solid var(--ink); }
 .xp__spans { display: flex; gap: 3px; height: 6px; margin-top: 3px; }
 .xp__spans span { flex-basis: 0; border-radius: 3px; background: var(--c); }
-.xp__straps { display: block; width: 100%; height: 56px; overflow: visible; }
-.xp__straps polyline {
-  fill: none;
-  stroke: var(--c);
-  stroke-width: 5;
-  stroke-linejoin: round;
-  stroke-linecap: round;
-  vector-effect: non-scaling-stroke;
-}
 
 .xp__roles {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  margin: 0;
+  margin: var(--xp-drop) 0 0;
   padding: 0;
   list-style: none;
 }
+.xp__roles { --xp-drop: 56px; }
 .xp__badge {
   position: relative;
   display: flex;
@@ -79,6 +71,18 @@
   border-radius: 4px;
   background: var(--bg-sunken);
   box-shadow: inset 0 1px 2px rgb(0 0 0 / 0.3);
+}
+/* The string: straight down from the role's span to the slot's middle. */
+.xp__badge::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  top: calc(-1 * var(--xp-drop) - 1px);
+  width: 2px;
+  height: calc(var(--xp-drop) + 17px);
+  translate: -50% 0;
+  border-radius: 1px;
+  background: var(--c);
 }
 .xp__co {
   margin: 14px -20px 16px;
@@ -114,15 +118,15 @@
 .xp__case::after { content: ' \2192'; white-space: pre; }
 .xp__case:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
 
-/* A badge swings once on its strap when pointed at. */
+/* A badge swings once on its string, from the tape, when pointed at. */
 @media (prefers-reduced-motion: no-preference) {
-  .js .xp__badge { transform-origin: 50% 0; }
+  .js .xp__badge { transform-origin: 50% calc(-1 * var(--xp-drop)); }
   .js .xp__badge:hover { animation: xp-swing 1.4s ease-in-out; }
 }
 @keyframes xp-swing { 25% { rotate: 1.5deg; } 60% { rotate: -1deg; } 85% { rotate: 0.3deg; } }
 
 @media (max-width: 759.98px) {
-  .xp__straps { display: none; }
+  .xp__badge::after { display: none; }
   .xp__roles { grid-template-columns: minmax(0, 1fr); gap: 20px; margin-top: 20px; }
   .xp__badge { margin: 0; }
 }
