@@ -223,7 +223,7 @@
      css/articles/<id>.css, fetched for this page only — the home page loads
      the summaries in js/project-data.js and nothing else. The version tag
      travels with both so a deploy is never half old, half new. */
-  var ARTICLE_V = '6';
+  var ARTICLE_V = '7';
 
   function loadArticle(id, done) {
     var css = document.createElement('link');

@@ -118,25 +118,6 @@
 .xp__case::after { content: ' \2192'; white-space: pre; }
 .xp__case:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
 
-/* The Artenos badge is a case study (Ask the CRM), not a list of duties: a
-   label over its lines and a note under them, so it never reads as the
-   employer's own system or results. */
-.xp__kicker {
-  margin: 0 0 6px;
-  color: var(--ink-muted);
-  font: 500 11px/1.3 var(--font-mono);
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-}
-.xp__note {
-  margin: 10px 0 0;
-  color: var(--ink-muted);
-  font: 400 12.5px/1.45 var(--font-serif);
-  font-style: italic;
-}
-/* Two links side by side; the row takes .xp__case's place at the badge foot. */
-.xp__links { display: flex; flex-wrap: wrap; gap: 0 18px; margin-top: auto; }
-.xp__links .xp__case { margin-top: 0; }
 
 /* A badge swings once on its string, from the tape, when pointed at. */
 @media (prefers-reduced-motion: no-preference) {

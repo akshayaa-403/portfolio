@@ -68,7 +68,7 @@
   var MIN = 0.30;
   function f3(x) { return x.toFixed(3); }
 
-  /* ---------- OCR data, from ocr/results at 61fe183 ---------- */
+  /* ---------- OCR data, from ocr/results/benchmark_summary.json at f53e67a ---------- */
   var GT = {
     pcq: ['PCQ Access', 'Access Denied', 'Error: You do not have access to PCQ',
           'Contact IT support to request access.', 'User needs PCQ application access.',
@@ -95,7 +95,7 @@
   var ENG = [
     { id: 'easyocr', label: 'EasyOCR', load: 12141.6, lat: 2184.2, acc: 97.43 },
     { id: 'paddleocr', label: 'PaddleOCR', load: 10594.4, lat: 1075.0, acc: 98.94 },
-    { id: 'textract', label: 'Textract', load: 38.2, lat: 1551.3, acc: 99.92 },
+    { id: 'textract', label: 'Textract', load: 18.8, lat: 1096.2, acc: 99.92 },
     { id: 'mistral', label: 'Mistral OCR', load: 1419.9, lat: 822.6, acc: 100 }
   ];
   function normWs(s) { return String(s).trim().replace(/\s+/g, ' '); }
@@ -229,7 +229,7 @@
               { p: 'The whole ladder sits behind `ENABLE_ESCALATION_LADDER`, which defaults to off. With it off, the worker runs its original path and none of these buttons appear.', state: { at: 1, ladder: false, kb: true, lex: false } }
             ] },
           { h: 'A knowledge base in memory' },
-          { p: 'The second rung was meant to be a Bedrock knowledge base. None was provisioned, so I wrote a local stand-in: the 330 exported intents that have an answer, 2,672 utterances in 13 categories, loaded from one JSON file and searched in memory.' },
+          { p: 'The worker can call a Bedrock knowledge base for the second rung, but none was provisioned, so the rung that runs is a local stand-in I wrote, data/intent_kb.json: the 330 exported intents that have an answer, 2,672 utterances in 13 categories, loaded from one JSON file and searched in memory.' },
           { p: 'The matcher is keyword overlap, weighted so rare words count for more. A word in one intent, like [[pcq|pcq]], weighs 6.11. A word in 150 of them, like [[access|access]], weighs 1.79. The score is the share of your question’s weight an intent covers, and a hit needs at least 0.30.' },
           { tex: '\\mathrm{idf}(t) = \\ln\\frac{N+1}{\\mathrm{df}(t)+1} + 1',
             caption: 'A word’s weight. N = 330, and a word the knowledge base has never seen weighs 1.' },
@@ -272,8 +272,8 @@
           { p: 'Try "my vpn keeps dropping" in the matcher. It goes to BluetoothIssue at 0.469: "keeps" appears in only 6 intents and "vpn" in 9, so the filler word outweighs the subject. "I tried that but it still shows an error" scores 0.777 for a vSphere intent, because "but" was never a stopword.' },
           { p: 'Both clear the threshold easily. The matcher isn’t uncertain; it is confidently wrong, and a threshold can’t catch that. Making "but" and "keeps" stopwords fixes these two, not the cause: on 330 short documents, rarity is a weak signal for meaning.' },
           { h: 'Reading screenshots' },
-          { p: 'People often paste a screenshot of the error and type nothing else. With the ladder on, the text read off the picture goes down the same rungs as typed text. Choosing the OCR engine meant a benchmark: four engines scored against hand-typed transcriptions of five synthetic cards, as one minus edit distance over length.' },
-          { figure: 'public/assets/projects/ivy-timesheet-card.webp', alt: 'A synthetic error card: TimeTrack Portal, Timesheet submission failed, Error: Timesheet period is locked for payroll processing, Employee: Test User.', caption: 'One of the five test cards, synthetic, made for the benchmark.', size: 'column' },
+          { p: 'People often paste a screenshot of the error and type nothing else. With the ladder on, the text read off the picture goes down the same rungs as typed text. Choosing the OCR engine meant a benchmark: four engines scored against my hand-typed transcriptions of the five synthetic cards already in the repo, as one minus edit distance over length.' },
+          { figure: 'public/assets/projects/ivy-timesheet-card.webp', alt: 'A synthetic error card: TimeTrack Portal, Timesheet submission failed, Error: Timesheet period is locked for payroll processing, Employee: Test User.', caption: 'One of the five synthetic test cards already in the repo’s fixtures, transcribed by hand for the benchmark.', size: 'column' },
           { widget: 'ocr', size: 'wide', caption: 'Each engine’s real output on two of the cards, diffed against the ground truth in your browser. Below, a model of a cold Lambda: model load plus N images times the mean latency, from the benchmark. Arithmetic on measured numbers, not a measured deployment.' },
           { p: 'Accuracy barely separated them: Mistral OCR read every card perfectly and Textract scored 99.9%. Start-up cost did. PaddleOCR took 10.6 seconds to load and EasyOCR 12.1, which a Lambda pays every time it scales out. With {{n|10}} screenshots per container, the fastest is {{lead|Mistral OCR}}.' },
           { p: 'I still packaged PaddleOCR as a container image, with the weights baked in at build time, since only `/tmp` is writable at runtime. Under the local emulator a cold call took 4.3 seconds. It never went further: IVY’s OCR is Textract.' }
@@ -302,11 +302,11 @@
       ['Ladder', 'lambda_o3_slack_worker.py: ENABLE_ESCALATION_LADDER (default off), 1,500-char button state, 50 turns, 6,000-char transcript.'],
       ['Knowledge base', 'data/intent_kb.json (330 intents, 2,672 utterances); matcher re-run October 2026, LOCAL_KB_MIN_SCORE = 0.30.'],
       ['Dedupe', 'load_lex_intents_from_excel.py over data/intent_kb.json: 57 removals; 4 / 12 / 13 intents emptied.'],
-      ['OCR', 'ocr/results at 61fe183, 2026-07-17: accuracy, latency and model-load times; cold container from ocr/DEPLOY.md.'],
+      ['OCR', 'ocr/results/benchmark_summary.json at f53e67a, 2026-07-17: accuracy, latency and model-load times; cold container from ocr/DEPLOY.md.'],
       ['Learning loop', 'agents/synthesize.py (Jaccard 0.3, 40 utterances); tests 2026-10-16, 38 passed, 1 failed.'],
       ['Lex intents', 'data/lex_full_export_preview.json: 333 intents, 65 Lambda-backed.'],
-      ['Fallback prompt', 'lambda_o3_claude_fallback.py at 61fe183 (500 tokens) and bbdf83a (800 tokens, Converse API).'],
-      ['Dispatcher', 'live_agent_capacity.py, MAX_ACTIVE_CHATS_PER_AGENT = 5.']
+      ['Fallback prompt', 'lambda_o3_claude_fallback.py at 61fe183 (500 tokens) and 5a4e40e (800 tokens, Converse API).'],
+      ['Dispatcher', 'chat_locks.py: conditional write, MAX_ACTIVE_CHATS_PER_AGENT = 5.']
     ],
 
     widgets: {
@@ -574,7 +574,8 @@
           });
           var px = ENG[1], tx = ENG[2];
           lead.textContent = 'Light segment = model load, dark = N × mean latency. PaddleOCR only beats Textract from N = ' +
-            (Math.floor((px.load - tx.load) / (tx.lat - px.lat)) + 1) + '; Mistral OCR beats Textract from N = 2 and never loses after that.';
+            (Math.floor((px.load - tx.load) / (tx.lat - px.lat)) + 1) + '; Mistral OCR beats Textract from N = ' +
+            (Math.floor((ENG[3].load - tx.load) / (tx.lat - ENG[3].lat)) + 1) + ' and never loses after that.';
           kit.live('n', String(n));
           kit.live('lead', best.e.label);
         }

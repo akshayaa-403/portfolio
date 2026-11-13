@@ -28,7 +28,9 @@ const OG_FALLBACK = BASE + 'public/assets/og-card.png';
 
 /* Assets are referenced one level up, since these live in work/ and hobbies/. */
 function page(o) {
-  const target = esc(o.target);
+  // A project with no case study (article: false) sends readers to its repo.
+  const href = /^https?:/.test(o.target) ? o.target : '../' + o.target;
+  const target = esc(href);
   return [
     '<!DOCTYPE html>',
     '<html lang="en">',
@@ -62,8 +64,8 @@ function page(o) {
     '<!-- A visitor with JS goes straight to the real renderer; a crawler stays',
     '     here and reads the metadata above. replace() keeps this page out of',
     '     the back-button history, so Back returns where they came from. -->',
-    '<script>location.replace(' + JSON.stringify('../' + o.target) + ');</script>',
-    '<meta http-equiv="refresh" content="0; url=../' + target + '">',
+    '<script>location.replace(' + JSON.stringify(href) + ');</script>',
+    '<meta http-equiv="refresh" content="0; url=' + target + '">',
     '<style>',
     '  body { margin:0; padding:48px 24px; background:#f4f7fa; color:#00317a;',
     '         font:16px/1.6 ui-monospace, "IBM Plex Mono", Menlo, monospace; }',
@@ -78,7 +80,7 @@ function page(o) {
     '<main>',
     '  <h1>' + esc(o.heading) + '</h1>',
     '  <p>' + esc(o.body) + '</p>',
-    '  <p><a href="../' + target + '">Continue to the full page</a> &middot;',
+    '  <p><a href="' + target + '">' + (o.linkText || 'Continue to the full page') + '</a> &middot;',
     '     <a href="../index.html">Home</a></p>',
     '</main>',
     '</body>',
@@ -111,12 +113,14 @@ function writeAll() {
       title: p.title + ' — Akshayaa Kashyap',
       description: p.summary || p.tagline,
       canonical: BASE + 'work/' + p.id + '.html',
-      target: 'project.html?id=' + encodeURIComponent(p.id),
+      target: p.article === false ? p.repo : 'project.html?id=' + encodeURIComponent(p.id),
+      linkText: p.article === false ? 'Continue to the code on GitHub' : null,
       image: image,
       heading: p.title,
       body: p.tagline || ''
     }));
-    written.push(path.relative(ROOT, file));
+    // No case study, so no page of its own worth indexing: kept for old links, left out of the sitemap.
+    if (p.article !== false) written.push(path.relative(ROOT, file));
   }
 
   const groups = loadHobbies();

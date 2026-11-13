@@ -6,14 +6,17 @@
      public/assets/projects/quant-deepdive.webp (OLD code's deep-dive tab) by
      tools/quant-trace-acn.py, run once 2026-10-17; first day 2025-08-06,
      one value per calendar day. Read off a chart: about ±$1.
-   - DARTS / WEEKS: trimmed from a re-run, on 2026-10-16, of the repo's HEAD
-     (2e92f12) BacktestEngine with defaults over 2025-10-11 → 2026-10-11,
-     universe = today's 50 largest (survivorship). DARTS = the 2000 random
-     portfolios' compounded log returns ×1e4; the picks' is 5226.
-     WEEKS = [rebalance date, picks, picks' period return ×1e4, median dart
-     ×1e4, share of darts ≥ picks ×1e4].
-   - ROWS: the ten rows of quantamental-screener/docs/screenshot-light.png
-     (current code). */
+   - DARTS / WEEKS: the OCTOBER run. Trimmed from a re-run, on 2026-10-16, of
+     the repo's then HEAD (2e92f12) BacktestEngine with defaults over
+     2025-10-11 → 2026-10-11, universe = today's 50 largest (survivorship).
+     DARTS = the 2000 random portfolios' compounded log returns ×1e4; the
+     picks' is 5226. WEEKS = [rebalance date, picks, picks' period return
+     ×1e4, median dart ×1e4, share of darts ≥ picks ×1e4].
+   - Results prose: the NOVEMBER run, `USE_MOCK_SENTIMENT=true python app.py`
+     at 6929fef on 2026-11-14, defaults, 2025-11-14 → 2026-11-13 (the
+     backtest is price-only, so mock sentiment does not touch it).
+   - ROWS: the ten rows of quantamental-screener/docs/screenshot-light.png as
+     of 2e92f12 (replaced in 60923d9 by an Overview screenshot). */
 (function () {
   'use strict';
 
@@ -103,10 +106,7 @@
     form: 'forensic',
     scramble: '0123456789.+−%σΣ$',
     rail: 'ledger',
-    dek: 'My stock screener’s picks returned +70.1% over a year against SPY’s +18.7%, after I rewrote it to stop it seeing the future. Then 2,000 random portfolios drawn from the same stocks showed most of that gain was the universe, not the picks: p = 0.067.',
-    demo: { src: 'public/assets/demos/quantamental-screener.mp4', poster: 'public/assets/demos/quantamental-screener.webp',
-      alt: 'The Streamlit screener runs on 50 stocks and ranks them by composite score, with MU on top; the momentum weight is raised from 0.40 to 0.80, the normalised weights update and the top composite score rises from 0.627 to 0.812.',
-      caption: 'Recorded from the live demo.' },
+    dek: 'My stock screener’s picks returned +49.4% over a year against SPY’s +13.2%, after I rewrote it to stop it seeing the future. Most of that gain is the universe: an equal-weight basket of the same 50 stocks made +32.9%, random portfolios match the picks about one time in fourteen (p = 0.073), and over the last 16 weeks the picks lost 8.1%.',
 
     chapters: [
       { id: 'problem', title: 'The problem',
@@ -134,20 +134,22 @@
           { p: 'The screener takes the 50 largest US stocks, scores each on the four signals, and combines them like this:' },
           { tex: 'c_i = 0.4\\,z^{m}_i + 0.3\\,z^{s}_i + 0.2\\,z^{v}_i + 0.1\\,z^{\\sigma}_i', caption: 'c is the composite; m, s, v, σ are momentum, sentiment, volume and volatility. The dashboard’s sliders renormalise any weights to sum to 1.' },
           { p: 'Each z-score is computed within one day across the fifty names and clipped to ±3. A Streamlit dashboard shows the ranking, a deep dive per stock, and a backtest that rebalances into the top ten every week.' },
-          { p: 'Tracing ACN’s 0.983 back through the code, I found four faults. On 12 October 2026 I rewrote the parts that were wrong, in one commit: 40 files, 716 lines added and 1,185 removed.' },
+          { p: 'Tracing ACN’s 0.983 back through the code, I found four faults. On 12 October 2026 I rewrote the parts that were wrong, in one commit: 40 files, 716 lines added and 1,185 removed. On 8 and 13 November I changed more: the trading, the liquidity screen, two factor windows, the sentiment, and two new checks on the result.' },
           { table: { head: ['', 'Before', 'Now'], rows: [
-            ['Universe', 'first 50 rows of a list sorted by company name', 'the 50 largest by market cap above $5B and 1M shares a day'],
+            ['Universe', 'first 50 rows of a list sorted by company name', 'the 50 largest by market cap above $5B and $20M a day in dollar volume'],
             ['Momentum', '21-day return, missing = 0', '12-minus-1, missing = empty'],
-            ['Volume', 'volume over its 20-day mean', 'the same, signed by the day’s return'],
-            ['Sentiment in backtest', 'today’s, on every past day', 'weight 0'],
+            ['Volume', 'volume over its 20-day mean', 'the same, signed by the day’s return, averaged over 10 days'],
+            ['Volatility', '20-day', '60-day'],
+            ['Sentiment in backtest', 'today’s, on every past day', 'left out: price factors only'],
             ['Timing', 'same-day signal', 'yesterday’s signal'],
-            ['Trading', 'sell everything weekly, no costs', 'trade only names that change, 10 bps'],
+            ['Trading', 'sell everything weekly, no costs', 'reset to equal weight, 10 bps'],
             ['Significance', 'none', '2,000 random portfolios, p-value'],
-            ['Tests', '25', '39, all passing on 2026-10-16']
-          ] }, caption: 'The repo before (fc58d85) and now (2e92f12).' },
-          { code: "scores_df = scoring_engine.compute(price_data, None, weights={'sentiment': 0.0})\n...\n# Trade on yesterday's signal.\nsignal = scores_df['composite'].groupby(level='Ticker').shift(1).unstack('Ticker')", lang: 'python',
-            caption: 'pipeline/backtest_engine.py. Two lines carry two fixes: no sentiment in the past, and no trading on a score before it exists.' },
-          { p: 'Each test pins one guarantee: the lag, a shocked future, sentiment ignored, only changed names traded. They run on Python 3.10 and 3.11 on every push. The hosted app lives on Streamlit Community Cloud, and a GitHub Actions job opens it every ten hours so it does not fall asleep.' }
+            ['Benchmarks', 'SPY', 'SPY, an equal-weight basket of all 50, a 30% holdout'],
+            ['Tests', '25', '76, all passing on 2026-11-14']
+          ] }, caption: 'The repo before (fc58d85) and now (6929fef).' },
+          { code: "scores_df = scoring_engine.compute(price_data, None)\n...\n# Trade on yesterday's signal.\nsignal = scores_df['composite_pit'].groupby(level='Ticker').shift(1).unstack('Ticker')", lang: 'python',
+            caption: 'pipeline/backtest_engine.py. Two names carry two fixes: `composite_pit` blends only the price factors, so no sentiment reaches the past, and `shift(1)` stops it trading on a score before it exists.' },
+          { p: 'Each test pins one guarantee: the lag, a shocked future, sentiment ignored, the reset to equal weight. 76 run on Python 3.10 and 3.11 on every push. The hosted app lives on Streamlit Community Cloud, and a GitHub Actions job opens it every six hours so it does not fall asleep.' }
         ] },
 
       { id: 'hard', title: 'The hard part',
@@ -163,11 +165,11 @@
         blocks: [
           { p: 'None of the four faults crashed anything. Each one produced a plausible number. That is what made them hard to find.' },
           { h: 'The sentiment read a dictionary, not the news' },
-          { p: 'Sentiment comes from two off-the-shelf scorers, VADER and TextBlob. VADER looks each word up in a dictionary of about 7,500 entries, adds up the ones it knows, flips a word after “not”, and squashes the total into −1 to +1 with `x / √(x² + 15)`. TextBlob averages its own word scores. My code blends them 0.6 / 0.4.' },
+          { p: 'Sentiment comes from two off-the-shelf scorers, VADER and TextBlob. VADER looks each word up in a dictionary of about 7,500 entries, adds up the ones it knows, flips a word after “not”, and squashes the total into −1 to +1 with `x / √(x² + 15)`. TextBlob averages its own word scores. My code then blended them 0.6 / 0.4. Now it blends them 0.7 / 0.3, shrunk toward neutral when there are few headlines.' },
           { widget: 'strips', size: 'wide',
-            caption: 'ACN’s five real headlines, scored with VADER 3.3.2 and TextBlob 0.20. Underlined words are in VADER’s lexicon, with their valence; struck words are not. Select a headline to place it on VADER’s curve. The slider is hypothetical.' },
+            caption: 'ACN’s five real headlines, scored as the October code did: VADER 3.3.2 and TextBlob 0.20, blended 0.6 / 0.4. Underlined words are in VADER’s lexicon, with their valence; struck words are not. Select a headline to place it on VADER’s curve. The slider is hypothetical.' },
           { p: 'In “Faces Growth Concerns”, VADER knows [[growth|growth]] (+1.6) and has never heard of [[concerns|missing]]. In “Priced Like A Decline” it counts [[like|like]] as a feeling, +1.5. TextBlob scores three of the five at exactly 0.' },
-          { p: 'Blended, that is +0.0807 with 72% confidence, which matches the dashboard. So it is not a bug. It is what the method does, and the z-score stretched it to 0.883. The rewrite kept these scorers; a finance-trained model like FinBERT stays optional because of the hosting memory limit.' },
+          { p: 'Blended, that is +0.0807 with 72% confidence, which matches the dashboard. So it is not a bug. It is what the method does, and the z-score stretched it to 0.883. The rewrite kept these scorers. In November I gave VADER a finance word list of 94 entries, so “decline” now counts −1.2. It still lacks “concerns” and “cheaper”, and still reads “like” as +1.5. Today’s code scores the same five headlines +0.042: smaller, still positive. A finance-trained model like FinBERT stays optional because of the hosting memory limit.' },
           { h: 'A month is not a trend' },
           { p: 'The old momentum was the return over the last 21 trading days, about a month. ACN’s last month was [[the bounce|old]] off the June low. The year behind it was [[the fall|new]].' },
           { widget: 'brackets', size: 'wide',
@@ -178,10 +180,10 @@
           { p: 'My old overview said a stock “only rises to the top when the technicals and the narrative agree”. The arithmetic never did that. A weighted sum lets one strong signal pay for weak ones.' },
           { figure: 'public/assets/projects/quant-current.webp', size: 'wide',
             alt: 'Current dashboard, light theme: window 2025-10-11 to 2026-10-11, default weights, average composite 0.406, top pick DELL at 0.920; the ten rows run DELL, MU, MRVL, BRK-B, MRK, WMT, WFC, CAT, JNJ, UNH.',
-            caption: 'The current code, from the repo’s own screenshot.' },
-          { p: '[[DELL|dell]] is first with sentiment 0.000. [[BRK-B|brkb]] is fourth with negative momentum, carried by sentiment. And [[six of the ten|zero]] show sentiment 0.000, because the app fetches news only for the 20 largest names. Everyone else gets the average.' },
+            caption: 'The code as of 2e92f12, in October, from the repo’s screenshot at the time.' },
+          { p: '[[DELL|dell]] is first with sentiment 0.000. [[BRK-B|brkb]] is fourth with negative momentum, carried by sentiment. And [[six of the ten|zero]] show sentiment 0.000, because the app then fetched news only for the 20 largest names. Everyone else got the average. Now it fetches news for all 50, and a name with no headlines shows a blank.' },
           { widget: 'sum', size: 'wide',
-            caption: 'The ten real rows. Each bar stacks the four contributions, weight × z, either side of zero; the tick is the score. “Must agree” is a hypothetical rule the code does not use.' },
+            caption: 'The ten real rows, as of 2e92f12. Each bar stacks the four contributions, weight × z, either side of zero; the tick is the score. “Must agree” is a hypothetical rule the code does not use.' },
           { p: 'Move the weights, then switch to “must agree”, which scores each stock by its weakest signal. {{agreetop|MRK}} leads and DELL drops to eighth. A weighted sum is a normal choice; the claim was the problem, and the claim is gone.' },
           { h: 'The backtest ran on the wrong clock' },
           { p: 'The old backtest said 19.70% against the benchmark’s 21.99%. I published it as an honest loss. It was not honest, because it used information it could not have had.' },
@@ -192,7 +194,7 @@
               { p: 'Scores need history first: 20 days for volume and volatility, 252 for momentum. The old code filled missing momentum with 0, which ranks a stock with no history as average.', state: { s: 1 } },
               { p: 'The old backtest traded at the same close the score came from. Now picks made with Monday’s close trade at Tuesday’s.', state: { s: 2 } },
               { p: 'Worse, there is no history of headlines. The old backtest painted the sentiment fetched on the day I ran it onto every past day.', state: { s: 3 } },
-              { p: 'Now the backtest gives sentiment a weight of 0. It reaches only the live ranking.', state: { s: 4 } },
+              { p: 'Now the backtest ranks on the price factors only. Sentiment reaches only the live ranking.', state: { s: 4 } },
               { p: 'Two tests hold the line: multiply every future price by 3, and past scores and the past equity curve must not change.', state: { s: 5 } }
             ] }
         ] },
@@ -205,14 +207,16 @@
             '<line x1="96" y1="44" x2="140" y2="10" stroke="' + c.i + '" stroke-width="2"/>';
         },
         blocks: [
-          { p: 'I re-ran the current code over 11 October 2025 to 11 October 2026. It returned +70.1%. SPY returned +18.7%. That looks like a result.' },
-          { p: 'It also fell 22.7% from its peak in July, where SPY’s worst fall was 8.9%, and it was three times as volatile. Costs of 10 bps a trade came to $49,494 on $1M.' },
-          { p: 'So the rewrite added a test of luck. At each of the 50 weekly rebalances, the engine draws 2,000 random portfolios of ten names from the same 50 stocks and holds them for the same week. Compounded over the year, each one is a dart.' },
+          { p: 'On 14 November 2026 I re-ran the current code (6929fef) with its defaults, over 14 November 2025 to 13 November 2026: 51 weekly rebalances into the top ten, reset to equal weight, 10 bps a trade, no sentiment. It returned +49.4%. SPY returned +13.2%. That looks like a result.' },
+          { p: 'It also fell 29.4% from its peak, and its volatility was 34.8% a year. It beat SPY on 54.8% of trading days. Costs came to $50,978 on $1M.' },
+          { p: 'So the code checks for luck two ways. The first is an equal-weight basket of all 50 stocks, rebalanced on the same dates. It made +32.9%. Against that, the picks are ahead by 16.6 points, not 36.' },
+          { p: 'The second is a dartboard. At each weekly rebalance, the engine draws 2,000 random portfolios of ten names from the same 50 stocks and holds them for the same week. Compounded over the year, each one is a dart. The board below is from the October run (2e92f12, 11 October 2025 to 11 October 2026), when the picks made +70.1% and SPY +18.7%.' },
           { widget: 'dartboard', size: 'full',
-            caption: 'Each dart is one of the engine’s 2,000 random portfolios, compounded, gross of costs. The universe is today’s 50 largest stocks, so survivorship is built in. 134 darts did at least as well as the picks: p = 135 / 2,001 = 0.067.' },
+            caption: 'The October run. Each dart is one of the engine’s 2,000 random portfolios, compounded, gross of costs. The universe is today’s 50 largest stocks, so survivorship is built in. 134 darts did at least as well as the picks: p = 135 / 2,001 = 0.067. The November run gives p = 0.073.' },
           { p: 'Throw them. [[SPY|spy]] sits far to the left. [[The median dart|median]] made +43.8%. [[The picks|picks]] made +68.6% on the same gross terms. The counter reads {{darts|0 of 0}}; with all 2,000 thrown it settles at 134, and p = 0.067.' },
-          { p: 'Most of the +70% is the universe. Every dart came from today’s 50 largest companies, and a company is among today’s largest mostly because its stock went up. Picking at random from that list already beat SPY by about 25 points.' },
-          { p: 'The picks against the darts is what is left. Luck matches it about one time in fifteen, which is not significant at 5%. Select a week under the board to see what was held: in 19 weeks the screener held GOOG and GOOGL at once, which are one company.' },
+          { p: 'Most of the gain is the universe. Every dart came from today’s 50 largest companies, and a company is among today’s largest mostly because its stock went up. In October, picking at random from that list beat SPY by about 25 points. In November, the equal-weight basket beat it by 19.6.' },
+          { p: 'The picks against the darts is what is left. In November, luck matches it about one time in fourteen: p = 0.073, not significant at 5%. Select a week under the board to see what October’s picks held: in 19 of 50 weeks the screener held GOOG and GOOGL at once, which are one company.' },
+          { p: 'The code now also reports the last 30% of the window on its own, as a holdout. From 30 July to 13 November, 16 rebalances, the picks lost 8.1%. The basket gained 4.4% and SPY 1.7%. p = 0.978: almost every random portfolio did at least as well.' },
           { quote: 'The most useful thing this screener does is tell me its own result might be luck.' }
         ] }
     ],
@@ -222,20 +226,18 @@
         '**Point-in-time constituents.** Build the universe from the index as it stood on each rebalance date. Today’s 50 largest is a list of winners.',
         '**Stored sentiment history.** Save each week’s headline scores so a backtest can replay them. Until then, sentiment’s 0.3 weight is a guess.',
         '**One company, one seat.** GOOG and GOOGL should count as one holding.',
-        '**A constrained news query.** NewsAPI is asked for the bare ticker with no date filter, so the README’s “last 7 days” is never enforced.',
-        '**More than one window.** One year is one sample. I would test several and fit the weights on a rolling window.',
-        '**Fix the CLI.** `python app.py` crashes after its backtest on a keyword the scoring engine no longer accepts, and no test covers it.'
+        '**More than one window.** One year is one sample, and the last 16 weeks of it already went against the picks. I would test several windows and fit the weights on a rolling one.'
       ] }
     ] },
 
     sources: [
-      ['Re-run', '2026-10-16, HEAD 2e92f12, defaults, 2025-10-11 → 2026-10-11: +70.08% vs SPY +18.69%, max drawdown −22.67%, costs $49,494.'],
-      ['Dartboard', 'backtest_engine.py, 2,000 random portfolios, seed 0: 134 ≥ picks, p = 0.0675; median dart +43.8%.'],
+      ['Re-run', '2026-11-14, HEAD 6929fef, defaults, 2025-11-14 → 2026-11-13, 51 rebalances: +49.39% vs SPY +13.23% and equal-weight universe +32.85%; p = 0.0730; max drawdown −29.43%; costs $50,978. Holdout from 2026-07-30, 16 rebalances: −8.13% vs universe +4.35%, SPY +1.74%, p = 0.978.'],
+      ['Dartboard (October)', '2026-10-16, HEAD 2e92f12, 2025-10-11 → 2026-10-11: +70.08% vs SPY +18.69%; 2,000 random portfolios, seed 0: 134 ≥ picks, p = 0.0675; median dart +43.8%.'],
+      ['Rewrite', 'Commit 512dfaf, 2026-10-12: 40 files, +716/−1,185; then 60923d9 (8 Nov) and 6929fef (13 Nov); 76 tests passing on 2026-11-14.'],
+      ['Model constants', 'config/settings.py: universe 50, $5B, $20M daily dollar volume; weights 0.4/0.3/0.2/0.1; 10 bps; 2,000 draws; 30% holdout; WARMUP_DAYS 400.'],
+      ['VADER and TextBlob', 'vaderSentiment 3.3.2 and TextBlob 0.20, re-run on the five headlines: October blend +0.0807, confidence 0.7242; 6929fef blend +0.0415 (raw +0.0664 × 5/8).'],
       ['Old screenshots', 'quant-dashboard.webp and quant-deepdive.webp, code before 512dfaf; ACN prices traced by tools/quant-trace-acn.py.'],
-      ['VADER and TextBlob', 'vaderSentiment 3.3.2 and TextBlob 0.20, re-run on the five headlines: ensemble +0.0807, confidence 0.7242.'],
-      ['Rewrite', 'Commit 512dfaf, 2026-10-12: 40 files, +716/−1,185; 39 tests passing on 2026-10-16.'],
-      ['Model constants', 'config/settings.py: universe 50, $5B, 1M shares; weights 0.4/0.3/0.2/0.1; 10 bps; 2,000 draws; WARMUP_DAYS 400.'],
-      ['Current table', 'quantamental-screener/docs/screenshot-light.png: DELL 0.920 … UNH 0.176, average 0.406.'],
+      ['October table', 'quantamental-screener/docs/screenshot-light.png as of 2e92f12: DELL 0.920 … UNH 0.176, average 0.406.'],
       ['Old backtest', 'quant-backtest.webp: 19.70% vs 21.99%, produced by code before 512dfaf.']
     ],
 
@@ -246,11 +248,11 @@
         var ROWS_L = [
           ['problem', 'Top pick', 'ACN is the top pick, 0.983', 'the old code’s weighted sum', 'On trial', '—'],
           ['built', 'Universe', 'Universe: the S&P 500', 'first 50 names by company name', 'Misleading', 'Yes: 50 largest by cap'],
-          ['hard', 'Sentiment', 'Sentiment +0.883: the news is good', 'VADER + TextBlob lexicons; “like” +1.5 twice', 'Faithful to the method, wrong about the news', 'No: same scorers'],
+          ['hard', 'Sentiment', 'Sentiment +0.883: the news is good', 'VADER + TextBlob lexicons; “like” +1.5 twice', 'Faithful to the method, wrong about the news', 'No: same scorers (finance word list added 8 Nov)'],
           ['hard', 'Momentum', 'Momentum 2.440: a strong trend', '21-day return on a one-month bounce', 'False: down ~40% from its high', 'Yes: 12−1 momentum'],
           ['hard', 'Composite', 'Names rise only when signals agree', 'a weighted sum, not an agreement', 'False', 'Claim removed; sum kept'],
           ['hard', 'Backtest', 'Backtest 19.70% vs 21.99%', 'today’s sentiment on past days, same-day trades, no costs', 'Contaminated', 'Yes: lag, 10 bps, no sentiment'],
-          ['results', 'Dartboard', 'Beat SPY by 51 points (re-run)', 'today’s largest companies: survivorship', 'Not significant: p = 0.067', 'No']
+          ['results', 'Dartboard', 'Beat SPY by 36 points (re-run)', 'today’s largest companies: survivorship', 'Not significant: p = 0.073; lost in the holdout', 'No']
         ];
         var wide = window.matchMedia('(min-width: 1360px)');
         var det = kit.el('details', { class: 'qs-ledger' });
@@ -317,7 +319,7 @@
         var slider = kit.slider({ label: 'Your valence: missing words', min: -3, max: 0, step: 0.1, value: 0,
           format: function (x) { return x === 0 ? 'absent' : sgn(x, 1); }, onInput: function (x) { extra = x; draw(); } });
         var rv = kit.readout('VADER mean', ''), rt = kit.readout('TextBlob mean', ''),
-            re = kit.readout('Ensemble 0.6 / 0.4', '', 'k-readout--accent'), rc = kit.readout('Confidence', '');
+            re = kit.readout('October blend 0.6 / 0.4', '', 'k-readout--accent'), rc = kit.readout('Confidence', '');
         host.appendChild(list);
         host.appendChild(kit.el('div', { class: 'qs-strips__foot' }, curve,
           kit.el('div', { class: 'qs-strips__meter' }, kit.el('div', { class: 'k-row' }, rv.el, rt.el, re.el, rc.el), slider.el)));
@@ -446,7 +448,7 @@
           var track = kit.el('span', { class: 'qs-sum__track' }, segs, kit.el('span', { class: 'qs-sum__zero' }), kit.el('span', { class: 'qs-sum__tick' }));
           var sc = kit.el('span', { class: 'qs-sum__score' });
           var li = kit.el('li', { class: 'qs-sum__row', 'data-k': r[0] === 'BRK-B' ? 'brkb' : r[0].toLowerCase() },
-            kit.el('span', { class: 'qs-sum__tk' }, r[0], r[2] === 0 ? kit.el('span', { class: 'qs-badge', title: 'sentiment 0.000: not among the 20 names whose news was fetched', text: '○' }) : null,
+            kit.el('span', { class: 'qs-sum__tk' }, r[0], r[2] === 0 ? kit.el('span', { class: 'qs-badge', title: 'sentiment 0.000: not among the 20 names whose news was fetched in October', text: '○' }) : null,
               r[1] >= 3 ? kit.el('span', { class: 'qs-badge', text: 'clip' }) : null),
             track, sc);
           li._r = r; li._segs = segs; li._tick = track.lastChild; li._sc = sc;

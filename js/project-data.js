@@ -230,6 +230,8 @@ const projects = [
       "DistilGPT2"
     ],
     "repo": "https://github.com/akshayaa-403/outbound-pipeline",
+    "created": "2026-11-03",
+    "updated": "2026-11-03",
     "tags": [
       ["Places API Text Search", "https://developers.google.com/maps/documentation/places/web-service/text-search"],
       ["Bland AI", "https://docs.bland.ai"],
@@ -243,24 +245,24 @@ const projects = [
     "glance": {
       "problem": "A web-design studio wanted to sell booking websites to vacation-rental agencies, and needed someone to find the agencies and get an interested owner on the phone with a salesperson.",
       "built": "A Python pipeline: Google Places search for any query, a website scrape (BeautifulSoup, with Selenium for JavaScript-only sites) for the contacts listings leave out, Bland AI and Retell AI agents that hang up on voicemail and phone menus and transfer interested owners to sales, and a report of answer and transfer rate per prompt.",
-      "result": "600+ qualified leads. Calls reached a 65% answer rate, and re-tuning the agent’s tone lifted successful transfers by 12%. Written as Colab notebooks in 2025, rebuilt as a tested package in 2026."
+      "result": "600+ leads from the 2025 campaign. The campaign reported a 65% answer rate, and a 12% lift in successful transfers after the agent’s tone was re-tuned; the lead lists and call records aren’t in the repo. Written as Colab notebooks in 2025, rebuilt as a tested package in 2026."
     },
     "nest": [
       ["The campaign", "Outbound calls for a web-design studio selling to vacation-rental agencies around Miami."],
       ["The pipeline", "A Places search, a website scrape, an AI voice agent and a transfer to a salesperson."],
-      ["The lead list", "600+ qualified leads, one row per business, deduplicated by Places ID."],
+      ["The lead list", "600+ leads in 2025; the rebuild keeps one row per business, deduplicated by Places ID."],
       ["The call", "A Bland AI or Retell AI agent that hangs up on machines and transfers anyone interested."],
       ["One phone number", "Found on the listing or the business’s own site, normalised to E.164 before anyone dials it."]
     ],
-    "metric": "Filled a sales team's call list (600+ qualified leads)"
+    "metric": "Filled a sales team's call list (600+ leads)"
   },
   {
     "id": "ivy-slack-agent",
     "title": "Project IVY",
     "tagline": "A Slack support agent that reads screenshots and files its own tickets.",
-    "summary": "An AI IT-support agent living in Slack DMs: AWS Lex V2 for intent, a Bedrock knowledge base and then Claude for what Lex cannot answer, OCR over pasted screenshots, and a capacity-aware dispatcher that assigns the Jira ticket to whichever human is actually on shift and has room.",
+    "summary": "An AI IT-support agent living in Slack DMs: AWS Lex V2 for intent, then a local knowledge base and an LLM (Claude on Bedrock by default) for what Lex cannot answer, Textract OCR over pasted screenshots, and a capacity-aware dispatcher that assigns the Jira ticket to whichever human is actually on shift and has room.",
     "context": "InnovyQ",
-    "role": "AI Engineer, InnovyQ",
+    "role": "DevOps Engineer, InnovyQ Solutions",
     "year": "2026",
     "archived": true,
     "tech": [
@@ -271,14 +273,13 @@ const projects = [
       "Lex V2",
       "Bedrock (Claude)",
       "Gemini",
-      "Rekognition",
       "Textract",
       "PaddleOCR",
       "Docker",
       "EventBridge Scheduler",
       "Jira API"
     ],
-    "repo": "https://github.com/akshayaa-403/o3_slack_bot",
+    "repo": "https://github.com/akshayaa-403/o3_slack_bot/tree/update",
     "created": "2026-07-16",
     "updated": "2026-08-10",
     "tags": [
@@ -296,16 +297,50 @@ const projects = [
     "glance": {
       "problem": "An internal IT helpdesk where many tickets arrive as a Slack message and a screenshot, and a human has to read both before anything happens.",
       "built": "The escalation ladder of a Slack support agent on AWS: Lex V2 first, then a local knowledge base, then an LLM, then a person, each a button the user presses. Also the OCR benchmark for pasted screenshots, and a loop that turns resolved Jira tickets into new Lex intents.",
-      "result": "Four OCR engines benchmarked against hand-written ground truth. Mistral OCR was the most accurate (100%, 823 ms), but PaddleOCR (98.9%, 1,075 ms) was the engine packaged for Lambda."
+      "result": "Four OCR engines benchmarked on five synthetic screenshots against hand-typed ground truth: Mistral OCR 100%, Textract 99.9%, PaddleOCR 98.9%, EasyOCR 97.4% character accuracy. PaddleOCR was packaged for Lambda; IVY reads screenshots with Textract."
     },
     "nest": [
       ["The Slack DM", "Where an IT ticket arrives, often as a message and a screenshot."],
       ["The pipeline", "API Gateway to Lambda to SQS to Lex V2, with session state per issue in DynamoDB."],
-      ["The fallback", "A Bedrock knowledge base, then Claude, for whatever Lex cannot answer."],
-      ["The screenshot", "Read by OCR. Four engines were benchmarked; PaddleOCR was the one packaged for Lambda."],
+      ["The fallback", "A local knowledge base, then an LLM (Claude on Bedrock by default), for whatever Lex cannot answer."],
+      ["The screenshot", "Read by OCR. Four engines were benchmarked; IVY uses Textract."],
       ["One ticket", "One Jira ticket, assigned to whichever human is on shift and has room."]
     ],
     "metric": "Screenshot readers tested head to head (4 OCR engines)"
+  },
+  {
+    "id": "ask-the-crm",
+    "title": "Ask the CRM",
+    "tagline": "Plain-English sales questions, answered from a CRM by checked, read-only SQL.",
+    "summary": "A public rebuild, on invented data, of the methods behind my Artenos work: a sales team's questions become SQL over a synthetic CRM, five prompt versions are scored on a fixed question set, a Monday summary has every number checked against the data, and the whole thing runs live with telemetry.",
+    "context": "Public rebuild of Artenos work",
+    "role": "Solo project",
+    "year": "2026",
+    "group": "products",
+    "archived": true,
+    "tech": ["Python", "SQLite", "Gemini API", "FastAPI", "Next.js", "TypeScript", "Docker", "Render", "GitHub Actions"],
+    "repo": "https://github.com/akshayaa-403/artenos",
+    "demo": "https://ask-the-crm.onrender.com",
+    "created": "2026-11-13",
+    "updated": "2026-11-13",
+    "tags": [
+      ["Text-to-SQL", "https://en.wikipedia.org/wiki/Natural-language_user_interface"],
+      ["McNemar's test", "https://en.wikipedia.org/wiki/McNemar%27s_test"],
+      ["Prompt injection", "https://en.wikipedia.org/wiki/Prompt_injection"]
+    ],
+    "glance": {
+      "problem": "Sales questions come in plain English and the answers sit in SQL. A model that writes the SQL can be confidently wrong, and a model that writes the summary can invent numbers.",
+      "built": "A seeded synthetic CRM; 155 questions with a test split frozen before the first prompt; five prompt versions, each adding one thing; a read-only SQL guard; a Monday summary whose numbers are checked against the data; and a live app on Render that traces every request.",
+      "result": "The number checker raised no false alarms on 36 clean summaries and caught all 84 planted wrong numbers; the 34 real numbers moved under the wrong label got through, which is its known blind spot."
+    },
+    "nest": [
+      ["The app", "Next.js over FastAPI in one Docker container, live on Render."],
+      ["The answer", "The query, the rows it returned and one plain sentence, or \"the data can't answer that\"."],
+      ["The query", "One read-only SELECT, at most 200 rows, stopped after 2 seconds."],
+      ["The prompt", "Five versions, each scored on the same 155 questions."],
+      ["One number", "Every number in the summary, looked up in the week's figures before it is shown."]
+    ],
+    "metric": "Caught all 84 planted wrong numbers, no false alarms"
   },
   {
     "id": "anttodo",
@@ -374,7 +409,7 @@ const projects = [
     "glance": {
       "problem": "Summarisation demos show one algorithm's output and leave you to guess whether it is any good.",
       "built": "A static, dependency-free browser app that runs four extractive summarisers over any Wikipedia article at once and scores each with ROUGE against the article's own lead section. The lead cut to the same 150-word budget sets a human ceiling.",
-      "result": "MMR reaches ROUGE-1 0.400 on Penguin against a human ceiling of 0.709 — 56% of it. The winner changes with the article, which is the finding. TextRank, the slowest of the four, takes about 60 ms on a 4,300-word article, entirely in the tab."
+      "result": "MMR reaches ROUGE-1 0.400 on Penguin against a human ceiling of 0.709 — 56% of it. The winner changes with the article, which is the finding. The whole run (four summaries, ROUGE and six charts) takes about 60 ms on a 4,300-word article, entirely in the tab."
     },
     "nest": [
       ["The app", "Static and dependency-free: everything runs in the tab."],

@@ -171,7 +171,7 @@
   Article.register('arteza', {
     form: 'rooms',
     scramble: '॥।०१२३४५◇◆▪',
-    dek: 'arteza.site sells a painter’s 106 one-of-one works through a checkout that takes no money and trusts nothing the browser sends, on a wall that zooms, a drum that turns and a shelf that knows inches. The largest image now downloads once per load instead of four times.',
+    dek: 'arteza.site sells a painter’s 106 one-of-one works through a checkout that takes no money and trusts nothing the browser sends, on a wall that zooms (and, until November 2026, a drum that turned and a shelf that knew inches). The largest image now downloads once per load instead of four times.',
     demo: { src: 'public/assets/demos/arteza.mp4', poster: 'public/assets/demos/arteza.webp',
       alt: 'On arteza.site, the home page’s four empty gilt frames fill with paintings under the headline “Made by hand. Made once. Made Yours”, then the page scrolls down to the artist’s section and on to the shop’s shelf of framed works.',
       caption: 'Recorded from arteza.site, at 1.35x speed.' },
@@ -210,24 +210,24 @@
           { p: 'On phones the card rests at the right and lands centred, a scale of 1.854, and the horizontal origin comes out at 103.2%: past the right edge of the screen. Nothing is wrong. The fixed point just isn’t on the screen.' },
           { p: 'Everything else rides the same `z`. The headline fades out by z ≈ 0.28, the painting fades in from 0.18, and past 0.3 the headline stops taking taps, because an invisible caption was swallowing the buttons under it.' },
           { figure: 'public/assets/projects/arteza-home.webp', alt: 'The live home page: four gilt frames around the headline “Made by hand. Made once. Made Yours”, with a blank polaroid reading Scroll to reveal.', caption: 'The wall at z = 0 on arteza.site.', size: 'wide' },
-          { h: 'A drum that turns' },
-          { p: 'Below the wall, the paintings turn on a drum. All 106 are in the loop and at most five are ever drawn. Every card is placed by one function I wrote, `arcPlacement`, from one signed angle: neighbours are bent apart by `step = curve × 36°`.' },
+          { h: 'A drum that turned' },
+          { p: 'Below the wall, the paintings turned on a drum. All 106 were in the loop and at most five were ever drawn. Every card was placed by one function I wrote, `arcPlacement`, from one signed angle: neighbours were bent apart by `step = curve × 36°`. Both the drum and the shelf below were retired in the 6 November 2026 redesign, which replaced them with a plain grid.' },
           { code: 'const pos = wrapIndex(index - offset, count);\nconst step = arcStep(curve);          // clamp(curve, -1, 1) * 36\nconst a = pos * step;\nconst rad = a * DEG;\nconst radius = chord / 2 / Math.sin((step / 2) * DEG);\nx = radius * Math.sin(rad);\nz = radius * Math.cos(rad) - radius;  // front card stays at z = 0',
-            lang: 'ts', caption: 'From `src/lib/arc-ring.ts`.' },
-          { p: 'The sign carries the shape. [[A positive bend|ring]] wraps the cards round a drum. [[Zero|row]] lays them flat. [[A negative bend|bowl]] gives a negative radius, which turns the drum inside out into a bowl, with no second case in the code. At the shop’s spacing of 408px the radius is {{radius|660 px}}.' },
-          { widget: 'drum', size: 'wide', caption: 'Real CSS 3D, placed by the shipped `arcPlacement` maths under the shipped 1800px perspective, scaled to fit. The plan underneath is the same track seen from above. Drag the cards, or use the buttons.' },
-          { p: 'The bend is per card, not divided by the count, so going from 6 paintings to 106 only makes the loop longer: at the idle 0.3 cards a second one lap takes {{lap|353 s}}. A drag only counts after 5px, so a tap still opens the painting. Eleven tests pin the geometry down, the inside-out case included.' },
-          { h: 'A shelf that knows inches' },
-          { p: 'Every painting stands in a frame on a shelf. Draw them all the same size and the shelf lies. Draw them truthfully and the 4″ studies disappear. `frameMetrics` sits between the two.' },
+            lang: 'ts', caption: 'From `src/lib/arc-ring.ts` (as of 97bb9d9; removed in 6fd37ef).' },
+          { p: 'The sign carried the shape. [[A positive bend|ring]] wrapped the cards round a drum. [[Zero|row]] laid them flat. [[A negative bend|bowl]] gave a negative radius, which turned the drum inside out into a bowl, with no second case in the code. At the shop’s spacing of 408px the radius was {{radius|660 px}}.' },
+          { widget: 'drum', size: 'wide', caption: 'Real CSS 3D, placed by the `arcPlacement` maths that shipped under its 1800px perspective, scaled to fit. The plan underneath is the same track seen from above. Drag the cards, or use the buttons.' },
+          { p: 'The bend was per card, not divided by the count, so going from 6 paintings to 106 only made the loop longer: at the idle 0.3 cards a second one lap took {{lap|353 s}}. A drag only counted after 5px, so a tap still opened the painting. Eleven tests pinned the geometry down, the inside-out case included.' },
+          { h: 'A shelf that knew inches' },
+          { p: 'Every painting stood in a frame on a shelf. Draw them all the same size and the shelf lies. Draw them truthfully and the 4″ studies disappear. `frameMetrics` (in `src/lib/artwork-aspect.ts`, as of 97bb9d9; removed in 6fd37ef) sat between the two.' },
           { scrolly: 'shelf', caption: 'All 106 works at their stated inches, sorted by drawn height. Placeholders, not paintings. A triangle under a frame means it hit the floor.',
             steps: [
               { p: 'Start with the truth: scale each frame by its height against a 36″ reference. The 4″ studies come out a ninth the height of the largest canvas, specks at the end of the shelf.', state: { exp: 1, floor: 0, repair: true } },
               { p: 'At an exponent of 0.5, a square root, a 4″ study rises to a third of the 36″ canvas. Better, but the long tail is still hard to read.', state: { exp: 0.5, floor: 0, repair: true } },
-              { p: 'What ships is 0.45, with a floor at 0.45. Anything 6″ or under stops at the floor: **23 of 106**. Largest to smallest is now 2.2×, not 9×.', state: { exp: 0.45, floor: 0.45, repair: true } },
-              { p: 'Then the data. Some rows were typed height-first. “The Crimson Muse” is listed as 36″ × 24″, a landscape, but its photograph is portrait. Taken literally, it sits in a wide frame with fat bands either side.', state: { exp: 0.45, floor: 0.45, repair: false, focus: true } },
-              { p: '`frameMetrics` turns the measurements round when the stated shape and the photograph disagree and both are more than 4% from square. The photo decides orientation; the inches still decide size. **11 of 106** rows get turned.', state: { exp: 0.45, floor: 0.45, repair: true, focus: true } }
+              { p: 'What shipped was 0.45, with a floor at 0.45. Anything 6″ or under stopped at the floor: **23 of 106**. Largest to smallest became 2.2×, not 9×.', state: { exp: 0.45, floor: 0.45, repair: true } },
+              { p: 'Then the data. Some rows were typed height-first. “The Crimson Muse” is listed as 36″ × 24″, a landscape, but its photograph is portrait. Taken literally, it sat in a wide frame with fat bands either side.', state: { exp: 0.45, floor: 0.45, repair: false, focus: true } },
+              { p: '`frameMetrics` turned the measurements round when the stated shape and the photograph disagreed and both were more than 4% from square. The photo decided orientation; the inches still decided size. **11 of 106** rows got turned.', state: { exp: 0.45, floor: 0.45, repair: true, focus: true } }
             ] },
-          { figure: 'public/assets/projects/arteza-shop.webp', alt: 'The live shop: frames of different sizes on shelves, a small 4 by 4 inch study among larger canvases, one marked Sold out.', caption: 'The real shelf: a 4″ × 4″ study drawn small, but not a speck.', size: 'wide' },
+          { figure: 'public/assets/projects/arteza-shop.webp', alt: 'The shop as it was: frames of different sizes on shelves, a small 4 by 4 inch study among larger canvases, one marked Sold out.', caption: 'The shelf as it was on arteza.site in October 2026.', size: 'wide' },
           { h: 'Images the free tier can afford' },
           { p: 'The photographs started in Supabase Storage, where the free tier allows 5 GB of egress a month. So I wrote `sync-images.mjs`: it copies each photo into the site as WebP at 400, 800, 1,200 and 1,600 pixels wide, never wider than the original. It applies the camera’s EXIF rotation first, and the WebP output drops EXIF, GPS included.' },
           { table: { head: ['Widest copy', 'Paintings'], rows: [['1,600 px (all four widths)', '39'], ['1,200 px', '52'], ['800 px', '13'], ['400 px', '2']] },
@@ -252,11 +252,11 @@
           { h: 'A counter that trusts nothing' },
           { p: 'The browser sends a name, an optional phone, and for each item a title and a quantity. No price. The `create-order` function trims the fields, allows 1 to 50 items, clamps each quantity to 1–99, then reads the real price and availability from the database. Sold work is refused by name. The total is computed on the server, and the buyer gets a `wa.me` link with the order already written out.' },
           { code: "quantity: Math.max(1, Math.min(99, Number(i.quantity) || 1)),\n\nif ((await tooMany(supabaseClient, 'orders', 20, 60)) ||\n    (customer_phone && (await tooMany(supabaseClient, 'orders', 5, 60, ['customer_phone', customer_phone])))) {\n  return json(req, { error: 'Too many orders right now…' }, 429);\n}",
-            lang: 'ts', caption: 'From `create-order/index.ts`: the clamp, and the rate limit I added on 3 October.' },
+            lang: 'ts', caption: 'From `create-order/index.ts`: the quantity clamp, which was already there, and the rate limit I added on 3 October.' },
           { p: 'In October I closed the other doors: 20 orders an hour overall, 5 per phone, and direct inserts revoked from the browser’s roles, so the function is the only way an order can be written. Try to cheat it.' },
           { widget: 'cheat', size: 'wide', caption: 'A port of `create-order` running in this page against six real rows of the catalogue. Nothing is sent anywhere. Edit the request, or use the buttons: name your own price, order 500, add the sold painting, or send six from one phone.' },
           { p: 'The limiter is deliberately plain. It counts rows from the last hour, and if the count itself fails it lets the order through, because losing a real customer’s order is worse than letting a spammer past for an hour.' },
-          { figure: 'public/assets/projects/arteza-cart.webp', alt: 'The live cart: an order summary reading Shipping: Discussed on WhatsApp, and an Inquire on WhatsApp button.', caption: 'The counter today: no card form, no payment page, a button to a conversation.', size: 'wide' }
+          { figure: 'public/assets/projects/arteza-cart.webp', alt: 'The live cart: an order summary reading Shipping: Discussed on WhatsApp, and an Inquire on WhatsApp button.', caption: 'The counter in October 2026: no card form, no payment page, a button to a conversation.', size: 'wide' }
         ]
       },
       {
@@ -273,8 +273,8 @@
             'The smallest painting draws at 45% of the largest instead of 11%, and 11 mistyped rows of 106 stand the right way up.',
             'Every image exists at up to four widths; 39 paintings get all four.',
             'No order can be written except through one function that prices it from the database, with 20-an-hour and 5-per-phone limits.',
-            'Sold paintings stay in the shop instead of returning 404.',
-            '25 tests cover the drum (11) and the shelf (14).'
+            'Sold paintings stay on the site, in an Archive, instead of returning 404.',
+            '25 tests covered the drum (11) and the shelf (14) until both were retired.'
           ] }
         ]
       }
@@ -282,12 +282,11 @@
 
     closing: {
       blocks: [
-        { p: 'The price filter is a two-thumb slider, linear from ₹500 to ₹1,25,000 in 100 steps of ₹1,245. The median price is ₹3,000, so 62 of 106 paintings sit in the first 2% of the track. One Tanjore in gold foil sets the scale for the other 105; the next dearest is ₹35,000. I’d use a log or quantile track.' },
-        { widget: 'price', size: 'wide', caption: 'All 106 prices as dots on the slider’s track. Linear is what ships.' },
-        { p: 'The cart lets you raise the quantity of a one-of-one painting, and only the server’s clamp to 99 stops it. I’d cap a painting at one, in the cart and on the server.' },
-        { p: 'The home page’s “How it works” still says “Checkout by UPI”. It should describe the WhatsApp hand-off the shop actually has.' },
-        { p: 'Prerendering is configured but not live: locally the build holds 106 painting pages, yet on 2026-10-16 every route returned the same empty shell. Until the deployment serves the build, link previews see nothing of the gallery.' },
-        { p: 'And two code comments are wrong. The shelf’s says “square root” over an exponent of 0.45, and the border’s says the gap equals each line, when at 0.45 it is 1.6 times a line. I’d fix both so the next person reads what the code does.' }
+        { p: 'In October the price filter was a two-thumb slider, linear from ₹500 to ₹1,25,000 in 100 steps of ₹1,245. The median price is ₹3,000, so 62 of 106 paintings sit in the first 2% of the track. One Tanjore in gold foil sets the scale for the other 105; the next dearest is ₹35,000. I’d use a log or quantile track.' },
+        { widget: 'price', size: 'wide', caption: 'All 106 prices as dots on the slider’s track. Linear is what shipped.' },
+        { p: 'The cart once let you raise the quantity of a one-of-one painting; it now holds each painting once. The server still clamps to 99, and I’d cap it at one there too.' },
+        { p: 'On 2026-10-16 every route returned the same empty shell; prerendering is live now, and each painting’s page arrives with its own title.' },
+        { p: 'And one code comment is wrong: the border’s says the gap equals each line, when at 0.45 it is 1.6 times a line.' }
       ]
     },
 
@@ -295,10 +294,10 @@
       ['Catalogue', '106 paintings and prices from the public endpoint arteza.site calls, read 2026-10-16.'],
       ['Checkout history', '`git log` / `git show --shortstat` on 26cd69f, d61860b, 478ce13, 172db42 and others.'],
       ['create-order', '`supabase/functions/create-order/index.ts`, `_shared/common.ts`.'],
-      ['Drum and shelf', '`src/lib/arc-ring.ts`, `src/lib/artwork-aspect.ts` and their tests; 11 turned rows measured against the repo’s photographs, 2026-10-18.'],
+      ['Drum and shelf', '`src/lib/arc-ring.ts`, `src/lib/artwork-aspect.ts` and their tests (as of 97bb9d9; removed in 6fd37ef); 11 turned rows measured against the repo’s photographs, 2026-10-18.'],
       ['Hero and images', '`EditorialHero.tsx`, `src/index.css`, `scripts/sync-images.mjs`, `src/data/image-manifest.ts`.'],
-      ['Price slider', '`src/pages/ShopPage.tsx` and the live prices of 2026-10-16.'],
-      ['Live shell', '`curl` on arteza.site `/`, `/shop`, `/sitemap.xml`, 2026-10-16.']
+      ['Price slider', '`src/pages/ShopPage.tsx` (as of 97bb9d9) and the live prices of 2026-10-16.'],
+      ['Live shell', '`curl` on arteza.site `/`, `/shop`, `/sitemap.xml`, 2026-10-16; painting pages again on 2026-11-14.']
     ],
     widgets: {
       /* ---------------- the wall ---------------- */
@@ -564,13 +563,13 @@
         var st = { exp: 0.45, floor: 0.45, repair: true, focus: false };
         var narrow = window.matchMedia('(max-width: 959.98px)');
         var exp = kit.slider({ label: 'Exponent', min: 0.2, max: 1, step: 0.01, value: 0.45, format: function (v) { return v.toFixed(2); }, onInput: function (v) { st.exp = v; cv.draw(); } });
-        var dl = kit.el('datalist', { id: kit.id('ticks') }, kit.el('option', { value: '0.45', label: 'ships' }), kit.el('option', { value: '0.5', label: 'comment' }));
+        var dl = kit.el('datalist', { id: kit.id('ticks') }, kit.el('option', { value: '0.45', label: 'shipped' }), kit.el('option', { value: '0.5', label: 'comment' }));
         exp.input.setAttribute('list', dl.id); exp.el.appendChild(dl);
         var fl = kit.slider({ label: 'Floor', min: 0, max: 0.6, step: 0.01, value: 0.45, format: function (v) { return v.toFixed(2); }, onInput: function (v) { st.floor = v; cv.draw(); } });
         var rep = kit.choice({ label: 'Dimensions', value: 'rep', options: [{ value: 'stated', label: 'Stated' }, { value: 'rep', label: 'Repaired' }], onChange: function (v) { st.repair = v === 'rep'; cv.draw(); } });
         var info = kit.el('p', { class: 'az-shelf__info' });
         host.appendChild(kit.el('div', { class: 'k-row' }, exp.el, fl.el));
-        host.appendChild(kit.el('div', { class: 'k-row' }, rep.el, kit.el('span', { class: 'az-shelf__mark', text: '0.45 ships · 0.5 is what the comment says' })));
+        host.appendChild(kit.el('div', { class: 'k-row' }, rep.el, kit.el('span', { class: 'az-shelf__mark', text: '0.45 shipped · 0.5 is what the comment said' })));
         var boxes = [];
         var cv = kit.canvas(host, { draw: draw });
         host.appendChild(info);
@@ -815,7 +814,7 @@
         var box = kit.el('div', { class: 'az-price' });
         var svg = S('svg', { class: 'az-price__svg', 'aria-hidden': 'true' });
         box.appendChild(svg);
-        var sc = kit.choice({ label: 'Track', value: 'linear', options: [{ value: 'linear', label: 'Linear (ships)' }, { value: 'log', label: 'Log' }, { value: 'quantile', label: 'Quantile' }],
+        var sc = kit.choice({ label: 'Track', value: 'linear', options: [{ value: 'linear', label: 'Linear (shipped)' }, { value: 'log', label: 'Log' }, { value: 'quantile', label: 'Quantile' }],
           onChange: function (v) { scale = v; draw(); } });
         var cid = kit.id('tj');
         var cb = kit.el('input', { type: 'checkbox', id: cid, on: { change: function () { noTanjore = cb.checked; draw(); } } });

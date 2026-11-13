@@ -156,7 +156,7 @@
   Article.register('outbound-pipeline', {
     form: 'pipeline',
     scramble: '0123456789+()-.',
-    dek: 'An AI voice agent that calls vacation-rental agencies and hands the interested ones to a salesperson. It reached a **65% answer rate**, and rewriting its tone raised successful transfers by **12%**.',
+    dek: 'An AI voice agent that calls vacation-rental agencies and hands the interested ones to a salesperson. For the 2025 campaign I reported a **65% answer rate**, and a **12% lift** in successful transfers after rewriting its tone. The call records aren’t in the repo.',
 
     chapters: [
       {
@@ -171,13 +171,13 @@
         blocks: [
           { h: 'Finding leads, sixty at a time' },
           { p: 'Nearly every agency had a Google Maps listing, so the list started there, with searches like “vacation home rental agency near 33101”. The Places API answers 20 places at a time and stops after three pages, so sixty is the ceiling for one query. The way round it is many smaller queries, one per ZIP code, with neighbours allowed to overlap.' },
-          { p: 'Overlap means duplicates. Every place has a stable ID, so the pipeline remembers the IDs it has written and skips them, across runs as well as within one.' },
+          { p: 'Overlap means duplicates. Every place has a stable ID, so the 2026 rebuild remembers the IDs it has written and skips them, across runs as well as within one.' },
           { code: 'def search(query, key, pages=3):\n    token = None\n    for _ in range(pages):\n        body = {"textQuery": query, "pageSize": 20}\n        if token:\n            body["pageToken"] = token\n        r = requests.post(SEARCH_URL, json=body, timeout=30,\n                          headers={"X-Goog-Api-Key": key, "X-Goog-FieldMask": FIELD_MASK})\n        r.raise_for_status()\n        data = r.json()\n        yield from data.get("places", [])\n        token = data.get("nextPageToken")\n        if not token:\n            return',
             lang: 'python', caption: 'pipeline/leads.py. The field mask asks for phone, website and business status in the same call.' },
           { h: 'Reading the website' },
           { p: 'A listing’s phone number is often a front desk or an answering service. The website usually knows more: an email, an owner’s direct line, the agency’s Instagram. So for every lead with a website, the pipeline reads the home page and, if it links one, the contact page.' },
           { widget: 'scrape', size: 'wide', caption: 'A made-up agency’s site, read by the same rules as pipeline/enrich.py, ported to JavaScript and run in your browser. Step through the passes, or edit the HTML. The list at the bottom is what the rules turned away.' },
-          { p: 'Sites that draw their contact details with JavaScript get a second read in headless Chrome with Selenium. That is the fallback, not the default, because a browser per site is slow. Each lead is then marked **qualified**: still trading, with at least one phone number or email. The list passed 600 qualified leads.' },
+          { p: 'Sites that draw their contact details with JavaScript get a second read in headless Chrome with Selenium. That is the fallback, not the default, because a browser per site is slow. The rebuild then marks each lead **qualified**: still trading, with at least one phone number or email. The 2025 campaign’s lists passed 600 leads, in two raw files of 600 and 710 rows; those lists aren’t in the repo, and they were never put through that check.' },
           { h: 'Making the call' },
           { p: 'The calls were made by an AI voice agent, on either Bland AI or Retell AI; the pipeline drives both. The agent waits for a greeting before it speaks, and hangs up on voicemail and phone menus. A robot leaving a robot voicemail is the worst first impression a studio could make.' },
           { widget: 'call', size: 'wide', caption: 'Who answers decides the path. Below the steps are the fields each platform returns for that call, and what `outcome()` in pipeline/calls.py records from them.' },
@@ -190,7 +190,7 @@
         blocks: [
           { p: 'Most of the scraping rules exist because a page fooled an earlier version. `logo@2x.png` has the shape of an email address, so anything ending in an image extension is dropped. `fax.com` contains `x.com`, so a social link has to match the whole host. A phone number needs separators where phone numbers have them, or a licence number in a footer becomes a call.' },
           { p: 'The harder lesson was in the counting. Alongside the calls I kept an analysis notebook, mostly written by Colab’s built-in assistant, that pulled every batch back from Bland’s API: 34 batches, 980 calls requested, 310 failed. It reported zero completed calls in every batch.' },
-          { p: 'The completed count came back as a list, the code could not turn a list into a number, and the fix it settled on was to replace every list with 0. The chart rendered anyway.' },
+          { p: 'The completed count came back as a list, the code could not turn a list into a number, and the fix it settled on was to replace every list with 0. The chart rendered anyway. So that zero says nothing about the calls; it is the bug. The answer rate I reported at the time didn’t come from that notebook, and since neither the call records nor a working count survive, the two can’t be checked against each other.' },
           { p: 'The rebuilt `report` asks each platform about each call and sorts it into one of six outcomes. Answer rate is people over everything dialled; transfer rate is transfers over people. Every call carries the name of its prompt, so two tones compare in one command.' },
           { code: 'for variant, c in sorted(by.items()):\n    dialed = sum(c.values())\n    picked_up = c["answered"] + c["transferred"]\n    out[variant] = {\n        "answer_rate": picked_up / dialed,\n        "transfer_rate": c["transferred"] / picked_up if picked_up else 0.0,\n        ...\n    }',
             lang: 'python', caption: 'pipeline/calls.py. A call still in progress is left out of both rates.' }
@@ -199,8 +199,8 @@
       {
         id: 'results', title: 'Results',
         blocks: [
-          { p: 'Calls reached a 65% answer rate. The first agent was polite and complete: it introduced the studio, listed the benefits, then asked if the owner wanted sales.' },
-          { p: 'I rewrote it to ask before it pitches, one question at a time, and to offer only the thing that matches the pain the owner named. Successful transfers rose by 12%.' },
+          { p: 'For the 2025 campaign I reported a 65% answer rate; the call records aren’t in the repo, so the rebuild can’t recompute it. The first agent was polite and complete: it introduced the studio, listed the benefits, then asked if the owner wanted sales.' },
+          { p: 'I rewrote it to ask before it pitches, one question at a time, and to offer only the thing that matches the pain the owner named. Successful transfers rose: a 12% lift, as reported then.' },
           { table: {
               head: ['', 'Formal', 'Warm'],
               rows: [
@@ -227,7 +227,7 @@
 
     sources: [
       ['65% and +12%', 'The owner’s résumé, from the 2025 campaign. The call records are not in the repo.'],
-      ['600+ leads', 'Notebook outputs: 600-row file for ZIP 33130, 710-row file for ZIP 33101.'],
+      ['600+ leads', 'Notebook outputs from the 2025 campaign: 600-row file for ZIP 33130, 710-row file for ZIP 33101. The lists are not in the repo.'],
       ['Batch analysis', 'Untitled13.ipynb over Bland GET /v1/batches: 34 batches, 980 requested, 310 failed.'],
       ['Scrape rules', 'pipeline/enrich.py scan(), contact_page(); test_pipeline.py.'],
       ['Call outcomes', 'pipeline/calls.py outcome(); Bland and Retell call records.'],

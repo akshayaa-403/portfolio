@@ -13,7 +13,7 @@
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data:; media-src 'self'; connect-src 'self'; base-uri 'none'; form-action 'none'; object-src 'none'">
 <title>Akshayaa Kashyap — AI Engineer</title>
 
-<meta name="description" content="Akshayaa Kashyap is an AI engineer working in machine learning and data analysis, building data pipelines, LLM workflows and dashboards that turn messy data into clear decisions.">
+<meta name="description" content="Akshayaa Kashyap is an AI engineer. She builds LLM agents and the data pipelines that feed them.">
 <meta name="author" content="Akshayaa Kashyap">
 <link rel="canonical" href="https://akshayaa-403.github.io/portfolio/">
 <meta name="theme-color" content="#f4f7fa" media="(prefers-color-scheme: light)">
@@ -21,7 +21,7 @@
 
 <meta property="og:type" content="website">
 <meta property="og:title" content="Akshayaa Kashyap — AI Engineer">
-<meta property="og:description" content="AI engineer. Data pipelines, LLM workflows and dashboards that turn messy data into clear decisions.">
+<meta property="og:description" content="AI engineer. I build LLM agents and the data pipelines that feed them.">
 <meta property="og:url" content="https://akshayaa-403.github.io/portfolio/">
 <meta property="og:site_name" content="Akshayaa Kashyap">
 <meta property="og:locale" content="en_US">
@@ -32,7 +32,7 @@
 <meta name="twitter:image" content="https://akshayaa-403.github.io/portfolio/public/assets/og-card.png">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="Akshayaa Kashyap — AI Engineer">
-<meta name="twitter:description" content="AI engineer working in machine learning and data analysis.">
+<meta name="twitter:description" content="AI engineer. I build LLM agents and the data pipelines that feed them.">
 
 <link rel="icon" href="public/assets/favicon.webp" type="image/webp">
 <link rel="icon" href="public/assets/favicon.png" type="image/png">
@@ -353,7 +353,7 @@
             <a class="tile" href="work/arteza.html"><span class="tile__img" aria-hidden="true"><img src="public/assets/projects/arteza-home.webp" alt="" loading="lazy" decoding="async"></span><span class="tile__kicker">Products</span><span class="tile__title">Arteza</span><span class="tile__desc">An online gallery and shop for an original-art studio.</span><span class="tile__meta">Client work · 2026</span></a>
             <a class="tile" href="work/habita.html"><span class="tile__img" aria-hidden="true"><img src="public/assets/projects/habita-phone-matrix.webp" alt="" loading="lazy" decoding="async"></span><span class="tile__kicker">Products</span><span class="tile__title">Habita</span><span class="tile__desc">Eisenhower matrix that writes to your real calendar.</span><span class="tile__meta">Solo project · 2026</span></a>
           </div>
-          <p class="rm-archive"><span class="rm-archive__label">Also built</span> <a href="work/outbound-pipeline.html">Outbound Sales Pipeline</a><span aria-hidden="true"> · </span><a href="work/ivy-slack-agent.html">Project IVY</a><span aria-hidden="true"> · </span><a href="work/anttodo.html">Ant Colony Task Scheduler</a><span aria-hidden="true"> · </span><a href="https://github.com/akshayaa-403/Wikipedia-Summarizer">Wikipedia Summarizer</a></p>
+          <p class="rm-archive"><span class="rm-archive__label">Also built</span> <a href="work/outbound-pipeline.html">Outbound Sales Pipeline</a><span aria-hidden="true"> · </span><a href="work/ivy-slack-agent.html">Project IVY</a><span aria-hidden="true"> · </span><a href="work/ask-the-crm.html">Ask the CRM</a><span aria-hidden="true"> · </span><a href="work/anttodo.html">Ant Colony Task Scheduler</a><span aria-hidden="true"> · </span><a href="https://github.com/akshayaa-403/Wikipedia-Summarizer">Wikipedia Summarizer</a></p>
         <!-- END generated:project-list -->
       </div>
     </div>
@@ -397,18 +397,13 @@
           <h3 class="xp__co">Artenos Network</h3>
           <p class="xp__role">Software Engineer</p>
           <p class="xp__when"><time datetime="2025-07">Jul 2025</time> – <time datetime="2026-05">May 2026</time> · 11 months</p>
-          <p class="xp__kicker">Case study: Ask the CRM</p>
           <ul class="xp__lines">
-            <li>Built a tool that turns a sales team’s plain-English questions into read-only SQL over a CRM, and shows the query and rows beside every answer.</li>
-            <li>Scored five prompt versions on 155 questions, 22 of them ones the data can’t answer, against a test split frozen before the first prompt; a deploy gate re-runs it on every push.</li>
-            <li>Wrote the Monday sales summary with every number checked against the data. The checker raised no false alarms on 36 clean summaries and caught all 84 planted errors; it misses a real number given the wrong label, and says so.</li>
+            <li>Rebuilt this work in public, on invented data, as Ask the CRM: a sales team’s plain-English questions become read-only SQL, with the query and rows shown beside every answer.</li>
+            <li>Scored five prompt versions on 155 questions, 22 of them ones the data can’t answer, against a test split frozen before the first prompt; CI is wired to re-score it on every push.</li>
+            <li>Checked every number in a generated Monday sales summary against the data: no false alarms on 36 clean summaries, and all 84 planted wrong numbers caught. The 34 real numbers moved under the wrong label got through, and it says so.</li>
             <li>Shipped it on Render as one Docker container, Next.js over FastAPI, tracing latency, cost and feedback on every request.</li>
           </ul>
-          <p class="xp__note">Rebuilt in public on invented data; not Artenos’s system, data or results.</p>
-          <div class="xp__links">
-            <a class="xp__case" href="https://ask-the-crm.onrender.com" target="_blank" rel="noopener noreferrer">Try it live</a>
-            <a class="xp__case" href="https://github.com/akshayaa-403/artenos" target="_blank" rel="noopener noreferrer">Code on GitHub</a>
-          </div>
+          <a class="xp__case" href="work/ask-the-crm.html">Ask the CRM case study</a>
         </li>
         <li class="xp__badge reveal" style="--c: var(--graph-name)">
           <h3 class="xp__co">Sygnius Digital</h3>
@@ -438,9 +433,9 @@
       <div class="info__intro reveal">
         <p class="info__hello" data-cue="👋">Hello.</p>
 
-        <p>I’m Akshayaa Kashyap, an AI engineer. For a year and a half I’ve built
-          LLM agents, voice agents and the data pipelines that feed them,
-          mostly in Python on AWS.</p>
+        <p>I’m Akshayaa Kashyap, an AI engineer. For nearly two years, across three
+          roles, I’ve built LLM agents, voice agents and the data pipelines that
+          feed them, mostly in Python.</p>
 
         <p>I pick tools by measuring them. Four OCR engines were measured before
           one was packaged for Lambda, and a sales voice agent was re-tuned
