@@ -1,145 +1,35 @@
-/* Hobbies — one card per gallery, in one row.
+/* Hobbies — one icon per gallery, standing on a bracket shelf (the owner's
+   sketch, 2026-11-13): a camera for photography, a paintbrush for artwork.
+   Each icon is a plain link to its gallery (hobby.html?id=...). The bracket
+   is CSS (.hob-shelf::after in css/style.css).
 
-   Each card is a plain link to its own gallery (hobby.html?id=...) and
-   nothing intercepts it. It used to open the shared popover on the spot
-   instead, which put one photograph on screen when the card says "27 photos"
-   and the reader has asked for the set. The popover is still what a tile
-   inside a gallery opens, and still where the graph's image nodes point —
-   that is the right place for one photograph.
-
-   On hover a neural-net mesh animates over the card: particles drift
-   and draw a line to every neighbour within a radius, the same idea as the
-   canvas mesh on jackiehu.dev.
-
-   One shared canvas per card, created on first hover and torn down on leave,
-   so idle cards cost nothing. The whole effect is gated on
-   prefers-reduced-motion.
-
-   Gallery copy comes from js/hobby-data.js, which must load first. */
+   Labels and counts come from js/hobby-data.js, which must load first — the
+   same object the gallery page and the share-page build read. */
 (function () {
   'use strict';
 
-  // Labels, notes and counts come from js/hobby-data.js — the same object the
-  // gallery page and the share-page build read, so the three never drift.
-  var GROUPS = Object.keys(hobbies).map(function (id) {
-    return { id: id, label: hobbies[id].label, note: hobbies[id].note, n: hobbies[id].n };
-  });
-
-  var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-
-  /* ---------- neural-net mesh ---------- */
-  function mesh(card) {
-    var canvas = document.createElement('canvas');
-    canvas.className = 'hob-mesh';
-    canvas.setAttribute('aria-hidden', 'true');
-    card.appendChild(canvas);
-
-    var ctx = canvas.getContext('2d');
-    var dpr = Math.min(window.devicePixelRatio || 1, 2);
-    var w = 0, h = 0, nodes = [], raf = 0, alpha = 0;
-
-    function size() {
-      var r = card.getBoundingClientRect();
-      w = r.width; h = r.height;
-      canvas.width = Math.round(w * dpr);
-      canvas.height = Math.round(h * dpr);
-      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-    }
-
-    function seed() {
-      // Node count scales with area so a wide card is not sparser than a tall
-      // one; capped so the O(n^2) neighbour pass stays cheap.
-      var n = Math.min(46, Math.max(16, Math.round(w * h / 5200)));
-      nodes = [];
-      for (var i = 0; i < n; i++) {
-        nodes.push({
-          x: Math.random() * w,
-          y: Math.random() * h,
-          vx: (Math.random() - 0.5) * 0.34,
-          vy: (Math.random() - 0.5) * 0.34,
-          r: 1 + Math.random() * 1.4
-        });
-      }
-    }
-
-    var LINK = 108;      // px: draw a line below this separation
-
-    function frame() {
-      alpha = Math.min(1, alpha + 0.055);        // fade the whole mesh in
-      ctx.clearRect(0, 0, w, h);
-
-      for (var i = 0; i < nodes.length; i++) {
-        var p = nodes[i];
-        p.x += p.vx; p.y += p.vy;
-        if (p.x < 0 || p.x > w) p.vx *= -1;
-        if (p.y < 0 || p.y > h) p.vy *= -1;
-      }
-
-      // ponytail: O(n^2) neighbour scan, fine at n<=46; grid-bucket if it grows
-      ctx.lineWidth = 1;
-      for (var a = 0; a < nodes.length; a++) {
-        for (var b = a + 1; b < nodes.length; b++) {
-          var dx = nodes[a].x - nodes[b].x, dy = nodes[a].y - nodes[b].y;
-          var d = Math.sqrt(dx * dx + dy * dy);
-          if (d > LINK) continue;
-          ctx.strokeStyle = 'rgba(255,255,255,' + (0.5 * (1 - d / LINK) * alpha).toFixed(3) + ')';
-          ctx.beginPath();
-          ctx.moveTo(nodes[a].x, nodes[a].y);
-          ctx.lineTo(nodes[b].x, nodes[b].y);
-          ctx.stroke();
-        }
-      }
-      ctx.fillStyle = 'rgba(255,255,255,' + (0.85 * alpha).toFixed(3) + ')';
-      for (var k = 0; k < nodes.length; k++) {
-        ctx.beginPath();
-        ctx.arc(nodes[k].x, nodes[k].y, nodes[k].r, 0, Math.PI * 2);
-        ctx.fill();
-      }
-      raf = requestAnimationFrame(frame);
-    }
-
-    size(); seed(); frame();
-
-    return function destroy() {
-      cancelAnimationFrame(raf);
-      if (canvas.parentNode) canvas.parentNode.removeChild(canvas);
-    };
-  }
+  var LINE = 'fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"';
+  var ICONS = {
+    photography: '<path d="M4 8.5A1.5 1.5 0 0 1 5.5 7h2.3l1.4-2h5.6l1.4 2h2.3A1.5 1.5 0 0 1 20 8.5v9a1.5 1.5 0 0 1-1.5 1.5h-13A1.5 1.5 0 0 1 4 17.5z"/><circle cx="12" cy="12.8" r="3.6"/>',
+    artwork: '<path d="M20 4c-3.5 1.6-7.6 5.4-9.4 8.2l1.6 1.6C15 12 18.4 7.9 20 4z"/><path d="M10.6 12.2c-2 0-3.4 1.3-3.6 3.2-.2 1.6-1.1 2.8-3 3.1 2.6 1.4 6.9 1 8.1-1.6.5-1 .4-2.1.1-3.1"/>'
+  };
+  var FALLBACK = '<rect x="4" y="5" width="16" height="14" rx="1.5"/><path d="M4 15l4.5-4.5 4 4 2.5-2.5L20 17"/>';
 
   function init() {
     var host = document.getElementById('hobby-groups');
-    if (!host) return;
+    if (!host || typeof hobbies === 'undefined') return;
 
-    host.innerHTML =
-      '<div class="hob-tri">' +
-        GROUPS.map(function (g) {
-          return '<a class="hob-card" data-cue="Open the gallery" href="hobby.html?id=' + esc(g.id) + '">' +
-            // The 600px variant: the card is a third of the column.
-            '<img src="public/assets/hobbies/' + esc(g.id) + '-1-600.webp" alt=""' +
-                 ' aria-hidden="true" width="600" height="450" loading="lazy" decoding="async">' +
-            '<span class="hob-card__body">' +
-              '<span class="hob-card__label">' + esc(g.label) + '</span>' +
-              '<span class="hob-card__note">' + esc(g.note) + '</span>' +
-              '<span class="hob-card__count">' + g.n + ' photos &rarr;</span>' +
-            '</span>' +
-          '</a>';
-        }).join('') +
-      '</div>';
-
-    if (reduce) return;
-
-    var cards = host.querySelectorAll('.hob-card');
-    for (var i = 0; i < cards.length; i++) {
-      (function (card) {
-        var stop = null;
-        function on()  { if (!stop) stop = mesh(card); }
-        function off() { if (stop) { stop(); stop = null; } }
-        card.addEventListener('pointerenter', on);
-        card.addEventListener('pointerleave', off);
-        card.addEventListener('focus', on);
-        card.addEventListener('blur', off);
-      })(cards[i]);
-    }
+    host.innerHTML = '<ul class="hob-shelf" role="list">' +
+      Object.keys(hobbies).map(function (id) {
+        var h = hobbies[id];
+        return '<li><a class="hob-icon" href="hobby.html?id=' + esc(id) + '"' +
+            ' data-cue="' + esc(h.label) + ' · ' + h.n + ' photos">' +
+          '<svg viewBox="0 0 24 24" width="56" height="56" aria-hidden="true" focusable="false" ' + LINE + '>' +
+            (ICONS[id] || FALLBACK) + '</svg>' +
+          '<span class="visually-hidden">' + esc(h.label) + ', ' + h.n + ' photos</span>' +
+        '</a></li>';
+      }).join('') +
+    '</ul>';
   }
 
   window.onReady(init);

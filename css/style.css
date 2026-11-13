@@ -402,7 +402,7 @@ body {
    what is not a sentence here is one of those), and Caveat for the name and
    the handwriting. Prose that would otherwise inherit the mono is listed
    here. */
-.rm__desc,
+.tile__desc,
 .hobbies__intro,
 .readings__intro,
 .shelf__caption,
@@ -524,9 +524,17 @@ main:focus-visible { outline: none; }
   margin-bottom: var(--gap-lg);
 }
 .section-head h2 {
-  font-size: 24px;
+  font-family: var(--font-mono);
+  font-size: 14px;
   font-weight: 500;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
 }
+/* After khy.com: rows of tiles are left-aligned, the bands between them
+   (About, Skills, Contact) are centred. */
+.info .section-head,
+#skills .section-head,
+.contact .section-head { justify-content: center; }
 
 /* --------------------------------------------------------------------------
    4. Header / nav
@@ -892,93 +900,104 @@ body { padding-top: var(--header-h, 80px); }
    Hobbies and Readings, after Contact, as two parts of one section. The
    skills are the bracelet in About (css/info.css).
    -------------------------------------------------------------------------- */
-.outside__part + .outside__part { margin-top: calc(var(--section-gap) * 1.2); }
+.outside__part + .outside__part { margin-top: var(--section-gap); }
+/* Hobbies left, Readings right. The shelf keeps its caption under it here:
+   beside it there is no room in half a row. */
+@media (min-width: 900px) {
+  .outside__parts {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.7fr);
+    gap: 48px;
+  }
+  .outside__part + .outside__part { margin-top: 0; }
+  .outside .readings { display: block; }
+  .outside .shelf__caption { margin: 12px 0 0; min-width: 0; }
+}
 .outside__h {
-  margin-bottom: 8px;
-  font-size: 19px;
-  font-weight: 500;
-}
-
-/* --------------------------------------------------------------------------
-   7. Work / project cards
-   Text-only rows: title with context and years beside it, one line of what
-   it is, then the one result (where there is one) and the stack. The layout
-   that puts the rows beside the preview pane is in section 17.
-   -------------------------------------------------------------------------- */
-
-/* --- Projects ------------------------------------------------------ */
-.rm {
-  display: block;
-  padding: 10px 16px;
-  border: 1px solid var(--line);
-  border-radius: var(--radius-lg);
-  background: var(--bg-raised);
-  color: var(--ink);
-  transition: border-color var(--dur) var(--ease), background var(--dur) var(--ease),
-    box-shadow var(--dur) var(--ease);
-}
-.rm:hover,
-.rm.is-on {
-  border-color: var(--line-strong);
-  background: var(--surface);
-  color: var(--ink);
-}
-/* The row the preview pane is showing. A mark, not text: 3:1 is the bar. */
-.rm.is-on { box-shadow: inset 3px 0 0 var(--accent); }
-
-.rm__text {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
-  align-items: baseline;
-  gap: 3px 12px;
-}
-.rm__title {
-  color: var(--ink);
-  font-size: 18px;
-  font-weight: 500;
-  letter-spacing: -0.02em;
-}
-/* Context and years, beside the title. */
-.rm__meta {
-  color: var(--ink-soft);
-  font-size: 11.5px;
-  letter-spacing: 0.04em;
-  text-align: right;
-  text-transform: uppercase;
-}
-.rm__desc,
-.rm__foot { grid-column: 1 / -1; }
-.rm__desc {
-  color: var(--ink-soft);
-  font-size: 14px;
-  line-height: 1.4;
-}
-.rm__foot {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 4px 12px;
-  margin-top: 3px;
-}
-
-/* --- Group labels inside the list ------------------------------------
-   A label on a run of rows, not a section of its own. */
-.rm-group {
-  margin: 6px 0 0;
+  margin-bottom: 4px;
   color: var(--accent-ink);
   font-size: 12px;
   font-weight: 500;
   letter-spacing: 0.14em;
   text-transform: uppercase;
 }
-.rm-group:first-child { margin-top: 0; }
+
+/* --------------------------------------------------------------------------
+   7. Work: one row of tiles, then the "Also built" line
+   -------------------------------------------------------------------------- */
+
+/* --- Tiles ---------------------------------------------------------
+   One row of four, after khy.com's product rows: picture, kicker, title,
+   one line, then the meta in small caps.
+   Pictures are `contain` on a sunken ground: a phone render is a shape, and
+   cropping it crops the device. */
+.tiles {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 28px 18px;
+}
+.tile {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+  color: var(--ink);
+  text-decoration: none;
+}
+.tile__img {
+  position: relative;
+  display: block;
+  aspect-ratio: 4 / 3;
+  margin-bottom: 8px;
+  overflow: hidden;
+  border-radius: var(--radius);
+  background: var(--bg-sunken);
+}
+.tile__img img,
+.tile__img video {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+.tile__kicker {
+  color: var(--accent-ink);
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+.tile__title {
+  font-size: 15px;
+  font-weight: 500;
+  letter-spacing: -0.01em;
+}
+.tile__desc {
+  color: var(--ink-soft);
+  font-size: 14px;
+  line-height: 1.4;
+}
+.tile__meta {
+  color: var(--ink-soft);
+  font-size: 11.5px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+.tile:hover .tile__title { color: var(--accent-ink); text-decoration: underline; text-underline-offset: 3px; }
+.tile:focus-visible { outline: 2px solid var(--accent); outline-offset: 4px; border-radius: 4px; }
+@media (prefers-reduced-motion: no-preference) {
+  .js .tile__img img { transition: transform 0.5s var(--ease); }
+  .js .tile:hover .tile__img img { transform: scale(1.03); }
+}
+@media (max-width: 899.98px) {
+  .tiles { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
 
 /* --- The archive ----------------------------------------------------
    Three case studies that are still written and still live, one click away,
    but no longer what the work is. A line, not a list: the difference in
    weight IS the information. */
 .rm-archive {
-  margin: 4px 0 0;
+  margin: 20px 0 0;
   color: var(--ink-soft);
   font-size: 13px;
   line-height: 1.9;
@@ -1004,13 +1023,6 @@ body { padding-top: var(--header-h, 80px); }
   text-decoration-color: currentColor;
 }
 
-/* The stack: four items at most. */
-.rm__stack {
-  color: var(--ink-soft);
-  font-size: 12px;
-  line-height: 1.5;
-}
-
 /* --- Readings ------------------------------------------------------
    A shelf of books that turn. Each one stands as a spine and, when it is the
    chosen one, rotates a quarter turn in place to face you — the spine going
@@ -1032,9 +1044,9 @@ body { padding-top: var(--header-h, 80px); }
    hover. */
 .readings__intro {
   max-width: 60ch;
-  margin-bottom: var(--gap-lg);
+  margin-bottom: 14px;
   color: var(--ink-soft);
-  font-size: 16px;
+  font-size: 14px;
 }
 .readings__asof {
   color: var(--ink-soft);
@@ -1276,9 +1288,10 @@ body { padding-top: var(--header-h, 80px); }
 /* --------------------------------------------------------------------------
    10b. Contact
    -------------------------------------------------------------------------- */
+.contact { text-align: center; }
 .contact p {
   max-width: 520px;
-  margin: 0 0 var(--gap-lg);
+  margin: 0 auto var(--gap-lg);
   color: var(--ink-soft);
   font-size: 16px;
   line-height: 1.6;
@@ -1286,6 +1299,7 @@ body { padding-top: var(--header-h, 80px); }
 .contact__links {
   display: flex;
   flex-wrap: wrap;
+  justify-content: center;
   gap: var(--gap);
 }
 
@@ -1491,120 +1505,48 @@ body { padding-top: var(--header-h, 80px); }
 }
 
 /* --------------------------------------------------------------------------
-   15. Hobbies — one card per gallery, in one row
+   15. Hobbies — an icon per gallery on a bracket shelf (owner's sketch)
 
-   Each links to its own gallery; on hover js/hobbies.js paints a neural-net
-   mesh over the card. Side by side down to 600px, one column below that.
+   js/hobbies.js writes the icons; the bracket is the ::after box: its top
+   border is the board, its side borders the two legs.
    -------------------------------------------------------------------------- */
 .hobbies__intro {
   max-width: var(--measure-narrow);
-  margin: 0 0 26px;
+  margin: 0 0 14px;
   color: var(--ink-soft);
-  font-size: 16px;
+  font-size: 14px;
   line-height: 1.6;
 }
 
-/* One row of three, on the content rail. The old 2+1 pyramid was capped at
-   860px and centred, and its third card was centred again inside that — so
-   the block had three left edges, none of them the column's. */
-.hob-tri {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 18px;
+.hob-shelf {
+  display: flex;
+  justify-content: space-around;
+  flex-wrap: wrap;
+  max-width: 460px;
+  margin: 0;
+  padding: 0 16px;
+  list-style: none;
 }
-
-.hob-card {
-  position: relative;
-  display: block;
-  aspect-ratio: 4 / 3;
-  overflow: hidden;
-  border: 1px solid var(--line-strong);
-  border-radius: var(--radius);
-  background: var(--bg-sunken);
-  color: var(--on-photo);
-  isolation: isolate;
-}
-.hob-card > img {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  z-index: 0;
-}
-/* Scrim: the labels sit on a photograph, so they need a guaranteed ground
-   rather than relying on whatever the image happens to be. */
-.hob-card::after {
+.hob-shelf::after {
   content: '';
-  position: absolute;
-  inset: 0;
-  z-index: 1;
-  background: linear-gradient(to top, rgba(6, 12, 20, 0.82) 0%,
-                                      rgba(6, 12, 20, 0.34) 45%,
-                                      rgba(6, 12, 20, 0.12) 100%);
+  flex: 0 0 calc(100% + 32px);
+  height: 24px;
+  margin: 0 -16px;
+  border: 2px solid var(--ink);
+  border-bottom: 0;
 }
-.hob-mesh {
-  position: absolute;
-  inset: 0;
-  z-index: 2;
-  pointer-events: none;
+.hob-icon {
+  display: block;
+  padding: 8px;
+  color: var(--ink);
 }
-.hob-card__body {
-  position: absolute;
-  left: 0; right: 0; bottom: 0;
-  z-index: 3;
-  display: grid;
-  gap: 3px;
-  padding: 16px 18px;
-}
-.hob-card__label {
-  font-family: var(--font-script);
-  /* Below the section headings, not above them: at 33px a hobby's name was
-     set twice the size of a project's title. */
-  font-size: clamp(22px, 2.2vw, 26px);
-  line-height: 1.05;
-}
-/* Overrides the generic `a:hover { color: var(--accent-ink) }`, which
-   resolves to a dark navy in light mode - unreadable against the card's
-   own dark gradient. Same colour in both themes, by design. */
-.hob-card:hover .hob-card__label {
-  color: var(--on-photo-accent);
-}
-.hob-card__note {
-  color: rgba(255, 255, 255, 0.82);
-  font-size: 12.5px;
-}
-.hob-card__count {
-  margin-top: 4px;
-  color: rgba(255, 255, 255, 0.7);
-  font-family: var(--font-mono);
-  font-size: 10px;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-}
-
+.hob-icon svg { display: block; }
+.hob-icon:hover { color: var(--accent-ink); }
+.hob-icon:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 6px; }
 @media (prefers-reduced-motion: no-preference) {
-  .js .hob-card {
-    transition: transform 0.3s var(--ease), box-shadow 0.3s var(--ease),
-                border-color 0.3s var(--ease);
-  }
-  .js .hob-card > img { transition: transform 0.5s var(--ease); }
-  .js .hob-card:hover {
-    transform: translateY(-3px);
-    border-color: var(--accent);
-    box-shadow: 0 16px 34px -14px rgba(6, 12, 20, 0.6);
-  }
-  .js .hob-card:hover > img { transform: scale(1.04); }
+  .js .hob-icon { transition: transform 0.25s var(--ease), color 0.25s var(--ease); }
+  .js .hob-icon:hover { transform: translateY(-4px); }
 }
-.hob-card:focus-visible {
-  outline: 2px solid var(--accent);
-  outline-offset: 3px;
-}
-
-@media (max-width: 599.98px) {
-  .hob-tri { grid-template-columns: 1fr; gap: 14px; }
-}
-
 /* --------------------------------------------------------------------------
    16. Phone (<=599px)
 
@@ -1636,27 +1578,15 @@ body { padding-top: var(--header-h, 80px); }
 
   /* --- legibility ------------------------------------------------------ */
   /* Nothing below 13px: iOS also zooms the page when tapped text is smaller. */
-  .rm__desc { font-size: 13.5px; }
   .dd--table th,
 
   .dd--table td { font-size: 13px; }
-  .hob-card__note { font-size: 13px; }
 
   /* --- spacing ---------------------------------------------------------- */
   /* A phone has no room for desktop section rhythm. */
   .section { padding: 34px 0; }
   :root { --gap-lg: 18px; --section-gap: 34px; }
-  .section-head h2 { font-size: 21px; }
 
-  /* One card per row, so the text gets the full width. */
-  .rm { padding: 12px 14px; }
-  .rm__title { font-size: 17px; }
-}
-
-/* Very narrow (<=360px): the smallest phone still in real use. */
-@media (max-width: 360px) {
-  .rm__title { font-size: 15px; }
-  .hob-card__label { font-size: 22px; }
 }
 
 /* Remaining mobile tap targets: several sat at 41-42px, just under the 44px
@@ -1669,7 +1599,6 @@ body { padding-top: var(--header-h, 80px); }
   .notfound__actions .btn { min-height: 46px; }
   .skip-link { padding: 13px 18px; }
   .code-copy { min-height: 44px; padding: 11px 14px; }
-  .hob-card__count { font-size: 11.5px; }
   .hob-shot figcaption { font-size: 12.5px; }
 }
 
@@ -1855,60 +1784,6 @@ body:has(dialog[open]) .cue { display: none; }
    17. The project grid, the screen, and the shelf overlay
    ========================================================================== */
 
-/* --- The list and the preview pane -----------------------------------
-   One column of rows on the left, the pane on the right showing the row last
-   pointed at or focused (js/script.js; the static copy shows the first).
-   Rows are compact enough that the heading, all four and "Also built" fit
-   one 1280x720 screen. Below 900px there is no room beside the rows, so the
-   pane goes and the rows take the width. */
-.rm-list {
-  display: grid;
-  gap: 8px 24px;
-}
-.rm-rows {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  min-width: 0;
-}
-.rm-screen { display: none; }
-/* A phone: the years go under the title instead of squeezing it. */
-@media (max-width: 599.98px) {
-  .rm__text { grid-template-columns: minmax(0, 1fr); }
-  .rm__meta { text-align: left; }
-}
-
-@media (min-width: 900px) {
-  .rm-list { grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr); }
-  .rm-archive { grid-column: 1 / -1; }
-  /* The pane fits its image (start-aligned, capped at 60vh), so it never
-     stretches to the list's height as an empty panel. object-
-     fit is `contain`, not `cover`: a phone render is a shape, and cropping it
-     is cropping the device. */
-  .rm-screen {
-    align-self: start;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 14px;
-  }
-  .rm-screen img,
-  .rm-screen video {
-    display: block;
-    min-width: 0;
-    max-width: 100%;
-    max-height: 60vh;
-    object-fit: contain;
-  }
-  /* Two pieces of media are two device renders side by side. */
-  .rm-screen img:not(:only-child),
-  .rm-screen video:not(:only-child) { max-width: calc(50% - 7px); }
-}
-
-@media (min-width: 900px) and (prefers-reduced-motion: no-preference) {
-  .js .rm-screen > * { animation: rm-in 0.2s var(--ease); }
-}
-@keyframes rm-in { from { opacity: 0; } }
 
 /* --- The shelf --------------------------------------------------------
    Spines, and only spines, until the pointer or the keyboard reaches one:

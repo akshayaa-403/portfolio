@@ -160,49 +160,41 @@ const GROUPS = [
   { key: 'products', title: 'Products' }
 ];
 
-const media = (src) => [].concat(src || []).map((one) => /\.(mp4|webm|ogv)$/i.test(one)
-  ? '<video src="' + esc(one) + '" autoplay muted loop playsinline></video>'
-  : '<img src="' + esc(one) + '" alt="" decoding="async">').join('');
+// The first item of `screen` only: one picture per tile.
+const media = (src) => {
+  const one = [].concat(src || [])[0];
+  if (!one) return '';
+  return /\.(mp4|webm|ogv)$/i.test(one)
+    ? '<video src="' + esc(one) + '" autoplay muted loop playsinline></video>'
+    : '<img src="' + esc(one) + '" alt="" loading="lazy" decoding="async">';
+};
 
-function rowHtml(p, first) {
-  const stack = (p.tech || []).slice(0, 4).map(esc)
-    .join(' <span aria-hidden="true">/</span> ');
+function tileHtml(p, g) {
   // Same span rule as span() in js/script.js: the real years, not p.year.
   const a = (p.created || '').slice(0, 4);
   const b = (p.updated || '').slice(0, 4);
   const years = a ? (a === b ? a : a + '–' + b) : (p.year || '');
   const meta = [p.context || p.role, years].filter(Boolean).map(esc).join(' · ');
 
-  return '            <a class="rm' + (first ? ' is-on' : '') + '" href="work/' + encodeURIComponent(p.id) + '.html">' +
-      '<span class="rm__text">' +
-        '<span class="rm__title">' + esc(p.title) + '</span>' +
-        (meta ? '<span class="rm__meta">' + meta + '</span>' : '') +
-        '<span class="rm__desc">' + esc(p.tagline) + '</span>' +
-        '<span class="rm__foot">' +
-          (stack ? '<span class="rm__stack">' + stack + '</span>' : '') +
-        '</span>' +
-      '</span>' +
+  return '            <a class="tile" href="work/' + encodeURIComponent(p.id) + '.html">' +
+      '<span class="tile__img" aria-hidden="true">' + media(p.screen) + '</span>' +
+      '<span class="tile__kicker">' + esc(g.title) + '</span>' +
+      '<span class="tile__title">' + esc(p.title) + '</span>' +
+      '<span class="tile__desc">' + esc(p.tagline) + '</span>' +
+      (meta ? '<span class="tile__meta">' + meta + '</span>' : '') +
     '</a>';
 }
 
 function projectListHtml(projects) {
-  const shown = projects.filter((p) => !p.archived);
   const gone = projects.filter((p) => p.archived);
-  const out = ['          <div class="rm-rows">'];
-  let first = null;
-
+  const out = ['          <div class="tiles">'];
   for (const g of GROUPS) {
-    const rows = shown.filter((p) => p.group === g.key);
-    if (!rows.length) continue;
-    out.push('            <h3 class="rm-group">' + esc(g.title) + '</h3>');
-    for (const p of rows) { out.push(rowHtml(p, !first)); first = first || p; }
+    for (const p of projects.filter((q) => !q.archived && q.group === g.key)) out.push(tileHtml(p, g));
   }
-
   out.push('          </div>');
-  out.push('          <div class="rm-screen" data-rm-screen aria-hidden="true">' + media(first && first.screen) + '</div>');
 
   /* The archive: still written, still live, still linked — just not what the
-     work is now. One quiet line under the list and the pane. */
+     work is now. One quiet line under the row. */
   if (gone.length) {
     out.push('          <p class="rm-archive">' +
       '<span class="rm-archive__label">Also built</span> ' +

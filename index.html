@@ -347,15 +347,12 @@
            the same thing plus the live preview and the reveal animation. -->
       <div class="rm-list" id="recent-cards">
         <!-- BEGIN generated:project-list — written by tools/build-share-pages.js, do not hand-edit -->
-          <div class="rm-rows">
-            <h3 class="rm-group">Research</h3>
-            <a class="rm is-on" href="work/quantamental-screener.html"><span class="rm__text"><span class="rm__title">Quantamental Screener</span><span class="rm__meta">Solo project · 2025–2026</span><span class="rm__desc">Four-factor stock ranking with news sentiment, and a backtest that tests itself against luck.</span><span class="rm__foot"><span class="rm__stack">Python <span aria-hidden="true">/</span> pandas <span aria-hidden="true">/</span> NumPy <span aria-hidden="true">/</span> yfinance</span></span></span></a>
-            <a class="rm" href="work/phase-contrast-denoising.html"><span class="rm__text"><span class="rm__title">Phase-Contrast Clean-Up Pipeline</span><span class="rm__meta">Research tool · 2026</span><span class="rm__desc">One held-out microscope frame, followed through a classical filter and a residual U-Net.</span><span class="rm__foot"><span class="rm__stack">Python <span aria-hidden="true">/</span> PyTorch <span aria-hidden="true">/</span> OpenCV <span aria-hidden="true">/</span> Gradio</span></span></span></a>
-            <h3 class="rm-group">Products</h3>
-            <a class="rm" href="work/arteza.html"><span class="rm__text"><span class="rm__title">Arteza</span><span class="rm__meta">Client work · 2026</span><span class="rm__desc">An online gallery and shop for an original-art studio.</span><span class="rm__foot"><span class="rm__stack">React <span aria-hidden="true">/</span> Vite <span aria-hidden="true">/</span> TypeScript <span aria-hidden="true">/</span> Tailwind CSS</span></span></span></a>
-            <a class="rm" href="work/habita.html"><span class="rm__text"><span class="rm__title">Habita</span><span class="rm__meta">Solo project · 2026</span><span class="rm__desc">Eisenhower matrix that writes to your real calendar.</span><span class="rm__foot"><span class="rm__stack">JavaScript (ES6) <span aria-hidden="true">/</span> CSS Grid <span aria-hidden="true">/</span> SVG <span aria-hidden="true">/</span> Capacitor</span></span></span></a>
+          <div class="tiles">
+            <a class="tile" href="work/quantamental-screener.html"><span class="tile__img" aria-hidden="true"><img src="public/assets/projects/quant-current.webp" alt="" loading="lazy" decoding="async"></span><span class="tile__kicker">Research</span><span class="tile__title">Quantamental Screener</span><span class="tile__desc">Four-factor stock ranking with news sentiment, and a backtest that tests itself against luck.</span><span class="tile__meta">Solo project · 2025–2026</span></a>
+            <a class="tile" href="work/phase-contrast-denoising.html"><span class="tile__img" aria-hidden="true"><img src="public/assets/projects/phase-demo-metrics.webp" alt="" loading="lazy" decoding="async"></span><span class="tile__kicker">Research</span><span class="tile__title">Phase-Contrast Clean-Up Pipeline</span><span class="tile__desc">One held-out microscope frame, followed through a classical filter and a residual U-Net.</span><span class="tile__meta">Research tool · 2026</span></a>
+            <a class="tile" href="work/arteza.html"><span class="tile__img" aria-hidden="true"><img src="public/assets/projects/arteza-home.webp" alt="" loading="lazy" decoding="async"></span><span class="tile__kicker">Products</span><span class="tile__title">Arteza</span><span class="tile__desc">An online gallery and shop for an original-art studio.</span><span class="tile__meta">Client work · 2026</span></a>
+            <a class="tile" href="work/habita.html"><span class="tile__img" aria-hidden="true"><img src="public/assets/projects/habita-phone-matrix.webp" alt="" loading="lazy" decoding="async"></span><span class="tile__kicker">Products</span><span class="tile__title">Habita</span><span class="tile__desc">Eisenhower matrix that writes to your real calendar.</span><span class="tile__meta">Solo project · 2026</span></a>
           </div>
-          <div class="rm-screen" data-rm-screen aria-hidden="true"><img src="public/assets/projects/quant-current.webp" alt="" decoding="async"></div>
           <p class="rm-archive"><span class="rm-archive__label">Also built</span> <a href="work/outbound-pipeline.html">Outbound Sales Pipeline</a><span aria-hidden="true"> · </span><a href="work/ivy-slack-agent.html">Project IVY</a><span aria-hidden="true"> · </span><a href="work/anttodo.html">Ant Colony Task Scheduler</a><span aria-hidden="true"> · </span><a href="https://github.com/akshayaa-403/Wikipedia-Summarizer">Wikipedia Summarizer</a></p>
         <!-- END generated:project-list -->
       </div>
@@ -487,18 +484,20 @@
   <!-- ===================== Outside work =====================
        After Contact on purpose: the work, who made it and how to reach her
        come first, and the galleries and the shelf are for whoever stays.
-       Hobbies: one card per gallery, built by js/hobbies.js from js/hobby-data.js.
-       Readings: a shelf of spines at each edition's real size, from
-       js/readings-data.js; choosing one takes it off the shelf. -->
+       One row, two columns from 900px: Hobbies on the left, an icon per
+       gallery on a bracket shelf (js/hobbies.js, from js/hobby-data.js);
+       Readings on the right, a shelf of spines to scale (js/readings-data.js);
+       choosing one takes it off the shelf. -->
   <section class="section outside" id="outside" aria-labelledby="outside-h">
     <div class="wrap">
       <div class="section-head reveal">
         <h2 id="outside-h">Outside work</h2>
       </div>
 
+      <div class="outside__parts">
       <div class="outside__part" id="hobbies">
         <h3 class="outside__h reveal" id="hobbies-h">Hobbies</h3>
-        <p class="hobbies__intro reveal">Things I make and go looking for when I'm not at a terminal.</p>
+        <p class="hobbies__intro reveal">Things I make when I'm not at a terminal.</p>
         <div id="hobby-groups">
           <noscript>
             <p>The gallery needs JavaScript to lay out. Two galleries:
@@ -516,6 +515,7 @@
             <p>The reading list needs JavaScript to lay out.</p>
           </noscript>
         </div>
+      </div>
       </div>
     </div>
   </section>

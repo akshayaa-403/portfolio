@@ -7,10 +7,9 @@
   var reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
   /* ---------- project list ----------
-     One column of rows on the left, a preview pane on the right. Each row:
-     title, context and years, one line of what it is, the one result where
-     there is one (plain words, the figure in brackets), and the stack.
-     Pointing at or focusing a row puts its media in the pane (initScreen). */
+     One row of tiles, after khy.com's product rows: picture, group, title,
+     one line of what it is, then context and years. The archived case
+     studies get one line under the row. */
   /* The real span, not one year: created/updated collapsed. Arteza has no
      public repo and therefore no dates, so it falls back to p.year. */
   function span(p) {
@@ -22,41 +21,34 @@
 
   /* The groups the shown work falls into, in render order. A project's
      `group` in js/project-data.js picks one; anything with `archived: true`
-     is in neither and drops to "Also built" at the foot of the list.
+     is in neither and drops to "Also built" under the row.
      Declared again in tools/build-share-pages.js — change both. */
   var GROUPS = [
     { key: 'research', title: 'Research' },
     { key: 'products', title: 'Products' }
   ];
 
-  /* `screen` in js/project-data.js, one path or several: .mp4/.webm play
-     muted and looping, anything else is a still. */
+  /* The first item of `screen` in js/project-data.js: .mp4/.webm play muted
+     and looping, anything else is a still. */
   function media(src) {
-    return [].concat(src || []).map(function (one) {
-      return /\.(mp4|webm|ogv)$/i.test(one)
-        ? '<video src="' + safeUrl(one) + '" autoplay muted loop playsinline></video>'
-        : '<img src="' + safeUrl(one) + '" alt="" decoding="async">';
-    }).join('');
+    var one = [].concat(src || [])[0];
+    if (!one) return '';
+    return /\.(mp4|webm|ogv)$/i.test(one)
+      ? '<video src="' + safeUrl(one) + '" autoplay muted loop playsinline></video>'
+      : '<img src="' + safeUrl(one) + '" alt="" loading="lazy" decoding="async">';
   }
 
-  function row(p, first) {
-    var stack = (p.tech || []).slice(0, 4).map(esc)
-      .join(' <span aria-hidden="true">/</span> ');
+  function tile(p, g) {
     var meta = [p.context || p.role, span(p)].filter(Boolean).map(esc).join(' · ');
-
     /* Link to the generated share page rather than project.html?id=: a real
        document with its own <title> and og: tags, so a crawler, a chat unfurl
        or a reader with JS off gets the project's name. */
-    return '<a class="rm reveal' + (first ? ' is-on' : '') + '" href="work/' + encodeURIComponent(p.id) + '.html"' +
-        (p.screen ? ' data-screen="' + [].concat(p.screen).map(safeUrl).join('|') + '"' : '') + '>' +
-        '<span class="rm__text">' +
-          '<span class="rm__title">' + esc(p.title) + '</span>' +
-          (meta ? '<span class="rm__meta">' + meta + '</span>' : '') +
-          '<span class="rm__desc">' + esc(p.tagline) + '</span>' +
-          '<span class="rm__foot">' +
-            (stack ? '<span class="rm__stack">' + stack + '</span>' : '') +
-          '</span>' +
-        '</span>' +
+    return '<a class="tile reveal" href="work/' + encodeURIComponent(p.id) + '.html">' +
+        '<span class="tile__img" aria-hidden="true">' + media(p.screen) + '</span>' +
+        '<span class="tile__kicker">' + esc(g.title) + '</span>' +
+        '<span class="tile__title">' + esc(p.title) + '</span>' +
+        '<span class="tile__desc">' + esc(p.tagline) + '</span>' +
+        (meta ? '<span class="tile__meta">' + meta + '</span>' : '') +
       '</a>';
   }
 
@@ -66,20 +58,14 @@
     var host = document.getElementById('recent-cards');
     if (!host) return;
 
-    var shown = projects.filter(function (p) { return !p.archived; });
     var gone = projects.filter(function (p) { return p.archived; });
-    var first = null;
-
-    var rows = GROUPS.map(function (g) {
-      var mine = shown.filter(function (p) { return p.group === g.key; });
-      if (!mine.length) return '';
-      first = first || mine[0];
-      return '<h3 class="rm-group reveal">' + esc(g.title) + '</h3>' +
-        mine.map(function (p) { return row(p, p === first); }).join('');
+    var tiles = GROUPS.map(function (g) {
+      return projects.filter(function (p) { return !p.archived && p.group === g.key; })
+        .map(function (p) { return tile(p, g); }).join('');
     }).join('');
 
     /* Still written, still live, still linked — just not what the work is
-       now. One quiet line under the list and the pane, not a second list. */
+       now. One quiet line under the row, not a second row. */
     var archive = '';
     if (gone.length) {
       archive = '<p class="rm-archive reveal">' +
@@ -94,34 +80,8 @@
 
     /* Replace, not prepend: index.html ships a real static copy of this
        (written by tools/build-share-pages.js) so a reader with JS off sees
-       the same list and the first project's preview. */
-    host.innerHTML = '<div class="rm-rows">' + rows + '</div>' +
-      '<div class="rm-screen" data-rm-screen aria-hidden="true">' + media(first && first.screen) + '</div>' +
-      archive;
-    initScreen(host);
-  }
-
-  /* ---------- the preview pane ----------
-     Shows the media of the row last pointed at or focused, and that row is
-     marked. It never blanks: leaving the list keeps the last one, so the
-     pane does not flicker as the pointer crosses the gaps between rows.
-     aria-hidden: it is a second view of a row that is already a link with a
-     title and a description. Hidden below 900px by the CSS. */
-  function initScreen(list) {
-    var screen = list.querySelector('[data-rm-screen]');
-    var on = list.querySelector('.rm.is-on');
-    if (!screen) return;
-
-    function show(rm) {
-      if (!rm || rm === on || !rm.hasAttribute('data-screen')) return;
-      if (on) on.classList.remove('is-on');
-      on = rm;
-      rm.classList.add('is-on');
-      screen.innerHTML = media(rm.getAttribute('data-screen').split('|'));
-    }
-
-    list.addEventListener('pointerover', function (e) { show(e.target.closest('.rm')); });
-    list.addEventListener('focusin', function (e) { show(e.target.closest('.rm')); });
+       the same row. */
+    host.innerHTML = '<div class="tiles">' + tiles + '</div>' + archive;
   }
 
   /* ---------- reading list ----------
@@ -185,7 +145,7 @@
        the spine's thickness comes from the page count rather than from a
        number picked to look nice. A leaf of book paper is about 0.115mm, so a
        page is half that, plus a few mm for the boards. */
-    var PX_PER_MM = 1.16;
+    var PX_PER_MM = 0.9;
     var mm = function (v) { return Math.round(v * PX_PER_MM); };
     // The board's length: every spine and the gaps between them, plus room
     // for the widest cover to open, so a turning book never pushes past the
