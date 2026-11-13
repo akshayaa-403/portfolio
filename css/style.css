@@ -1505,10 +1505,8 @@ body { padding-top: var(--header-h, 80px); }
 }
 
 /* --------------------------------------------------------------------------
-   15. Hobbies — an icon per gallery on a bracket shelf (owner's sketch)
-
-   js/hobbies.js writes the icons; the bracket is the ::after box: its top
-   border is the board, its side borders the two legs.
+   15. Hobbies — a camera and a brush on a wall shelf, each gallery's
+   photographs in orbit round its icon on hover/focus (js/hobbies.js)
    -------------------------------------------------------------------------- */
 .hobbies__intro {
   max-width: var(--measure-narrow);
@@ -1518,24 +1516,42 @@ body { padding-top: var(--header-h, 80px); }
   line-height: 1.6;
 }
 
+/* The rack: a wall shelf (a plank with two brackets, shadowed like the
+   bookshelf's board) and the two icons standing on it. The space above is
+   for the orbit to open into. */
+.hob-rack {
+  position: relative;
+  max-width: 460px;
+  padding: 84px 0 30px;
+}
 .hob-shelf {
+  position: relative;
+  z-index: 2;
   display: flex;
   justify-content: space-around;
-  flex-wrap: wrap;
-  max-width: 460px;
   margin: 0;
-  padding: 0 16px;
+  padding: 0 24px;
   list-style: none;
 }
-.hob-shelf::after {
-  content: '';
-  flex: 0 0 calc(100% + 32px);
-  height: 24px;
-  margin: 0 -16px;
-  border: 2px solid var(--ink);
-  border-bottom: 0;
+.hob-item { position: relative; }
+/* Fixed over the icon, inside the ring's empty middle: the ring is sized
+   (--r in js/hobbies.js) so no photograph reaches it. */
+.hob-label {
+  position: absolute;
+  bottom: calc(100% - 4px);
+  left: 50%;
+  z-index: 2;
+  transform: translateX(-50%);
+  color: var(--ink-soft);
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  pointer-events: none;
 }
 .hob-icon {
+  position: relative;
+  z-index: 1;
   display: block;
   padding: 8px;
   color: var(--ink);
@@ -1543,10 +1559,94 @@ body { padding-top: var(--header-h, 80px); }
 .hob-icon svg { display: block; }
 .hob-icon:hover { color: var(--accent-ink); }
 .hob-icon:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 6px; }
-@media (prefers-reduced-motion: no-preference) {
-  .js .hob-icon { transition: transform 0.25s var(--ease), color 0.25s var(--ease); }
-  .js .hob-icon:hover { transform: translateY(-4px); }
+.hob-board {
+  position: relative;
+  height: 8px;
+  border-radius: 2px;
+  background: var(--ink-muted);
+  box-shadow: 0 8px 6px -6px rgb(0 0 0 / 0.45);
 }
+.hob-board i {
+  position: absolute;
+  top: 8px;
+  left: 14%;
+  width: 18px;
+  height: 28px;
+  background: var(--ink-muted);
+  clip-path: polygon(0 0, 100% 0, 0 100%);
+}
+.hob-board i + i { left: auto; right: 14%; clip-path: polygon(0 0, 100% 0, 100% 100%); }
+
+/* The orbit: a zero-size ring on the icon's centre, the photographs placed
+   round it at --a and pushed out to --r when the item is pointed at or
+   focused. The item's ::before is a disc under the icon and the ring, so the
+   pointer can cross from the icon to a photograph without the ring closing. */
+.hob-ring {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  z-index: 3;
+  width: 0;
+  height: 0;
+  pointer-events: none;
+}
+.hob-item::before {
+  content: '';
+  position: absolute;
+  z-index: 0;
+  left: calc(50% - var(--r) - 24px);
+  top: calc(50% - var(--r) - 24px);
+  width: calc(2 * var(--r) + 48px);
+  height: calc(2 * var(--r) + 48px);
+  border-radius: 50%;
+}
+.hob-orb {
+  position: absolute;
+  left: -22px;
+  top: -22px;
+  width: 44px;
+  height: 44px;
+  overflow: hidden;
+  border-radius: 50%;
+  box-shadow: 0 0 0 2px var(--bg), 0 4px 10px -4px rgb(0 0 0 / 0.5);
+  opacity: 0;
+  pointer-events: none;
+  transform: rotate(var(--a)) translate(0) rotate(calc(-1 * var(--a))) scale(0.3);
+}
+.hob-orb img { width: 100%; height: 100%; object-fit: cover; }
+.hob-item::before { pointer-events: none; }
+.hob-item:is(:hover, :focus-within)::before { pointer-events: auto; }
+.hob-item:is(:hover, :focus-within) .hob-orb {
+  opacity: 1;
+  pointer-events: auto;
+  transform: rotate(var(--a)) translate(var(--r)) rotate(calc(-1 * var(--a)));
+}
+.hob-orb:hover { box-shadow: 0 0 0 2px var(--accent), 0 6px 14px -4px rgb(0 0 0 / 0.55); z-index: 1; }
+.hob-orb:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; border-radius: 50%; }
+
+.hob-cap {
+  max-width: 460px;
+  min-height: 1.5em;
+  margin: 4px 0 0;
+  color: var(--ink-soft);
+  font-size: 12.5px;
+  text-align: center;
+}
+
+/* The slow turn, only while open, held while a photograph is pointed at;
+   each image turns back the other way so it stays upright. */
+@media (prefers-reduced-motion: no-preference) {
+  .js .hob-icon { transition: color 0.25s var(--ease); }
+  .js .hob-orb { transition: transform 0.45s var(--ease), opacity 0.3s var(--ease); }
+  .js .hob-ring,
+  .js .hob-orb img { animation: hob-spin 40s linear infinite paused; }
+  .js .hob-orb img { animation-direction: reverse; }
+  .js .hob-item:is(:hover, :focus-within) .hob-ring,
+  .js .hob-item:is(:hover, :focus-within) .hob-orb img { animation-play-state: running; }
+  .js .hob-ring:has(.hob-orb:hover) ,
+  .js .hob-ring:has(.hob-orb:hover) .hob-orb img { animation-play-state: paused; }
+}
+@keyframes hob-spin { to { transform: rotate(360deg); } }
 /* --------------------------------------------------------------------------
    16. Phone (<=599px)
 

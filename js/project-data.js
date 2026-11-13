@@ -57,7 +57,7 @@ const projects = [
     "repo": "https://github.com/akshayaa-403/quantamental-screener",
     "demo": "https://quantamental-screener.streamlit.app",
     "created": "2025-09-22",
-    "updated": "2026-10-11",
+    "updated": "2026-11-13",
     "tags": [
       ["Factor investing", "https://en.wikipedia.org/wiki/Factor_investing"],
       ["Momentum (12-1)", "https://doi.org/10.1111/j.1540-6261.1993.tb04702.x"],
@@ -66,33 +66,33 @@ const projects = [
     ],
     "glance": {
       "problem": "I wanted one ranking that weighs price signals and the news together, and a backtest honest enough to tell me when that ranking is luck.",
-      "built": "A daily cross-sectional model: four factors z-scored per date, clipped to ±3 and summed with weights; a weekly backtest that trades yesterday's signal and only the names that change, at 10 bps; a 2,000-portfolio significance test; a Streamlit dashboard; 39 tests.",
-      "result": "Re-run on 2026-10-16 over Oct 2025 to Oct 2026: +70.1% against SPY's +18.7%, but random ten-name portfolios from the same 50 stocks made +43.8% at the median, and p = 0.067. Most of the beat is survivorship in the universe."
+      "built": "A daily cross-sectional model: four factors z-scored per date, clipped to ±3 and summed with weights; a weekly backtest that trades yesterday's signal and resets to equal weight at each rebalance, at 10 bps; a 2,000-portfolio significance test; a 30% holdout; a Streamlit dashboard; 76 tests.",
+      "result": "Re-run on 2026-11-14 at commit 6929fef, Nov 2025 to Nov 2026: +49.4% against SPY's +13.2% and the same 50 stocks' +32.9% at equal weight, but p = 0.07 against 2,000 random portfolios. On the last 30%, held out, it lost: −8.1% against +4.4%. Most of the beat is survivorship in the universe."
     },
     "nest": [
       ["The dashboard", "A Streamlit page that ranks the 50 largest liquid S&P 500 stocks, every day."],
-      ["The backtest", "Trades yesterday's ranking once a week, only the names that change, at 10 bps, against SPY and 2,000 random portfolios."],
+      ["The backtest", "Trades yesterday's ranking once a week at equal weight and 10 bps, against SPY, the whole universe and 2,000 random portfolios."],
       ["The ranking", "A weighted sum of four factors, each z-scored across the 50 stocks on every date."],
       ["The factors", "12-minus-1 momentum, signed volume, volatility, and VADER/TextBlob headline sentiment."],
       ["One z-score", "One stock, one factor, one date, clipped so it never sits more than 3 from the mean."]
     ],
-    "metric": "Beat the S&P 500 (+70% vs +19%, p = 0.07)",
+    "metric": "Beat the S&P 500, not luck (+49% vs +13%, p = 0.07)",
     "screen": "public/assets/projects/quant-current.webp"
   },
   {
     "id": "phase-contrast-denoising",
     "title": "Phase-Contrast Clean-Up Pipeline",
     "tagline": "One held-out microscope frame, followed through a classical filter and a residual U-Net.",
-    "summary": "A Python pipeline that cleans synthetic, seeded phase-contrast-style frames. It has an OpenCV front end (difference of Gaussians, then CLAHE) and an optional 31M-parameter residual U-Net, plus a browser port of the classical half that agrees with OpenCV to about 50 dB.",
+    "summary": "A Python pipeline that cleans synthetic, seeded phase-contrast frames. It has an OpenCV front end (background flattening, difference of Gaussians, then CLAHE) and an optional 7.8M-parameter residual U-Net, plus a browser port of the classical half that matches OpenCV bit for bit.",
     "context": "Research tool",
     "role": "Solo project",
     "year": "2026",
     "group": "research",
     "tech": ["Python", "PyTorch", "OpenCV", "Gradio", "JavaScript", "TensorBoard", "scikit-image"],
     "repo": "https://github.com/akshayaa-403/phase-contrast-denoising",
-    "demo": "https://akshayaa-403.github.io/phase-contrast-denoising/docs/",
+    "demo": "https://akshayaa-403.github.io/phase-contrast-denoising/",
     "created": "2026-07-23",
-    "updated": "2026-08-13",
+    "updated": "2026-11-11",
     "tags": [
       ["Phase-contrast microscopy", "https://en.wikipedia.org/wiki/Phase-contrast_microscopy"],
       ["U-Net", "https://arxiv.org/abs/1505.04597"],
@@ -104,17 +104,17 @@ const projects = [
     ],
     "glance": {
       "problem": "Phase contrast adds a halo, uneven illumination and noise to every frame, and all three push pixels across the global threshold that segmentation starts from.",
-      "built": "A seeded generator of 100 paired frames; a classical path (difference of Gaussians, then CLAHE); a hybrid path that adds a residual U-Net, with fp16 weights committed; and a browser port of the classical half.",
-      "result": "On the 20 held-out frames, PSNR goes from 11.46 to 20.26 dB and improves on all 20. Otsu Dice moves only from 0.894 to 0.907, but the worst frame rises from 0.556 to 0.808. Writing this up, I found that the CLAHE clip limit had no effect in 16-bit."
+      "built": "A seeded generator of synthetic frames (100 for training and validation, 30 more for testing); a classical path (background flattening, difference of Gaussians, then CLAHE); a hybrid path that adds a residual U-Net; and a browser port of the classical half.",
+      "result": "On 30 synthetic test frames never used for training or tuning, Otsu Dice goes from 0.08 to 0.94 (PSNR 1.5 → 28.7 dB). On 34 real U373 frames the classical path alone lifts Dice from 0.10 to 0.61; the U-Net barely adds to it. The trained weights are not yet published, so the live demo runs the classical path."
     },
     "nest": [
-      ["The app", "A Gradio app, and a browser port of the classical half that agrees with OpenCV to about 50 dB."],
-      ["The pipeline", "A classical path, difference of Gaussians then CLAHE, and a hybrid path that adds a U-Net."],
-      ["The model", "A 31M-parameter residual U-Net, its fp16 weights committed to the repo."],
-      ["The frame", "One of 100 seeded synthetic frames, 20 of them held out for testing."],
+      ["The app", "A Gradio app, and a browser port of the classical half that matches OpenCV bit for bit."],
+      ["The pipeline", "A classical path (background flattening, difference of Gaussians, CLAHE) and a hybrid path that adds a U-Net."],
+      ["The model", "A 7.8M-parameter residual U-Net; its weights are not yet published."],
+      ["The frame", "One of 30 seeded synthetic test frames, never used for training or tuning."],
       ["One pixel", "One pixel that halo, uneven light and noise push across the threshold segmentation starts from."]
     ],
-    "metric": "Cleaner on all 20 held-out frames (PSNR 11.46 → 20.26 dB)",
+    "metric": "Cells segment far better on 30 held-out frames (Otsu Dice 0.08 → 0.94)",
     "screen": "public/assets/projects/phase-demo-metrics.webp"
   },
   {
@@ -156,46 +156,7 @@ const projects = [
       ["One painting", "An original. There is only one of it, so it can only be sold once."]
     ],
     "metric": "Big images download once, not four times (4 → 1 per load)",
-    "screen": "public/assets/projects/arteza-home.webp",
-    "projectData": {
-      "tagline": "A gallery and shop for a painter, where the cart hands you to WhatsApp instead of taking money.",
-      "summary": "The online gallery and shop of the artist Upasna: 106 one-of-one paintings in five collections, a scroll zoom, a 3D drum and a shelf that draws every frame at its stated size, and a cart that ends in a WhatsApp chat because the server, not the browser, decides the price.",
-      "glance": {
-        "problem": "A painter's originals are each one of one, from 4-inch studies to a 36-inch gold-leaf Tanjore. The site had to show that range honestly and take orders without trusting a price from the browser.",
-        "built": "The hand-written parts of a React and Supabase storefront: a scroll zoom with a solved transform-origin, a 3D drum bent by one signed angle, a shelf that sizes every frame from its stated inches, an image pipeline, and an order path locked down on the server.",
-        "result": "Live at arteza.site with 106 paintings in five collections. Checkout ends in a pre-filled WhatsApp chat; payment pages were built twice and removed twice, after 23 and 20 minutes. Commercial figures belong to the client."
-      },
-      "metric": "106 paintings, 5 collections",
-      "tech": [
-        "React",
-        "TypeScript",
-        "Vite",
-        "Tailwind CSS",
-        "shadcn/ui",
-        "TanStack Query",
-        "Supabase",
-        "Deno Edge Functions",
-        "sharp",
-        "Vercel"
-      ],
-      "tags": [
-        [
-          "transform-origin",
-          "https://developer.mozilla.org/en-US/docs/Web/CSS/transform-origin"
-        ],
-        [
-          "CSS 3D transforms",
-          "https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_transforms/Using_CSS_transforms"
-        ],
-        [
-          "Row Level Security",
-          "https://supabase.com/docs/guides/database/postgres/row-level-security"
-        ],
-        ["Supabase Edge Functions", "https://supabase.com/docs/guides/functions"],
-        ["UPI", "https://en.wikipedia.org/wiki/Unified_Payments_Interface"],
-        ["sharp", "https://sharp.pixelplumbing.com"]
-      ]
-    }
+    "screen": "public/assets/projects/arteza-home.webp"
   },
   {
     "id": "habita",
@@ -218,7 +179,7 @@ const projects = [
     "repo": "https://github.com/akshayaa-403/Habita",
     "demo": "https://akshayaa-403.github.io/Habita/src/",
     "created": "2026-04-19",
-    "updated": "2026-09-19",
+    "updated": "2026-11-05",
     "tags": [
       ["Eisenhower Matrix", "https://en.wikipedia.org/wiki/Time_management"],
       ["Capacitor", "https://capacitorjs.com/docs"],
@@ -243,43 +204,7 @@ const projects = [
       "public/assets/projects/habita-phone-matrix.webp",
       "public/assets/projects/habita-phone-tilt.webp"
     ],
-    "projectData": {
-      "tagline": "A priority matrix whose day view writes each block into the phone's own calendar.",
-      "summary": "An Eisenhower-matrix to-do app in plain JavaScript, wrapped for Android with Capacitor. Its day timeline (64 px per hour, 15-minute snaps) turns each scheduled task into a real event in the phone's calendar through a hand-written CalendarContract plugin, and reads the day's other events back so a tap can find the next free slot.",
-      "glance": {
-        "problem": "Time blocked out inside a to-do app is invisible in the calendar you actually check.",
-        "built": "Four quadrants (Focus, Goals, Fit In, Backburner) and a drag-to-schedule day timeline; every block owns one event in the phone's calendar, written by a local Java plugin over CalendarContract and tinted to the nearest colour the calendar allows.",
-        "result": "18/18 jsdom checks pass against the real UI (src/index.html). The browser demo runs without the calendar; the native write-through has not been captured on a device, and there is no published APK."
-      },
-      "metric": "18/18 UI checks pass",
-      "tech": [
-        "JavaScript (ES6)",
-        "CSS Grid",
-        "SVG",
-        "Capacitor",
-        "Java",
-        "Android CalendarContract",
-        "localStorage",
-        "jsdom"
-      ],
-      "tags": [
-        [
-          "Eisenhower method",
-          "https://en.wikipedia.org/wiki/Time_management#The_Eisenhower_Method"
-        ],
-        ["Capacitor", "https://capacitorjs.com/docs"],
-        [
-          "Calendar Provider",
-          "https://developer.android.com/guide/topics/providers/calendar-provider"
-        ],
-        [
-          "CalendarContract.Instances",
-          "https://developer.android.com/reference/android/provider/CalendarContract.Instances"
-        ]
-      ],
-      "created": "2026-04-19",
-      "updated": "2026-10-14"
-    }
+    "metric": "18/18 UI checks pass"
   },
   {
     "id": "outbound-pipeline",

@@ -141,7 +141,7 @@
 
       { id: 'results', title: 'Results',
         blocks: [
-          { p: 'When I re-ran the test file on 18 October 2026, all **18 of 18** checks passed: filing, dropping, resizing, tapping, side-by-side layout, unscheduling, keyboard nudges and a reload of the saved model.' },
+          { p: 'When I re-ran the test file on 14 November 2026, all **18 of 18** checks passed: filing, dropping, resizing, tapping, side-by-side layout, unscheduling, keyboard nudges and a reload of the saved model.' },
           { p: 'The last check is about old saves. Tasks saved before the timeline existed had no `start`, `duration` or `eventId`; on load every task is coerced into the current shape.' },
           { code: 'start: Number.isFinite(start) && start > 0 ? start : null,\nduration: Number.isFinite(duration) && duration > 0 ? duration : DEFAULT_DURATION,\neventId: typeof raw.eventId === \'string\' ? raw.eventId : null,', lang: 'javascript', caption: 'Three of the fields normalizeTask fills in, src/core/storage.js.' },
           { p: 'That covers missing fields, not a save that won’t parse: then the app starts empty and the next save writes over the old data. There is no build step any more; Capacitor serves `src/` directly. What isn’t a result yet is the calendar on a real phone: there are no releases on GitHub.' }
@@ -160,11 +160,11 @@
     ] },
 
     sources: [
-      ['Test run', '`node tests/timeline.test.mjs` in the Habita repo at 4bc5591, re-run 18 October 2026: 18/18 checks passed.'],
+      ['Test run', '`node tests/timeline.test.mjs` in the Habita repo at 4a02f09, re-run 14 November 2026: 18/18 checks passed.'],
       ['Timeline constants', 'PX_PER_HOUR, DRAG_THRESHOLD and the sweep in src/features/timeline/timeline.js; snapTime in src/features/tasks/tasks.js.'],
       ['Sync behaviour', 'src/core/calendar.js:120-175; tasks.js:94-210; CalendarPlugin.java:291-566.'],
       ['DIRTY rule', '[AOSP CalendarProvider2.java](https://android.googlesource.com/platform/packages/providers/CalendarProvider/+/refs/heads/main/src/com/android/providers/calendar/CalendarProvider2.java), insertInTransaction, case EVENTS.'],
-      ['Dates and releases', 'git log in the Habita repo (3105c56, a3ca719, b1724c3, c215520, 4bc5591); GitHub releases API returned [] (October 2026).'],
+      ['Dates and releases', 'git log in the Habita repo (3105c56, a3ca719, b1724c3, c215520, 4bc5591); GitHub releases API returned [] (14 November 2026); a Release workflow exists since 4a02f09 but has not published anything.'],
       ['Axes', 'src/styles/styles.css:335-362 against the aria-labels in src/index.html:66-78.'],
       ['Columns', 'assignColumns, timeline.js:182-218; test at tests/timeline.test.mjs:199-212.']
     ],
