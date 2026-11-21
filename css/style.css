@@ -879,20 +879,66 @@ body { padding-top: var(--header-h, 80px); }
   text-wrap: balance;
 }
 
+/* --- Below 900px: a phone's home screen --------------------------------
+   No desk. The name is a widget with today's date (js/script.js), the case
+   studies (.hero__work) and the sections (.apps) are app icons (css/desk.css),
+   and contact is the dock, held to the foot of the first screen. */
+.hero__today, .apps, .dock { display: none; }
 @media (max-width: 899.98px) {
-  /* No desk: the name, the line and the list stack under the header. */
-  .hero { margin-top: 0; padding-top: 26px; }
-  .stage { min-height: 0; padding-bottom: var(--gap-lg); }
+  .hero { margin-top: 0; }
+  .stage {
+    display: flex;
+    flex-direction: column;
+    gap: 26px;
+    width: min(100%, 560px);
+    min-height: calc(100svh - var(--header-h, 64px));
+    margin: 0 auto;
+    padding: 18px var(--gap-lg);
+  }
   .hero__lockup {
     position: relative;
     left: auto;
     top: auto;
     width: auto;
     translate: none;
-    padding: 12px var(--gap-lg) 0;
+    padding: 20px 18px;
+    border-radius: 26px;
+    background: var(--surface);
+    box-shadow: var(--shadow-card);
+    text-align: left;
     pointer-events: auto;
   }
-  .hero__name { white-space: normal; margin-bottom: 12px; }
+  .hero__today {
+    display: block;
+    margin: 0 0 8px;
+    color: var(--accent-ink);
+    font: 500 11px/1.3 var(--font-mono);
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+  }
+  .hero__today:empty { display: none; }
+  .hero__name { white-space: normal; margin-bottom: 8px; font-size: clamp(2.5rem, 12vw, 3.25rem); }
+  .hero__sub { margin: 0; max-width: none; font-size: 16px; }
+  .apps { display: block; margin-top: -4px; }
+  .dock {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    margin-top: auto;
+    padding: 12px 6px;
+    border-radius: 28px;
+    background: var(--surface);
+    box-shadow: var(--shadow-card);
+  }
+  .dock a {
+    display: grid;
+    justify-items: center;
+    gap: 4px;
+    color: var(--ink);
+    font: 500 11px/1.2 var(--font-mono);
+    text-decoration: none;
+  }
+  .dock .icon { width: 48px; height: 48px; padding: 12px; border-radius: 14px; background: var(--ink); color: var(--bg); }
+  .dock a:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 14px; }
 }
 
 /* --------------------------------------------------------------------------
@@ -988,8 +1034,29 @@ body { padding-top: var(--header-h, 80px); }
   .js .tile__img img { transition: transform 0.5s var(--ease); }
   .js .tile:hover .tile__img img { transform: scale(1.03); }
 }
+/* Below 900px the row becomes one you swipe, the next card peeking in.
+   The experience badges (css/experience.css) and the bracelet (css/info.css)
+   do the same. */
 @media (max-width: 899.98px) {
-  .tiles { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .tiles {
+    display: flex;
+    gap: 14px;
+    margin-inline: calc(-1 * var(--gap-lg));
+    padding: 2px var(--gap-lg);
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    scroll-padding-inline: var(--gap-lg);
+    scrollbar-width: none;
+  }
+  .tile {
+    flex: 0 0 min(78%, 320px);
+    scroll-snap-align: start;
+    padding: 10px 10px 14px;
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    background: var(--surface);
+  }
+  .tile__title { font-size: 17px; }
 }
 
 /* --- The archive ----------------------------------------------------

@@ -296,6 +296,7 @@
 
       <!-- ---------- The name, on the wall ---------- -->
       <div class="hero__lockup">
+        <p class="hero__today" data-today></p>
         <h1 class="hero__name" id="hero-name">Akshayaa Kashyap</h1>
         <p class="hero__sub">AI engineer. I build LLM agents and the data pipelines that feed them.</p>
       </div>
@@ -326,6 +327,25 @@
           </label>
         </form>
       </div>
+
+      <!-- ---------- The phone's home screen ----------
+           Below 900px the hero is a home screen: the name as a widget, the
+           case studies above as app icons, these sections as more icons, and
+           a dock. Hidden at 900px and up, where the desk is. css/style.css §5. -->
+      <nav class="apps" aria-label="Sections">
+        <ul class="screen__list">
+          <li><a class="shortcut" href="#experience"><span class="shortcut__icon" style="--c: var(--graph-hobbies)" aria-hidden="true"><svg viewBox="0 0 48 48" focusable="false"><rect x="8" y="16" width="32" height="22" rx="3"/><path d="M18 16v-4h12v4M8 26h32"/></svg></span><span class="shortcut__name">Experience</span></a></li>
+          <li><a class="shortcut" href="#about"><span class="shortcut__icon" style="--c: var(--graph-name)" aria-hidden="true"><svg viewBox="0 0 48 48" focusable="false"><circle cx="24" cy="17" r="7"/><path d="M10 40c2-8 7-12 14-12s12 4 14 12"/></svg></span><span class="shortcut__name">About</span></a></li>
+          <li><a class="shortcut" href="#readings"><span class="shortcut__icon" style="--c: var(--graph-projects)" aria-hidden="true"><svg viewBox="0 0 48 48" focusable="false"><path d="M24 14c-4-3-9-4-15-4v26c6 0 11 1 15 4 4-3 9-4 15-4V10c-6 0-11 1-15 4zM24 14v26"/></svg></span><span class="shortcut__name">Readings</span></a></li>
+          <li><a class="shortcut" href="#hobbies"><span class="shortcut__icon" style="--c: var(--graph-hobbies)" aria-hidden="true"><svg viewBox="0 0 48 48" focusable="false"><rect x="7" y="15" width="34" height="23" rx="3"/><circle cx="24" cy="26" r="6"/><path d="M17 15l3-5h8l3 5"/></svg></span><span class="shortcut__name">Hobbies</span></a></li>
+        </ul>
+      </nav>
+      <nav class="dock" aria-label="Contact">
+        <a href="mailto:akshayaakashyap5@gmail.com"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><use href="#i-mail"></use></svg>Mail</a>
+        <a href="https://github.com/akshayaa-403" target="_blank" rel="noopener noreferrer"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><use href="#i-github"></use></svg>GitHub</a>
+        <a href="https://linkedin.com/in/akshayaa-kashyap" target="_blank" rel="noopener noreferrer"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><use href="#i-linkedin"></use></svg>LinkedIn</a>
+        <a href="public/assets/resume.pdf" target="_blank" rel="noopener noreferrer"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" d="M14 3H7a1.5 1.5 0 0 0-1.5 1.5v15A1.5 1.5 0 0 0 7 21h10a1.5 1.5 0 0 0 1.5-1.5V7.5L14 3Zm0 0v4.5h4.5M9 12.5h6M9 16h6"/></svg>Résumé</a>
+      </nav>
 
     </div>
   </section>

@@ -453,6 +453,9 @@
 
   /* ---------- boot ---------- */
   function init() {
+    // The phone home screen's widget: today's date, like a lock screen.
+    var today = document.querySelector('[data-today]');
+    if (today) today.textContent = new Date().toLocaleDateString(undefined, { weekday: 'long', day: 'numeric', month: 'long' });
     renderCards();
     renderReadings();
     initReveal();
