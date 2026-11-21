@@ -34,6 +34,7 @@
   --desk-sheen-x: 50%;
   --desk-crease: rgba(120, 92, 64, 0.30);
   --desk-ao: rgba(60, 50, 40, 0.06);
+  --device: #1c1e23;   /* the phone's body, below 900px */
 }
 /* The props are photographs lit for a bright room; on a dark ground they
    glare. Dim them, except the glow (the light source) and the lamp (on). */
@@ -48,6 +49,7 @@
   --desk-sheen-x: var(--lamp-x, 14%);
   --desk-crease: rgba(0, 0, 0, 0.6);
   --desk-ao: rgba(0, 0, 0, 0.3);
+  --device: #0d0e11;
 }
 :root[data-time='day'] {
   --desk-filter: sepia(0.12) brightness(1.02);
@@ -77,6 +79,14 @@
 }
 @media (min-width: 900px) {
   [data-mode='desk'] .desk { display: block; }
+}
+/* Below 900px the desk keeps only its wall and tabletop, behind the phone
+   that stands in for the laptop (.handset, css/style.css §5). The hero is not
+   pulled under the header there, so the desk fills the stage. */
+@media (max-width: 899.98px) {
+  [data-mode='desk'] .desk { display: block; inset: 0; }
+  .desk > :not(.desk__wall, .desk__top) { display: none; }
+  .desk__top { height: 20%; }
 }
 
 /* --- The wall ---------------------------------------------------------------
@@ -201,15 +211,16 @@
    (.apps), are app icons on a phone's home screen (css/style.css §5). */
 @media (max-width: 899.98px) {
   .hero__work { padding: 0; }
-  :is(.hero__work, .apps) .screen__list { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 22px 4px; }
-  :is(.hero__work, .apps) .shortcut { flex-direction: column; gap: 7px; padding: 0; border: 0; background: none; text-align: center; }
-  :is(.hero__work, .apps) .shortcut__icon { width: 60px; height: 60px; border-radius: 16px; }
-  :is(.hero__work, .apps) .shortcut__icon svg { width: 30px; height: 30px; }
+  :is(.hero__work, .apps) .screen__list { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px 4px; }
+  :is(.hero__work, .apps) .shortcut { flex-direction: column; gap: 6px; padding: 0; border: 0; background: none; text-align: center; }
+  :is(.hero__work, .apps) .shortcut__icon { width: 52px; height: 52px; border-radius: 14px; }
+  :is(.hero__work, .apps) .shortcut__icon svg { width: 27px; height: 27px; }
   :is(.hero__work, .apps) .shortcut__name {
     display: -webkit-box;
     overflow: hidden;
-    font-size: clamp(9.5px, 2.8vw, 11px);   /* "Quantamental" fits a 360px phone */
+    font-size: clamp(8.5px, 2.6vw, 10px);   /* "Quantamental" fits on a 360px phone's handset */
     font-weight: 500;
+    letter-spacing: -0.03em;
     line-height: 1.25;
     overflow-wrap: anywhere;
     -webkit-line-clamp: 2;

@@ -879,21 +879,56 @@ body { padding-top: var(--header-h, 80px); }
   text-wrap: balance;
 }
 
-/* --- Below 900px: a phone's home screen --------------------------------
-   No desk. The name is a widget with today's date (js/script.js), the case
-   studies (.hero__work) and the sections (.apps) are app icons (css/desk.css),
-   and contact is the dock, held to the foot of the first screen. */
+/* --- Below 900px: a phone on the desk -----------------------------------
+   The desk shows only its wall and tabletop (css/desk.css), and a phone
+   (.handset) stands on the tabletop in place of the laptop. Its screen is a
+   home screen: the name as a widget with today's date (js/script.js), the
+   case studies (.hero__work) and the sections (.apps) as app icons
+   (css/desk.css), and contact as the dock at the foot of the screen.
+   At 900px and up the two wrappers are display: contents. */
+.handset, .handset__screen { display: contents; }
 .hero__today, .apps, .dock { display: none; }
 @media (max-width: 899.98px) {
   .hero { margin-top: 0; }
   .stage {
     display: flex;
-    flex-direction: column;
-    gap: 26px;
-    width: min(100%, 560px);
+    justify-content: center;
     min-height: calc(100svh - var(--header-h, 64px));
-    margin: 0 auto;
-    padding: 18px var(--gap-lg);
+    padding: 22px var(--gap-lg) 7svh;   /* the phone's foot lands on the tabletop */
+  }
+  .handset {
+    display: block;
+    position: relative;
+    z-index: 2;
+    align-self: flex-end;
+    width: min(340px, 100%);
+    padding: 10px;
+    border-radius: 48px;
+    background: var(--device);
+    box-shadow: 0 0 0 1px var(--line-strong), 0 22px 26px -14px var(--prop-shadow);
+  }
+  /* The camera island. */
+  .handset::before {
+    content: '';
+    position: absolute;
+    left: 50%;
+    top: 21px;
+    z-index: 1;
+    width: 84px;
+    height: 24px;
+    translate: -50% 0;
+    border-radius: 12px;
+    background: var(--device);
+  }
+  .handset__screen {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    min-height: min(640px, calc(100svh - var(--header-h, 64px) - 22px - 7svh - 20px));
+    padding: 46px 12px 12px;
+    border-radius: 38px;
+    background: linear-gradient(170deg, var(--bg), var(--bg-sunken));
+    overflow: hidden;
   }
   .hero__lockup {
     position: relative;
@@ -901,8 +936,8 @@ body { padding-top: var(--header-h, 80px); }
     top: auto;
     width: auto;
     translate: none;
-    padding: 20px 18px;
-    border-radius: 26px;
+    padding: 16px 16px 18px;
+    border-radius: 24px;
     background: var(--surface);
     box-shadow: var(--shadow-card);
     text-align: left;
@@ -910,21 +945,21 @@ body { padding-top: var(--header-h, 80px); }
   }
   .hero__today {
     display: block;
-    margin: 0 0 8px;
+    margin: 0 0 6px;
     color: var(--accent-ink);
-    font: 500 11px/1.3 var(--font-mono);
+    font: 500 10px/1.3 var(--font-mono);
     letter-spacing: 0.12em;
     text-transform: uppercase;
   }
   .hero__today:empty { display: none; }
-  .hero__name { white-space: normal; margin-bottom: 8px; font-size: clamp(2.5rem, 12vw, 3.25rem); }
-  .hero__sub { margin: 0; max-width: none; font-size: 16px; }
-  .apps { display: block; margin-top: -4px; }
+  .hero__name { white-space: normal; margin-bottom: 6px; font-size: clamp(2rem, 10vw, 2.6rem); }
+  .hero__sub { margin: 0; max-width: none; font-size: 14.5px; }
+  .apps { display: block; margin-top: -2px; }
   .dock {
     display: grid;
     grid-template-columns: repeat(4, minmax(0, 1fr));
     margin-top: auto;
-    padding: 12px 6px;
+    padding: 10px 4px;
     border-radius: 28px;
     background: var(--surface);
     box-shadow: var(--shadow-card);
@@ -934,11 +969,11 @@ body { padding-top: var(--header-h, 80px); }
     justify-items: center;
     gap: 4px;
     color: var(--ink);
-    font: 500 11px/1.2 var(--font-mono);
+    font: 500 10px/1.2 var(--font-mono);
     text-decoration: none;
   }
-  .dock .icon { width: 48px; height: 48px; padding: 12px; border-radius: 14px; background: var(--ink); color: var(--bg); }
-  .dock a:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 14px; }
+  .dock .icon { width: 44px; height: 44px; padding: 11px; border-radius: 13px; background: var(--ink); color: var(--bg); }
+  .dock a:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 13px; }
 }
 
 /* --------------------------------------------------------------------------
