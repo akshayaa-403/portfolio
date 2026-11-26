@@ -864,13 +864,14 @@
      wood or the window alike. */
   text-shadow: 0 0 3px var(--bg), 0 0 6px var(--bg), 0 0 10px var(--bg);
 }
-.ings i {
+/* Each ingredient's cut-out picture, beside its name. */
+.ings img {
   flex: none;
-  width: 10px;
-  height: 10px;
-  border: 1.5px solid currentColor;
-  border-radius: 50% 45% 55% 50%;
-  rotate: -12deg;
+  width: auto;
+  height: 46px;
+  max-width: 60px;
+  object-fit: contain;
+  filter: drop-shadow(0 2px 2px var(--prop-shadow));
 }
 .mug.is-open .ings li {
   translate: calc(-50% + var(--tx)) calc(-50% + var(--ty));
@@ -994,8 +995,10 @@
 }
 .bizcard__card {
   position: relative;
-  width: min(440px, 88vw);
-  aspect-ratio: 1.75;
+  /* 3:2, as big as the owner's mark-up (2026-11-26), and never taller than
+     the window. */
+  width: min(700px, 90vw, (100svh - 64px) * 1.5);
+  aspect-ratio: 1.5;
   display: flex;
   flex-direction: column;
   justify-content: flex-end;
@@ -1036,8 +1039,7 @@
    both sitting on the card's bottom edge. */
 .bizcard__body { display: flex; align-items: flex-end; justify-content: space-between; gap: 18px; }
 .bizcard__text { min-width: 0; }
-/* The QR is a link. It lifts a little on hover, and a line of the day's
-   accent sweeps over it (still under reduced motion: a steady line). */
+/* The QR is a link, drawn as a tree (js/desk-objects.js qrTree). */
 .bizcard__qr {
   position: relative;
   flex: none;
@@ -1052,39 +1054,39 @@
   text-decoration: none;
   overflow: hidden;
 }
-.bizcard__qr img { display: block; width: 104px; height: 104px; }
 .bizcard__qrcap {
   font-family: var(--font-mono);
   font-size: 10.5px;
   letter-spacing: 0.04em;
   color: var(--paper-ink-soft);
 }
-.bizcard__qr::after {
-  content: '';
-  position: absolute;
-  left: 6px;
-  right: 6px;
-  top: 6px;
-  height: 2px;
-  border-radius: 1px;
-  background: var(--biz-accent, var(--accent-deep));
-  opacity: 0;
-  transition: opacity 0.2s ease;
-}
 .bizcard__qr:hover,
 .bizcard__qr:focus-visible { box-shadow: 0 0 0 2px var(--biz-accent, var(--accent-deep)); }
-.bizcard__qr:hover::after,
-.bizcard__qr:focus-visible::after { opacity: 0.7; }
 .bizcard__qr:focus-visible { outline: 2px solid var(--biz-accent, var(--accent-deep)); outline-offset: 3px; }
 @media (prefers-reduced-motion: no-preference) {
-  .bizcard__qr { transition: box-shadow 0.25s ease, scale 0.25s cubic-bezier(0.2, 0.8, 0.3, 1.2); }
-  .bizcard__qr:hover { scale: 1.05; }
-  .bizcard__qr:hover::after, .bizcard__qr:focus-visible::after { animation: qr-scan 1.8s ease-in-out infinite; }
+  .bizcard__qr { transition: box-shadow 0.25s ease; }
 }
-@keyframes qr-scan {
-  0%, 100% { top: 6px; }
-  50% { top: calc(100% - 8px); }
+
+/* The tree (js/qr-tree.js draws it). Its season buttons sit under it,
+   outside the link. */
+.bizcard__tree { flex: none; display: grid; justify-items: center; gap: 8px; }
+.qt { display: block; width: 340px; height: 340px; }
+.qt__seasons { display: flex; gap: 4px; }
+.qt__seasons button {
+  padding: 3px 8px;
+  border: 1px solid rgb(0 0 0 / 0.12);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--paper-ink-soft);
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  letter-spacing: 0.04em;
+  text-transform: capitalize;
+  cursor: pointer;
 }
+.qt__seasons button[aria-pressed='true'] { border-color: var(--biz-accent, var(--accent-deep)); color: var(--paper-ink); }
+.qt__seasons button:hover { color: var(--paper-ink); }
+.qt__seasons button:focus-visible { outline: 2px solid var(--biz-accent, var(--accent-deep)); outline-offset: 2px; }
 .bizcard__lines a {
   color: var(--paper-ink, #24211c);
   text-decoration: underline;

@@ -170,7 +170,7 @@
     <!-- --lap-dx/--lap-dy/--lap-s: how far the laptop (and the list on its
          screen) sits from its default place and at what scale
          (css/desk.css). Set with the ?edit=1 desk editor. -->
-    <div class="stage" style="--lap-dx:0vw; --lap-dy:-6svh; --lap-s:0.72;">
+    <div class="stage" style="--lap-dx:0.054vw; --lap-dy:-4.072svh; --lap-s:0.72;">
 
       <!-- ---------- The desk ----------
            Every [data-drag] child can be picked up and moved; "Tidy up" (and
@@ -229,7 +229,7 @@
         <audio id="hero-audio" preload="none" loop src="public/assets/audio/track.mp3"></audio>
         <button class="tt" type="button" data-drag data-turntable aria-pressed="false"
                 aria-label="Record player: Old Devil Moon, Miles Davis Quartet" data-cue="Play the record"
-                style="--x:77.5%; --y:54%; --w:14.5%; --z:5;">
+                style="--x:80.984%; --y:59.584%; --w:14.5%; --z:5;">
           <span class="tt__fig">
             <img class="tt__img" src="public/assets/desk/turntable.webp" alt="" width="900" height="801" decoding="async">
             <span class="tt__spin" aria-hidden="true"></span>
@@ -239,7 +239,7 @@
 
         <!-- A phone lying on the desk; press it and AirDrop offers the
              résumé. -->
-        <div class="phone" data-drag style="--x:26%; --y:86%; --w:8.5%; --z:7;">
+        <div class="phone" data-drag style="--x:19.468%; --y:82.484%; --w:8.5%; --z:7;">
           <button class="phone__btn" type="button" aria-expanded="false" aria-controls="airdrop"
                   aria-label="Phone: AirDrop from Akshayaa" data-cue="AirDrop from Akshayaa">
             <img src="public/assets/desk/phone.webp" alt="" width="700" height="206" decoding="async">
@@ -264,20 +264,20 @@
              opens a card about the dictionary it comes from. -->
         <button class="chip" type="button" data-drag data-chip aria-haspopup="dialog"
                 aria-label="Today's palette: about Sanzo Wada's colour combinations" data-cue="Today's palette"
-                style="--x:76%; --y:11%; --w:7.4%; --r:2deg; --z:6;">
+                style="--x:75.728%; --y:18.239%; --w:7.4%; --r:2deg; --z:6;">
           <span class="chip__sw" data-chip-sw aria-hidden="true"><i></i><i></i><i></i></span>
           <span class="chip__title">Today's Palette</span>
           <span class="chip__no" data-chip-no></span>
         </button>
 
         <!-- The drink of the day; press it and what is in it floats out. -->
-        <div class="mug" data-drag data-mug style="--x:21.5%; --y:69%; --w:4.2%; --z:7;">
+        <div class="mug" data-drag data-mug style="--x:19.377%; --y:68.173%; --w:4.2%; --z:7;">
           <button class="mug__btn" type="button" aria-expanded="false" aria-controls="drink-ings"></button>
           <ul class="ings" id="drink-ings" aria-label="What is in it"></ul>
         </div>
 
         <!-- A business-card holder: take a card and it is shown on the page. -->
-        <div class="cards" data-drag style="--x:68%; --y:72%; --w:6%; --z:6;">
+        <div class="cards" data-drag style="--x:70.994%; --y:70.036%; --w:6%; --z:6;">
           <button class="cards__take" type="button" data-cards data-cue="Take a card"
                   aria-haspopup="dialog" aria-label="Take a business card">
             <span class="cards__card cards__card--3" aria-hidden="true"></span>
@@ -591,6 +591,7 @@
 <!-- Desk mode's objects: after project-, hobby- and readings-data.js, which
      they read, and after hero-hover.js, whose drag they hook into. -->
 <script src="js/desk-data.js" defer></script>
+<script src="js/qr-tree.js" defer></script>
 <script src="js/desk-objects.js" defer></script>
 <!-- Dev-only: fetched solely when ?edit=1 is in the URL, so real visitors
      never download or run them. Both self-gate on the same param as a

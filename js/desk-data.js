@@ -9,24 +9,18 @@ var deskData = {
      condensation. cm is how tall the photograph is in life, so the drinks
      keep their real sizes against each other: the desk's --w on the drink
      is the width of the old 9 cm mug, and everything is scaled from that.
-     ingredients are [name, colour of its mark]; pressing the drink floats
-     them out of the cup. Zen Garden's are only what its photograph shows
-     (lemon, basil, a rock-sugar stirrer, ice): the owner to confirm. */
+     ingredients are names; pressing the drink floats them out of the cup,
+     each with its picture, public/assets/drinks/ingredients/<name with
+     dashes>.webp (cut out from the owner's photos). The owner's list,
+     2026-11-26. */
   drinks: [
-    ['ginger-chai', 'ginger chai', true, 9.5,
-      [['black tea', '#7a3f1c'], ['ginger', '#d9b679'], ['milk', '#f3ece0'], ['cardamom', '#8fa05a'], ['sugar', '#f4f1ea']]],
-    ['hazelnut-mocha', 'iced hazelnut mocha', false, 14,
-      [['espresso', '#3b2416'], ['hazelnut syrup', '#a8692f'], ['cocoa', '#5a3420'], ['milk', '#f3ece0'], ['ice', '#d9eef7']]],
-    ['ube-matcha-latte', 'ube matcha latte', false, 11,
-      [['ube', '#7b4fa8'], ['matcha', '#7fa94e'], ['milk', '#f3ece0'], ['ice', '#d9eef7']]],
-    ['zen-garden', 'Zen Garden', false, 12,
-      [['lemon', '#f2d03b'], ['basil', '#4f8a3c'], ['rock sugar', '#efe6d2'], ['ice', '#d9eef7']]],
-    ['diet-coke', 'Diet Coke', false, 20,
-      [['carbonated water', '#cfe3ea'], ['caramel colour', '#6b3a1c'], ['aspartame', '#f4f1ea'], ['caffeine', '#b9a68a']]],
-    ['citron-tea', 'citron tea', true, 15,
-      [['citron (yuja) marmalade', '#e9952f'], ['honey', '#d9a23a'], ['hot water', '#cfe3ea']]],
-    ['lemon-tea', 'lemon tea', true, 7.5,
-      [['black tea', '#7a3f1c'], ['lemon', '#f2d03b'], ['honey', '#d9a23a']]]
+    ['ginger-chai', 'ginger chai', true, 9.5, ['black tea', 'ginger', 'sugar']],
+    ['hazelnut-mocha', 'iced hazelnut mocha', false, 14, ['coffee', 'hazelnut syrup', 'cocoa', 'ice']],
+    ['ube-matcha-latte', 'ube matcha latte', false, 11, ['ube', 'matcha', 'ice']],
+    ['zen-garden', 'Zen Garden', false, 12, ['lemon', 'basil', 'ice']],
+    ['diet-coke', 'Diet Coke', false, 20, ['ice', 'lemon', 'diet coke']],
+    ['citron-tea', 'citron tea', true, 15, ['lemon marmalade', 'honey', 'hot water']],
+    ['lemon-tea', 'lemon tea', true, 7.5, ['black tea', 'lemon', 'honey']]
   ],
 
   /* Desk shortcuts: the glyph inside each case study's icon, a 48-unit
@@ -47,5 +41,21 @@ var deskData = {
     email: 'akshayaakashyap5@gmail.com',
     urls: ['https://github.com/akshayaa-403', 'https://linkedin.com/in/akshayaa-kashyap'],
     resume: 'public/assets/resume.pdf'
-  }
+  },
+
+  /* The LinkedIn QR's modules (1 = dark), read once from
+     public/assets/linkedin-qr.svg. The card's tree grows its leaves on the
+     dark ones, so change this with that file. */
+  qr: [
+    '11111110101010111110001111111', '10000010001011101101001000001', '10111010010110001100001011101',
+    '10111010100101110001001011101', '10111010110000011110001011101', '10000010101001101101001000001',
+    '11111110101010101010101111111', '00000000110100111111100000000', '10001011100100000100111111001',
+    '00011101111111111010101111111', '10011110100010010100101010001', '10001100101010101110101111011',
+    '00111011111010010100110000010', '00111100011111011110001111111', '11011011101010010000101111101',
+    '10100001111010010111111010011', '10100110111011110100110000010', '11111001000001110000001111011',
+    '00001110100100010000110000101', '00100101110100011111001110011', '11011011110011100101111111001',
+    '00000000100010111111100010001', '11111110111111110101101011101', '10000010011111011101100010011',
+    '10111010101001000101111111001', '10111010010000111011010000001', '10111010001011110101110001111',
+    '10000010001011111110100101011', '11111110110100011101101101010'
+  ]
 };

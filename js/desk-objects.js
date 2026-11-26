@@ -367,9 +367,9 @@
     var ings = drink[4] || [], n = ings.length;
     list.innerHTML = ings.map(function (x, i) {
       var a = Math.PI * (1.12 + 0.76 * (n > 1 ? i / (n - 1) : 0.5));
-      var c = /^#[0-9a-f]{6}$/i.test(x[1]) ? x[1] : 'transparent';
+      var src = 'public/assets/drinks/ingredients/' + encodeURIComponent(x.replace(/\s+/g, '-')) + '.webp';
       return '<li style="--tx:' + (Math.cos(a) * 5.4).toFixed(2) + 'em;--ty:' + (Math.sin(a) * 4.4 - 0.8).toFixed(2) +
-        'em;--d:' + i * 70 + 'ms"><i style="background:' + c + '"></i>' + esc(x[0]) + '</li>';
+        'em;--d:' + i * 70 + 'ms"><img src="' + src + '" alt="" decoding="async">' + esc(x) + '</li>';
     }).join('');
     function open() { return mug.classList.contains('is-open'); }
     function set(on, refocus) {
@@ -419,7 +419,7 @@
     var btn = desk.querySelector('[data-cards]');
     if (!btn) return;
     var holder = btn.closest('.cards');
-    var dlg = null;
+    var dlg = null, tree = null;
     btn.addEventListener('click', function () {
       var c = D.card;
       if (!dlg) {
@@ -435,16 +435,42 @@
             }).join('') +
             '<li><a href="' + safeUrl(c.resume) + '" target="_blank" rel="noopener noreferrer">Résumé (PDF)</a></li>' +
           '</ul></div>' +
-          // The QR is a link: scanning it on a phone or pressing it here opens LinkedIn.
+          // The QR is a link: scanning it on a phone or pressing it here opens
+          // LinkedIn. It stands as a tree (js/qr-tree.js) and lies flat into
+          // the code on hover; the buttons under it change the season.
+          '<div class="bizcard__tree">' +
           '<a class="bizcard__qr" href="' + safeUrl(c.urls[1]) + '" target="_blank" rel="noopener noreferrer" ' +
-            'aria-label="LinkedIn profile, opens in a new tab">' +
-            '<img src="public/assets/linkedin-qr.svg" alt="" width="104" height="104" decoding="async">' +
-            '<span class="bizcard__qrcap">LinkedIn ↗</span></a></div>',
-          function () { holder.classList.remove('is-taken'); btn.focus({ preventScroll: true }); });
+            'aria-label="LinkedIn profile, opens in a new tab"><canvas class="qt" aria-hidden="true"></canvas>' +
+            '<span class="bizcard__qrcap">LinkedIn ↗</span></a>' +
+          '<div class="qt__seasons" role="group" aria-label="Season of the tree">' +
+            ['spring', 'summer', 'autumn', 'winter'].map(function (s) {
+              return '<button type="button" data-season="' + s + '" aria-pressed="false">' + s + '</button>';
+            }).join('') +
+          '</div></div></div>',
+          function () {
+            if (tree) tree.stop();
+            holder.classList.remove('is-taken');
+            btn.focus({ preventScroll: true });
+          });
+        if (window.qrTree) {
+          tree = window.qrTree(dlg.querySelector('.qt'), D.qr);
+          var link = dlg.querySelector('.bizcard__qr'), seasons = dlg.querySelectorAll('[data-season]');
+          var pick = function (name) {
+            tree.season(name);
+            seasons.forEach(function (b) { b.setAttribute('aria-pressed', String(b.dataset.season === name)); });
+          };
+          seasons.forEach(function (b) { b.addEventListener('click', function () { pick(b.dataset.season); }); });
+          pick(window.qrTree.now());
+          link.addEventListener('pointerenter', function () { tree.flat(true); });
+          link.addEventListener('pointerleave', function () { tree.flat(false); });
+          link.addEventListener('focus', function () { tree.flat(true); });
+          link.addEventListener('blur', function () { tree.flat(false); });
+        }
       }
       holder.classList.add('is-taken');
       api.moved();
       show(dlg);
+      if (tree) tree.start();
     });
   }
 
