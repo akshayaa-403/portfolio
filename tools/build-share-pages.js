@@ -21,7 +21,7 @@
 const fs = require('fs');
 const path = require('path');
 
-const { ROOT, esc, loadProjects, loadHobbies } = require('./data');
+const { ROOT, esc, loadProjects, loadHobbies, loadDesk } = require('./data');
 
 const BASE = 'https://akshayaa-403.github.io/portfolio/';
 const OG_FALLBACK = BASE + 'public/assets/og-card.png';
@@ -156,7 +156,9 @@ const LIST_END = '<!-- END generated:project-list -->';
 /* The groups, in render order. A project's `group` picks one. */
 const GROUPS = [
   { key: 'research', title: 'Research' },
-  { key: 'products', title: 'Products' }
+  { key: 'products', title: 'Products' },
+  { key: 'experiments', title: 'Experiments' },
+  { key: 'industry', title: 'Industry' }
 ];
 
 // The first item of `screen` only: one picture per tile.
@@ -168,14 +170,18 @@ const media = (src) => {
     : '<img src="' + esc(one) + '" alt="" loading="lazy" decoding="async">';
 };
 
-function tileHtml(p, g, reveal) {
-  // The real years, not p.year; Arteza has no repo dates, so it falls back.
+// Context · years. The real years, not p.year; Arteza has no repo dates.
+function metaOf(p) {
   const a = (p.created || '').slice(0, 4);
   const b = (p.updated || '').slice(0, 4);
   const years = a ? (a === b ? a : a + '–' + b) : (p.year || '');
-  const meta = [p.context || p.role, years].filter(Boolean).map(esc).join(' · ');
+  return [p.context || p.role, years].filter(Boolean).map(esc).join(' · ');
+}
 
-  return '            <a class="tile' + (reveal ? ' reveal' : '') + '" href="work/' + encodeURIComponent(p.id) + '.html">' +
+function tileHtml(p, g, reveal) {
+  const meta = metaOf(p);
+
+  return '            <a class="tile' + (reveal ? ' reveal' : '') + '" data-group="' + esc(g.key) + '" href="work/' + encodeURIComponent(p.id) + '.html">' +
       '<span class="tile__img" aria-hidden="true">' + media(p.screen) + '</span>' +
       '<span class="tile__kicker">' + esc(g.title) + '</span>' +
       '<span class="tile__title">' + esc(p.title) + '</span>' +
@@ -184,13 +190,34 @@ function tileHtml(p, g, reveal) {
     '</a>';
 }
 
+/* projects.html: one card in two halves, the picture | group, title (the
+   link to the case study) and description, with the live build
+   linked when there is one. A whole-card link can't hold a second link, hence
+   not a .tile. The live build is `demo`, or `repo` when that is the site
+   itself (Arteza has no public repo). */
+function cardHtml(p, g) {
+  const href = 'work/' + encodeURIComponent(p.id) + '.html';
+  const live = p.demo || (/github\.com/.test(p.repo) ? '' : p.repo);
+  const meta = metaOf(p);
+  return '            <article class="pcard" data-group="' + esc(g.key) + '">' +
+      '<a class="pcard__img" href="' + href + '" tabindex="-1" aria-hidden="true">' + media(p.screen) + '</a>' +
+      '<div class="pcard__desc">' +
+        '<span class="tile__kicker">' + esc(g.title) + '</span>' +
+        '<h2 class="pcard__title"><a href="' + href + '">' + esc(p.title) + '</a></h2>' +
+        '<p class="tile__desc">' + esc(p.tagline) + '</p>' +
+        (meta ? '<p class="tile__meta">' + meta + '</p>' : '') +
+        (live ? '<p class="pcard__live"><a href="' + esc(live) + '" target="_blank" rel="noopener noreferrer">Live demo ↗</a></p>' : '') +
+      '</div>' +
+    '</article>';
+}
+
 /* The home row is the shown projects; projects.html is every project, the
    shown ones first, each set in GROUPS order. */
 function projectListHtml(projects, all) {
   const out = ['          <div class="tiles' + (all ? ' tiles--all' : '') + '">'];
   for (const archived of all ? [false, true] : [false]) {
     for (const g of GROUPS) {
-      for (const p of projects.filter((q) => !!q.archived === archived && q.group === g.key)) out.push(tileHtml(p, g, !all));
+      for (const p of projects.filter((q) => !!q.archived === archived && q.group === g.key)) out.push(all ? cardHtml(p, g) : tileHtml(p, g, true));
     }
   }
   out.push('          </div>');
@@ -304,8 +331,28 @@ function writeHobbyDims() {
 const pages = writeAll();
 writeSitemap(pages);
 const dims = writeHobbyDims();
+/* The laptop's icons, for a reader with JS off. Same markup, order and
+   colours as initScreen() in js/desk-objects.js, which rebuilds it at run
+   time; written here so the two cannot drift. */
+function writeScreenList(projects) {
+  const D = loadDesk();
+  const T = ['var(--graph-projects)', 'var(--graph-hobbies)', 'var(--graph-name)'];
+  const lis = projects.filter((p) => !p.archived).map((p, i) =>
+    '            <li><a class="shortcut" href="work/' + encodeURIComponent(p.id) + '.html">' +
+      '<span class="shortcut__icon" style="--c: ' + T[i % T.length] + '" aria-hidden="true">' +
+        '<svg viewBox="0 0 48 48" focusable="false">' + (D.icons[p.id] || D.icons.fallback) + '</svg></span>' +
+      '<span class="shortcut__name">' + esc(p.title) + '</span>' +
+      '<span class="shortcut__desc">' + esc(p.tagline || p.context || '') + '</span></a></li>').join('\n');
+  const file = path.join(ROOT, 'index.html');
+  const html = fs.readFileSync(file, 'utf8');
+  const re = /(<ul class="screen__list" data-screen-list>\n)[\s\S]*?(\n\s*<\/ul>)/;
+  if (!re.test(html)) { console.warn('  ! index.html has no data-screen-list — skipped'); return; }
+  fs.writeFileSync(file, html.replace(re, (m, a, b) => a + lis + b));
+}
+
 const listed = writeProjectList('index.html', loadProjects(), false) &&
                writeProjectList('projects.html', loadProjects(), true);
+writeScreenList(loadProjects());
 console.log('Wrote ' + pages.length + ' share pages + sitemap.xml + '
             + dims + ' gallery dimensions'
             + (listed ? ' + the project tiles in index.html and projects.html' : ''));

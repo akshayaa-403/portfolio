@@ -8,7 +8,7 @@
    Fields:
      id, title, tagline, summary    summary feeds the meta/og description
      context, role, year            the list row's meta line
-     group                          'research' | 'products' — which list group
+     group                          'research' | 'products' | 'experiments' | 'industry'
      archived                       true: not on the home page's row; a tile
                                     on projects.html only (every project is)
      tech                           header chips; first four are the row's stack
@@ -30,8 +30,8 @@ const projects = [
   {
     "id": "quantamental-screener",
     "title": "Quantamental Screener",
-    "tagline": "Four-factor stock ranking with news sentiment, and a backtest that tests itself against luck.",
-    "summary": "A Python and Streamlit screener that ranks the 50 largest liquid S&P 500 stocks each day on a weighted sum of four cross-sectional z-scores (12-minus-1 momentum, signed volume, volatility and VADER/TextBlob headline sentiment), then backtests the price-only ranking against SPY with a one-day signal lag, 10 bps costs and a 2,000-portfolio random-selection test.",
+    "tagline": "Ranks 50 large US stocks on four factors, including the news, then checks the backtest against luck.",
+    "summary": "A Python and Streamlit screener that ranks the 50 largest liquid S&P 500 stocks each day on a weighted sum of four cross-sectional z-scores (12-minus-1 momentum, signed volume, volatility and VADER/TextBlob headline sentiment), then backtests the price-only ranking against SPY with a one-day signal lag, 10 bps costs and a 2,000-portfolio random-selection test. A four-page Streamlit dashboard (overview, rankings, backtest, stock detail) shows every factor and links each headline to its outlet.",
     "context": "Solo project",
     "role": "Solo project",
     "year": "2026",
@@ -65,7 +65,7 @@ const projects = [
     ],
     "glance": {
       "problem": "I wanted one ranking that weighs price signals and the news together, and a backtest honest enough to tell me when that ranking is luck.",
-      "built": "A daily cross-sectional model: four factors z-scored per date, clipped to ±3 and summed with weights; a weekly backtest that trades yesterday's signal and resets to equal weight at each rebalance, at 10 bps; a 2,000-portfolio significance test; a 30% holdout; a Streamlit dashboard; 76 tests.",
+      "built": "A daily cross-sectional model: four factors z-scored per date, clipped to ±3 and summed with weights; a weekly backtest that trades yesterday's signal and resets to equal weight at each rebalance, at 10 bps; a 2,000-portfolio significance test; a 30% holdout; a four-page Streamlit dashboard; 78 tests.",
       "result": "Re-run on 2026-11-14 at commit 6929fef, Nov 2025 to Nov 2026: +49.4% against SPY's +13.2% and the same 50 stocks' +32.9% at equal weight, but p = 0.07 against 2,000 random portfolios. On the last 30%, held out, it lost: −8.1% against +4.4%. Most of the beat is survivorship in the universe."
     },
     "nest": [
@@ -76,17 +76,61 @@ const projects = [
       ["One z-score", "One stock, one factor, one date, clipped so it never sits more than 3 from the mean."]
     ],
     "metric": "Beat the S&P 500, not luck (+49% vs +13%, p = 0.07)",
-    "screen": "public/assets/projects/quant-current.webp"
+    "screen": "public/assets/projects/quant-rankings.webp"
+  },
+  {
+    "id": "anttodo",
+    "title": "Ant Colony City Networks",
+    "tagline": "Three cities' rail, today and planned, against a network an ant colony designs.",
+    "summary": "A static Leaflet page that draws three networks for Mumbai, Bengaluru and Delhi (current rail from OpenStreetMap, projected rail from its construction and proposed tags, and a network designed in the browser by a MAX-MIN Ant System) and scores all three on the same localities with the Tero et al. 2010 metrics: TL/MST for cost, MD/MST for efficiency, and fault tolerance.",
+    "context": "Solo project",
+    "role": "Solo project",
+    "year": "2026",
+    "group": "research",
+    "screen": "public/assets/projects/antmap-mumbai.webp",
+    "tech": [
+      "JavaScript",
+      "Leaflet",
+      "OpenStreetMap / Overpass API",
+      "MAX-MIN Ant System",
+      "Node.js (tests)",
+      "GitHub Actions"
+    ],
+    "repo": "https://github.com/akshayaa-403/ant-map",
+    "demo": "https://akshayaa-403.github.io/ant-map/",
+    "created": "2026-04-12",
+    "updated": "2026-11-25",
+    "tags": [
+      ["Tero et al. 2010", "https://doi.org/10.1126/science.1177894"],
+      ["Max-Min Ant System", "https://doi.org/10.1016/S0167-739X(00)00043-1"],
+      ["Ant colony optimization", "https://en.wikipedia.org/wiki/Ant_colony_optimization_algorithms"],
+      ["Minimum spanning tree", "https://en.wikipedia.org/wiki/Minimum_spanning_tree"],
+      ["Overpass API", "https://wiki.openstreetmap.org/wiki/Overpass_API"]
+    ],
+    "glance": {
+      "problem": "Tero et al. scored a slime mould's network against Tokyo's rail on cost, efficiency and fault tolerance. I wanted that scorecard for three Indian cities, with today's rail, planned rail and a designed network all scored on the same places.",
+      "built": "A static Leaflet map with three layers per city: current rail and roads and projected rail and roads from compact OpenStreetMap snapshots, and a network a MAX-MIN Ant System designs in the browser between 40 k-means localities. Trips come from a gravity model, water costs extra, links near existing bridges cross free, and 43 test assertions run in CI.",
+      "result": "On the page's defaults the colony joins every locality for 1.42 to 1.54 times the minimum spanning tree's length, with mean distance 0.68 to 0.79 of the tree's (Tokyo rail: about 1.8 and 0.85). By the same served-link test, today's rail joins 22% of locality pairs in Mumbai, 4% in Bengaluru and 33% in Delhi."
+    },
+    "nest": [
+      ["The page", "A static Leaflet map of three cities, with no build step and no backend."],
+      ["One city", "Three networks on one map: current rail, projected rail and the colony's design, scored side by side."],
+      ["The colony's network", "The links its ants used between 40 localities, topped up to reach them all, scored J = TL/MST + κ·MDw/MST − φ·FT."],
+      ["One ant", "Walks one trip between two localities drawn from a gravity model, weighing pheromone against cost."],
+      ["One pheromone value", "One number on one candidate link, held between bounds that follow the best score so far."]
+    ],
+    "metric": "Links every locality for about half again the minimum length (1.42–1.54× MST)"
   },
   {
     "id": "phase-contrast-denoising",
     "title": "Phase-Contrast Clean-Up Pipeline",
-    "tagline": "One held-out microscope frame, followed through a classical filter and a residual U-Net.",
-    "summary": "A Python pipeline that cleans synthetic, seeded phase-contrast frames. It has an OpenCV front end (background flattening, difference of Gaussians, then CLAHE) and an optional 7.8M-parameter residual U-Net, plus a browser port of the classical half that matches OpenCV bit for bit.",
+    "tagline": "Strips the halo and uneven light from microscope frames, so a simple threshold can find the cells.",
+    "summary": "A Python pipeline that cleans synthetic, seeded phase-contrast frames. It has an OpenCV front end (background flattening, difference of Gaussians, then CLAHE) and an optional 7.8M-parameter residual U-Net, plus a step-by-step browser demo whose classical half matches OpenCV bit for bit.",
     "context": "Research tool",
     "role": "Solo project",
     "year": "2026",
-    "group": "research",
+    "group": "experiments",
+    "archived": true,
     "tech": ["Python", "PyTorch", "OpenCV", "Gradio", "JavaScript", "TensorBoard", "scikit-image"],
     "repo": "https://github.com/akshayaa-403/phase-contrast-denoising",
     "demo": "https://akshayaa-403.github.io/phase-contrast-denoising/",
@@ -104,7 +148,7 @@ const projects = [
     "glance": {
       "problem": "Phase contrast adds a halo, uneven illumination and noise to every frame, and all three push pixels across the global threshold that segmentation starts from.",
       "built": "A seeded generator of synthetic frames (100 for training and validation, 30 more for testing); a classical path (background flattening, difference of Gaussians, then CLAHE); a hybrid path that adds a residual U-Net; and a browser port of the classical half.",
-      "result": "On 30 synthetic test frames never used for training or tuning, Otsu Dice goes from 0.08 to 0.94 (PSNR 1.5 → 28.7 dB). On 34 real U373 frames the classical path alone lifts Dice from 0.10 to 0.61; the U-Net barely adds to it. The trained weights are not yet published, so the live demo runs the classical path."
+      "result": "On 30 synthetic test frames never used for training or tuning, Otsu Dice goes from 0.08 to 0.94 (PSNR 1.5 → 28.7 dB). On 34 real U373 frames the classical path alone lifts Dice from 0.10 to 0.61; the U-Net barely adds to it. The trained weights are not yet published, so the live demo runs the classical path live and shows the network's output computed in advance."
     },
     "nest": [
       ["The app", "A Gradio app, and a browser port of the classical half that matches OpenCV bit for bit."],
@@ -114,13 +158,13 @@ const projects = [
       ["One pixel", "One pixel that halo, uneven light and noise push across the threshold segmentation starts from."]
     ],
     "metric": "Cells segment far better on 30 held-out frames (Otsu Dice 0.08 → 0.94)",
-    "screen": "public/assets/projects/phase-demo-metrics.webp"
+    "screen": "public/assets/projects/phase-demo-steps.webp"
   },
   {
     "id": "arteza",
     "title": "Arteza",
-    "tagline": "An online gallery and shop for an original-art studio.",
-    "summary": "A React storefront and portfolio for the artist Upasna: 106 original paintings across five collections, online class booking, and a cart that ends in a WhatsApp conversation instead of a card form.",
+    "tagline": "An online gallery and shop for an original-art studio, with checkout on WhatsApp.",
+    "summary": "A React storefront and portfolio for the artist Upasna: 106 original paintings across five collections, online class booking, a six-question quiz that points a buyer to a collection, and a cart that ends in a WhatsApp conversation instead of a card form.",
     "context": "Client work",
     "role": "Design & build",
     "year": "2026",
@@ -155,7 +199,7 @@ const projects = [
       ["One painting", "An original. There is only one of it, so it can only be sold once."]
     ],
     "metric": "Big images download once, not four times (4 → 1 per load)",
-    "screen": "public/assets/projects/arteza-home.webp"
+    "screen": "public/assets/projects/arteza-home-nov.webp"
   },
   {
     "id": "habita",
@@ -213,7 +257,7 @@ const projects = [
     "context": "Sygnius Digital",
     "role": "AI Specialist, Sygnius Digital",
     "year": "2025",
-    "group": "products",
+    "group": "industry",
     "archived": true,
     "tech": [
       "Python",
@@ -264,7 +308,7 @@ const projects = [
     "context": "InnovyQ",
     "role": "DevOps Engineer, InnovyQ Solutions",
     "year": "2026",
-    "group": "products",
+    "group": "industry",
     "archived": true,
     "screen": "public/assets/projects/ivy-timesheet-card.webp",
     "tech": [
@@ -318,7 +362,7 @@ const projects = [
     "context": "Public rebuild of Artenos work",
     "role": "Solo project",
     "year": "2026",
-    "group": "products",
+    "group": "industry",
     "archived": true,
     "tech": ["Python", "SQLite", "Gemini API", "FastAPI", "Next.js", "TypeScript", "Docker", "Render", "GitHub Actions"],
     "repo": "https://github.com/akshayaa-403/artenos",
@@ -344,50 +388,6 @@ const projects = [
     ],
     "metric": "Caught all 84 planted wrong numbers, no false alarms",
     "screen": "public/assets/projects/crm-ask.webp"
-  },
-  {
-    "id": "anttodo",
-    "title": "Ant Colony City Networks",
-    "tagline": "Three cities' rail, today and planned, against a network an ant colony designs.",
-    "summary": "A static Leaflet page that draws three networks for Mumbai, Bengaluru and Delhi (current rail from OpenStreetMap, projected rail from its construction and proposed tags, and a network designed in the browser by a MAX-MIN Ant System) and scores all three on the same localities with the Tero et al. 2010 metrics: TL/MST for cost, MD/MST for efficiency, and fault tolerance.",
-    "context": "Solo project",
-    "role": "Solo project",
-    "year": "2026",
-    "group": "research",
-    "archived": true,
-    "screen": "public/assets/projects/antmap-mumbai.webp",
-    "tech": [
-      "JavaScript",
-      "Leaflet",
-      "OpenStreetMap / Overpass API",
-      "MAX-MIN Ant System",
-      "Node.js (tests)",
-      "GitHub Actions"
-    ],
-    "repo": "https://github.com/akshayaa-403/ant-map",
-    "demo": "https://akshayaa-403.github.io/ant-map/",
-    "created": "2026-04-12",
-    "updated": "2026-11-25",
-    "tags": [
-      ["Tero et al. 2010", "https://doi.org/10.1126/science.1177894"],
-      ["Max-Min Ant System", "https://doi.org/10.1016/S0167-739X(00)00043-1"],
-      ["Ant colony optimization", "https://en.wikipedia.org/wiki/Ant_colony_optimization_algorithms"],
-      ["Minimum spanning tree", "https://en.wikipedia.org/wiki/Minimum_spanning_tree"],
-      ["Overpass API", "https://wiki.openstreetmap.org/wiki/Overpass_API"]
-    ],
-    "glance": {
-      "problem": "Tero et al. scored a slime mould's network against Tokyo's rail on cost, efficiency and fault tolerance. I wanted that scorecard for three Indian cities, with today's rail, planned rail and a designed network all scored on the same places.",
-      "built": "A static Leaflet map with three layers per city: current rail and roads and projected rail and roads from compact OpenStreetMap snapshots, and a network a MAX-MIN Ant System designs in the browser between 40 k-means localities. Trips come from a gravity model, water costs extra, links near existing bridges cross free, and 43 test assertions run in CI.",
-      "result": "On the page's defaults the colony joins every locality for 1.42 to 1.54 times the minimum spanning tree's length, with mean distance 0.68 to 0.79 of the tree's (Tokyo rail: about 1.8 and 0.85). By the same served-link test, today's rail joins 22% of locality pairs in Mumbai, 4% in Bengaluru and 33% in Delhi."
-    },
-    "nest": [
-      ["The page", "A static Leaflet map of three cities, with no build step and no backend."],
-      ["One city", "Three networks on one map: current rail, projected rail and the colony's design, scored side by side."],
-      ["The colony's network", "The links its ants used between 40 localities, topped up to reach them all, scored J = TL/MST + κ·MDw/MST − φ·FT."],
-      ["One ant", "Walks one trip between two localities drawn from a gravity model, weighing pheromone against cost."],
-      ["One pheromone value", "One number on one candidate link, held between bounds that follow the best score so far."]
-    ],
-    "metric": "Links every locality for about half again the minimum length (1.42–1.54× MST)"
   },
   {
     "id": "wikipedia-summarizer",
@@ -434,7 +434,7 @@ const projects = [
     "context": "Solo project",
     "role": "Solo project",
     "year": "2026",
-    "group": "products",
+    "group": "experiments",
     "archived": true,
     "article": false,
     "screen": "public/assets/projects/mandala-demo.webp",
@@ -461,7 +461,7 @@ const projects = [
     "context": "Solo project",
     "role": "Solo project",
     "year": "2026",
-    "group": "products",
+    "group": "experiments",
     "archived": true,
     "article": false,
     "screen": "public/assets/projects/notes-calendar.webp",

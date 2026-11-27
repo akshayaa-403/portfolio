@@ -1091,19 +1091,129 @@ body { padding-top: var(--header-h, 80px); }
   .tile__title { font-size: 17px; }
 }
 
-/* projects.html: every project, so rows of four wrap. Below 900px a grid
-   you scroll down, not a row you swipe: it is the whole list. */
+/* projects.html filter: four line-drawn buttons, equal gaps, stuck under
+   the header. They are checkboxes, so nothing ticked shows everything and
+   ticking any shows only those groups; :has() does it without JS. */
+.pfilter {
+  position: sticky;
+  top: var(--header-h, 80px);
+  z-index: 5;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 10px clamp(8px, 4vw, 40px);
+  min-width: 0;
+  margin: 0 0 28px;
+  padding: 12px 0;
+  border: 0;
+  background: var(--bg);
+  transition: top 0.4s var(--ease);
+}
+/* The header slides away on the way down (js/nav.js); the bar takes its
+   place at the very top instead of leaving a gap the tiles show through. */
+body:has(.site-header[data-nav-state='hidden']) .pfilter { top: 0; }
+.pfilter label { position: relative; cursor: pointer; }
+.pfilter input {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+.pfilter span {
+  display: inline-block;
+  min-height: 36px;
+  padding: 8px clamp(10px, 3vw, 18px);
+  border: 1px solid var(--line-strong);
+  border-radius: 999px;
+  color: var(--ink-soft);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  letter-spacing: clamp(0.04em, 0.5vw, 0.1em);
+  line-height: 18px;
+  text-transform: uppercase;
+}
+@media (hover: hover) {
+  .pfilter label:hover span { border-color: var(--accent-ink); color: var(--accent-ink); }
+}
+.pfilter input:checked + span {
+  border-color: var(--accent-ink);
+  background: var(--accent-tint);
+  color: var(--accent-ink);
+}
+.pfilter input:focus-visible + span { outline: 2px solid var(--accent); outline-offset: 3px; }
+/* Four on one row on a phone; an even two-by-two, not three and one, on the
+   narrowest. */
+@media (max-width: 559.98px) {
+  .pfilter { gap: 8px 6px; }
+  .pfilter span { padding: 7px 10px; font-size: 11px; letter-spacing: 0.04em; }
+}
+@media (max-width: 389.98px) {
+  .pfilter { display: grid; grid-template-columns: repeat(2, max-content); }
+}
+main:has(.pfilter :checked) .pcard { display: none; }
+main:has(#f-products:checked) .pcard[data-group='products'],
+main:has(#f-research:checked) .pcard[data-group='research'],
+main:has(#f-experiments:checked) .pcard[data-group='experiments'],
+main:has(#f-industry:checked) .pcard[data-group='industry'] { display: grid; }
+
+/* projects.html: two cards a row, each in two halves,
+   picture | title and description. One card a row below 900px, and below 560px the
+   halves stack. Overrides the home row's swipe (.tiles below 900px). */
+.tiles--all {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 40px 48px;
+  margin-inline: 0;
+  padding: 0;
+  overflow: visible;
+}
+.pcard {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 20px;
+  align-items: start;
+}
+.pcard__img {
+  display: block;
+  aspect-ratio: 4 / 3;
+  overflow: hidden;
+}
+.pcard__img img,
+.pcard__img video { width: 100%; height: 100%; object-fit: contain; }
+/* The picture lifts and grows a little when its card is pointed at or its
+   title has focus. The wrapper moves, not the image, so nothing is cropped. */
+@media (prefers-reduced-motion: no-preference) {
+  .pcard__img { transition: transform 0.35s var(--ease); }
+  .pcard:hover .pcard__img,
+  .pcard:focus-within .pcard__img { transform: translateY(-6px) scale(1.03); }
+}
+.pcard__title { margin: -4px 0 0; font-size: 15px; font-weight: 500; letter-spacing: -0.01em; line-height: 1.35; }
+.pcard__title a { color: var(--ink); text-decoration: none; }
+.pcard__title a:hover { color: var(--accent-ink); text-decoration: underline; text-underline-offset: 3px; }
+/* The line between the halves: the "|" in picture | description. */
+.pcard__desc {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  align-self: stretch;
+  padding-left: 20px;
+  border-left: 1px solid var(--line-strong);
+}
+.pcard__desc p { margin: 0; }
+.pcard__live a {
+  display: inline-block;
+  padding: 5px 0;
+  color: var(--accent-ink);
+  font-size: 13px;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
 @media (max-width: 899.98px) {
-  .tiles--all {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    margin-inline: 0;
-    padding: 0;
-    overflow: visible;
-  }
+  .tiles--all { grid-template-columns: minmax(0, 1fr); }
 }
 @media (max-width: 559.98px) {
-  .tiles--all { grid-template-columns: minmax(0, 1fr); }
+  .pcard { grid-template-columns: minmax(0, 1fr); gap: 12px; }
+  .pcard__desc { padding-left: 0; padding-top: 12px; border-left: 0; border-top: 1px solid var(--line-strong); }
 }
 
 /* --- "View more projects" ------------------------------------------

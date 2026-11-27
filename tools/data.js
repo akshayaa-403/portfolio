@@ -35,5 +35,6 @@ module.exports = {
   ROOT,
   esc,
   loadProjects: () => load('js/project-data.js', 'projects'),
-  loadHobbies: () => load('js/hobby-data.js', 'hobbies')
+  loadHobbies: () => load('js/hobby-data.js', 'hobbies'),
+  loadDesk: () => load('js/desk-data.js', 'deskData')
 };

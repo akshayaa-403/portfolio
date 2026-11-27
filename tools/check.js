@@ -167,7 +167,7 @@ for (const p of PROJECTS) {
   checked++;
   if (!Array.isArray(p.tech) || !p.tech.length) fail('project-data', p.id + '.tech is empty');
   checked++;
-  if (!['research', 'products'].includes(p.group)) {
+  if (!['research', 'products', 'experiments', 'industry'].includes(p.group)) {
     // projectListHtml filters by group, so a project without one silently
     // vanishes from the home page and projects.html.
     fail('project-data', p.id + ' has no valid group');
