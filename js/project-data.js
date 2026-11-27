@@ -1,5 +1,5 @@
 /* The projects, as the rest of the site needs them: the home page's list,
-   the graph, the mosaic, the share pages and the case-study header all read
+   projects.html, the desk, the share pages and the case-study header read
    this file. The case study itself — chapters, widgets, margin notes — is
    js/articles/<id>.js, fetched only by the page that shows it.
 
@@ -24,9 +24,8 @@
                                     opens to the one inside; the last is solid
      metric                         the home row's one result: plain words,
                                     then the figure in brackets
-     screen                         what the home list's preview pane shows;
-                                    .mp4/.webm play, anything else is a still
-     thumb                          false: no image, so a text-only share card */
+     screen                         the tile picture (first item if a list);
+                                    .mp4/.webm play, anything else is a still */
 const projects = [
   {
     "id": "quantamental-screener",

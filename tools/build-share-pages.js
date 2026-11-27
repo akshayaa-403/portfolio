@@ -144,21 +144,16 @@ function writeAll() {
 }
 
 /* ---------- static project list ----------
-   Everything on the home page is injected by JS, which means a crawler, a
-   corporate proxy that strips scripts, or anyone reading with JS off saw an
-   empty column where the work should be. The project list is the one block
-   that must survive that, so it is written into index.html here, between two
-   markers, and js/script.js replaces it with the enhanced version when it
-   runs. Same data, same order, same links — only the hover cues and the
-   reveal animation are missing from the static copy.
+   The project tiles are real markup, written here between two markers, so
+   a crawler, a proxy that strips scripts or a reader with JS off sees the
+   work. Nothing re-renders them at run time; on the home page they carry
+   `reveal`, which js/script.js animates (and only when JS runs).
 
    Re-run this tool after editing js/project-data.js and the block updates. */
 const LIST_BEGIN = '<!-- BEGIN generated:project-list — written by tools/build-share-pages.js, do not hand-edit -->';
 const LIST_END = '<!-- END generated:project-list -->';
 
-/* Must stay in step with GROUPS and renderCards() in js/script.js — this is
-   the same list rendered twice, and the whole point is that a reader with no
-   JavaScript sees what a reader with JavaScript sees. */
+/* The groups, in render order. A project's `group` picks one. */
 const GROUPS = [
   { key: 'research', title: 'Research' },
   { key: 'products', title: 'Products' }
@@ -173,14 +168,14 @@ const media = (src) => {
     : '<img src="' + esc(one) + '" alt="" loading="lazy" decoding="async">';
 };
 
-function tileHtml(p, g) {
-  // Same span rule as span() in js/script.js: the real years, not p.year.
+function tileHtml(p, g, reveal) {
+  // The real years, not p.year; Arteza has no repo dates, so it falls back.
   const a = (p.created || '').slice(0, 4);
   const b = (p.updated || '').slice(0, 4);
   const years = a ? (a === b ? a : a + '–' + b) : (p.year || '');
   const meta = [p.context || p.role, years].filter(Boolean).map(esc).join(' · ');
 
-  return '            <a class="tile" href="work/' + encodeURIComponent(p.id) + '.html">' +
+  return '            <a class="tile' + (reveal ? ' reveal' : '') + '" href="work/' + encodeURIComponent(p.id) + '.html">' +
       '<span class="tile__img" aria-hidden="true">' + media(p.screen) + '</span>' +
       '<span class="tile__kicker">' + esc(g.title) + '</span>' +
       '<span class="tile__title">' + esc(p.title) + '</span>' +
@@ -195,7 +190,7 @@ function projectListHtml(projects, all) {
   const out = ['          <div class="tiles' + (all ? ' tiles--all' : '') + '">'];
   for (const archived of all ? [false, true] : [false]) {
     for (const g of GROUPS) {
-      for (const p of projects.filter((q) => !!q.archived === archived && q.group === g.key)) out.push(tileHtml(p, g));
+      for (const p of projects.filter((q) => !!q.archived === archived && q.group === g.key)) out.push(tileHtml(p, g, !all));
     }
   }
   out.push('          </div>');

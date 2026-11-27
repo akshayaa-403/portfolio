@@ -269,20 +269,17 @@
     }
   }
 
-  /* The public surface. field.js and js/article.js use `shade` to ramp a
-     category's colour by size or depth, exactly as field.js used to do
-     internally. */
+  /* The public surface. js/article.js uses `shade` to ramp a category's
+     colour by size or depth. */
   window.portfolioPalette = {
     trio: function () { return TRIO.slice(); },
     index: function () { return INDEX; },
-    state: function () { return state; },
     toHsl: toHsl,
     hslRgb: hslRgb,
     lum: lum,
     ratio: ratio,
     css: css,
     meet: meet,
-    rgba: rgbaOf,
 
     /* One colour of the trio, stepped to `need` against the current ground.
        `t` in 0..1 lightens it toward the pale end as it gets smaller. */

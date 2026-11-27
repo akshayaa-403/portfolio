@@ -112,7 +112,6 @@
 
   --radius-sm: 10px;
   --radius: 16px;
-  --radius-lg: 20px;
   --radius-pill: 100px;
 
   /* The nav's three tiers, after emilycampbell.co, which carries the same
@@ -408,8 +407,6 @@ body {
 .shelf__caption,
 .contact p,
 .hero__sub,
-.bz__intro,
-.bz__skills,
 .detail__tagline,
 .detail__glance dd,
 .hobby__blurb,
@@ -1784,9 +1781,6 @@ body { padding-top: var(--header-h, 80px); }
 
   /* --- legibility ------------------------------------------------------ */
   /* Nothing below 13px: iOS also zooms the page when tapped text is smaller. */
-  .dd--table th,
-
-  .dd--table td { font-size: 13px; }
 
   /* --- spacing ---------------------------------------------------------- */
   /* A phone has no room for desktop section rhythm. */

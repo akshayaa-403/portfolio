@@ -652,7 +652,6 @@
   --paper-ink: #24211c;
   --paper-ink-soft: #4a443b;
   --leaf: #4f8a3c;
-  --leaf-deep: #3b6e2d;
   --stand: #8c7863;
   --ring: rgba(110, 72, 40, 0.28);
 }
@@ -673,7 +672,6 @@
   --beam: transparent;
   --paper: #ecebe6;
   --leaf: #4a7f39;
-  --leaf-deep: #375f2a;
   --stand: #6e5f4f;
   --ring: rgba(0, 0, 0, 0.35);
 }

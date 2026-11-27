@@ -1,73 +1,10 @@
-/* Homepage behaviour: the project list, the reading shelf, scroll
-   reveals and active-nav tracking.
+/* Homepage behaviour: the reading shelf, scroll reveals and active-nav
+   tracking. The project tiles are static markup (tools/build-share-pages.js).
    No dependencies. All motion is gated on prefers-reduced-motion. */
 (function () {
   'use strict';
 
   var reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-
-  /* ---------- project list ----------
-     One row of tiles, after khy.com's product rows: picture, group, title,
-     one line of what it is, then context and years. Every project, archived
-     or not, is a tile on projects.html (static, tools/build-share-pages.js). */
-  /* The real span, not one year: created/updated collapsed. Arteza has no
-     public repo and therefore no dates, so it falls back to p.year. */
-  function span(p) {
-    var a = (p.created || '').slice(0, 4);
-    var b = (p.updated || '').slice(0, 4);
-    if (!a) return p.year || '';
-    return a === b ? a : a + '–' + b;
-  }
-
-  /* The groups the shown work falls into, in render order. A project's
-     `group` in js/project-data.js picks one; anything with `archived: true`
-     stays off this row and shows only on projects.html.
-     Declared again in tools/build-share-pages.js — change both. */
-  var GROUPS = [
-    { key: 'research', title: 'Research' },
-    { key: 'products', title: 'Products' }
-  ];
-
-  /* The first item of `screen` in js/project-data.js: .mp4/.webm play muted
-     and looping, anything else is a still. */
-  function media(src) {
-    var one = [].concat(src || [])[0];
-    if (!one) return '';
-    return /\.(mp4|webm|ogv)$/i.test(one)
-      ? '<video src="' + safeUrl(one) + '" autoplay muted loop playsinline></video>'
-      : '<img src="' + safeUrl(one) + '" alt="" loading="lazy" decoding="async">';
-  }
-
-  function tile(p, g) {
-    var meta = [p.context || p.role, span(p)].filter(Boolean).map(esc).join(' · ');
-    /* Link to the generated share page rather than project.html?id=: a real
-       document with its own <title> and og: tags, so a crawler, a chat unfurl
-       or a reader with JS off gets the project's name. */
-    return '<a class="tile reveal" href="work/' + encodeURIComponent(p.id) + '.html">' +
-        '<span class="tile__img" aria-hidden="true">' + media(p.screen) + '</span>' +
-        '<span class="tile__kicker">' + esc(g.title) + '</span>' +
-        '<span class="tile__title">' + esc(p.title) + '</span>' +
-        '<span class="tile__desc">' + esc(p.tagline) + '</span>' +
-        (meta ? '<span class="tile__meta">' + meta + '</span>' : '') +
-      '</a>';
-  }
-
-  function renderCards() {
-    if (typeof projects === 'undefined') return;
-
-    var host = document.getElementById('recent-cards');
-    if (!host) return;
-
-    var tiles = GROUPS.map(function (g) {
-      return projects.filter(function (p) { return !p.archived && p.group === g.key; })
-        .map(function (p) { return tile(p, g); }).join('');
-    }).join('');
-
-    /* Replace, not prepend: index.html ships a real static copy of this
-       (written by tools/build-share-pages.js) so a reader with JS off sees
-       the same row. The rest are on projects.html, linked under the row. */
-    host.innerHTML = '<div class="tiles">' + tiles + '</div>';
-  }
 
   /* ---------- reading list ----------
      A shelf of spines rather than a list of titles. Each spine is its own
@@ -441,7 +378,6 @@
     // The phone home screen's widget: today's date, like a lock screen.
     var today = document.querySelector('[data-today]');
     if (today) today.textContent = new Date().toLocaleDateString(undefined, { weekday: 'long', day: 'numeric', month: 'long' });
-    renderCards();
     renderReadings();
     initReveal();
     initActiveNav();
