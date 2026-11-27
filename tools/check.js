@@ -17,7 +17,7 @@ const fs = require('fs');
 const path = require('path');
 
 const ROOT = path.join(__dirname, '..');
-const PAGES = ['index.html', 'project.html', 'hobby.html', '404.html'];
+const PAGES = ['index.html', 'project.html', 'hobby.html', 'projects.html', '404.html'];
 
 let failures = 0;
 let checked = 0;
@@ -167,10 +167,14 @@ for (const p of PROJECTS) {
   checked++;
   if (!Array.isArray(p.tech) || !p.tech.length) fail('project-data', p.id + '.tech is empty');
   checked++;
-  if (!p.archived && !['research', 'products'].includes(p.group)) {
-    // projectListHtml filters by group, so a live project without one
-    // silently vanishes from the home page.
-    fail('project-data', p.id + ' is not archived and has no valid group');
+  if (!['research', 'products'].includes(p.group)) {
+    // projectListHtml filters by group, so a project without one silently
+    // vanishes from the home page and projects.html.
+    fail('project-data', p.id + ' has no valid group');
+  }
+  checked++;
+  if (p.screen && ![].concat(p.screen).every((s) => fs.existsSync(path.join(ROOT, s)))) {
+    fail('project-data', p.id + '.screen points at a missing file');
   }
   checked++;
   if (!p.glance || !p.glance.problem || !p.glance.built || !p.glance.result) {

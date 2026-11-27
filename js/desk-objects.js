@@ -143,7 +143,7 @@
             return key(pad(p.id, w)) + '  ' + esc(p.title) + (p.metric ? ' · ' + esc(p.metric) : '');
           }).join('\n'));
           var old = P.filter(function (p) { return p.archived; });
-          if (old.length) print('also built: ' + old.map(function (p) { return key(p.id); }).join(', '), 't-cmd');
+          if (old.length) print('more on projects.html: ' + old.map(function (p) { return key(p.id); }).join(', '), 't-cmd');
         } else if (arg === 'hobbies' || arg === 'galleries') {
           print(Object.keys(H).map(function (id) {
             return key(pad(id, 12)) + '  ' + esc(H[id].label) + ' · ' + H[id].n + ' pictures';

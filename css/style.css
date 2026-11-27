@@ -1004,7 +1004,7 @@ body { padding-top: var(--header-h, 80px); }
 }
 
 /* --------------------------------------------------------------------------
-   7. Work: one row of tiles, then the "Also built" line
+   7. Work: one row of tiles, then "View more projects"
    -------------------------------------------------------------------------- */
 
 /* --- Tiles ---------------------------------------------------------
@@ -1094,25 +1094,29 @@ body { padding-top: var(--header-h, 80px); }
   .tile__title { font-size: 17px; }
 }
 
-/* --- The archive ----------------------------------------------------
-   Three case studies that are still written and still live, one click away,
-   but no longer what the work is. A line, not a list: the difference in
-   weight IS the information. */
-.rm-archive {
+/* projects.html: every project, so rows of four wrap. Below 900px a grid
+   you scroll down, not a row you swipe: it is the whole list. */
+@media (max-width: 899.98px) {
+  .tiles--all {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    margin-inline: 0;
+    padding: 0;
+    overflow: visible;
+  }
+}
+@media (max-width: 559.98px) {
+  .tiles--all { grid-template-columns: minmax(0, 1fr); }
+}
+
+/* --- "View more projects" ------------------------------------------
+   Plain text under the row, no arrow. */
+.rm-more {
   margin: 20px 0 0;
-  color: var(--ink-soft);
   font-size: 13px;
-  line-height: 1.9;
 }
-.rm-archive__label {
-  margin-right: 10px;
-  color: var(--ink-muted);
-  font-size: 11px;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-}
-.rm-archive a {
-  /* 17px of text in a 28px target (WCAG 2.5.8 asks for 24). */
+.rm-more a {
+  /* A 28px target (WCAG 2.5.8 asks for 24). */
   display: inline-block;
   padding: 5px 0;
   color: var(--ink-soft);
@@ -1120,7 +1124,7 @@ body { padding-top: var(--header-h, 80px); }
   text-decoration-color: var(--line-strong);
   text-underline-offset: 3px;
 }
-.rm-archive a:hover {
+.rm-more a:hover {
   color: var(--accent);
   text-decoration-color: currentColor;
 }

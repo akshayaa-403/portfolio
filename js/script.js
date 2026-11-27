@@ -8,8 +8,8 @@
 
   /* ---------- project list ----------
      One row of tiles, after khy.com's product rows: picture, group, title,
-     one line of what it is, then context and years. The archived case
-     studies get one line under the row. */
+     one line of what it is, then context and years. Every project, archived
+     or not, is a tile on projects.html (static, tools/build-share-pages.js). */
   /* The real span, not one year: created/updated collapsed. Arteza has no
      public repo and therefore no dates, so it falls back to p.year. */
   function span(p) {
@@ -21,7 +21,7 @@
 
   /* The groups the shown work falls into, in render order. A project's
      `group` in js/project-data.js picks one; anything with `archived: true`
-     is in neither and drops to "Also built" under the row.
+     stays off this row and shows only on projects.html.
      Declared again in tools/build-share-pages.js — change both. */
   var GROUPS = [
     { key: 'research', title: 'Research' },
@@ -58,30 +58,15 @@
     var host = document.getElementById('recent-cards');
     if (!host) return;
 
-    var gone = projects.filter(function (p) { return p.archived; });
     var tiles = GROUPS.map(function (g) {
       return projects.filter(function (p) { return !p.archived && p.group === g.key; })
         .map(function (p) { return tile(p, g); }).join('');
     }).join('');
 
-    /* Still written, still live, still linked — just not what the work is
-       now. One quiet line under the row, not a second row. */
-    var archive = '';
-    if (gone.length) {
-      archive = '<p class="rm-archive reveal">' +
-        '<span class="rm-archive__label">Also built</span> ' +
-        gone.map(function (p) {
-          /* article: false = no case study yet; link the repo instead of an empty page. */
-          var href = p.article === false ? safeUrl(p.repo) : 'work/' + encodeURIComponent(p.id) + '.html';
-          return '<a href="' + href + '">' + esc(p.title) + '</a>';
-        }).join('<span aria-hidden="true"> · </span>') +
-      '</p>';
-    }
-
     /* Replace, not prepend: index.html ships a real static copy of this
        (written by tools/build-share-pages.js) so a reader with JS off sees
-       the same row. */
-    host.innerHTML = '<div class="tiles">' + tiles + '</div>' + archive;
+       the same row. The rest are on projects.html, linked under the row. */
+    host.innerHTML = '<div class="tiles">' + tiles + '</div>';
   }
 
   /* ---------- reading list ----------

@@ -9,8 +9,8 @@
      id, title, tagline, summary    summary feeds the meta/og description
      context, role, year            the list row's meta line
      group                          'research' | 'products' — which list group
-     archived                       true: kept live, but no row, node or tile;
-                                    one line under "Also built"
+     archived                       true: not on the home page's row; a tile
+                                    on projects.html only (every project is)
      tech                           header chips; first four are the row's stack
      repo, demo                     repo is the source, or the site when there
                                     is no public repo; demo is the live build
@@ -57,7 +57,7 @@ const projects = [
     "repo": "https://github.com/akshayaa-403/quantamental-screener",
     "demo": "https://quantamental-screener.streamlit.app",
     "created": "2025-09-22",
-    "updated": "2026-11-13",
+    "updated": "2026-11-24",
     "tags": [
       ["Factor investing", "https://en.wikipedia.org/wiki/Factor_investing"],
       ["Momentum (12-1)", "https://doi.org/10.1111/j.1540-6261.1993.tb04702.x"],
@@ -179,7 +179,7 @@ const projects = [
     "repo": "https://github.com/akshayaa-403/Habita",
     "demo": "https://akshayaa-403.github.io/Habita/src/",
     "created": "2026-04-19",
-    "updated": "2026-11-05",
+    "updated": "2026-11-19",
     "tags": [
       ["Eisenhower Matrix", "https://en.wikipedia.org/wiki/Time_management"],
       ["Capacitor", "https://capacitorjs.com/docs"],
@@ -254,7 +254,8 @@ const projects = [
       ["The call", "A Bland AI or Retell AI agent that hangs up on machines and transfers anyone interested."],
       ["One phone number", "Found on the listing or the business’s own site, normalised to E.164 before anyone dials it."]
     ],
-    "metric": "Filled a sales team's call list (600+ leads)"
+    "metric": "Filled a sales team's call list (600+ leads)",
+    "screen": "public/assets/projects/outbound-readme.webp"
   },
   {
     "id": "ivy-slack-agent",
@@ -264,7 +265,9 @@ const projects = [
     "context": "InnovyQ",
     "role": "DevOps Engineer, InnovyQ Solutions",
     "year": "2026",
+    "group": "products",
     "archived": true,
+    "screen": "public/assets/projects/ivy-timesheet-card.webp",
     "tech": [
       "Python",
       "AWS Lambda",
@@ -340,50 +343,52 @@ const projects = [
       ["The prompt", "Five versions, each scored on the same 155 questions."],
       ["One number", "Every number in the summary, looked up in the week's figures before it is shown."]
     ],
-    "metric": "Caught all 84 planted wrong numbers, no false alarms"
+    "metric": "Caught all 84 planted wrong numbers, no false alarms",
+    "screen": "public/assets/projects/crm-ask.webp"
   },
   {
     "id": "anttodo",
-    "title": "Ant Colony Task Scheduler",
-    "tagline": "Your to-do list as a routing problem, solved live.",
-    "summary": "An interactive visualiser that reframes a day of tasks as a routing problem and lets a colony of virtual ants converge on an order in the browser — with two problem formulations, every parameter on a slider, dependency constraints, and a convergence chart you watch flatten.",
+    "title": "Ant Colony City Networks",
+    "tagline": "Three cities' rail, today and planned, against a network an ant colony designs.",
+    "summary": "A static Leaflet page that draws three networks for Mumbai, Bengaluru and Delhi (current rail from OpenStreetMap, projected rail from its construction and proposed tags, and a network designed in the browser by a MAX-MIN Ant System) and scores all three on the same localities with the Tero et al. 2010 metrics: TL/MST for cost, MD/MST for efficiency, and fault tolerance.",
     "context": "Solo project",
     "role": "Solo project",
     "year": "2026",
+    "group": "research",
     "archived": true,
+    "screen": "public/assets/projects/antmap-mumbai.webp",
     "tech": [
       "JavaScript",
-      "Ant Colony Optimization",
-      "HTML Canvas",
+      "Leaflet",
+      "OpenStreetMap / Overpass API",
+      "MAX-MIN Ant System",
       "Node.js (tests)",
       "GitHub Actions"
     ],
-    "repo": "https://github.com/akshayaa-403/anttodo",
-    "demo": "https://akshayaa-403.github.io/anttodo/",
+    "repo": "https://github.com/akshayaa-403/ant-map",
+    "demo": "https://akshayaa-403.github.io/ant-map/",
     "created": "2026-04-12",
-    "updated": "2026-08-10",
+    "updated": "2026-11-25",
     "tags": [
-      [
-        "Ant colony optimization",
-        "https://en.wikipedia.org/wiki/Ant_colony_optimization_algorithms"
-      ],
-      ["Travelling salesman", "https://en.wikipedia.org/wiki/Travelling_salesman_problem"],
-      ["Swarm intelligence", "https://en.wikipedia.org/wiki/Swarm_intelligence"],
+      ["Tero et al. 2010", "https://doi.org/10.1126/science.1177894"],
       ["Max-Min Ant System", "https://doi.org/10.1016/S0167-739X(00)00043-1"],
-      ["2-opt", "https://en.wikipedia.org/wiki/2-opt"]
+      ["Ant colony optimization", "https://en.wikipedia.org/wiki/Ant_colony_optimization_algorithms"],
+      ["Minimum spanning tree", "https://en.wikipedia.org/wiki/Minimum_spanning_tree"],
+      ["Overpass API", "https://wiki.openstreetmap.org/wiki/Overpass_API"]
     ],
     "glance": {
-      "problem": "A to-do list is drawn as a list, but a day is really a route: the cost of doing something depends on what you did before it.",
-      "built": "A browser visualiser that reframes a day as a routing problem — a true travelling-salesman tour for errands, a sequencing problem for a workday — and runs ant colony optimisation over it live, with two formulations, dependency constraints, every parameter exposed, and a convergence chart.",
-      "result": "Runs entirely in the tab — no backend, no build step. On the sample day it cuts the cost of the order as entered by about a quarter, and a Node test suite checks that against the shipped file in CI."
+      "problem": "Tero et al. scored a slime mould's network against Tokyo's rail on cost, efficiency and fault tolerance. I wanted that scorecard for three Indian cities, with today's rail, planned rail and a designed network all scored on the same places.",
+      "built": "A static Leaflet map with three layers per city: current rail and roads and projected rail and roads from compact OpenStreetMap snapshots, and a network a MAX-MIN Ant System designs in the browser between 40 k-means localities. Trips come from a gravity model, water costs extra, links near existing bridges cross free, and 43 test assertions run in CI.",
+      "result": "On the page's defaults the colony joins every locality for 1.42 to 1.54 times the minimum spanning tree's length, with mean distance 0.68 to 0.79 of the tree's (Tokyo rail: about 1.8 and 0.85). By the same served-link test, today's rail joins 22% of locality pairs in Mumbai, 4% in Bengaluru and 33% in Delhi."
     },
     "nest": [
-      ["The visualiser", "Runs entirely in the browser tab, with no backend and no build step."],
-      ["The day, as a route", "Errands as a travelling-salesman tour, a workday as a sequencing problem."],
-      ["The colony", "Virtual ants converging on an order, with every parameter on a slider."],
-      ["One ant", "Builds one order, task by task, weighing the pheromone on each step against how good it looks."],
-      ["One pheromone value", "One number on the edge between two tasks, laid down by ants and evaporating."]
-    ]
+      ["The page", "A static Leaflet map of three cities, with no build step and no backend."],
+      ["One city", "Three networks on one map: current rail, projected rail and the colony's design, scored side by side."],
+      ["The colony's network", "The links its ants used between 40 localities, topped up to reach them all, scored J = TL/MST + κ·MDw/MST − φ·FT."],
+      ["One ant", "Walks one trip between two localities drawn from a gravity model, weighing pheromone against cost."],
+      ["One pheromone value", "One number on one candidate link, held between bounds that follow the best score so far."]
+    ],
+    "metric": "Links every locality for about half again the minimum length (1.42–1.54× MST)"
   },
   {
     "id": "wikipedia-summarizer",
@@ -393,8 +398,10 @@ const projects = [
     "context": "NLP",
     "role": "Solo project",
     "year": "2026",
+    "group": "research",
     "archived": true,
     "article": false,
+    "screen": "public/assets/projects/wikipedia-metrics.webp",
     "tech": ["JavaScript (ES modules)", "MediaWiki API", "ROUGE", "SVG", "Playwright"],
     "repo": "https://github.com/akshayaa-403/Wikipedia-Summarizer",
     "demo": "https://akshayaa-403.github.io/Wikipedia-Summarizer/",
@@ -419,6 +426,60 @@ const projects = [
       ["One word", "One overlapping word: the unit ROUGE-1 counts."]
     ],
     "metric": "Reaches 56% of the human summary's score (ROUGE-1 0.400 vs 0.709)"
+  },
+  {
+    "id": "harmonic-mandala",
+    "title": "Harmonic Mandala",
+    "tagline": "A Spotify track drawn as seven rings that turn and pulse with the song.",
+    "summary": "A React and TypeScript web app that maps a Spotify track onto seven polar-wave rings, Root to Crown, each weighted by the music's notes, a frequency peak and rough sound-type cues, and redraws them at 60 fps in step with playback. A silent demo runs without a Spotify account.",
+    "context": "Solo project",
+    "role": "Solo project",
+    "year": "2026",
+    "group": "products",
+    "archived": true,
+    "article": false,
+    "screen": "public/assets/projects/mandala-demo.webp",
+    "tech": ["TypeScript", "React", "Vite", "Tailwind CSS", "Canvas", "Spotify Web API", "Web Playback SDK", "Vitest"],
+    "repo": "https://github.com/akshayaa-403/music-player",
+    "demo": "https://akshayaa-403.github.io/music-player/",
+    "created": "2026-11-22",
+    "updated": "2026-11-23",
+    "tags": [
+      ["Polar coordinates", "https://en.wikipedia.org/wiki/Polar_coordinate_system"],
+      ["PKCE", "https://datatracker.ietf.org/doc/html/rfc7636"]
+    ],
+    "glance": {
+      "problem": "A song's notes and sounds have no shape you can see, and Spotify no longer gives apps created after November 2024 its audio features or analysis.",
+      "built": "A React and TypeScript app with Spotify login by PKCE and no backend; features from a provider chain (Spotify, then ReccoBeats, then a deterministic derivation from the track's metadata), or from your own audio file or the 30-second iTunes preview; and two views of the same seven ring functions, a mandala and unrolled waves.",
+      "result": "Live on GitHub Pages with a silent demo. Unit tests check across whole songs that no ring swings past a neighbour's centre line. In-browser audio needs Spotify Premium; free accounts get a visual-only mandala. The chakra mappings are traditional associations, not scientific findings."
+    }
+  },
+  {
+    "id": "notes",
+    "title": "Notes",
+    "tagline": "Boards of cards, a picture calendar and a PDF shelf, offline in the browser.",
+    "summary": "A local dashboard of card boards in plain HTML, CSS and vanilla JavaScript, with no dependencies and no build step: typed cards in three layouts, a picture calendar, a floating pomodoro timer and a PDF bookshelf. It installs as a PWA, works offline and keeps everything in the browser.",
+    "context": "Solo project",
+    "role": "Solo project",
+    "year": "2026",
+    "group": "products",
+    "archived": true,
+    "article": false,
+    "screen": "public/assets/projects/notes-calendar.webp",
+    "tech": ["JavaScript", "HTML", "CSS", "Service Worker", "pdf.js", "IndexedDB", "File System Access API"],
+    "repo": "https://github.com/akshayaa-403/notes",
+    "demo": "https://akshayaa-403.github.io/notes/",
+    "created": "2026-09-09",
+    "updated": "2026-11-22",
+    "tags": [
+      ["Progressive web app", "https://en.wikipedia.org/wiki/Progressive_web_app"],
+      ["File System Access API", "https://developer.mozilla.org/en-US/docs/Web/API/File_System_API"]
+    ],
+    "glance": {
+      "problem": "Boards of notes, a calendar and a reading shelf usually mean several apps, each keeping your data on its own server.",
+      "built": "Typed cards (text, Markdown, checklists, links, images, tables, quotes, stats, bar and spider charts) on boards laid out as Canvas, Grid or Columns; a month calendar with a note and a picture per day; a draggable pomodoro; and a bookshelf on a bundled pdf.js that opens a local folder, or keeps PDFs in IndexedDB where the File System Access API is missing.",
+      "result": "Live on GitHub Pages, installable and offline through a service worker. Boards and settings stay in localStorage and books in IndexedDB; the one outside request is Google's favicon service for link cards."
+    }
   }
 ];
 

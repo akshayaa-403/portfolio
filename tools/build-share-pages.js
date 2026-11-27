@@ -189,36 +189,29 @@ function tileHtml(p, g) {
     '</a>';
 }
 
-function projectListHtml(projects) {
-  const gone = projects.filter((p) => p.archived);
-  const out = ['          <div class="tiles">'];
-  for (const g of GROUPS) {
-    for (const p of projects.filter((q) => !q.archived && q.group === g.key)) out.push(tileHtml(p, g));
+/* The home row is the shown projects; projects.html is every project, the
+   shown ones first, each set in GROUPS order. */
+function projectListHtml(projects, all) {
+  const out = ['          <div class="tiles' + (all ? ' tiles--all' : '') + '">'];
+  for (const archived of all ? [false, true] : [false]) {
+    for (const g of GROUPS) {
+      for (const p of projects.filter((q) => !!q.archived === archived && q.group === g.key)) out.push(tileHtml(p, g));
+    }
   }
   out.push('          </div>');
-
-  /* The archive: still written, still live, still linked — just not what the
-     work is now. One quiet line under the row. */
-  if (gone.length) {
-    out.push('          <p class="rm-archive">' +
-      '<span class="rm-archive__label">Also built</span> ' +
-      gone.map((p) => '<a href="' + (p.article === false ? esc(p.repo) : 'work/' + encodeURIComponent(p.id) + '.html') + '">' +
-        esc(p.title) + '</a>').join('<span aria-hidden="true"> · </span>') +
-      '</p>');
-  }
   return out.join('\n');
 }
 
-function writeProjectList(projects) {
-  const file = path.join(ROOT, 'index.html');
+function writeProjectList(name, projects, all) {
+  const file = path.join(ROOT, name);
   const html = fs.readFileSync(file, 'utf8');
   const i = html.indexOf(LIST_BEGIN);
   const j = html.indexOf(LIST_END);
   if (i === -1 || j === -1) {
-    console.warn('  ! index.html has no generated:project-list markers — skipped');
+    console.warn('  ! ' + name + ' has no generated:project-list markers — skipped');
     return false;
   }
-  const block = LIST_BEGIN + '\n' + projectListHtml(projects) + '\n        ' + LIST_END;
+  const block = LIST_BEGIN + '\n' + projectListHtml(projects, all) + '\n        ' + LIST_END;
   fs.writeFileSync(file, html.slice(0, i) + block + html.slice(j + LIST_END.length));
   return true;
 }
@@ -229,7 +222,7 @@ function writeProjectList(projects) {
    reconcile. */
 function writeSitemap(pages) {
   const today = new Date().toISOString().slice(0, 10);
-  const urls = [{ loc: BASE, pri: '1.0' }].concat(
+  const urls = [{ loc: BASE, pri: '1.0' }, { loc: BASE + 'projects.html', pri: '0.9' }].concat(
     pages.map(function (f) {
       return {
         loc: BASE + f.split(path.sep).join('/'),
@@ -316,8 +309,9 @@ function writeHobbyDims() {
 const pages = writeAll();
 writeSitemap(pages);
 const dims = writeHobbyDims();
-const listed = writeProjectList(loadProjects());
+const listed = writeProjectList('index.html', loadProjects(), false) &&
+               writeProjectList('projects.html', loadProjects(), true);
 console.log('Wrote ' + pages.length + ' share pages + sitemap.xml + '
             + dims + ' gallery dimensions'
-            + (listed ? " + index.html's static project list" : ''));
+            + (listed ? ' + the project tiles in index.html and projects.html' : ''));
 pages.forEach(function (p) { console.log('  ' + p); });
